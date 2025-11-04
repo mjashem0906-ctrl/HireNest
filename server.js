@@ -4,7 +4,7 @@
    const { Server } = require("socket.io"); //for real sync data like chat app
    const connectDB = require('./config/connectionDB');
    const cookieParser = require("cookie-parser");
-   const bulkImport = require("./utils/bulkImport");
+   // const bulkImport = require("./utils/bulkImport");
    require('dotenv').config();
 
    const app = express();
