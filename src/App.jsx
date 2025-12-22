@@ -23,9 +23,13 @@ import LoginForm from './LoginForm';
 import NotFound from './pages/NotFound/NotFound';
 // import ActivityList from './pages/ActivityList/ActivityList';
 // import Services from './pages/Services/Services';
-// import UserList from './pages/CreateUser/UserList';
+import UserList from './pages/CreateUser/UserList';
 // import MemberComments from './pages/MemberComments/MemberComments';
 import InstallPopup from './components/UI/InstallPopup';
+
+import GoogleLogin from './components/Google/GoogleLogin'; // We'll create this next
+import CandidateForm from './components/Google/CandidateForm';
+import CandidateDashboard from './pages/CandidateDashboard/CandidateDashboard';
 
 function App() {
   return (
@@ -34,6 +38,14 @@ function App() {
        
           <Routes>
             <Route path="/login" element={<LoginForm />} />
+            
+            {/* Add Google Login route */}
+            <Route path="/google-login" element={<GoogleLogin />} />
+            {/* Add Candidate Form route - should be accessible after Google login */}
+            <Route path="/candidate-form" element={<CandidateForm />} />
+            {/* Add Candidate Dashboard route */}
+            <Route path="/candidate-dashboard" element={<CandidateDashboard />} />
+
             <Route path="/" element={<PrivateRoute> <Layout /></PrivateRoute>}>
             <Route index element={<Dashboard />} />
             {/* <Route path="status-requests" element={<PrivateRoute roles={['Admin']}><StatusRequests /></PrivateRoute>} /> */}
@@ -43,10 +55,10 @@ function App() {
             <Route path="tasks" element={<Tasks />} />
             <Route path="subtasks" element={<Subtasks />} />
             <Route path="assignFor" element={<AssignFor />} />
-            <Route path="service" element={<Services/>} />
+            <Route path="service" element={<Services/>} /> */}
             <Route path="createUser" element={<PrivateRoute roles={['Admin']}><UserList /> </PrivateRoute>} />
-            <Route path="settings" element={<Settings />}/> */}
-            <Route path="member/:id" element={<PrivateRoute roles={['Admin','IT_Member']}><MembersDetail /></PrivateRoute>} />
+            {/* <Route path="settings" element={<Settings />}/> */}
+            <Route path="member/:id" element={<PrivateRoute roles={['Admin','IT_Member','Member']}><MembersDetail /></PrivateRoute>} />
             {/* <Route path="project/:id" element={<ProjectDetail />} />
             <Route path="task/:id" element={<TaskDetail />} />
             <Route path="subTask/:id" element={<SubtaskDetail />} />

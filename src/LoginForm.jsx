@@ -4,6 +4,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
+import { FcGoogle } from "react-icons/fc";
+
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -81,6 +83,20 @@ const LoginForm = () => {
             >
               {loading ? "Logging in..." : "Login"}
             </button>
+            
+            <div className="divider">
+              <span>OR</span>
+            </div>
+
+            <button
+            type="button"
+            className="google-login-button"
+            onClick={() => navigate("/google-login")}
+            >
+              <FcGoogle size={20} />
+              <span>Continue with Google</span>
+            </button>
+
           </form>
         </div>
       </div>

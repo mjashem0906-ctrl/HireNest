@@ -1,0 +1,126 @@
+.google-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.google-login-box {
+  background: white;
+  padding: 50px 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.google-logo {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.google-login-title {
+  color: #333;
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.google-login-subtitle {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.google-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  background-color: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.google-login-button:hover {
+  background-color: #f8f9fa;
+  border-color: #4285f4;
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
+}
+
+.google-login-button:active {
+  transform: translateY(1px);
+}
+
+.login-note {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.login-note p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.alternative-option {
+  border-top: 1px solid #eee;
+  padding-top: 25px;
+}
+
+.alternative-option p {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.alt-login-button {
+  background-color: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.alt-login-button:hover {
+  background-color: #667eea;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .google-login-box {
+    padding: 30px 20px;
+  }
+  
+  .google-login-title {
+    font-size: 24px;
+  }
+  
+  .google-login-button {
+    padding: 14px;
+    font-size: 15px;
+  }
+}

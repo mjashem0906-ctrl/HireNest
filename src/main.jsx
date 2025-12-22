@@ -10,11 +10,11 @@ import { DataProvider } from './context/DataContext.jsx'
 createRoot(document.getElementById('root')).render(
   
     <AuthProvider>
-    <ThemeProvider>
-      <DataProvider>
-        <App />
-      </DataProvider>
+      <ThemeProvider>
+        <DataProvider>
+          <App />
+        </DataProvider>
       </ThemeProvider>
-   </AuthProvider>
+    </AuthProvider>
  
 )

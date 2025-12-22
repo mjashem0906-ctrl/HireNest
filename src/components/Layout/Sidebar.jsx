@@ -14,8 +14,17 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members', adminOnly: true },
+      { path: '/createUser', icon: User, label: 'Create new user', adminOnly: true },
       // other items commented out
     ];
+  }
+
+  else if(user.role === "Member"){
+   menuItems=[
+    //  { path: '/', icon: Home, label: 'Dashboard' },
+     { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
+     // { path: '/settings', icon: Settings, label: 'Settings' },
+   ] 
   }
 
   return (

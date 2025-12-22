@@ -1,345 +1,275 @@
-import React, {  useState,useEffect } from 'react';
-import { X, CheckSquare, FolderOpen, Calendar, Flag } from 'lucide-react';
-import FormInput from '../UI/FormInput';
-import DropdownSelect from '../UI/DropdownSelect';
-import CreatableSelect from 'react-select/creatable';
-import styles from './AddModel.module.scss';
-import DateSelect from '../UI/DateSelect';
-import API from '../../axios';
+import React, { useEffect, useState } from "react";
+import { X } from "lucide-react";
+import FormInput from "../UI/FormInput";
+import DropdownSelect from "../UI/DropdownSelect";
+import DateSelect from "../UI/DateSelect";
+import CreatableSelect from "react-select/creatable";
+import API from "../../axios";
+import styles from "./AddModel.module.scss";
 
+const initialState = {
+  name: "",
+  fathersName: "",
+  mobileNumber: "",
+  email: "",
+  gender: "",
+  dateOfBirth: null,
+  memberType: "",
+  currentInstitutionOrCompany: "",
+  district: "",
+  forGrouping: [],
 
-function AddMember({ isOpen, onClose, editMember, onEdit }) {
-    const [formData,setFormData]=useState({
-        name:"",
-      fathersName:"",
-      pointOfContact:"",
-      mobileNumber:"",
-      dateOfBirth:null,
-      collegeName:"",
-      department:"",
-      workingOrStudyingStatus:"",
-      currentInstitutionOrCompany:"",
-      profession:"",
-      maritalStatus:"",
-      otherPersonalNumber:"",
-      personalEmail:"",
-      areaOfInterest:"",
-      ambition:"",
-      expectationsFromSolidarity:"",
-      currentAddress:"",
-      currentDistrict:"",
-      nativePlace:"",
-      memberType:"",
-      forGrouping:[],
-       
-    });
-    const [options, setOptions] = useState([]);
-    const [selectedOption, setSelectedOption] = useState([]);
-    const [errors, setErrors] = useState({});
-    const [btnLoading, setBtnLoading] = useState(false);
-   useEffect(() =>  {
-            async function fetchOptions() {
-            try {
-            const res = await API.get("/dropdown");
-            const formatted = res.data.map((item) => ({
-                    value: item.name,
-                    label: item.name
-                }));
-                setOptions(formatted);
-            } catch (err) {
-            console.error("Failed to fetch dropdown options", err);
-            }
-        }
+  // Job Seeker
+  seekerNeed: "",
+  highest_education: "",
+  fieldofStudy_Interest: "",
+  preferredJobRole_Sector: "",
+  workExp: "",
+  relocationStatus: "",
+  preferredJobLocation: "",
+  resumeLink: "",
 
-        fetchOptions();
-        if (editMember) {
-          setFormData({...editMember,
-            dateOfBirth:editMember.dateOfBirth ? new Date(editMember.dateOfBirth) : null,
-            forGrouping: editMember.forGrouping?.map((g) => ({ value: g, label: g })) || []
-          });
-        } else {
-          setFormData({
-            name:"",
-            fathersName:"",
-            pointOfContact:"",
-            mobileNumber:"",
-            dateOfBirth:null,
-            collegeName:"",
-            department:"",
-            workingOrStudyingStatus:"",
-            currentInstitutionOrCompany:"",
-            profession:"",
-            maritalStatus:"",
-            otherPersonalNumber:"",
-            personalEmail:"",
-            areaOfInterest:"",
-            ambition:"",
-            expectationsFromSolidarity:"",
-            currentAddress:"",
-            currentDistrict:"",
-            nativePlace:"",
-            memberType:"",
-            forGrouping:[],
-          });
-        }
-      }, [editMember]);
+  // Opportunity Provider
+  jobOfferType: "",
+  offeringSector: "",
+  opportunityDescription: "",
+  offer_Location: "",
+  contactForSeekers: "",
 
+  // Referee
+  referrerStatus: "",
+  referringOfferType: "",
+  referringSector: "",
+  referringFor: "",
+  levelOfSupport: "",
+  referrerContact: "",
 
-   
-
-  const handleCreate = async(inputValue) => {
-    const newOption = { value: inputValue , label: inputValue };
-    try{
-        await API.post("/dropdown",{name:inputValue});
-    
-    setOptions((prev) => [...prev, newOption]);
-    setFormData((prev) => ({
-      ...prev,
-      forGrouping: [...(Array.isArray(prev.forGrouping) ? prev.forGrouping : []), newOption],
-    }));
-    }catch (err) {
-      console.error("Error creating dropdown", err);
-    }
-    
-  };
-      // Converts YYYY-MM-DD → MM/DD/YYYY for backend
-   const formatDateToMMDDYYYY = (date) => {
-  if (!date) return "";
-  const d = new Date(date);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${mm}/${dd}/${yyyy}`;
+  // Upskilling
+  interest_SkillBuildingProgram: "",
+  skillsToImprove: "",
 };
-    const handleSubmit = async (e) => {
-         e.preventDefault();
-         if(btnLoading){
-        return
-      }
-      setBtnLoading(true);
-         const payload = {
-                    ...formData,
-                    dateOfBirth: formatDateToMMDDYYYY(formData.dateOfBirth), // Convert to MM/DD/YYYY
-                    forGrouping:formData.forGrouping.map(dropdown => dropdown.value)
-                };
-            
-               try {
-                    const res = await API.patch(`/member/${editMember._id}`, payload); // PATCH only these fields
-                    onEdit(res.data); // callback to parent
-                    } 
-                catch (err) {
-                    alert("Failed to update member.");
-                    }
-                    
-       
-                setFormData({
-                        name:"",
-                        fathersName:"",
-                        pointOfContact:"",
-                        mobileNumber:"",
-                        dateOfBirth:"",
-                        collegeName:"",
-                        department:"",
-                        workingOrStudyingStatus:"",
-                        currentInstitutionOrCompany:"",
-                        profession:"",
-                        maritalStatus:"",
-                        otherPersonalNumber:"",
-                        personalEmail:"",
-                        areaOfInterest:"",
-                        ambition:"",
-                        expectationsFromSolidarity:"",
-                        currentAddress:"",
-                        currentDistrict:"",
-                        nativePlace:"",
-                        memberType:"",
-                        forGrouping:[]
-                       
-     
-                });
-                setErrors({});
-                onClose();
-                setBtnLoading(false);
-            
-        };
-        const handleCancel = () => {
-            setFormData({
-            name:"",
-            fathersName:"",
-            pointOfContact:"",
-            mobileNumber:"",
-            dateOfBirth:"",
-            collegeName:"",
-            department:"",
-            workingOrStudyingStatus:"",
-            currentInstitutionOrCompany:"",
-            profession:"",
-            maritalStatus:"",
-            otherPersonalNumber:"",
-            personalEmail:"",
-            areaOfInterest:"",
-            ambition:"",
-            expectationsFromSolidarity:"",
-            currentAddress:"",
-            currentDistrict:"",
-            nativePlace:"",
-            memberType:"",
-            forGrouping:[]
-          
-            });
-            setErrors({});
-            onClose();
+
+function AddMember({ isOpen, onClose, editMember, onSuccess }) {
+  const [formData, setFormData] = useState(initialState);
+  const [options, setOptions] = useState([]);
+  const [btnLoading, setBtnLoading] = useState(false);
+
+  useEffect(() => {
+    // fetchDropdowns();
+
+    if (editMember) {
+      setFormData({
+        ...initialState,
+        ...editMember,
+        dateOfBirth: editMember.dateOfBirth
+          ? new Date(editMember.dateOfBirth)
+          : null,
+        // forGrouping:
+        //   editMember.forGrouping?.map((g) => ({
+        //     value: g,
+        //     label: g,
+        //   })) || [],
+      });
+    } else {
+      setFormData(initialState);
+    }
+  }, [editMember]);
+
+  // const fetchDropdowns = async () => {
+  //   try {
+  //     const res = await API.get("/dropdown");
+  //     setOptions(
+  //       res.data.map((d) => ({ value: d.name, label: d.name }))
+  //     );
+  //   } catch (err) {
+  //     console.error("Dropdown fetch failed", err);
+  //   }
+  // };
+
+  const handleCreate = async (inputValue) => {
+    const newOption = { value: inputValue, label: inputValue };
+    try {
+      await API.post("/dropdown", { name: inputValue });
+      setOptions((prev) => [...prev, newOption]);
+      setFormData((prev) => ({
+        ...prev,
+        forGrouping: [...prev.forGrouping, newOption],
+      }));
+    } catch (err) {
+      console.error("Dropdown create failed", err);
+    }
   };
 
-        if (!isOpen) return null;
+  const formatDOB = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(
+      d.getDate()
+    ).padStart(2, "0")}/${d.getFullYear()}`;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (btnLoading) return;
+
+    setBtnLoading(true);
+
+    const payload = {
+      ...formData,
+      dateOfBirth: formatDOB(formData.dateOfBirth),
+     
+    };
+
+    try {
+      let res;
+      if (editMember) {
+        res = await API.put(`/member/${editMember._id}`, payload);
+      } else {
+        res = await API.post("/member", payload);
+      }
+      onSuccess?.(res.data);
+      onClose();
+    } catch (err) {
+      alert("Member save failed");
+    } finally {
+      setBtnLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.overlay}>
-                        <div className={styles.modal}>
-                            <div className={styles.header}>
-                            <h2>{editMember ? 'Edit Member' : 'Add New Member'}</h2>
-                            <button onClick={handleCancel} className={styles.closeButton}>
-                                <X size={20} />
-                            </button>
-                            </div>
-                            <form onSubmit={handleSubmit} className={styles.form}>
-                                <div className={styles.formGrid}>
-                                        <FormInput
-                                        label="Name"
-                                        value={formData.name}
-                                        onChange={(value) => setFormData({ ...formData, name: value })}
-                                        placeholder="Enter Member name"
-                                        required
-                                        error={errors.name}
-                                        // icon={<FolderOpen size={16} />}
-                                        />
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h2>{editMember ? "Edit Member" : "Add Member"}</h2>
+          <button onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
 
-                                        <FormInput
-                                        label="Member Type"
-                                        value={formData.memberType || ""}
-                                        onChange={(value) => setFormData({ ...formData, memberType: value })} 
-                                        placeholder="Enter Member Type"
-                                        />
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGrid}>
+            <FormInput label="Name" value={formData.name}
+              onChange={(v) => setFormData({ ...formData, name: v })} required />
 
-                                         <div style={{ width: 300 }}>
-                                        <label htmlFor="For Grouping">For Grouping</label>
-                                        <CreatableSelect
-                                            isMulti
-                                            isClearable
-                                            onChange={(selected) =>
-                                                setFormData((prev) => ({ ...prev, forGrouping: selected || [] }))}
-                                            onCreateOption={handleCreate}
-                                            options={Array.isArray(options) ? options : []}
-                                            value={formData.forGrouping || []}
-                                            placeholder="Select or add profession"
-                                        />
-                                        </div>
-                                        <FormInput
-                                        label="Father Name"
-                                        value={formData.fathersName}
-                                        onChange={(value) => setFormData({ ...formData, fathersName: value })}
-                                        placeholder="Enter father's name"
-                                        />
+            {/* <FormInput label="Father Name" value={formData.fathersName}
+              onChange={(v) => setFormData({ ...formData, fathersName: v })} /> */}
 
-                                        <FormInput
-                                        label="Mobile Number"
-                                        value={formData.mobileNumber}
-                                        onChange={(value) => setFormData({ ...formData, mobileNumber: value })}
-                                        placeholder="Enter Mobile Number"
-                                        />
+            <FormInput label="Mobile Number" value={formData.mobileNumber}
+              onChange={(v) => setFormData({ ...formData, mobileNumber: v })} />
 
-                                        <DateSelect
-                                        label="Date of Birth"
-                                        value={formData.dateOfBirth}
-                                        onChange={(value) => setFormData({ ...formData, dateOfBirth: value })}
-                                        required
-                                       
-                                        />
-                                   
+            <FormInput label="Email" value={formData.email}
+              onChange={(v) => setFormData({ ...formData, email: v })} />
 
-                                        <FormInput
-                                        label="College Name"
-                                        value={formData.collegeName}
-                                        onChange={(value) => setFormData({ ...formData, collegeName: value })}
-                                        placeholder="Enter College Name"
-                                        />
+            <DropdownSelect
+              label="Gender"
+              value={formData.gender}
+              options={[
+                { value: "Male", label: "Male" },
+                { value: "Female", label: "Female" },
+                { value: "Other", label: "Other" },
+              ]}
+              onChange={(v) => setFormData({ ...formData, gender: v })}
+            />
 
-                                        <FormInput
-                                        label="Department"
-                                        value={formData.department}
-                                        onChange={(value) => setFormData({ ...formData, department: value })}
-                                        placeholder="Enter Department"
-                                        />
+            <DateSelect
+              label="Date of Birth"
+              value={formData.dateOfBirth}
+              onChange={(v) => setFormData({ ...formData, dateOfBirth: v })}
+            />
 
-                                        <DropdownSelect
-                                        label="Working / Studying"
-                                        options={[{value:"Working",label:"Working"},{value:"Studying",label:"Studying"}]}
-                                        value={formData.workingOrStudyingStatus}
-                                        onChange={(value) => setFormData({ ...formData, workingOrStudyingStatus: value })}
-                                        required
-                                        error={errors.status}
-                                        />
+            <DropdownSelect
+              label="Member Type"
+              value={formData.memberType}
+              options={[
+                { value: "Job Seeker", label: "Job Seeker" },
+                { value: "Oppurtunity Provider", label: "Oppurtunity Provider" },
+                { value: "Referee", label: "Referee" },
+                { value: "In need of Upskilling", label: "In need of Upskilling" },
+              ]}
+              onChange={(v) => setFormData({ ...formData, memberType: v })}
+              required
+            />
+           
 
-                                        
-                                        <FormInput
-                                        label="Current Institutions / Company"
-                                        value={formData.currentInstitutionOrCompany}
-                                        onChange={(value) => setFormData({ ...formData, currentInstitutionOrCompany: value })}
-                                        placeholder="Enter Current Instituton or company name"
-                                        />
+            {/* Job Seeker */}
+            {formData.memberType === "Job Seeker" && (
+              <>
+                <FormInput label="Member Need" value={formData.seekerNeed}
+                  onChange={(v) => setFormData({ ...formData, seekerNeed: v })} />
+                <FormInput label="Highest Education" value={formData.highest_education}
+                  onChange={(v) => setFormData({ ...formData, highest_education: v })} />
+                <FormInput label="Field of Study Interest" value={formData.fieldofStudy_Interest}
+                  onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })} />
+                <FormInput label="Preferred Job Role" value={formData.preferredJobRole_Sector}
+                  onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: v })} />
+                <FormInput label="Work Experience" value={formData.workExp}
+                  onChange={(v) => setFormData({ ...formData, workExperience: v })} />
+                <FormInput label="Relocation Status" value={formData.relocationStatus}
+                  onChange={(v) => setFormData({ ...formData, relocationStatus: v })} />
+                <FormInput label="Preferred Job Location" value={formData.preferredJobLocation}
+                  onChange={(v) => setFormData({ ...formData, preferredJobLocation: v })} />
+                {/* <FormInput label="Resume Link" value={formData.resumeLink}
+                  onChange={(v) => setFormData({ ...formData, resumeLink: v })} /> */}
+              </>
+            )}
 
-                                        <FormInput
-                                        label="Profession"
-                                        value={formData.profession}
-                                        onChange={(value) => setFormData({ ...formData, profession: value })}
-                                        placeholder="Enter Profession"
-                                        />
+            {/* Opportunity Provider */}
+            {formData.memberType === "Oppurtunity Provider" && (
+              <>
+                <FormInput label="Job Offer Type" value={formData.jobOfferType}
+                  onChange={(v) => setFormData({ ...formData, jobOfferType: v })} />
+                <FormInput label="Offering Sector" value={formData.offeringSector}
+                  onChange={(v) => setFormData({ ...formData, offeringSector: v })} />
+                <FormInput label="Opportunity Description" value={formData.opportunityDescription}
+                  onChange={(v) => setFormData({ ...formData, opportunityDescription: v })} />
+                <FormInput label="Offer Location" value={formData.offer_Location}
+                  onChange={(v) => setFormData({ ...formData, offer_Location: v })} />
+                <FormInput label="Contact For Seekers" value={formData.contactForSeekers}
+                  onChange={(v) => setFormData({ ...formData, contactForSeekers: v })} />
+              </>
+            )}
 
-                                        <DropdownSelect
-                                        label="Marital Status"
-                                        options={[{value:"Married",label:"Married"},{value:"Unmarried",label:"Unmarried"}]}
-                                        value={formData.maritalStatus}
-                                        onChange={(value) => setFormData({ ...formData, maritalStatus: value })}
-                                        required
-                                        error={errors.status}
-                                        />
+            {/* Referee */}
+            {formData.memberType === "Referee" && (
+              <>
+                <FormInput label="Referrer Status" value={formData.referrerStatus}
+                  onChange={(v) => setFormData({ ...formData, referrerStatus: v })} />
+                <FormInput label="Referring Offer Type" value={formData.referringOfferType}
+                  onChange={(v) => setFormData({ ...formData, referringOfferType: v })} />
+                <FormInput label="Referring Sector" value={formData.referringSector}
+                  onChange={(v) => setFormData({ ...formData, referringSector: v })} />
+                <FormInput label="Referring For" value={formData.referringFor}
+                  onChange={(v) => setFormData({ ...formData, referringFor: v })} />
+                <FormInput label="Level of Support" value={formData.levelOfSupport}
+                  onChange={(v) => setFormData({ ...formData, levelOfSupport: v })} />
+              </>
+            )}
 
-                                        <FormInput
-                                        label="Other Personal Number"
-                                        value={formData.otherPersonalNumber}
-                                        onChange={(value) => setFormData({ ...formData, otherPersonalNumber: value })}
-                                        placeholder="Enter Other Personal Number"
-                                        />
+            {/* Upskilling */}
+            {formData.memberType === "In need of Upskilling" && (
+              <>
+                <FormInput label="Skills to Improve" value={formData.skillsToImprove}
+                  onChange={(v) => setFormData({ ...formData, skillsToImprove: v })} />
+                <FormInput label="Field of Study Interest" value={formData.fieldofStudy_Interest}
+                  onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })} />
+              </>
+            )}
+          </div>
 
-                                        <FormInput
-                                        label="Personal Email"
-                                        value={formData.personalEmail}
-                                        onChange={(value) => setFormData({ ...formData, personalEmail: value })}
-                                        placeholder="Enter Personal Email"
-                                        />
-
-                                        <FormInput
-                                        label="Address"
-                                        value={formData.currentAddress}
-                                        onChange={(value) => setFormData({ ...formData, currentAddress: value })}  
-                                        placeholder="Enter Address details"
-                                        />
-                                        
-                                </div>                        
-                                                              
-                                <div className={styles.actions}>
-                                    <button type="button" onClick={handleCancel} className={styles.cancelButton}>
-                                    Cancel
-                                    </button>
-                                    <button type="submit" disabled={btnLoading} className={styles.submitButton}>
-                                    {btnLoading? "Uploading":(editMember ? 'Update Member' : 'Add Member')}
-                                    </button>
-                                </div>
-                                
-                            </form>
-                        </div>  
-                        </div>
-  )
+          <div className={styles.actions}>
+            <button type="button" onClick={onClose} className={styles.cancelButton}>
+              Cancel
+            </button>
+            <button type="submit" disabled={btnLoading} className={styles.submitButton}>
+              {btnLoading ? "Saving..." : editMember ? "Update Member" : "Add Member"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
 
-export default AddMember
+export default AddMember;

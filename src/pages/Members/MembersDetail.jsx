@@ -5,6 +5,10 @@ import API from '../../axios';
 import { useData } from '../../context/DataContext';
 import ReportDownloader from '../../components/Report/ReportDownloader';
 import { parseDOB } from '../../utils/dateUtils';
+import { useAuth } from '../../context/AuthContext';
+import { Edit } from 'lucide-react';
+import AddMember from '../../components/Models/AddMember';
+
 
 function MembersDetail() {
     const { id } = useParams();
@@ -13,22 +17,33 @@ function MembersDetail() {
     const [subTasks, setSubTasks] = useState([]);
     const [comments,setComments] = useState([]);
     const [assignFor,setAssignFor] = useState([]);
-    const {memberContext,subTaskContext,memberCommentsContext,assignForContext} = useData();
+    const {memberContext,subTaskContext,memberCommentsContext,assignForContext,userContext} = useData();
     const [age,setAge] = useState(null);
     const navigate = useNavigate();
+    const [showModal, setShowModal]=useState(false);
+    const [editingMember,setEditingMember]=useState(null);
+    const {user} = useAuth();
+    
 
     useEffect(()=>{
         fetchMember();
   
         
     }
-        ,[memberContext,id,subTaskContext,memberCommentsContext,assignForContext])
+        ,[memberContext,id,subTaskContext,memberCommentsContext,assignForContext,userContext])
 
 
         const fetchMember = async()=>{
             try{
-           
-            const filtered =await memberContext.find(member=>String(member._id)===String(id));
+              let filtered;
+           if(user.role==="Admin"){
+            filtered =await memberContext.find(member=>String(member._id)===String(id));
+            
+           }
+           if (user.role==="Member"){
+               filtered =userContext;
+           }
+            
             setMember(filtered);
                   if (filtered?.dateOfBirth) {
                   const calculated = calculateAge(filtered.dateOfBirth);
@@ -135,6 +150,12 @@ function MembersDetail() {
     }
   };
 
+    const handleEdit = (member) => {
+    setEditingMember(member); // force new reference
+    setShowModal(true);
+  };
+
+
 const getDirectImageUrl = (driveUrl) => {
   if (!driveUrl) return null;
 
@@ -193,7 +214,22 @@ const getDirectImageUrl = (driveUrl) => {
                 
                 
             </div>
-
+            
+           
+        <button
+          className={styles.addButton1}
+          onClick={() => handleEdit(member)}
+        >
+          <Edit size={20} />
+        </button>
+      <AddMember
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        editMember={editingMember}
+        onSuccess={(updatedMember) => {
+          setMember(updatedMember);
+        }}
+      />
             {/* Main Content */}
             <div className={styles.profileMain}>
                 <h3>Personal Info</h3>
@@ -433,6 +469,3 @@ const getDirectImageUrl = (driveUrl) => {
  }
 
  export default MembersDetail
-
-
- 

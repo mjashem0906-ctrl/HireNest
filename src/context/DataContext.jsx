@@ -53,12 +53,23 @@ export const DataProvider = ({ children }) => {
   }, [user]); // ✅ rerun whenever login/logout happens
 
 
+  // const fetchMemberDataById = async() =>{
+  //   try {
+  //     // const res = await API.get(`/member/${user.memberId}`)
+  //     // const sorted = res.data.sort((a, b) => a.memberReferenceNumber - b.memberReferenceNumber)
+  //     // setMemberContext(sorted);
+  //    console.log(user.memberId);
+  
+  //   } catch (err) {
+  //     console.error('Failed to load members:', err)
+  //   }
+  // }
   const fetchMemberData = async () => {
     try {
       const res = await API.get('/member')
       const sorted = res.data.sort((a, b) => a.memberReferenceNumber - b.memberReferenceNumber)
       setMemberContext(sorted);
-     
+     console.log(sorted);
   
     } catch (err) {
       console.error('Failed to load members:', err)
@@ -80,6 +91,7 @@ export const DataProvider = ({ children }) => {
     try {
       const res = await API.get(`/member/${user.memberId}`)
         setUserContext(res.data);
+        console.log(res.data);
       
     } catch (err) {
       console.error('Failed to load members:', err)
