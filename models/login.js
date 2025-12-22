@@ -14,10 +14,10 @@ const userSchema = new mongoose.Schema({
         enum:["Admin","Member", "IT_Member"],
         required:true
     },
-    // memberId:{
-    //    type:mongoose.Schema.Types.ObjectId,
-    //     ref:"Member",
-    //     required:true
-    // }
+    memberId:{
+       type:mongoose.Schema.Types.ObjectId,
+        ref:"Member",
+        required:true
+    }
 },{timestamps:true})
 module.exports = mongoose.model("User", userSchema);

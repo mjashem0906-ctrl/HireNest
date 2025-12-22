@@ -7,8 +7,8 @@ const Member = require("../models/member");
 
 //Register new user
 const register = async(req,res)=>{
-  // const {memberId,username,password,role} = req.body;
-  const {username,password,role} = req.body;
+  const {memberId,username,password,role} = req.body;
+  // const {username,password,role} = req.body;
   if (!username || !password) {
         return res.status(400).json({ message: "username and password is required" })
     }
@@ -18,8 +18,8 @@ const register = async(req,res)=>{
       return res.status(400).json({error:"Username is already exist"})
     }
     const hashPwd = await bcrypt.hash(password, 10)
-    const newUser = await User.create({username,password:hashPwd,role});
-    // const newUser = await User.create({memberId,username,password:hashPwd,role});
+    // const newUser = await User.create({username,password:hashPwd,role});
+    const newUser = await User.create({memberId,username,password:hashPwd,role});
     // const member = await Member.findById(memberId);
    
     //  await Activity.create({
