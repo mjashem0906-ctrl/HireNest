@@ -1,172 +1,173 @@
+// controller/service.controller.js
 const Service = require("../models/service");
-const multer = require("multer");
-const { google } = require("googleapis");
-const path = require("path");
-const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
 
-// Configure multer with file filtering and limits
-const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed!"), false);
-    }
-  }
-});
-
-// Google Drive setup
-const auth = new google.auth.GoogleAuth({
-  keyFile: path.join(__dirname, "../credentials.json"),
-  scopes: ["https://www.googleapis.com/auth/drive"],
-});
-const drive = google.drive({ version: "v3", auth });
-
+/* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
-    // Validate required fields
-    if (!req.body.title) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Title is required" 
-      });
-    }
+    console.log(req.body);
+    const {title, description} = req.body;
 
-    let imageUrl = null;
-    let localFilePath = null;
+    const service = await Service.create({
+      title,
+      description,
+      // memberId: req.user.memberId, // from token, not frontend
+    });
 
-    try {
-      // Process image if uploaded
-      if (req.file) {
-        localFilePath = req.file.path;
-        
-        // Generate unique filename
-        const uniqueFilename = `${uuidv4()}${path.extname(req.file.originalname)}`;
-        
-        // Upload to Google Drive
-        const fileMetadata = { 
-          name: uniqueFilename,
-          parents: ["11hhHf6_IZpEkysvMBkn0pH6cVuPRD8vr"]
-        };
+    // const populatedService = await service.populate(
+    //   "memberId",
+    //   "name email photoUrl role"
+    // );
 
-        const media = { 
-          mimeType: req.file.mimetype, 
-          body: fs.createReadStream(localFilePath) 
-        };
-
-        const driveFile = await drive.files.create({
-          resource: fileMetadata,
-          media,
-          supportsAllDrives: true, // Important for shared drives
-          fields: "id",
-        });
-
-        // Make file public
-        await drive.permissions.create({
-          fileId: driveFile.data.id,
-          supportsAllDrives: true,
-          requestBody: { 
-            role: "reader", 
-            type: "anyone" 
-          },
-        });
-
-        imageUrl = `https://drive.google.com/uc?id=${driveFile.data.id}`;
-      }
-
-      // Save to MongoDB
-      const service = new Service({
-        title: req.body.title,
-        description: req.body.description || "", // Default empty string
-        image: imageUrl,
-        memberId:req.body.memberId
-      });
-
-      await service.save();
-
-      // Cleanup local file if it exists
-      if (localFilePath && fs.existsSync(localFilePath)) {
-        fs.unlinkSync(localFilePath);
-      }
-
-      return res.status(201).json({ 
-        success: true, 
-        data: service,
-        message: "Service post created successfully"
-      });
-
-    } catch (uploadError) {
-      // Cleanup local file if upload failed
-      if (localFilePath && fs.existsSync(localFilePath)) {
-        fs.unlinkSync(localFilePath);
-      }
-      throw uploadError; // Re-throw to be caught by outer catch
-    }
-
+    res.status(201).json({
+      success: true,
+      // data: populatedService,
+      message: "Service created successfully",
+      data: service
+    });
   } catch (error) {
-    console.error("Error in addServicePost:", error);
-    
-    let errorMessage = "Upload failed";
-    if (error.message.includes("storage quota")) {
-      errorMessage = "Storage quota exceeded. Please check Google Drive permissions.";
-    } else if (error.message.includes("image files")) {
-      errorMessage = "Only image files are allowed";
-    }
-
-    return res.status(500).json({ 
-      success: false, 
-      message: errorMessage,
-      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    console.error("addServicePost error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create service",
     });
   }
 };
+
+/* -------------------- GET ALL SERVICES (PUBLIC) -------------------- */
+// const getServicePost = async (req, res) => {
+//   try {
+//     const services = await Service.find()
+//        .populate("memberId", "name email photoUrl role")
+//       .sort({ createdAt: -1 });
+
+//     res.json({
+//       success: true,
+//       data: services,
+//     });
+//   } catch (error) {
+//     console.error("getServicePost error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch services",
+//     });
+//   }
+// };
 
 const getServicePost = async (req, res) => {
   try {
-    const services = await Service.find().populate("memberId", "name email photoUrl")  // populate member info
-    res.json({ success: true, data: services });
+    const services = await Service.find()
+      .populate({
+        path: "appliedMembers.memberId",
+        select: "name email role",
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: services,
+    });
   } catch (error) {
-    console.error("Error fetching services:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Failed to fetch services" 
+    console.error("getServicePost error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch services",
     });
   }
 };
 
+
+/* -------------------- DELETE SERVICE (ADMIN ONLY) -------------------- */
 const deleteServicePost = async (req, res) => {
   try {
-    const { id } = req.params;
-    const service = await Service.findByIdAndDelete(id);
-    
-    if (!service) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Service not found" 
+    if (req.user.role !== "Admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin can delete services",
       });
     }
 
-    // Optional: Add code to delete from Google Drive if needed
-    
-    res.json({ 
-      success: true, 
-      message: "Service deleted successfully" 
+    const service = await Service.findByIdAndDelete(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Service deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting service:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Failed to delete service" 
+    console.error("deleteServicePost error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete service",
     });
   }
 };
+
+const getSingleServicePost = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: service,
+    });
+  } catch (error) {
+    console.error("getSingleServicePost error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch service",
+    });
+  }
+};
+
+/* -------------------- APPLY TO SERVICE (MEMBER) -------------------- */
+const applyToService = async (req, res) => {
+  try {
+    const serviceId = req.params.id;
+    const memberId = req.user.memberId;
+
+    const service = await Service.findById(serviceId);
+
+    if (!service) {
+      return res.status(404).json({ success: false, message: "Service not found" });
+    }
+
+    const alreadyApplied = service.appliedMembers.some(
+      (a) => String(a.memberId) === String(memberId)
+    );
+
+    if (alreadyApplied) {
+      return res.status(400).json({ success: false, message: "Already applied" });
+    }
+
+    service.appliedMembers.push({ memberId });
+    await service.save();
+
+    res.json({ success: true, message: "Application submitted successfully" });
+  } catch (error) {
+    console.error("applyToService error:", error);
+    res.status(500).json({ success: false, message: "Application failed" });
+  }
+};
+
+
 
 module.exports = {
   addServicePost,
   getServicePost,
   deleteServicePost,
-  upload
+  getSingleServicePost,
+  applyToService
 };

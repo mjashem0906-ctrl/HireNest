@@ -15,15 +15,19 @@ const serviceSchema =new mongoose.Schema({
     image:{
         type:String,
     },
+    appliedMembers:[{
+        memberId: {type: mongoose.Schema.Types.ObjectId, ref: "Member"},
+        appliedAt: {type: Date, default: Date.now}
+    }],
     // type:{
     //     type:String,
     //     required:true,
     // },
-    memberId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Member",
-        required:true,
-    }
+    // memberId:{
+    //     type:mongoose.Schema.Types.ObjectId,
+    //     ref:"Member",
+    //     required:true,
+    // }
 },
     { timestamps: true }
 )
