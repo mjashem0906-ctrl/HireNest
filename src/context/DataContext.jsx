@@ -16,6 +16,7 @@ export const DataProvider = ({ children }) => {
   const [userContext,setUserContext] =useState('');
   const [allUserContext,setAllUserContext]= useState([]);
   const [placeContext,setPlaceContext] = useState([]);
+  const [jobContext,setJobContext] = useState([]);
   
   useEffect(() => {
     if (user) { // ✅ Only fetch after login
@@ -36,6 +37,7 @@ export const DataProvider = ({ children }) => {
       fetchAssignForData();
       fetchUserData();
       fetchPlaceData();
+      fetchJobData();
       
 
     } else {
@@ -48,6 +50,7 @@ export const DataProvider = ({ children }) => {
       setAllUserContext([]);
       setPlaceContext([]);
       setMemberCommentsContext([]);
+      setJobContext([]);
     }
    
   }, [user]); // ✅ rerun whenever login/logout happens
@@ -64,6 +67,16 @@ export const DataProvider = ({ children }) => {
   //     console.error('Failed to load members:', err)
   //   }
   // }
+  const fetchJobData = async()=>{
+    try {
+           const res=  await API.get("/service");
+           const sorted = res.data.data;
+           setJobContext(sorted); 
+    }
+        catch (error) {
+            console.error("Error fetching Jobs in Data Context:", error);
+            }           
+  }
   const fetchMemberData = async () => {
     try {
       const res = await API.get('/member')
@@ -182,7 +195,7 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider value={{
        memberContext, projectContext,taskContext,subTaskContext,assignForContext,activityContext,userContext,allUserContext,placeContext,
-       memberCommentsContext,setMemberCommentsContext,setPlaceContext,setMemberContext,setProjectContext,setTaskContext,setSubTaskContext,
+       memberCommentsContext,jobContext,setJobContext,setMemberCommentsContext,setPlaceContext,setMemberContext,setProjectContext,setTaskContext,setSubTaskContext,
        setAssignForContext,setActivityContext,setUserContext,setAllUserContext}}>
       {children}
     </DataContext.Provider>

@@ -30,7 +30,7 @@ const getPageTitle = () => {
   if (path.startsWith('/task/')) return 'Task';
   if (path.startsWith('/subtask/')) return 'SubTask';
   if (path.startsWith('/assignFor/')) return 'AssignFor';
-  if (path.startsWith('/service')) return 'Services';
+  if (path.startsWith('/jobs')) return 'Jobs';
   if (path.startsWith('/status-requests')) return 'Status Requests'
   if (path.startsWith('/membersWorking')) return 'Members Working in Tasks';
   return 'Dashboard';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, FolderOpen, CheckSquare, List, X, Settings, UserCheck, ClipboardCheck, User } from 'lucide-react';
+import { Home, Users, FolderOpen, CheckSquare, List, X, Settings, UserCheck, ClipboardCheck, User, BriefcaseBusiness } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
@@ -15,6 +15,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members', adminOnly: true },
       { path: '/createUser', icon: User, label: 'Create new user', adminOnly: true },
+      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs', adminOnly: true },
       // other items commented out
     ];
   }
@@ -23,6 +24,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
    menuItems=[
     //  { path: '/', icon: Home, label: 'Dashboard' },
      { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
+     { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs'}
      // { path: '/settings', icon: Settings, label: 'Settings' },
    ] 
   }
