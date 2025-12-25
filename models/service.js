@@ -12,22 +12,34 @@ const serviceSchema =new mongoose.Schema({
     description:{
         type:String,
     },
-    image:{
-        type:String,
+    memberId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Member",
     },
-    appliedMembers:[{
-        memberId: {type: mongoose.Schema.Types.ObjectId, ref: "Member"},
-        appliedAt: {type: Date, default: Date.now}
-    }],
+    createdAt:{
+        type:Date,
+        default:Date.now,
+    },
+appliedMembers: [{
+    memberId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Member"
+    },
+    status: {
+      type: String,
+      enum: ["Applied", "Shortlisted", "Accepted", "Rejected"],
+      default: "Applied"
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
     // type:{
     //     type:String,
     //     required:true,
     // },
-    // memberId:{
-    //     type:mongoose.Schema.Types.ObjectId,
-    //     ref:"Member",
-    //     required:true,
-    // }
+
 },
     { timestamps: true }
 )
