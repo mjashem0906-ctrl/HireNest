@@ -10,7 +10,7 @@ const addServicePost = async (req, res) => {
     const service = await Service.create({
       title,
       description,
-      memberId: req.user.memberId,
+      // memberId: req.user.memberId,
     });
 
     // const populatedService = await service.populate(
