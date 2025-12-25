@@ -5,7 +5,7 @@ const cors = require('cors');
 const connectDB = require('./config/connectionDB');
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-const passport = require("./config/passport");
+// const passport = require("./config/passport");
 // const bulkImport = require("./utils/bulkImport");
 
 const app = express();
@@ -22,24 +22,24 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(
-  session({
-    secret: process.env.SECRET_KEY,
-    resave: false,
-    saveUninitialized: false
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SECRET_KEY,
+//     resave: false,
+//     saveUninitialized: false
+//   })
+// );
 
 // Passport
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Serve uploaded files statically
 app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/auth", require("./routes/login")); // Your existing login (same /auth is fine)
-app.use("/api/auth", require("./routes/authRoutes")) // 🆕 Google OAuth routes
+// app.use("/api/auth", require("./routes/authRoutes")) // 🆕 Google OAuth routes
 app.use("/api/candidate", require("./routes/candidate")); // Add this line
 
 app.use("/member", require("./routes/member"));
