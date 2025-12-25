@@ -2,8 +2,8 @@
   position: fixed;
   top: 64px; // same as your header height
   right: 0;
-  z-index: 2;
-  background-color: white;
+  z-index: 1;
+  background-color: #f1f5f9;
   padding: 15px;
 
     @media (max-width: 768px) {
@@ -98,10 +98,12 @@ tr:hover {
   position: relative;
   display: flex;
   align-items: center;
-  background-color: var(--bg-primary); /* ✅ theme */
+  background-color: white; /* ✅ theme */
   border-radius: var(--radius-xl);
   padding: 0 var(--spacing-md);
   height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* subtle elevation */
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
 
   svg {
     color: var(--text-muted); /* ✅ theme */

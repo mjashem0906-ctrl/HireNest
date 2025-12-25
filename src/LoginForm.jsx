@@ -5,6 +5,8 @@ import { useNavigate } from "react-router";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
+import { useEffect } from "react";
+
 
 
 const LoginForm = () => {
@@ -15,6 +17,11 @@ const LoginForm = () => {
 
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const loginWithGoogle = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
+  };
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -91,7 +98,7 @@ const LoginForm = () => {
             <button
             type="button"
             className="google-login-button"
-            onClick={() => navigate("/google-login")}
+            onClick={loginWithGoogle}
             >
               <FcGoogle size={20} />
               <span>Continue with Google</span>
