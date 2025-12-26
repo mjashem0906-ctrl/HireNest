@@ -102,14 +102,13 @@
     flex: 1 1 100%; // 1 item per row on very small screens
   }
   &.active {
-            background-color: #3c57cf;
-            color: #fff;
-            border-color: #0a4cb3;
-            .label{
-              color:#fff;
-            }
-          
-        }
+    background-color: #4f46e5;
+    color: #fff;
+    border-color: #0a4cb3;
+    .label{
+      color:#fff;
+    }
+  }
 }
 
 
@@ -142,14 +141,14 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--accent-primary);
+  background-color: #4f46e5;
   color: white;
   border-radius: 100%;
   font-weight: 500;
   transition: var(--transition-fast);
   z-index: 10;
   &:hover {
-    background-color: var(--accent-hover);
+    background-color: #6366f1;
     transform: translateY(-1px);
   }
    @media (min-width: 769px) {

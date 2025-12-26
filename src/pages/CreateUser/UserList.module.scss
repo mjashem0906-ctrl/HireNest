@@ -172,14 +172,14 @@ tr:hover {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--accent-primary); /* ✅ theme */
+  background-color: #4f46e5; /* ✅ theme */
   color: white;
   border-radius: var(--radius-lg);
   font-weight: 500;
   transition: var(--transition-fast);
 
   &:hover {
-    background-color: var(--accent-hover); /* ✅ theme */
+    background-color: #6366f1; /* ✅ theme */
     transform: translateY(-1px);
   }
 }

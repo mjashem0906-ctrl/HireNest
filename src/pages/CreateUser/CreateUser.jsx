@@ -168,7 +168,9 @@ if (!isOpen) return null;
         <div className={styles.formGroup}>
         <DropdownSelect
               label="User Role"
-              options={[{value:"Admin",label:"Admin"},{value:"Member",label:"Member"}, {value:"IT_Member",label:"IT Member"}]}
+              options={[{value:"Admin",label:"Admin"},{value:"Member",label:"Member"}, 
+                // {value:"IT_Member",label:"IT Member"}
+              ]}
               value={formData.role}
               onChange={(value) => setFormData({ ...formData, role: value })}
               

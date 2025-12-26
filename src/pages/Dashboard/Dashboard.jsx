@@ -29,7 +29,7 @@ function MemberDashboard() {
   (m) =>
     m.memberType.trim() === "" ||         // count blank strings
     m.memberType.includes("Job Seeker")   // count actual Job Seekers
-).length;
+  ).length;
 
   const providers = members.filter((m) => m.memberType?.includes("Oppurtunity Provider")).length;
   const referees = members.filter((m) => m.memberType?.includes("Referee")).length;
