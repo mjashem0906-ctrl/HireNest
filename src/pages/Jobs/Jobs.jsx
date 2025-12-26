@@ -17,6 +17,9 @@ function Jobs() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showProvidedModal, setShowProvidedModal] = useState(false);
+    
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const { user } = useAuth();
     const { jobContext } = useData();
     const navigate = useNavigate();
@@ -31,9 +34,8 @@ function Jobs() {
 
     // --- HELPER FUNCTIONS ---
 
-    // 2. NEW DELETE FUNCTION
     const handleDelete = async (jobId, e) => {
-        e.stopPropagation(); // Stop the click from opening the details page
+        e.stopPropagation(); 
         
         if (!window.confirm("Are you sure you want to delete this job post?")) {
             return;
@@ -41,11 +43,8 @@ function Jobs() {
 
         try {
             await API.delete(`/service/${jobId}`);
-            
-            // Remove the deleted job from the lists immediately
             setJobPosts(prev => prev.filter(job => job._id !== jobId));
             setMyPost(prev => prev.filter(job => job._id !== jobId));
-            
             alert("Job deleted successfully");
         } catch (error) {
             console.error("Delete failed:", error);
@@ -93,7 +92,10 @@ function Jobs() {
 
         } catch (error) {
             console.error("Error fetching jobs:", error);
-            setJobPosts(jobContext);
+            // Only fall back to context if API fails
+            if (jobContext && jobContext.length > 0) {
+                 setJobPosts(jobContext);
+            }
         }
     };
 
@@ -112,21 +114,35 @@ function Jobs() {
         }
     };
 
+    // --- FIXED: ADD POST FUNCTION ---
     const handleAddProvided = async (jobData) => {
+        // Prevent function from running if already submitting
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
         try {
             const response = await API.post('/service', jobData);
             const savedJob = response.data.data || response.data;
 
-            setJobPosts(prev => [...prev, savedJob]);
+            // Update state safely
+            setJobPosts(prev => [savedJob, ...prev]); // Added to top of list
+            
             if (user.role === 'Admin') {
-                setMyPost(prev => [...prev, savedJob]);
+                setMyPost(prev => [savedJob, ...prev]);
             }
             
             setShowProvidedModal(false);
             alert("Job posted successfully!");
+            
+            // Optional: Re-fetch to ensure sync with DB
+            // fetchJobPosts(); 
+
         } catch (error) {
             console.error("Error adding Job:", error);
             alert("Failed to save job.");
+        } finally {
+            // Unlock the function so it can be used again later
+            setIsSubmitting(false);
         }
     };
 
@@ -214,9 +230,7 @@ function Jobs() {
                                     {request?.description && <p className={styles.description}>{request.description}</p>}
                                 </div>
                                 
-                                {/* Right Side Actions: Apply (Member) OR Delete (Admin) */}
                                 <div>
-                                    {/* MEMBER VIEW: Apply Button */}
                                     {user.role === "Member" && (
                                         <button
                                             className={isApplied(request) ? styles.appliedButton : styles.applyButton}
@@ -230,7 +244,6 @@ function Jobs() {
                                         </button>
                                     )}
 
-                                    {/* 3. ADMIN VIEW: Delete Button */}
                                     {user.role === "Admin" && (
                                         <button
                                             onClick={(e) => handleDelete(request._id, e)}
@@ -267,7 +280,7 @@ function Jobs() {
                 </div>
             </>}
 
-            {/* --- VIEW: MY JOBS (Conditional Rendering) --- */}
+            {/* --- VIEW: MY JOBS --- */}
             {view === "myPost" && (
                 <>
                     <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 120 }}>
