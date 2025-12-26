@@ -191,11 +191,46 @@ const updateStatus = async (req, res) => {
   }
 };
 
+/* -------------------- NEW: UPDATE SERVICE POST (EDIT JOB) -------------------- */
+const updateServicePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
+    // Find the job by ID and update it with the new title/description
+    const updatedService = await Service.findByIdAndUpdate(
+      id,
+      { title, description },
+      { new: true } // Returns the updated document
+    );
+
+    if (!updatedService) {
+      return res.status(404).json({
+        success: false,
+        message: "Service post not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Service updated successfully",
+      data: updatedService,
+    });
+  } catch (error) {
+    console.error("updateServicePost error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update service",
+    });
+  }
+};
+
 module.exports = {
   addServicePost,
   getServicePost,
   deleteServicePost,
   getSingleServicePost,
   applyToService,
-  updateStatus
+  updateStatus,
+  updateServicePost // <--- Added here
 };
