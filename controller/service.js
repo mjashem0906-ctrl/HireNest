@@ -1,11 +1,26 @@
-// controller/service.controller.js
 const Service = require("../models/service");
 
 /* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
     console.log(req.body);
-    const {title, description} = req.body;
+    const { title, description } = req.body;
+
+    // --- DUPLICATE CHECK START ---
+    const existingPost = await Service.findOne({
+      title: title,
+      description: description,
+      createdAt: { $gt: new Date(Date.now() - 60 * 1000) } 
+    });
+
+    if (existingPost) {
+      console.log("Duplicate post blocked");
+      return res.status(200).json({
+        success: true,
+        message: "Service created successfully", 
+        data: existingPost
+      });
+    }
 
     const service = await Service.create({
       title,
@@ -13,14 +28,8 @@ const addServicePost = async (req, res) => {
       // memberId: req.user.memberId,
     });
 
-    // const populatedService = await service.populate(
-    //   "memberId",
-    //   "name email photoUrl role"
-    // );
-
     res.status(201).json({
       success: true,
-      // data: populatedService,
       message: "Service created successfully",
       data: service
     });
@@ -34,29 +43,11 @@ const addServicePost = async (req, res) => {
 };
 
 /* -------------------- GET ALL SERVICES (PUBLIC) -------------------- */
-//   try {
-//     const services = await Service.find()
-//        .populate("memberId", "name email photoUrl role")
-//       .sort({ createdAt: -1 });
-
-//     res.json({
-//       success: true,
-//       data: services,
-//     });
-//   } catch (error) {
-//     console.error("getServicePost error:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch services",
-//     });
-//   }
-// };
-
 const getServicePost = async (req, res) => {
   try {
     const services = await Service.find()
-    .populate("memberId", "name email role")
-    .populate({
+      .populate("memberId", "name email role")
+      .populate({
         path: "appliedMembers.memberId",
         select: "name email role",
       })
@@ -74,7 +65,6 @@ const getServicePost = async (req, res) => {
     });
   }
 };
-
 
 /* -------------------- DELETE SERVICE (ADMIN ONLY) -------------------- */
 const deleteServicePost = async (req, res) => {
@@ -111,8 +101,8 @@ const deleteServicePost = async (req, res) => {
 const getSingleServicePost = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id)
-    .populate("memberId", "name email")
-    .populate("appliedMembers.memberId", "name email"); 
+      .populate("memberId", "name email")
+      .populate("appliedMembers.memberId", "name email");
 
     if (!service) {
       return res.status(404).json({
@@ -154,11 +144,11 @@ const applyToService = async (req, res) => {
       return res.status(400).json({ success: false, message: "Already applied" });
     }
 
-    service.appliedMembers.push({ 
+    service.appliedMembers.push({
       memberId,
       status: 'Applied',
       appliedDate: new Date()
-   });
+    });
     await service.save();
 
     res.json({ success: true, message: "Application submitted successfully" });
@@ -173,31 +163,30 @@ const updateStatus = async (req, res) => {
   try {
     const { jobId, memberId, status } = req.body;
 
-    // Find the specific job and update the specific member's status in the array
     const updatedJob = await Service.findOneAndUpdate(
       { _id: jobId, "appliedMembers.memberId": memberId },
-      { 
-        $set: { "appliedMembers.$.status": status } 
+      {
+        $set: { "appliedMembers.$.status": status }
       },
-      { new: true } // Return the updated document
+      { new: true } 
     )
-    .populate("memberId", "name email") // Populate creator
-    .populate("appliedMembers.memberId", "name email"); // Populate applicants
+      .populate("memberId", "name email") 
+      .populate("appliedMembers.memberId", "name email"); 
 
     if (!updatedJob) {
       return res.status(404).json({ message: "Job or Applicant not found" });
     }
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: "Status updated successfully",
-      data: updatedJob 
+      data: updatedJob
     });
   } catch (error) {
     console.error("updateStatus error:", error);
-    res.status(500).json({ 
-        success: false, 
-        message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
