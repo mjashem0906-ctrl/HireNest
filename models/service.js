@@ -1,40 +1,54 @@
 const mongoose = require('mongoose');
 
-const serviceSchema =new mongoose.Schema({
+const serviceSchema = new mongoose.Schema({
     // customId:{
     //     type:String,
     //     required:true,
     // },
-    title:{
-        type:String,
-        required:true,
+    title: {
+        type: String,
+        required: true,
     },
-    description:{
-        type:String,
+    description: {
+        type: String,
     },
-    memberId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Member",
+    // --- NEW FIELDS START ---
+    companyName: {
+        type: String,
+        default: "" // Default to empty string if not provided
     },
-    createdAt:{
-        type:Date,
-        default:Date.now,
+    employmentType: {
+        type: String,
+        default: "Full-time" // Default value
     },
-appliedMembers: [{
+    location: {
+        type: String,
+        default: "" 
+    },
+    // --- NEW FIELDS END ---
     memberId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Member"
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Member",
     },
-    status: {
-      type: String,
-      enum: ["Applied", "Shortlisted", "Accepted", "Rejected"],
-      default: "Applied"
+    createdAt: {
+        type: Date,
+        default: Date.now,
     },
-    appliedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }]
+    appliedMembers: [{
+        memberId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Member"
+        },
+        status: {
+            type: String,
+            enum: ["Applied", "Shortlisted", "Accepted", "Rejected"],
+            default: "Applied"
+        },
+        appliedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
     // type:{
     //     type:String,
     //     required:true,
@@ -44,4 +58,4 @@ appliedMembers: [{
     { timestamps: true }
 )
 
-module.exports = mongoose.model("Service",serviceSchema);
+module.exports = mongoose.model("Service", serviceSchema);

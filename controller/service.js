@@ -4,7 +4,8 @@ const Service = require("../models/service");
 const addServicePost = async (req, res) => {
   try {
     console.log(req.body);
-    const { title, description } = req.body;
+    // UPDATED: Destructure new fields here
+    const { title, description, companyName, employmentType, location } = req.body;
 
     // --- DUPLICATE CHECK START ---
     const existingPost = await Service.findOne({
@@ -25,6 +26,10 @@ const addServicePost = async (req, res) => {
     const service = await Service.create({
       title,
       description,
+      // UPDATED: Save new fields
+      companyName,
+      employmentType,
+      location,
       // memberId: req.user.memberId,
     });
 
@@ -195,12 +200,14 @@ const updateStatus = async (req, res) => {
 const updateServicePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description } = req.body;
+    // UPDATED: Destructure new fields here
+    const { title, description, companyName, employmentType, location } = req.body;
 
-    // Find the job by ID and update it with the new title/description
+    // Find the job by ID and update it with the new fields
     const updatedService = await Service.findByIdAndUpdate(
       id,
-      { title, description },
+      // UPDATED: Update all fields
+      { title, description, companyName, employmentType, location },
       { new: true } // Returns the updated document
     );
 
@@ -232,5 +239,5 @@ module.exports = {
   getSingleServicePost,
   applyToService,
   updateStatus,
-  updateServicePost // <--- Added here
+  updateServicePost 
 };
