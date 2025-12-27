@@ -8,26 +8,51 @@ import { useAuth } from '../../context/AuthContext';
 import API from '../../axios';
 import { useData } from '../../context/DataContext';
 
+// --- CONSTANTS ---
+const EMPLOYMENT_TYPES = [
+    "Full-time",
+    "Part-time",
+    "Internship",
+    "Remote",
+    "Contract",
+    "Freelance"
+];
+
 // --- INTERNAL COMPONENT: ProvidedForm ---
 const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
+    // Basic Fields
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    
+    // New Fields
+    const [companyName, setCompanyName] = useState('');
+    const [employmentType, setEmploymentType] = useState(EMPLOYMENT_TYPES[0]);
+    const [location, setLocation] = useState('');
 
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
+                // Load existing data
                 setTitle(initialData.title || '');
                 setDescription(initialData.description || '');
+                setCompanyName(initialData.companyName || '');
+                setEmploymentType(initialData.employmentType || EMPLOYMENT_TYPES[0]);
+                setLocation(initialData.location || '');
             } else {
+                // Reset to empty/defaults
                 setTitle('');
                 setDescription('');
+                setCompanyName('');
+                setEmploymentType(EMPLOYMENT_TYPES[0]);
+                setLocation('');
             }
         }
     }, [isOpen, initialData]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ title, description });
+        // Send all data
+        onSubmit({ title, description, companyName, employmentType, location });
     };
 
     if (!isOpen) return null;
@@ -41,12 +66,18 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         },
         modal: {
             backgroundColor: 'white', borderRadius: '8px', padding: '20px',
-            width: '500px', maxWidth: '90%', position: 'relative',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            width: '550px', maxWidth: '90%', position: 'relative',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            maxHeight: '90vh', overflowY: 'auto'
         },
         input: {
             width: '100%', padding: '8px 12px', borderRadius: '4px',
             border: '1px solid #ddd', fontSize: '14px', marginBottom: '15px'
+        },
+        select: {
+            width: '100%', padding: '8px 12px', borderRadius: '4px',
+            border: '1px solid #ddd', fontSize: '14px', marginBottom: '15px',
+            backgroundColor: 'white', cursor: 'pointer'
         },
         textarea: {
             width: '100%', padding: '8px 12px', borderRadius: '4px',
@@ -57,6 +88,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             width: '100%', padding: '10px', backgroundColor: '#2563eb',
             color: 'white', border: 'none', borderRadius: '4px',
             cursor: 'pointer', fontSize: '16px', fontWeight: '500'
+        },
+        row: {
+             display: 'flex', gap: '15px'
         }
     };
 
@@ -70,24 +104,40 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     </button>
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Job Title</label>
-                    <input
-                        style={modalStyles.input}
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. Backend Developer"
-                        required
-                    />
                     
+                    {/* Job Title */}
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Job Title</label>
+                    <input style={modalStyles.input} type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Backend Developer" required />
+
+                    {/* Company Name */}
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Company Name</label>
+                    <input style={modalStyles.input} type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Google, Infosys" />
+
+                    {/* Row for Employment Type and Location */}
+                    <div style={modalStyles.row}>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Employment Type</label>
+                            <select style={modalStyles.select} value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
+                                {EMPLOYMENT_TYPES.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Location</label>
+                            <input 
+                                style={modalStyles.input} 
+                                type="text" 
+                                value={location} 
+                                onChange={(e) => setLocation(e.target.value)} 
+                                placeholder="e.g. Bangalore" 
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Description */}
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Description</label>
-                    <textarea
-                        style={modalStyles.textarea}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Describe the job role..."
-                        required
-                    />
+                    <textarea style={modalStyles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the job role..." required />
 
                     <button type="submit" style={modalStyles.button}>
                         {initialData ? 'Update Job' : 'Post Job'}
@@ -235,7 +285,6 @@ function Jobs() {
         }
     };
 
-    // --- UPDATED ADD FUNCTION (NO RELOAD) ---
     const handleAddProvided = async (jobData) => {
         if (isSubmitting) return;
         setIsSubmitting(true);
@@ -244,7 +293,6 @@ function Jobs() {
             const response = await API.post('/service', jobData);
             const newJob = response.data.data || response.data;
 
-            // Update the UI immediately without reloading
             setJobPosts(prev => [newJob, ...prev]);
             
             if (user.role === 'Admin') {
@@ -327,9 +375,39 @@ function Jobs() {
                     <ul className={styles.activityList}>
                         {jobPosts.map((request) => (
                             <li key={request?._id} className={styles.activityItem} style={{ cursor: 'pointer' }} onClick={() => handleClick(request)}>
-                                <div className={styles.details}>
-                                    <h5 className={styles.title}>{request?.title}</h5>
-                                    {request?.description && <p className={styles.description}>{request.description}</p>}
+                                {/* MODIFIED: Added display flex column to force vertical stacking */}
+                                <div className={styles.details} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+                                    <h5 className={styles.title} style={{ marginBottom: '5px', fontSize: '1.2rem', fontWeight: 'bold' }}>{request?.title}</h5>
+                                    
+                                    {/* Company, Location, Type in a ROW below the Title */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
+                                        {/* Company Name */}
+                                        {request?.companyName && (
+                                            <span style={{ fontWeight: '600', color: '#1f2937' }}>
+                                                {request.companyName}
+                                            </span>
+                                        )}
+
+                                        {/* Location */}
+                                        {request?.location && (
+                                            <span>
+                                                {request.location}
+                                            </span>
+                                        )}
+
+                                        {/* Employment Type Badge */}
+                                        {request?.employmentType && (
+                                             <span style={{ 
+                                                backgroundColor: '#e0e7ff', color: '#3730a3', 
+                                                padding: '2px 8px', borderRadius: '4px', 
+                                                fontSize: '0.8rem', fontWeight: '500' 
+                                            }}>
+                                                {request.employmentType}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {request?.description && <p className={styles.description} style={{ margin: 0, marginTop: '5px' }}>{request.description}</p>}
                                 </div>
                                 <div>
                                     {user.role === "Member" && (
@@ -363,8 +441,18 @@ function Jobs() {
                                     <li key={request._id} className={styles.activityItem} style={{ cursor: 'default', flexDirection: user.role === 'Admin' ? 'column' : 'row', alignItems: user.role === 'Admin' ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '15px' }}>
                                         <div className={styles.details} style={{ cursor: 'pointer', width: user.role === 'Admin' ? '100%' : 'auto' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-                                                <div onClick={() => handleClick(request)}>
-                                                    <h5 className={styles.title} style={{ fontSize: '1.2rem', margin: 0 }}>{request.title}</h5>
+                                                
+                                                {/* MODIFIED: Added flex column here as well for My Jobs view */}
+                                                <div onClick={() => handleClick(request)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                                    <h5 className={styles.title} style={{ fontSize: '1.2rem', margin: 0, marginBottom: '5px' }}>{request.title}</h5>
+                                                    
+                                                    {/* Row for Details */}
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
+                                                        {request?.companyName && <span style={{ fontWeight: '600', color: '#1f2937' }}>{request.companyName}</span>}
+                                                        {request?.location && <span>{request.location}</span>}
+                                                        {request?.employmentType && <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500' }}>{request.employmentType}</span>}
+                                                    </div>
+
                                                     <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '4px' }}>Posted on: {new Date(request.createdAt).toLocaleDateString()}</p>
                                                 </div>
                                                 {user.role === 'Admin' && renderAdminActionButtons(request)}
@@ -386,7 +474,7 @@ function Jobs() {
                                                                         <td style={{ padding: '10px' }}>{renderStatusBadge(app.status || 'Applied')}</td>
                                                                         <td style={{ padding: '10px' }}>
                                                                             <select style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }} value={app.status || 'Applied'} onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}>
-                                                                                <option value="Applied">Applied</option><option value="Shortlisted">Shortlisted</option><option value="Accepted">Accepted</option><option value="Rejected">Rejected</option>
+                                                                                    <option value="Applied">Applied</option><option value="Shortlisted">Shortlisted</option><option value="Accepted">Accepted</option><option value="Rejected">Rejected</option>
                                                                             </select>
                                                                         </td>
                                                                     </tr>
