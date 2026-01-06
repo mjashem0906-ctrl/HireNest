@@ -1,171 +1,102 @@
 // --- Variables ---
 $primary: #2563eb;
-$primary-dark: #1e40af;
 $bg-light: #f8fafc;
 $border: #e2e8f0;
 $text-dark: #0f172a;
 $text-gray: #64748b;
+$success: #16a34a;
+$warning: #ca8a04;
 
-// --- Container ---
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px 20px;
   font-family: 'Inter', sans-serif;
+  color: $text-dark;
 }
 
-// --- Header ---
-.header {
-  margin-bottom: 25px;
-  h1 {
-    font-size: 2rem;
-    color: $text-dark;
-    margin-bottom: 5px;
-  }
-  .date {
-    color: $text-gray;
-    font-size: 0.9rem;
-  }
-}
-
-// --- Job Info Card ---
+// --- Job Header Card ---
 .jobCard {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid $border;
-  padding: 25px;
+  padding: 30px;
   margin-bottom: 40px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+  .header {
+    margin-bottom: 20px;
+    h1 { margin: 0 0 5px 0; font-size: 1.8rem; letter-spacing: -0.5px; }
+    .meta { color: $text-gray; font-size: 0.9rem; }
+  }
 
   .gridInfo {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
+    padding: 20px 0;
+    border-top: 1px solid $border;
+    border-bottom: 1px solid $border;
     margin-bottom: 20px;
-  }
 
-  .field {
-    margin: 8px 0;
-    color: $text-dark;
-    font-size: 1rem;
-    strong {
-      color: $text-gray;
-      width: 120px;
-      display: inline-block;
+    .infoItem {
+      label { display: block; font-size: 0.75rem; text-transform: uppercase; color: $text-gray; font-weight: 700; margin-bottom: 4px; }
+      span { font-size: 1rem; font-weight: 500; }
     }
   }
 
-  .skillsWrapper {
-    margin: 20px 0;
-    .label { font-weight: 600; display: block; margin-bottom: 8px; }
-    .skillBadge {
-      display: inline-block;
-      background: #e0f2fe;
-      color: #0369a1;
-      padding: 5px 12px;
-      border-radius: 15px;
-      margin: 0 8px 8px 0;
-      font-size: 0.85rem;
-      font-weight: 600;
+  .skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    .tag {
+      background: #eff6ff; color: $primary;
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 600;
     }
   }
 
   .description {
-    border-top: 1px solid $border;
-    padding-top: 20px;
-    line-height: 1.6;
-    color: #334155;
-    white-space: pre-wrap;
+    line-height: 1.6; color: #334155; white-space: pre-wrap;
   }
 }
 
-// --- TAB NAVIGATION (NEW) ---
-.tabsContainer {
-  display: flex;
-  gap: 20px;
-  border-bottom: 2px solid $border;
-  margin-bottom: 30px;
-}
-
-.tabButton {
-  padding: 12px 24px;
-  background: none;
-  border: none;
-  font-size: 1rem;
-  font-weight: 600;
-  color: $text-gray;
-  cursor: pointer;
-  position: relative;
+// --- Section Titles ---
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-
-  &:hover { color: $primary; }
-
-  &.active {
-    color: $primary;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background-color: $primary;
-    }
-  }
-
-  .countBadge {
-    background-color: #f1f5f9;
-    color: $text-dark;
-    padding: 2px 8px;
-    border-radius: 10px;
+  gap: 10px;
+  
+  .badge {
+    background: $text-dark; color: white;
+    padding: 2px 8px; border-radius: 12px;
     font-size: 0.75rem;
   }
 }
 
-// --- FILTER BAR ---
-.filterBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+// --- AI Matches (Horizontal Scroll) ---
+.matchesContainer {
+  margin-bottom: 50px;
   
-  .filterGroup {
+  .scrollWrapper {
     display: flex;
-    gap: 10px;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 15px;
     
-    button {
-      padding: 6px 12px;
-      border: 1px solid $border;
-      border-radius: 6px;
-      background: white;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-
-      &.activeFilter {
-        background-color: $primary;
-        color: white;
-        border-color: $primary;
-      }
-    }
+    &::-webkit-scrollbar { height: 8px; }
+    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   }
 }
 
-// --- GRID & CARDS ---
-.candidateGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-
+// --- Candidate Card (Used for both lists) ---
 .candidateCard {
+  min-width: 300px;
+  max-width: 300px;
   background: white;
   border: 1px solid $border;
   border-radius: 12px;
@@ -180,152 +111,91 @@ $text-gray: #64748b;
     border-color: #93c5fd;
   }
 
-  // Applied Badge Flag
-  .appliedFlag {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #7c3aed; // Violet
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+  &.applicant {
+    min-width: 100%; // Applicants take full width in grid
+    max-width: none;
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    
+    .cardHeader { border: none; padding: 0; width: 300px; }
+    .cardBody { padding: 0 20px; flex: 1; border-top: none; }
+    .cardFooter { border: none; background: none; padding: 0; width: auto; }
   }
 
-  // Header
   .cardHeader {
     padding: 20px;
     display: flex;
+    align-items: center;
     gap: 15px;
-    align-items: flex-start;
     border-bottom: 1px dashed $border;
+    position: relative;
 
     .avatar {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      width: 50px; height: 50px;
+      border-radius: 50%; object-fit: cover;
+      background: $bg-light;
     }
 
     .info {
-      h3 { margin: 0; font-size: 1.1rem; color: $text-dark; }
-      p { margin: 4px 0 0; font-size: 0.85rem; color: $text-gray; display: flex; align-items: center; gap: 5px; }
+      h4 { margin: 0; font-size: 1rem; color: $text-dark; }
+      p { margin: 2px 0 0; font-size: 0.8rem; color: $text-gray; }
+    }
+
+    .scoreRing {
+      position: absolute; top: 15px; right: 15px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800;
+      background: white; border: 3px solid;
     }
   }
 
-  // Body
   .cardBody {
-    padding: 15px 20px;
-
-    // Matches Section
-    .matchReasons {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      
+    padding: 15px;
+    
+    .reasons {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
       span {
-        font-size: 0.75rem;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-
-        &.roleMatch { background: #dcfce7; color: #166534; }
-        &.expMatch { background: #fef9c3; color: #854d0e; }
-        &.skillMatch { background: #e0f2fe; color: #075985; }
+        font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+        display: flex; align-items: center; gap: 4px;
       }
+      .role { background: #dcfce7; color: $success; }
+      .exp { background: #fef9c3; color: $warning; }
+      .skill { background: #e0f2fe; color: #0369a1; }
     }
 
-    // Skills
-    .skillsList {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      
-      span {
-        font-size: 0.75rem;
-        padding: 3px 8px;
-        background: #f1f5f9;
-        color: #475569;
-        border-radius: 4px;
-        
-        &.highlight {
-          background: #eff6ff;
-          color: $primary;
-          border: 1px solid #bfdbfe;
-        }
-      }
-    }
-
-    // Applicant Status Section (Only for Applicants Tab)
-    .applicantStatus {
-      margin-top: 10px;
-      padding: 10px;
-      background: #f8fafc;
-      border-radius: 8px;
-      
-      .statusRow {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 5px;
-        font-size: 0.85rem;
-        font-weight: 600;
-      }
-      .date { font-size: 0.75rem; color: #94a3b8; }
+    .status {
+      font-size: 0.8rem; font-weight: 600;
+      padding: 4px 8px; border-radius: 4px;
+      background: $bg-light; display: inline-block;
     }
   }
 
-  // Footer
   .cardFooter {
-    padding: 10px 20px;
-    background: #f8fafc;
+    background: $bg-light;
+    padding: 10px 15px;
+    display: flex; gap: 15px;
     border-top: 1px solid $border;
-    display: flex;
-    gap: 15px;
-
+    
     a {
-      font-size: 0.85rem;
-      color: $text-gray;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      color: $text-gray; font-size: 0.85rem; text-decoration: none;
+      display: flex; align-items: center; gap: 5px;
       &:hover { color: $primary; }
     }
   }
-
-  // Score Ring
-  .scoreRing {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 800;
-    background: #fff;
-    border: 3px solid #e2e8f0;
-  }
 }
 
-.emptyState {
-  text-align: center;
-  padding: 40px;
-  background: white;
-  border-radius: 12px;
-  border: 1px dashed $border;
-  color: $text-gray;
+// --- Applicants Section ---
+.applicantsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.emptyBox {
+  padding: 40px; text-align: center;
+  background: white; border: 1px dashed $border; border-radius: 12px;
+  color: $text-gray; font-size: 0.9rem;
 }
