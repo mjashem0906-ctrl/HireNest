@@ -5,7 +5,7 @@ const addServicePost = async (req, res) => {
   try {
     console.log(req.body);
     // UPDATED: Destructure new fields here
-    const { title, description, companyName, employmentType, location } = req.body;
+    const { title, description, companyName, employmentType, location,education, passedOutYear, experience, salary, role, keySkills } = req.body;
 
     // --- DUPLICATE CHECK START ---
     const existingPost = await Service.findOne({
@@ -26,10 +26,16 @@ const addServicePost = async (req, res) => {
     const service = await Service.create({
       title,
       description,
-      // UPDATED: Save new fields
+      
       companyName,
       employmentType,
       location,
+      education,
+      passedOutYear,
+      experience,
+      salary,
+      role,
+      keySkills,
       // memberId: req.user.memberId,
     });
 
@@ -201,13 +207,15 @@ const updateServicePost = async (req, res) => {
   try {
     const { id } = req.params;
     // UPDATED: Destructure new fields here
-    const { title, description, companyName, employmentType, location } = req.body;
+    const { title, description, companyName, employmentType, location,
+       education, passedOutYear, experience, salary, role, keySkills } = req.body;
 
     // Find the job by ID and update it with the new fields
     const updatedService = await Service.findByIdAndUpdate(
       id,
       // UPDATED: Update all fields
-      { title, description, companyName, employmentType, location },
+      { title, description, companyName, employmentType, location ,
+        education, passedOutYear, experience, salary, role, keySkills },
       { new: true } // Returns the updated document
     );
 

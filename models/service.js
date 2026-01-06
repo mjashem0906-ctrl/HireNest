@@ -26,6 +26,30 @@ const serviceSchema = new mongoose.Schema({
         default: "" 
     },
     // --- NEW FIELDS END ---
+    education: {
+        type: String,
+        default: ""
+    },
+    passedOutYear: {
+        type: String,
+        default: ""
+    },
+    experience: {
+        type: String,
+        default: ""
+    },
+    salary: {
+        type: String,
+        default: ""
+    },
+    role: {
+        type: String,
+        default: ""
+    },
+    keySkills: {
+        type: String,
+        default: ""
+    },
     memberId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Member",
