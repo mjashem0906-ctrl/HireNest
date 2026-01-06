@@ -31,6 +31,7 @@ import CandidateForm from './components/Google/CandidateForm';
 import CandidateDashboard from './pages/CandidateDashboard/CandidateDashboard';
 import Jobs from './pages/Jobs/Jobs';
 import JobDetail from "./pages/Jobs/JobDetail";
+import RefereePage from './pages/Referees/RefereePage';
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
             <Route path="subTask/:id" element={<SubtaskDetail />} />
             <Route path="assignFor/:id" element={<AssignForDetail />} /> */}
             <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/referees" element={<RefereePage />} />
             {/* <Route path="/activities" element={<ActivityList/>} />
             <Route path="/memberComments" element={<MemberComments/>} /> */}
             <Route path="*" element={<NotFound />} />

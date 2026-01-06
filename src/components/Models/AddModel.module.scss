@@ -145,3 +145,26 @@
 .fileInput {
   display: none;
 }
+
+.addRefereeBtn {
+  background-color: #4f46e5; /* The exact Indigo color */
+  color: white;
+  padding: 8px 24px;         /* Matches px-6 py-2 */
+  border-radius: 6px;        /* Matches rounded-md */
+  font-weight: 600;          /* Semibold text */
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #4338ca; /* Darker indigo on hover */
+  }
+
+  &:active {
+    transform: translateY(1px); /* Slight click effect */
+  }
+}

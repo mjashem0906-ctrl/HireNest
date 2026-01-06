@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./index.css";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";

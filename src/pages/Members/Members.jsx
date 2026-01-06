@@ -195,16 +195,28 @@ function Members() {
   };
 
    const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this member?')) {
-      try{
-        alert("member deleted successfully");
-          setMembersData(membersData.filter(member => member._id !== id));
-          setAllMembers(membersData.filter(member => member._id !== id));
-          setMemberContext(membersData.filter(member => member._id !== id));
+    if (window.confirm('Are you sure you want to PERMANENTLY delete this member?')) {
+      try {
+        // ---------------------------------------------------------
+        // ✅ STEP 1: Send the delete command to the Backend
+        // NOTE: Check your server.js to see if this should be '/members' or '/user'
+        // Since your route is router.delete("/:id"), we just need the base + id
+        // ---------------------------------------------------------
+        await API.delete(`/members/${id}`); 
+        
+        // ✅ STEP 2: If Backend succeeds, update the Frontend
+        alert("Member deleted successfully");
+
+        // Update all states to remove the deleted member locally
+        const remainingMembers = allMembers.filter(member => member._id !== id);
+        setAllMembers(remainingMembers);
+        setMembersData(remainingMembers); // Update current view
+        setMemberContext(remainingMembers); // Update context
            
-        }catch(err){
-          alert("Failed to delete member")
-        }
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete member. Please check your connection.");
+      }
     }
   };
 

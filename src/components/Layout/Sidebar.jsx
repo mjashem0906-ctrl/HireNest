@@ -10,22 +10,21 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
   const { user } = useAuth();
 
   let menuItems = [];
+  
   if (user.role === "Admin") {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members', adminOnly: true },
+      // ✅ ADDED REFEREES HERE
+      { path: '/referees', icon: UserCheck, label: 'Referees', adminOnly: true },
       { path: '/createUser', icon: User, label: 'Create new user', adminOnly: true },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs', adminOnly: true },
-      // other items commented out
     ];
   }
-
   else if(user.role === "Member"){
    menuItems=[
-    //  { path: '/', icon: Home, label: 'Dashboard' },
      { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs'}
-     // { path: '/settings', icon: Settings, label: 'Settings' },
    ] 
   }
 
@@ -49,6 +48,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
 
       <nav className={styles.nav}>
         {menuItems.map((item) => {
+          // Double check, though your logic above already handles role separation
           if (item.adminOnly && user?.role !== 'Admin') return null;
 
           return (
