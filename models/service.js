@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
-    // customId:{
-    //     type:String,
-    //     required:true,
-    // },
     title: {
         type: String,
         required: true,
@@ -12,20 +8,18 @@ const serviceSchema = new mongoose.Schema({
     description: {
         type: String,
     },
-    // --- NEW FIELDS START ---
     companyName: {
         type: String,
-        default: "" // Default to empty string if not provided
+        default: "" 
     },
     employmentType: {
         type: String,
-        default: "Full-time" // Default value
+        default: "Full-time" 
     },
     location: {
         type: String,
         default: "" 
     },
-    // --- NEW FIELDS END ---
     education: {
         type: String,
         default: ""
@@ -50,6 +44,15 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    
+    // 👇 NEW FIELD ADDED HERE
+    refereedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Member", // Links to your Member collection
+        default: null
+    },
+    // -------------------------
+
     memberId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Member",
@@ -73,13 +76,6 @@ const serviceSchema = new mongoose.Schema({
             default: Date.now
         }
     }]
-    // type:{
-    //     type:String,
-    //     required:true,
-    // },
-
-},
-    { timestamps: true }
-)
+}, { timestamps: true });
 
 module.exports = mongoose.model("Service", serviceSchema);

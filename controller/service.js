@@ -3,9 +3,8 @@ const Service = require("../models/service");
 /* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
-    console.log(req.body);
-    // UPDATED: Destructure new fields here
-    const { title, description, companyName, employmentType, location,education, passedOutYear, experience, salary, role, keySkills } = req.body;
+    // 👇 UPDATED: Added refereedBy to destructuring
+    const { title, description, companyName, employmentType, location, education, passedOutYear, experience, salary, role, keySkills, refereedBy } = req.body;
 
     // --- DUPLICATE CHECK START ---
     const existingPost = await Service.findOne({
@@ -15,7 +14,6 @@ const addServicePost = async (req, res) => {
     });
 
     if (existingPost) {
-      console.log("Duplicate post blocked");
       return res.status(200).json({
         success: true,
         message: "Service created successfully", 
@@ -26,7 +24,6 @@ const addServicePost = async (req, res) => {
     const service = await Service.create({
       title,
       description,
-      
       companyName,
       employmentType,
       location,
@@ -36,6 +33,7 @@ const addServicePost = async (req, res) => {
       salary,
       role,
       keySkills,
+      refereedBy, // 👈 ADDED HERE TO SAVE TO DB
       // memberId: req.user.memberId,
     });
 
@@ -58,6 +56,7 @@ const getServicePost = async (req, res) => {
   try {
     const services = await Service.find()
       .populate("memberId", "name email role")
+      .populate("refereedBy", "name email") // 👈 ADDED POPULATE HERE
       .populate({
         path: "appliedMembers.memberId",
         select: "name email role",
@@ -113,6 +112,7 @@ const getSingleServicePost = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id)
       .populate("memberId", "name email")
+      .populate("refereedBy", "name email") // 👈 ADDED POPULATE HERE
       .populate("appliedMembers.memberId", "name email");
 
     if (!service) {
@@ -206,17 +206,17 @@ const updateStatus = async (req, res) => {
 const updateServicePost = async (req, res) => {
   try {
     const { id } = req.params;
-    // UPDATED: Destructure new fields here
+    // 👇 UPDATED: Added refereedBy here
     const { title, description, companyName, employmentType, location,
-       education, passedOutYear, experience, salary, role, keySkills } = req.body;
+       education, passedOutYear, experience, salary, role, keySkills, refereedBy } = req.body;
 
     // Find the job by ID and update it with the new fields
     const updatedService = await Service.findByIdAndUpdate(
       id,
-      // UPDATED: Update all fields
+      // 👇 UPDATED: Added refereedBy to update object
       { title, description, companyName, employmentType, location ,
-        education, passedOutYear, experience, salary, role, keySkills },
-      { new: true } // Returns the updated document
+        education, passedOutYear, experience, salary, role, keySkills, refereedBy },
+      { new: true } 
     );
 
     if (!updatedService) {

@@ -136,6 +136,10 @@ function cleanPayload(data) {
     "photoUrl",
     "forGrouping",
 
+    // 👇 ADDED NEW FIELD HERE 👇
+    "designation", // For Mentors (Job Role)
+    // 👆 This ensures Job Role is saved!
+
     // Job Seeker
     "seekerNeed",
     "highest_education",
