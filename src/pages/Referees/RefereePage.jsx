@@ -4,9 +4,10 @@ import styles from '../Members/Members.module.scss';
 import CustomCard from '../../components/UI/CustomCard';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useData } from '../../context/DataContext';
-
 // 👇 1. IMPORT THE NEW COMPONENT
 import AddReferee from './AddReferee'; 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const RefereePage = () => {
   const { sidebarCollapsed } = useOutletContext();
@@ -37,6 +38,46 @@ const RefereePage = () => {
     if (!fileId) { match = driveUrl.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
     return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
   };
+  const buildRefereeExportRows = () => {
+  return referees.map(m => ({
+    memberReferenceNumber: m.memberReferenceNumber || "",
+    timestamp: m.timestamp || "",
+    name: m.name || "",
+    age: m.age || "",
+    gender: m.gender || "",
+    mobileNumber: m.mobileNumber || "",
+    email: m.email || "",
+    district: m.district || "",
+    symMemberStatus: m.symMemberStatus || "",
+    memberType: m.memberType || "",
+
+    referrerStatus: m.referrerStatus || "",
+    referringOfferType: (m.referringOfferType || []).join(", "),
+    referringSector: (m.referringSector || []).join(", "),
+    referringFor: m.referringFor || "",
+    levelOfSupport: (m.levelOfSupport || []).join(", "),
+    referrerContact: m.referrerContact || "",
+    declaration_Referee: m.declaration_Referee || "",
+  }));
+};
+
+const exportRefereesToExcel = () => {
+  const data = buildRefereeExportRows();
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Referees");
+
+  const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  saveAs(new Blob([buffer]), `Referees_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+
+const exportRefereesToCSV = () => {
+  const data = buildRefereeExportRows();
+  const ws = XLSX.utils.json_to_sheet(data);
+  const csv = XLSX.utils.sheet_to_csv(ws);
+  saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+    `Referees_${new Date().toISOString().slice(0,10)}.csv`);
+};
 
   return (
     <div className={styles.members}>
@@ -51,6 +92,10 @@ const RefereePage = () => {
           
           {/* 👇 2. PLACE THE BUTTON HERE (Between Title and Search, or after Search) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+            <div className={styles.exportButtons}>
+              <button onClick={exportRefereesToExcel}>Export Excel</button>
+              <button onClick={exportRefereesToCSV}>Export CSV</button>
+            </div>
             
             {/* The Add Button Component */}
             <AddReferee onSuccess={handleNewReferee} />

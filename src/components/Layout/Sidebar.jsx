@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, FolderOpen, CheckSquare, List, X, Settings, UserCheck, ClipboardCheck, User, BriefcaseBusiness } from 'lucide-react';
+// Ensure GraduationCap is imported
+import { Home, Users, FolderOpen, CheckSquare, List, X, Settings, UserCheck, ClipboardCheck, User, BriefcaseBusiness, GraduationCap } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
@@ -15,7 +16,8 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members', adminOnly: true },
-      // ✅ ADDED REFEREES HERE
+      // Admin sees Mentors
+      { path: '/mentors', icon: GraduationCap, label: 'Mentors', adminOnly: true }, 
       { path: '/referees', icon: UserCheck, label: 'Referees', adminOnly: true },
       { path: '/createUser', icon: User, label: 'Create new user', adminOnly: true },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs', adminOnly: true },
@@ -24,6 +26,8 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
   else if(user.role === "Member"){
    menuItems=[
      { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
+     // ✅ ADDED: Members can now see Mentors in sidebar
+     { path: '/mentors', icon: GraduationCap, label: 'Mentors' }, 
      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs'}
    ] 
   }
@@ -48,9 +52,6 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
 
       <nav className={styles.nav}>
         {menuItems.map((item) => {
-          // Double check, though your logic above already handles role separation
-          if (item.adminOnly && user?.role !== 'Admin') return null;
-
           return (
             <NavLink
               key={item.path}

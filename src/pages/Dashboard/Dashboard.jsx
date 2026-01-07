@@ -34,7 +34,7 @@ function MemberDashboard() {
   const providers = members.filter((m) => m.memberType?.includes("Oppurtunity Provider")).length;
   const referees = members.filter((m) => m.memberType?.includes("Referee")).length;
   const upskillers = members.filter((m) => m.memberType?.includes("In need of Upskilling")).length;
-
+  const mentors = members.filter((m) => m.memberType?.includes("Mentor")).length;
   const genderStats = countBy(members, "gender");
   const districtStats = countBy(members, "district");
   const educationStats = countBy(members, "highest_education");
@@ -57,6 +57,7 @@ function MemberDashboard() {
     { name: "Provider", value: providers, color: "#45B7D1" },
     { name: "Referrer", value: referees, color: "#FFA07A" },
     { name: "Upskiller", value: upskillers, color: "#FFD700" },
+    { name: "Mentor", value: mentors, color: "#DDA0DD" },
   ];
 
   const genderData = genderStats.map((g) => ({
@@ -75,6 +76,7 @@ function MemberDashboard() {
     { title: "Opportunity Providers", count: providers, icon: UserCheck, color: "#FFEAA7" },
     { title: "Referrers", count: referees, icon: User, color: "#DDA0DD" },
     { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#FFA500" },
+    { title: "Mentors", count: mentors, icon: MapPin, color: "#FF6B6B" },
   ];
 
   return (

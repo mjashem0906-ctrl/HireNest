@@ -171,6 +171,12 @@ function JobDetail() {
             <div className={styles.infoItem}><label>Location</label><span>{job.location}</span></div>
             <div className={styles.infoItem}><label>Experience</label><span>{job.experience}</span></div>
             <div className={styles.infoItem}><label>Salary</label><span>{job.salary}</span></div>
+            
+            {/* 👇 FIXED: Display Name or N/A safely */}
+            <div className={styles.infoItem}>
+                <label>Referee</label>
+                <span>{job.refereedBy?.name || "N/A"}</span>
+            </div>
         </div>
 
         <div className={styles.description}>{job.description}</div>

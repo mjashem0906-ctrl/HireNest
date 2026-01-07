@@ -32,6 +32,7 @@ import CandidateDashboard from './pages/CandidateDashboard/CandidateDashboard';
 import Jobs from './pages/Jobs/Jobs';
 import JobDetail from "./pages/Jobs/JobDetail";
 import RefereePage from './pages/Referees/RefereePage';
+import MentorsPage from './pages/Mentor/MentorsPage';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
             {/* <Route path="status-requests" element={<PrivateRoute roles={['Admin']}><StatusRequests /></PrivateRoute>} /> */}
             {/* <Route path="membersWorking" element={<PrivateRoute roles={['Admin']}><MembersWorking /></PrivateRoute> }/> */}
             <Route path="members" element={<PrivateRoute roles={['Admin', 'IT_Member']}><Members /></PrivateRoute> }/>
+            <Route path="/mentors" element={<MentorsPage />} />
             {/* <Route path="projects" element={<Projects />} />
             <Route path="tasks" element={<Tasks />} />
             <Route path="subtasks" element={<Subtasks />} />

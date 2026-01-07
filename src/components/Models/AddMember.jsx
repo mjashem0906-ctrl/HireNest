@@ -3,7 +3,6 @@ import { X } from "lucide-react";
 import FormInput from "../UI/FormInput";
 import DropdownSelect from "../UI/DropdownSelect";
 import DateSelect from "../UI/DateSelect";
-import CreatableSelect from "react-select/creatable";
 import API from "../../axios";
 import styles from "./AddModel.module.scss";
 
@@ -15,16 +14,20 @@ const initialState = {
   gender: "",
   dateOfBirth: null,
   memberType: "",
+  symMemberStatus: "Active",
   currentInstitutionOrCompany: "",
   district: "",
   forGrouping: [],
+
+  // Mentor Specific
+  designation: "", // Job Role
+  workExp: "",     // Experience
 
   // Job Seeker
   seekerNeed: "",
   highest_education: "",
   fieldofStudy_Interest: "",
   preferredJobRole_Sector: "",
-  workExp: "",
   relocationStatus: "",
   preferredJobLocation: "",
   resumeLink: "",
@@ -51,61 +54,34 @@ const initialState = {
 
 function AddMember({ isOpen, onClose, editMember, onSuccess }) {
   const [formData, setFormData] = useState(initialState);
-  const [options, setOptions] = useState([]);
   const [btnLoading, setBtnLoading] = useState(false);
 
   useEffect(() => {
-    // fetchDropdowns();
-
     if (editMember) {
       setFormData({
         ...initialState,
         ...editMember,
-        dateOfBirth: editMember.dateOfBirth
-          ? new Date(editMember.dateOfBirth)
-          : null,
-        // forGrouping:
-        //   editMember.forGrouping?.map((g) => ({
-        //     value: g,
-        //     label: g,
-        //   })) || [],
+        // Ensure date is parsed correctly
+        dateOfBirth: editMember.dateOfBirth ? new Date(editMember.dateOfBirth) : null,
+        // Ensure fields are not undefined
+        designation: editMember.designation || "",
+        workExp: editMember.workExp || "",
+        currentInstitutionOrCompany: editMember.currentInstitutionOrCompany || "",
+        symMemberStatus: editMember.symMemberStatus || "Active",
       });
     } else {
       setFormData(initialState);
     }
   }, [editMember]);
 
-  // const fetchDropdowns = async () => {
-  //   try {
-  //     const res = await API.get("/dropdown");
-  //     setOptions(
-  //       res.data.map((d) => ({ value: d.name, label: d.name }))
-  //     );
-  //   } catch (err) {
-  //     console.error("Dropdown fetch failed", err);
-  //   }
-  // };
-
-  const handleCreate = async (inputValue) => {
-    const newOption = { value: inputValue, label: inputValue };
-    try {
-      await API.post("/dropdown", { name: inputValue });
-      setOptions((prev) => [...prev, newOption]);
-      setFormData((prev) => ({
-        ...prev,
-        forGrouping: [...prev.forGrouping, newOption],
-      }));
-    } catch (err) {
-      console.error("Dropdown create failed", err);
-    }
-  };
-
+  // ✅ FIX: Use ISO format (YYYY-MM-DD) for database compatibility
   const formatDOB = (date) => {
-    if (!date) return "";
+    if (!date) return null;
     const d = new Date(date);
-    return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(
-      d.getDate()
-    ).padStart(2, "0")}/${d.getFullYear()}`;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   const handleSubmit = async (e) => {
@@ -117,7 +93,6 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
     const payload = {
       ...formData,
       dateOfBirth: formatDOB(formData.dateOfBirth),
-     
     };
 
     try {
@@ -129,7 +104,9 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
       }
       onSuccess?.(res.data);
       onClose();
+      alert("Member saved successfully!");
     } catch (err) {
+      console.error(err);
       alert("Member save failed");
     } finally {
       setBtnLoading(false);
@@ -152,9 +129,6 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
           <div className={styles.formGrid}>
             <FormInput label="Name" value={formData.name}
               onChange={(v) => setFormData({ ...formData, name: v })} required />
-
-            {/* <FormInput label="Father Name" value={formData.fathersName}
-              onChange={(v) => setFormData({ ...formData, fathersName: v })} /> */}
 
             <FormInput label="Mobile Number" value={formData.mobileNumber}
               onChange={(v) => setFormData({ ...formData, mobileNumber: v })} />
@@ -180,18 +154,60 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
             />
 
             <DropdownSelect
-              label="Member Type"
+              label="Member Status"
+              value={formData.symMemberStatus}
+              options={[
+                { value: "Yes", label: "Yes" },
+                { value: "Interested in joining", label: "Interested in joining" },
+                { value: "No", label: "No" },
+              ]}
+              onChange={(v) => setFormData({ ...formData, symMemberStatus: v })}
+            />
+
+            <DropdownSelect
+              label="Member Type *"
               value={formData.memberType}
               options={[
                 { value: "Job Seeker", label: "Job Seeker" },
                 { value: "Oppurtunity Provider", label: "Oppurtunity Provider" },
                 { value: "Referee", label: "Referee" },
+                { value: "Mentor", label: "Mentor" },
                 { value: "In need of Upskilling", label: "In need of Upskilling" },
               ]}
               onChange={(v) => setFormData({ ...formData, memberType: v })}
               required
             />
-           
+
+            <FormInput 
+              label="District / Address" 
+              value={formData.district}
+              onChange={(v) => setFormData({ ...formData, district: v })} 
+              placeholder="e.g. Bangalore"
+            />
+            
+            {/* Common Fields */}
+            {(formData.memberType === "Mentor" || formData.memberType === "Job Seeker") && (
+                 <FormInput label="Current Institution/Company" value={formData.currentInstitutionOrCompany}
+                 onChange={(v) => setFormData({ ...formData, currentInstitutionOrCompany: v })} />
+            )}
+
+            {/* Mentor Specific */}
+            {formData.memberType === "Mentor" && (
+              <>
+                <FormInput label="Designation / Job Role" value={formData.designation}
+                  onChange={(v) => setFormData({ ...formData, designation: v })} 
+                  placeholder="e.g. Senior Engineer"
+                />
+                <FormInput label="Expertise / Field" value={formData.fieldofStudy_Interest}
+                  onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })} 
+                  placeholder="e.g. AI, Marketing"
+                />
+                <FormInput label="Experience (Years)" value={formData.workExp}
+                  onChange={(v) => setFormData({ ...formData, workExp: v })} 
+                  placeholder="e.g. 8"
+                />
+              </>
+            )}
 
             {/* Job Seeker */}
             {formData.memberType === "Job Seeker" && (
@@ -205,17 +221,15 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
                 <FormInput label="Preferred Job Role" value={formData.preferredJobRole_Sector}
                   onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: v })} />
                 <FormInput label="Work Experience" value={formData.workExp}
-                  onChange={(v) => setFormData({ ...formData, workExperience: v })} />
+                  onChange={(v) => setFormData({ ...formData, workExp: v })} />
                 <FormInput label="Relocation Status" value={formData.relocationStatus}
                   onChange={(v) => setFormData({ ...formData, relocationStatus: v })} />
                 <FormInput label="Preferred Job Location" value={formData.preferredJobLocation}
                   onChange={(v) => setFormData({ ...formData, preferredJobLocation: v })} />
-                {/* <FormInput label="Resume Link" value={formData.resumeLink}
-                  onChange={(v) => setFormData({ ...formData, resumeLink: v })} /> */}
               </>
             )}
 
-            {/* Opportunity Provider */}
+            {/* Other Types... */}
             {formData.memberType === "Oppurtunity Provider" && (
               <>
                 <FormInput label="Job Offer Type" value={formData.jobOfferType}
@@ -231,7 +245,6 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
               </>
             )}
 
-            {/* Referee */}
             {formData.memberType === "Referee" && (
               <>
                 <FormInput label="Referrer Status" value={formData.referrerStatus}
@@ -247,7 +260,6 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
               </>
             )}
 
-            {/* Upskilling */}
             {formData.memberType === "In need of Upskilling" && (
               <>
                 <FormInput label="Skills to Improve" value={formData.skillsToImprove}
@@ -259,9 +271,7 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
           </div>
 
           <div className={styles.actions}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
-              Cancel
-            </button>
+            <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
             <button type="submit" disabled={btnLoading} className={styles.submitButton}>
               {btnLoading ? "Saving..." : editMember ? "Update Member" : "Add Member"}
             </button>

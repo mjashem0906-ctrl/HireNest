@@ -13,6 +13,8 @@ import FilterStatus from '../../components/Filter/FIlterStatus';
 import { parseDOB } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import { useOutletContext } from 'react-router-dom';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 function Members() {
   const { sidebarCollapsed } = useOutletContext();
@@ -202,7 +204,7 @@ function Members() {
         // NOTE: Check your server.js to see if this should be '/members' or '/user'
         // Since your route is router.delete("/:id"), we just need the base + id
         // ---------------------------------------------------------
-        await API.delete(`/members/${id}`); 
+        await API.delete(`/member/${id}`); 
         
         // ✅ STEP 2: If Backend succeeds, update the Frontend
         alert("Member deleted successfully");
@@ -298,6 +300,77 @@ const districts = unique(allMembers.map((m) => m.district)).sort((a,b)=> a.local
 const professions = unique(allMembers.map((m) => m.profession)).sort((a,b)=> a.localeCompare(b));
 const memberTypes = unique(allMembers.map((m) => m.memberType)).sort((a,b)=> a.localeCompare(b));
 const groupTags = unique(allMembers.flatMap((m) => m.forGrouping || []).filter(Boolean)).sort((a,b)=> a.localeCompare(b));
+const buildExportRows = () => {
+  return membersData.map(m => ({
+    // Core
+    memberReferenceNumber: m.memberReferenceNumber || "",
+    timestamp: m.timestamp || "",
+    name: m.name || "",
+    age: m.age || "",
+    gender: m.gender || "",
+    mobileNumber: m.mobileNumber || "",
+    email: m.email || "",
+    district: m.district || "",
+    symMemberStatus: m.symMemberStatus || "",
+    memberType: m.memberType || "",
+
+    // Job Seeker
+    seekerNeed: (m.seekerNeed || []).join(", "),
+    highest_education: m.highest_education || "",
+    fieldofStudy_Interest: m.fieldofStudy_Interest || "",
+    preferredJobRole_Sector: m.preferredJobRole_Sector || "",
+    workExp: m.workExp || "",
+    relocationStatus: m.relocationStatus || "",
+    preferredJobLocation: m.preferredJobLocation || "",
+    resumeLink: m.resumeLink || "",
+    declaration_Seeker: m.declaration_Seeker || "",
+
+    // Opportunity Provider
+    jobOfferType: (m.jobOfferType || []).join(", "),
+    offeringSector: (m.offeringSector || []).join(", "),
+    opportunityDescription: m.opportunityDescription || "",
+    offer_Location: m.offer_Location || "",
+    contactForSeekers: m.contactForSeekers || "",
+    declaration_Recruiter: m.declaration_Recruiter || "",
+
+    // Referee
+    referrerStatus: m.referrerStatus || "",
+    referringOfferType: (m.referringOfferType || []).join(", "),
+    referringSector: (m.referringSector || []).join(", "),
+    referringFor: m.referringFor || "",
+    levelOfSupport: (m.levelOfSupport || []).join(", "),
+    referrerContact: m.referrerContact || "",
+    declaration_Referee: m.declaration_Referee || "",
+
+    // Upskiller
+    interest_SkillBuildingProgram: m.interest_SkillBuildingProgram || "",
+    skillsToImprove: (m.skillsToImprove || []).join(", "),
+    declaration_Upskiller: m.declaration_Upskiller || "",
+    submittingEmail: m.submittingEmail || "",
+  }));
+};
+
+const exportToExcel = () => {
+  const data = buildExportRows();
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
+
+  const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const file = new Blob([buffer], { type: "application/octet-stream" });
+
+  saveAs(file, `Members_Full_${new Date().toISOString().slice(0,10)}.xlsx`);
+};
+
+const exportToCSV = () => {
+  const data = buildExportRows();
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const csv = XLSX.utils.sheet_to_csv(worksheet);
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  saveAs(blob, `Members_Full_${new Date().toISOString().slice(0,10)}.csv`);
+};
 if (loading) return <div className={styles.app}><div className={styles.loader}></div></div> ;
   return (
     
@@ -319,6 +392,10 @@ if (loading) return <div className={styles.app}><div className={styles.loader}><
     </div>
 
     <ViewToggleSwitch currentView={view} onToggle={handleToggle} />
+    <div className={styles.exportButtons}>
+      <button onClick={exportToExcel}>Export Excel</button>
+      <button onClick={exportToCSV}>Export CSV</button>
+    </div>
 
     <Filter
       fields={[
