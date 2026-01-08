@@ -12,6 +12,7 @@ const memberSchema = new mongoose.Schema(
     mobileNumber: String,           // Column F
     email: String,                  // Column G
     district: String,               // Column H (Address)
+    address: String,                // ✅ Added (Full Address)
     symMemberStatus: String,        // Column I
     memberType: String,             // Column J
     photoUrl: String,               // ✅ Added (Profile Photo)

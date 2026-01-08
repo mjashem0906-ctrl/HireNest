@@ -133,6 +133,7 @@ function cleanPayload(data) {
     "memberType",
     "currentInstitutionOrCompany",
     "district",
+    "address",
     "photoUrl",
     "forGrouping",
 
