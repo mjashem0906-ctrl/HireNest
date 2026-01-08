@@ -6,6 +6,8 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
 import AddMentor from './AddMentor';
 import API from '../../axios'; // ✅ Import API
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const MentorsPage = () => {
   const { sidebarCollapsed } = useOutletContext();
@@ -54,6 +56,59 @@ const MentorsPage = () => {
     return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
   };
 
+  const buildMentorExportRows = () => {
+  return mentors
+    .filter(member => {
+      const search = searchTerm.toLowerCase();
+      return (
+        member.name?.toLowerCase().includes(search) ||
+        member.email?.toLowerCase().includes(search)
+      );
+    })
+    .map(m => ({
+      memberReferenceNumber: m.memberReferenceNumber || "",
+      timestamp: m.timestamp || "",
+      name: m.name || "",
+      age: m.age || "",
+      gender: m.gender || "",
+      mobileNumber: m.mobileNumber || "",
+      email: m.email || "",
+      district: m.district || "",
+      symMemberStatus: m.symMemberStatus || "",
+      memberType: m.memberType || "",
+
+      mentorExpertise: (m.mentorExpertise || []).join(", "),
+      mentorSpecialization: (m.mentorSpecialization || []).join(", "),
+      fieldofStudy_Interest: m.fieldofStudy_Interest || "",
+      levelOfSupport: (m.levelOfSupport || []).join(", "),
+      declaration_Mentor: m.declaration_Mentor || "",
+      submittingEmail: m.submittingEmail || "",
+      createdAt: m.createdAt || ""
+    }));
+  };
+
+  const exportMentorsToExcel = () => {
+    const data = buildMentorExportRows();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mentors");
+
+    const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([buffer]), `Mentors_${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
+  const exportMentorsToCSV = () => {
+    const data = buildMentorExportRows();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+
+    saveAs(
+      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+      `Mentors_${new Date().toISOString().slice(0,10)}.csv`
+    );
+  };
+
+
   return (
     <div className={styles.members}>
       <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
@@ -65,6 +120,12 @@ const MentorsPage = () => {
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+
+            <div className={styles.exportButtons}>
+              <button onClick={exportMentorsToExcel}>Export Excel</button>
+              <button onClick={exportMentorsToCSV}>Export CSV</button>
+            </div>
+
             
             {/* Only Admins see the Add Button */}
             {user?.role === 'Admin' && (

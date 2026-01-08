@@ -56,68 +56,138 @@ function Members() {
  //Filter the subtasks based on filter
         const applyFilters = (filters) => {
           if (!filters || Object.values(filters).every((v) => v === ""||  v === null ||(Array.isArray(v) && v.length === 0))) {
-          setMembersData(allMembers); // ✅ show all again
-           setActiveFilters({}); // Clear active filters
-          return;
-        }
-        let filtered = [...allMembers];
-         const newActiveFilters = {};
-        if (filters.name) {
-          filtered = filtered.filter(
-            (p) => p.name === filters.name
-          );
-          newActiveFilters.name = filters.name;
-        }
+            setMembersData(allMembers); // ✅ show all again
+            setActiveFilters({}); // Clear active filters
+            return;
+          }
+          
+          let filtered = [...allMembers];
+          const newActiveFilters = {};
+          
+          if (filters.name) {
+            filtered = filtered.filter(
+              (p) => p.name === filters.name
+            );
+            newActiveFilters.name = filters.name;
+          }
+          
+          if (filters.initialNumber !== undefined && filters.initialNumber !== "") {
+            filtered = filtered.filter((p) => p.age >= Number(filters.initialNumber));
+            newActiveFilters.initialNumber = filters.initialNumber;
+          }
 
-         if (filters.initialNumber !== undefined && filters.initialNumber !== "") {
-    filtered = filtered.filter((p) => p.age >= Number(filters.initialNumber));
-    newActiveFilters.initialNumber = filters.initialNumber;
-  }
-
-  if (filters.finalNumber !== undefined && filters.finalNumber !== "") {
-    filtered = filtered.filter((p) => p.age <= Number(filters.finalNumber));
-    newActiveFilters.finalNumber = filters.finalNumber;
-  }
+          if (filters.finalNumber !== undefined && filters.finalNumber !== "") {
+            filtered = filtered.filter((p) => p.age <= Number(filters.finalNumber));
+            newActiveFilters.finalNumber = filters.finalNumber;
+          }
         
-        if (filters.district) {
-          filtered = filtered.filter(
-            (p) => p.district === filters.district
-          );
-          newActiveFilters.district = filters.district;
-        }
+          if (filters.district) {
+            filtered = filtered.filter(
+              (p) => p.district === filters.district
+            );
+            newActiveFilters.district = filters.district;
+          }
 
-        if (filters.nDistrict) {
-          filtered = filtered.filter(
-            (p) => p.nativePlace === filters.nDistrict
-          );
-          newActiveFilters.nDistrict = filters.nDistrict;
-        }
-        if (filters.profession) {
-          filtered = filtered.filter(
-            (p) => p.profession === filters.profession
-          );
-          newActiveFilters.profession = filters.profession;
-        }
+          if (filters.nDistrict) {
+            filtered = filtered.filter(
+              (p) => p.nativePlace === filters.nDistrict
+            );
+            newActiveFilters.nDistrict = filters.nDistrict;
+          }
+          if (filters.profession) {
+            filtered = filtered.filter(
+              (p) => p.profession === filters.profession
+            );
+            newActiveFilters.profession = filters.profession;
+          }
         
-        if (filters.memberType) {
-          filtered = filtered.filter(
-            (p) => p.memberType === filters.memberType
-          );
-          newActiveFilters.memberType = filters.memberType;
-        }
-        if (filters.forGrouping && filters.forGrouping.length > 0) {
-          filtered = filtered.filter(
-            (p) =>
-              Array.isArray(p.forGrouping) &&
-              p.forGrouping.some((tag) => filters.forGrouping.includes(tag))
-          );
-           newActiveFilters.forGrouping = filters.forGrouping;
-        }
-      
-        setMembersData(filtered);
-        setActiveFilters(newActiveFilters);
-        setFilterValues(filters);
-      };
+          if (filters.memberType) {
+            filtered = filtered.filter(
+              (p) => p.memberType === filters.memberType
+            );
+            newActiveFilters.memberType = filters.memberType;
+          }
+          if (filters.forGrouping && filters.forGrouping.length > 0) {
+            filtered = filtered.filter(
+              (p) =>
+                Array.isArray(p.forGrouping) &&
+                p.forGrouping.some((tag) => filters.forGrouping.includes(tag))
+            );
+            newActiveFilters.forGrouping = filters.forGrouping;
+          }
+
+          if (filters.gender) {
+            filtered = filtered.filter(p => p.gender === filters.gender);
+            newActiveFilters.gender = filters.gender;
+          }
+
+          if (filters.symMemberStatus) {
+            filtered = filtered.filter(p => p.symMemberStatus === filters.symMemberStatus);
+            newActiveFilters.symMemberStatus = filters.symMemberStatus;
+          }
+
+          if (filters.seekerNeed?.length) {
+            filtered = filtered.filter(p =>
+              p.seekerNeed?.some(v => filters.seekerNeed.includes(v))
+            );
+            newActiveFilters.seekerNeed = filters.seekerNeed;
+          }
+
+          if (filters.highest_education) {
+            filtered = filtered.filter(p => p.highest_education === filters.highest_education);
+            newActiveFilters.highest_education = filters.highest_education;
+          }
+
+          if (filters.preferredJobRole_Sector) {
+            filtered = filtered.filter(p => p.preferredJobRole_Sector === filters.preferredJobRole_Sector);
+            newActiveFilters.preferredJobRole_Sector = filters.preferredJobRole_Sector;
+          }
+
+          if (filters.workExp) {
+            filtered = filtered.filter(p => p.workExp === filters.workExp);
+            newActiveFilters.workExp = filters.workExp;
+          }
+
+          if (filters.relocationStatus) {
+            filtered = filtered.filter(p => p.relocationStatus === filters.relocationStatus);
+            newActiveFilters.relocationStatus = filters.relocationStatus;
+          }
+
+          if (filters.jobOfferType?.length) {
+            filtered = filtered.filter(p =>
+              p.jobOfferType?.some(v => filters.jobOfferType.includes(v))
+            );
+            newActiveFilters.jobOfferType = filters.jobOfferType;
+          }
+
+          if (filters.offeringSector?.length) {
+            filtered = filtered.filter(p =>
+              p.offeringSector?.some(v => filters.offeringSector.includes(v))
+            );
+            newActiveFilters.offeringSector = filters.offeringSector;
+          }
+
+          if (filters.referrerStatus) {
+            filtered = filtered.filter(p => p.referrerStatus === filters.referrerStatus);
+            newActiveFilters.referrerStatus = filters.referrerStatus;
+          }
+
+          if (filters.levelOfSupport?.length) {
+            filtered = filtered.filter(p =>
+              p.levelOfSupport?.some(v => filters.levelOfSupport.includes(v))
+            );
+            newActiveFilters.levelOfSupport = filters.levelOfSupport;
+          }
+
+          if (filters.interest_SkillBuildingProgram) {
+            filtered = filtered.filter(p => p.interest_SkillBuildingProgram === filters.interest_SkillBuildingProgram);
+            newActiveFilters.interest_SkillBuildingProgram = filters.interest_SkillBuildingProgram;
+          }
+
+          setMembersData(filtered);
+          setActiveFilters(newActiveFilters);
+          setFilterValues(filters);
+        };
 
       // Filter configuration for members
   const membersFilterConfig = {
@@ -126,20 +196,40 @@ function Members() {
       initialNumber: 'Min Age',
       finalNumber: 'Max Age',
       district: 'District',
-      nDistrict: 'Native District',
-      profession: 'Profession',
       memberType: 'Member Type',
-      forGrouping: 'Member Skill'
+
+      gender: 'Gender',
+      symMemberStatus: 'Member Status',
+      seekerNeed: 'Seeker Need',
+      highest_education: 'Highest Education',
+      preferredJobRole_Sector: 'Preferred Job Role',
+      workExp: 'Work Experience',
+      relocationStatus: 'Relocation',
+      jobOfferType: 'Job Offer Type',
+      offeringSector: 'Offering Sector',
+      referrerStatus: 'Referrer Status',
+      levelOfSupport: 'Level Of Support',
+      interest_SkillBuildingProgram: 'Skill Program',
     },
     fieldTypes: {
       name: 'string',
       initialNumber: 'number',
       finalNumber: 'number',
       district: 'string',
-      nDistrict: 'string',
-      profession: 'string',
       memberType: 'string',
-      forGrouping: 'array'
+
+      gender: 'string',
+      symMemberStatus: 'string',
+      seekerNeed: 'array',
+      highest_education: 'string',
+      preferredJobRole_Sector: 'string',
+      workExp: 'string',
+      relocationStatus: 'string',
+      jobOfferType: 'array',
+      offeringSector: 'array',
+      referrerStatus: 'string',
+      levelOfSupport: 'array',
+      interest_SkillBuildingProgram: 'string',
     },
     formatters: {
       array: (value) => {
@@ -311,6 +401,7 @@ const buildExportRows = () => {
     mobileNumber: m.mobileNumber || "",
     email: m.email || "",
     district: m.district || "",
+    address: m.address || "",
     symMemberStatus: m.symMemberStatus || "",
     memberType: m.memberType || "",
 
@@ -399,15 +490,28 @@ if (loading) return <div className={styles.app}><div className={styles.loader}><
 
     <Filter
       fields={[
-        { name: "name", label: "Name", type: "select", options: allMembers.map(member => member.name) },
+        { name: "name", label: "Name", type: "select", options: unique(allMembers.map(m => m.name)) },
         { name: "initialNumber", label: "Min Age", type: "initialNumber" },
         { name: "finalNumber", label: "Max Age", type: "finalNumber" },
         { name: "district", label: "District", type: "select", options: districts },
         { name: "memberType", label: "Member Type", type: "select", options: memberTypes },
+
+        { name: "gender", label: "Gender", type: "select", options: unique(allMembers.map(m => m.gender)) },
+        { name: "symMemberStatus", label: "Member Status", type: "select", options: unique(allMembers.map(m => m.symMemberStatus)) },
+
+        { name: "highest_education", label: "Highest Education", type: "select", options: unique(allMembers.map(m => m.highest_education)) },
+        { name: "preferredJobRole_Sector", label: "Preferred Job Role", type: "select", options: unique(allMembers.map(m => m.preferredJobRole_Sector)) },
+
+        { name: "relocationStatus", label: "Relocation Status", type: "select", options: unique(allMembers.map(m => m.relocationStatus)) },
+
+        { name: "referrerStatus", label: "Referrer Status", type: "select", options: unique(allMembers.map(m => m.referrerStatus)) },
+
+        // { name: "levelOfSupport", label: "Level Of Support", type: "multiSelect", options: unique(allMembers.flatMap(m => m.levelOfSupport || [])) },
       ]}
-      onApplyFilters={(filters) => applyFilters(filters)}
+      onApplyFilters={applyFilters}
       initialValues={filterValues}
     />
+
   </div>
 </div>
 

@@ -137,7 +137,8 @@ function MembersDetail() {
                   <div><strong>Mobile No:</strong> {member?.mobileNumber || "N/A"}</div>
                   <div><strong>Email:</strong> {member?.email || "N/A"}</div>
                   <div><strong>Member Status:</strong> {member?.symMemberStatus || "Active"}</div>
-                  <div><strong>Address:</strong> {member?.district || "N/A"}</div>
+                  <div><strong>District:</strong> {member?.district || "N/A"}</div>
+                  <div><strong>Address:</strong> {member?.address || "N/A"}</div>
                 </div>
 
                 <h3>Professional Info</h3>
