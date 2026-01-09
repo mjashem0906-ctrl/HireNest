@@ -10,6 +10,8 @@ import { useData } from '../../context/DataContext';
 
 // 👇 IMPORT THE PIPELINE COMPONENT
 import StatusPipeline from './StatusPipeline'; 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const EMPLOYMENT_TYPES = [
     "Full-time",
@@ -431,9 +433,67 @@ function Jobs() {
         </div>
     );
 
+    const buildJobsExportRows = () => {
+        const source = view === "myPost" ? myPost : jobPosts;
+
+        return source
+            .filter(job => {
+            const search = globalFilter.toLowerCase();
+            return (
+                job.title?.toLowerCase().includes(search) ||
+                job.companyName?.toLowerCase().includes(search) ||
+                job.location?.toLowerCase().includes(search)
+            );
+            })
+            .map(j => ({
+            JobTitle: j.title || "",
+            CompanyName: j.companyName || "",
+            EmploymentType: j.employmentType || "",
+            Location: j.location || "",
+            Role: j.role || "",
+            Education: j.education || "",
+            Experience: j.experience || "",
+            Salary: j.salary || "",
+            PassoutYear: j.passedOutYear || "",
+            KeySkills: j.keySkills || "",
+            RefereedBy: j.refereedBy?.name || "",
+            Description: j.description || "",
+            PostedDate: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "",
+            Applicants: j.appliedMembers?.length || 0
+            }));
+        };
+
+        const exportJobsToExcel = () => {
+        const data = buildJobsExportRows();
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Jobs");
+
+        const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        saveAs(new Blob([buffer]), `Jobs_${new Date().toISOString().slice(0,10)}.xlsx`);
+        };
+
+        const exportJobsToCSV = () => {
+        const data = buildJobsExportRows();
+        const ws = XLSX.utils.json_to_sheet(data);
+        const csv = XLSX.utils.sheet_to_csv(ws);
+
+        saveAs(
+            new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+            `Jobs_${new Date().toISOString().slice(0,10)}.csv`
+        );
+        };
+
     return (
         <div className={styles.jobs}>
             <div className={styles.header}>
+
+                {user?.role === 'Admin' && (
+                    <div className={styles.exportButtons}>
+                        <button onClick={exportJobsToExcel}>Export Excel</button>
+                        <button onClick={exportJobsToCSV}>Export CSV</button>
+                    </div>
+                )}
                 <div className={styles.cardSearch}>
                     <Search size={20} />
                     <input type="text" placeholder="Search..." value={globalFilter || ''} onChange={(e) => setGlobalFilter(e.target.value)} />

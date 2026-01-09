@@ -132,7 +132,7 @@ function MembersDetail() {
             <div className={styles.profileMain}>
                 <h3>Personal Info</h3>
                 <div className={styles.infoGrid}>
-                  <div><strong>Age:</strong> {age ? `${age.years} Years` : "N/A"}</div>
+                  <div><strong>Age:</strong> {member.age ? `${member.age} Years` : "N/A"}</div>
                   <div><strong>Gender:</strong> {member?.gender || "N/A"}</div>
                   <div><strong>Mobile No:</strong> {member?.mobileNumber || "N/A"}</div>
                   <div><strong>Email:</strong> {member?.email || "N/A"}</div>

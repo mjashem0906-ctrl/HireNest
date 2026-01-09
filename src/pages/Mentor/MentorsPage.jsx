@@ -121,11 +121,12 @@ const MentorsPage = () => {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
 
-            <div className={styles.exportButtons}>
-              <button onClick={exportMentorsToExcel}>Export Excel</button>
-              <button onClick={exportMentorsToCSV}>Export CSV</button>
-            </div>
-
+            {user?.role === 'Admin' && (
+               <div className={styles.exportButtons}>
+                <button onClick={exportMentorsToExcel}>Export Excel</button>
+                <button onClick={exportMentorsToCSV}>Export CSV</button>
+              </div>
+            )}
             
             {/* Only Admins see the Add Button */}
             {user?.role === 'Admin' && (

@@ -439,3 +439,29 @@ $warning-yellow: #d97706;
     }
   }
 }
+
+
+.exportButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+  }
+}
