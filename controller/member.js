@@ -144,6 +144,8 @@ function cleanPayload(data) {
     // Job Seeker
     "seekerNeed",
     "highest_education",
+    "highestEducationSpecialization",
+    "highestEducationPassedOutYear",
     "fieldofStudy_Interest",
     "preferredJobRole_Sector",
     "workExp",
