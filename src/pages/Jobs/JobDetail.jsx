@@ -1,21 +1,29 @@
-import React, { useEffect, useState, useMemo } from "react";
+//------15/01----------------11.59--------------------------------------
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./JobDetail.module.scss"; 
 import { useData } from "../../context/DataContext";
 import { useAuth } from '../../context/AuthContext';
-import { Mail, Phone, Briefcase, Award, CheckCircle, Zap, Users, Star } from 'lucide-react';
+import { Mail, Phone, Briefcase, Award, CheckCircle, Zap, Users, Star, Calendar, GraduationCap, Type } from 'lucide-react';
 
 // --- HELPERS ---
 const getDirectImageUrl = (driveUrl) => {
   if (!driveUrl) return null;
   let fileId = null;
+  // Handle Google Drive
   let match = driveUrl.match(/[?&]id=([^&]+)/);
   if (match) fileId = match[1];
   if (!fileId) { match = driveUrl.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
   if (!fileId) { match = driveUrl.match(/uc\?id=([^&]+)/); if (match) fileId = match[1]; }
   if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) { fileId = driveUrl; }
-  if (!fileId) return driveUrl;
-  return `https://drive.google.com/thumbnail?id=${fileId}`;
+  
+  if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
+
+  // Handle Local Uploads (Backend URL)
+  if (driveUrl.startsWith("uploads") || driveUrl.includes("\\")) {
+      return `http://localhost:5000/${driveUrl.replace(/\\/g, "/")}`;
+  }
+  return driveUrl;
 };
 
 const parseExperience = (exp) => {
@@ -78,6 +86,10 @@ function JobDetail() {
     const appMap = new Map();
     if (job.appliedMembers) {
         job.appliedMembers.forEach(app => {
+            // --- FIX IS HERE: Check if memberId exists before using it ---
+            // This prevents the "blank page" crash if a user was deleted
+            if (!app.memberId) return; 
+            
             const mId = typeof app.memberId === 'object' ? app.memberId._id : app.memberId;
             appMap.set(String(mId), { 
                 status: app.status || 'Applied', 
@@ -160,26 +172,72 @@ function JobDetail() {
             <span className={styles.meta}>Posted on {new Date(job.createdAt).toLocaleDateString()}</span>
         </div>
         
-        <div className={styles.skills}>
-            {normalizeSkills(job.keySkills).map((s, i) => (
-                <span key={i} className={styles.tag}>{s}</span>
-            ))}
+        {/* Key Skills Section */}
+        <div className={styles.skillsSection}>
+            <div className={styles.sectionLabel}>
+                <Star size={16} />
+                <span>Key Skills</span>
+            </div>
+            <div className={styles.skills}>
+                {normalizeSkills(job.keySkills).map((s, i) => (
+                    <span key={i} className={styles.tag}>{s}</span>
+                ))}
+            </div>
         </div>
 
+        {/* Job Details Grid */}
         <div className={styles.gridInfo}>
-            <div className={styles.infoItem}><label>Company</label><span>{job.companyName}</span></div>
-            <div className={styles.infoItem}><label>Location</label><span>{job.location}</span></div>
-            <div className={styles.infoItem}><label>Experience</label><span>{job.experience}</span></div>
-            <div className={styles.infoItem}><label>Salary</label><span>{job.salary}</span></div>
-            
-            {/* 👇 FIXED: Display Name or N/A safely */}
+            {/* Row 1 */}
             <div className={styles.infoItem}>
-                <label>Referee</label>
+                <label><Briefcase size={16} /> Company</label>
+                <span>{job.companyName || "Not specified"}</span>
+            </div>
+            <div className={styles.infoItem}>
+                <label><Type size={16} /> Job Role</label>
+                <span>{job.role || "Not specified"}</span>
+            </div>
+            <div className={styles.infoItem}>
+                <label><Briefcase size={16} /> Employment Type</label>
+                <span>{job.employmentType || "Not specified"}</span>
+            </div>
+            
+            {/* Row 2 */}
+            <div className={styles.infoItem}>
+                <label>📍 Location</label>
+                <span>{job.location || "Not specified"}</span>
+            </div>
+            <div className={styles.infoItem}>
+                <label><Award size={16} /> Experience</label>
+                <span>{job.experience || "Not specified"}</span>
+            </div>
+            <div className={styles.infoItem}>
+                <label>💰 Salary</label>
+                <span>{job.salary || "Not specified"}</span>
+            </div>
+            
+            {/* Row 3 - New Fields */}
+            <div className={styles.infoItem}>
+                <label><GraduationCap size={16} /> Education</label>
+                <span>{job.education || "Not specified"}</span>
+            </div>
+            <div className={styles.infoItem}>
+                <label><Calendar size={16} /> Passout Year</label>
+                <span>{job.passoutYear || "Not specified"}</span>
+            </div>
+            
+            <div className={styles.infoItem}>
+                <label>👤 Referee</label>
                 <span>{job.refereedBy?.name || "N/A"}</span>
             </div>
         </div>
 
-        <div className={styles.description}>{job.description}</div>
+        {/* Job Description */}
+        <div className={styles.descriptionSection}>
+            <div className={styles.sectionLabel}>
+                <span>Description</span>
+            </div>
+            <div className={styles.description}>{job.description || "No description provided."}</div>
+        </div>
       </div>
 
       {/* ADMIN VIEW */}
@@ -263,11 +321,6 @@ const CandidateCard = ({ member, navigate, colorFn, isApplicant = false }) => {
                     </div>
                 )}
             </div>
-
-            {/* <div className={styles.cardFooter}>
-                <a href={`mailto:${member.email}`} onClick={(e)=>e.stopPropagation()}><Mail size={14}/> Email</a>
-                <a href={`tel:${member.mobileNumber}`} onClick={(e)=>e.stopPropagation()}><Phone size={14}/> Call</a>
-            </div> */}
         </div>
     );
 };

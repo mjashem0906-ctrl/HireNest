@@ -1,38 +1,35 @@
-import React, { useEffect, useState } from 'react'
+//-----------------------15/01-----------------------------12.37----------------------------
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import styles from './MembersDetail.module.scss'
+import styles from './MembersDetail.module.scss';
 import API from '../../axios';
 import { useData } from '../../context/DataContext';
-import ReportDownloader from '../../components/Report/ReportDownloader';
 import { parseDOB } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
-import { Edit, ChevronDown, ChevronUp, Users } from 'lucide-react'; // Added Icons
+import { Edit, ChevronDown, ChevronUp, Users } from 'lucide-react'; 
 import AddMember from '../../components/Models/AddMember';
 
 function MembersDetail() {
     const { id } = useParams();
     const [member, setMember] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [subTasks, setSubTasks] = useState([]);
-    const [comments,setComments] = useState([]);
-    const [assignFor,setAssignFor] = useState([]);
     
-    // 👇 State for Jobs & Expanded Rows
+    // State for Jobs & Expanded Rows
     const [postedJobs, setPostedJobs] = useState([]);
     const [expandedJobIds, setExpandedJobIds] = useState([]);
 
     const {memberContext,subTaskContext,memberCommentsContext,assignForContext,userContext} = useData();
     const [age,setAge] = useState(null);
-    const navigate = useNavigate();
     const [showModal, setShowModal]=useState(false);
     const [editingMember,setEditingMember]=useState(null);
     const {user} = useAuth();
     
+    // Define Backend URL for local uploads
+    const BACKEND_URL = "http://localhost:5000";
 
     useEffect(()=>{
         fetchMember();
-    }, [memberContext, id, subTaskContext, memberCommentsContext, assignForContext, userContext])
-
+    }, [memberContext, id, userContext])
 
     const fetchMember = async()=>{
         try{
@@ -50,10 +47,8 @@ function MembersDetail() {
                 setAge(calculated);
             }
             
-            fetchSubTask(id);
-            fetchMemberComments(id);
-            fetchAssignFor(id);
-            fetchMemberJobs(id); // Fetch Jobs
+            // Fetch related data (placeholders)
+            if(filtered) fetchMemberJobs(id); 
             
             setLoading(false);
         }
@@ -76,34 +71,82 @@ function MembersDetail() {
         }
     };
 
-    // 👇 Helper to Toggle Applicant View
     const toggleJobDetails = (jobId) => {
         setExpandedJobIds(prev => 
             prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
         );
     };
 
-    // ... (Your existing fetch functions: fetchSubTask, fetchMemberComments, fetchAssignFor) ...
-    const fetchSubTask = async(memberId)=>{ /* ... existing logic ... */ }
-    const fetchMemberComments = async(memberId)=>{ /* ... existing logic ... */ }
-    const fetchAssignFor = async(memberId)=>{ /* ... existing logic ... */ }
-
-    const calculateAge = (dob) => { /* ... existing logic ... */ };
-    const getStatusColor = (status) => { /* ... existing logic ... */ };
-    const getStatusColor2 = (status) => { /* ... existing logic ... */ };
+    const calculateAge = (dob) => {
+        if (!dob) return;
+        const birthDate = parseDOB(dob);
+        if (!birthDate || isNaN(birthDate)) return;
+        const today = new Date();
+        let years = today.getFullYear() - birthDate.getFullYear();
+        let months = today.getMonth() - birthDate.getMonth();
+        let days = today.getDate() - birthDate.getDate();
+        if (days < 0) {
+          months -= 1;
+          days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+        }
+        if (months < 0) {
+          years -= 1;
+          months += 12;
+        }
+        return { years, months, days };
+    };
 
     const handleEdit = (member) => { setEditingMember(member); setShowModal(true); };
-    const getDirectImageUrl = (driveUrl) => { /* ... existing logic ... */ };
+    
+    // --- 1. Helper for Profile Images ---
+    const getProfileImageUrl = (url) => {
+        if (!url) return "/members/AnonymousImage.jpg";
+
+        // Handle Local Uploads
+        if (url.startsWith("uploads") || url.includes("\\")) {
+            return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
+        }
+
+        // Handle Google Drive
+        let fileId = null;
+        let match = url.match(/[?&]id=([^&]+)/);
+        if (match) fileId = match[1];
+        if (!fileId) { match = url.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
+        if (!fileId) { match = url.match(/uc\?id=([^&]+)/); if (match) fileId = match[1]; }
+        if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(url)) { fileId = url; }
+        
+        if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
+        
+        return url;
+    };
+
+    // --- 2. Helper for Resumes/Files (Non-thumbnail) ---
+    const getFileUrl = (url) => {
+        if (!url) return "#";
+        // Handle Local Uploads
+        if (url.startsWith("uploads") || url.includes("\\")) {
+            return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
+        }
+        return url;
+    };
+
+    // --- 3. Helper to safely render Arrays ---
+    const safeRender = (value) => {
+        if (Array.isArray(value)) {
+            return value.join(', ');
+        }
+        return value;
+    };
 
     if (loading) return <div className={styles.app}><div className={styles.loader}></div></div> ;
-    if (!member) return;
+    if (!member) return <div className={styles.detailsContainer}><p>Member not found.</p></div>;
 
     return (
         <div className={styles.detailsContainer}>
             {/* Sidebar */}
             <div className={styles.profileSidebar}>
                  <img
-                 src={member?.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
+                 src={getProfileImageUrl(member.photoUrl)}
                  alt={member?.name}
                  className={styles.profilePhoto}
                  onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
@@ -143,7 +186,6 @@ function MembersDetail() {
 
                 <h3>Professional Info</h3>
                 <div className={styles.infoGrid}>
-                  {/* ... (Existing Professional Info Logic) ... */}
                   {member?.memberType === 'Mentor' && (
                     <>
                       <div><strong>Current Institution/Company:</strong> {member?.currentInstitutionOrCompany || "N/A"}</div>
@@ -154,20 +196,32 @@ function MembersDetail() {
                   )}
                   {member?.memberType === 'Job Seeker' && (
                     <>
-                    <div><strong>Member Need:</strong> {member?.seekerNeed}</div>
+                    <div><strong>Member Need:</strong> {safeRender(member?.seekerNeed)}</div>
                     <div><strong>Highest Education:</strong> {member?.highest_education}</div>
                     <div><strong>Field of Study/Interest:</strong> {member?.fieldofStudy_Interest}</div>
                     <div><strong>Preferred Job Role/Sector:</strong> {member?.preferredJobRole_Sector}</div>
                     <div><strong>Work Experience:</strong> {member?.workExp}</div>
                     <div><strong>Relocation Status:</strong> {member?.relocationStatus}</div>
                     <div><strong>Preferred Job Location:</strong> {member?.preferredJobLocation}</div>
-                    <div><strong>Resume Link:</strong> <a href={member?.resumeLink} target="_blank" rel="noopener noreferrer">{member?.resumeLink}</a></div>
+                    <div>
+                        <strong>Resume Link: </strong> 
+                        {member?.resumeLink ? (
+                            <a 
+                                href={getFileUrl(member.resumeLink)} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                style={{color: '#4f46e5', textDecoration: 'underline'}}
+                            >
+                                View Resume
+                            </a>
+                        ) : "N/A"}
+                    </div>
                     </>
                   )}
                   {(member?.memberType === 'Oppurtunity Provider' || member?.memberType === 'Referee') && (
                     <>
-                    <div><strong>Job Offer Type:</strong> {member?.jobOfferType || member?.referringOfferType}</div>
-                    <div><strong>Offering Sector:</strong> {member?.offeringSector || member?.referringSector}</div>
+                    <div><strong>Job Offer Type:</strong> {safeRender(member?.jobOfferType || member?.referringOfferType)}</div>
+                    <div><strong>Offering Sector:</strong> {safeRender(member?.offeringSector || member?.referringSector)}</div>
                     <div><strong>Description:</strong> {member?.opportunityDescription}</div>
                     <div><strong>Offer Location:</strong> {member?.offer_Location}</div>
                     <div><strong>Contact:</strong> {member?.contactForSeekers || member?.referrerContact}</div>
@@ -176,12 +230,12 @@ function MembersDetail() {
                   {member?.memberType === 'In need of Upskilling' && (
                     <>
                     <div><strong>Interest in Skill Building Program:</strong> {member?.interest_SkillBuildingProgram}</div>
-                    <div><strong>Skills to Improve:</strong> {member?.skillsToImprove}</div>
+                    <div><strong>Skills to Improve:</strong> {safeRender(member?.skillsToImprove)}</div>
                     </>
                   )}
                 </div>
 
-                {/* 👇 UPDATED SECTION: Referred Jobs with Applicant Details */}
+                {/* Referred Opportunities */}
                 {postedJobs.length > 0 && (
                     <>
                         <h3 style={{ marginTop: '30px' }}>Referred Opportunities ({postedJobs.length})</h3>
@@ -200,7 +254,6 @@ function MembersDetail() {
                                 <tbody>
                                     {postedJobs.map(job => (
                                         <React.Fragment key={job._id}>
-                                            {/* Main Job Row */}
                                             <tr style={{borderBottom: expandedJobIds.includes(job._id) ? 'none' : '1px solid #eee'}}>
                                                 <td style={{ fontWeight: '600' }}>{job.title}</td>
                                                 <td>{job.companyName}</td>
@@ -226,7 +279,6 @@ function MembersDetail() {
                                                 </td>
                                             </tr>
 
-                                            {/* 👇 THE NEW ROW: Shows Applicants & Status */}
                                             {expandedJobIds.includes(job._id) && (
                                                 <tr style={{ backgroundColor: '#f9fafb' }}>
                                                     <td colSpan="6" style={{ padding: '15px' }}>
@@ -239,7 +291,6 @@ function MembersDetail() {
                                                                         <tr style={{ borderBottom:'1px solid #eee', color:'#6b7280' }}>
                                                                             <th style={{ padding:'8px', textAlign:'left' }}>Name</th>
                                                                             <th style={{ padding:'8px', textAlign:'left' }}>Status</th>
-                                                                            <th style={{ padding:'8px', textAlign:'left' }}>Applied Date</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
@@ -247,7 +298,6 @@ function MembersDetail() {
                                                                             <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
                                                                                 <td style={{ padding:'8px' }}>{app.memberId?.name || "Unknown"}</td>
                                                                                 <td style={{ padding:'8px' }}>
-                                                                                    {/* Simple Badge Logic */}
                                                                                     <span style={{
                                                                                         padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight:'500',
                                                                                         backgroundColor: app.status === 'Accepted' ? '#dcfce7' : 
@@ -259,11 +309,6 @@ function MembersDetail() {
                                                                                     }}>
                                                                                         {app.status || 'Applied'}
                                                                                     </span>
-                                                                                </td>
-                                                                                <td style={{ padding:'8px' }}>
-                                                                                    {/* Assuming timestamp exists, else show N/A */}
-                                                                                    {/* Note: appliedMembers array in DB usually needs a timestamp field if you want precise date */}
-                                                                                    N/A
                                                                                 </td>
                                                                             </tr>
                                                                         ))}
@@ -283,16 +328,6 @@ function MembersDetail() {
                         </div>
                     </>
                 )}
-                {/* 👆 END UPDATED SECTION */}
-                
-                {/* ... (Existing Subtasks & AssignFor tables) ... */}
-                {subTasks.length > 0 && (
-                    <>
-                        <h3>Related SubTasks</h3>
-                         {/* ... table code ... */}
-                    </>
-                )}
-                {/* ... */}
             </div>
         </div>
     );

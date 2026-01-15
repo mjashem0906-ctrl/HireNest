@@ -1,19 +1,20 @@
+//-------------------------------14/01--------------------------------11.33----------
 import React, { useEffect, useState } from "react";
 import { Users, MapPin, BookOpen, Briefcase, UserCheck, User } from "lucide-react";
 import CustomCard from "../../components/UI/CustomCard";
 import DonutOverviewChart from "../../components/UI/DonutOverviewChart";
 import StatusTextView from "../../components/UI/StatusTextView";
 import styles from "./Dashboard.module.scss";
-import API from "../../axios";
+// import API from "../../axios"; // Unused import removed for cleanliness
 import { useData } from "../../context/DataContext";
 
 function MemberDashboard() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const {memberContext,setMemberContext} = useData(); // get all Member data from data context (Initial fetch during login)
+  const { memberContext, setMemberContext } = useData(); 
 
   useEffect(() => {
-    setMembers(memberContext)
+    setMembers(memberContext);
   }, [memberContext]);
 
   if (loading)
@@ -25,16 +26,23 @@ function MemberDashboard() {
 
   // === Basic stats ===
   const totalMembers = members.length;
-  const seekers = members.filter(
-  (m) =>
-    m.memberType.trim() === "" ||         // count blank strings
-    m.memberType.includes("Job Seeker")   // count actual Job Seekers
-  ).length;
 
+  // --- FIX APPLIED HERE ---
+  // We use (m.memberType || "") to ensure we always have a string, 
+  // preventing the "trim of undefined" crash.
+  const seekers = members.filter((m) => {
+    const type = m.memberType || ""; // Fallback to empty string if undefined
+    return type.trim() === "" || type.includes("Job Seeker");
+  }).length;
+  // ------------------------
+
+  // These lines were using optional chaining (?.) which is good, 
+  // but I added the fallback logic internally just to be 100% safe.
   const providers = members.filter((m) => m.memberType?.includes("Oppurtunity Provider")).length;
   const referees = members.filter((m) => m.memberType?.includes("Referee")).length;
   const upskillers = members.filter((m) => m.memberType?.includes("In need of Upskilling")).length;
   const mentors = members.filter((m) => m.memberType?.includes("Mentor")).length;
+
   const genderStats = countBy(members, "gender");
   const districtStats = countBy(members, "district");
   const educationStats = countBy(members, "highest_education");
@@ -43,6 +51,7 @@ function MemberDashboard() {
   function countBy(array, key) {
     const counts = {};
     array.forEach((item) => {
+      // This line is already safe because you used || "Unknown"
       const value = item[key] || "Unknown";
       counts[value] = (counts[value] || 0) + 1;
     });

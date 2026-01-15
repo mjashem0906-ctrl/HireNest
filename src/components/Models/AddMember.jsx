@@ -1,5 +1,6 @@
+//------------------------------------14/01------------------12.15-------------------
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Upload } from "lucide-react"; // Added Upload icon
 import FormInput from "../UI/FormInput";
 import DropdownSelect from "../UI/DropdownSelect";
 import DateSelect from "../UI/DateSelect";
@@ -20,8 +21,8 @@ const initialState = {
   forGrouping: [],
 
   // Mentor Specific
-  designation: "", // Job Role
-  workExp: "",     // Experience
+  designation: "", 
+  workExp: "", 
 
   // Job Seeker
   seekerNeed: "",
@@ -30,7 +31,7 @@ const initialState = {
   preferredJobRole_Sector: "",
   relocationStatus: "",
   preferredJobLocation: "",
-  resumeLink: "",
+  // resumeLink: "", // We will handle this via file upload now
 
   // Opportunity Provider
   jobOfferType: "",
@@ -54,6 +55,8 @@ const initialState = {
 
 function AddMember({ isOpen, onClose, editMember, onSuccess }) {
   const [formData, setFormData] = useState(initialState);
+  const [photoFile, setPhotoFile] = useState(null);   // Store selected Photo
+  const [resumeFile, setResumeFile] = useState(null); // Store selected Resume
   const [btnLoading, setBtnLoading] = useState(false);
 
   useEffect(() => {
@@ -61,20 +64,23 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
       setFormData({
         ...initialState,
         ...editMember,
-        // Ensure date is parsed correctly
         dateOfBirth: editMember.dateOfBirth ? new Date(editMember.dateOfBirth) : null,
-        // Ensure fields are not undefined
         designation: editMember.designation || "",
         workExp: editMember.workExp || "",
         currentInstitutionOrCompany: editMember.currentInstitutionOrCompany || "",
         symMemberStatus: editMember.symMemberStatus || "Active",
       });
+      // Note: We cannot "preload" files into file inputs for security reasons.
+      // The user must select new files if they want to change them.
+      setPhotoFile(null);
+      setResumeFile(null);
     } else {
       setFormData(initialState);
+      setPhotoFile(null);
+      setResumeFile(null);
     }
   }, [editMember]);
 
-  // ✅ FIX: Use ISO format (YYYY-MM-DD) for database compatibility
   const formatDOB = (date) => {
     if (!date) return null;
     const d = new Date(date);
@@ -90,17 +96,45 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
 
     setBtnLoading(true);
 
-    const payload = {
-      ...formData,
-      dateOfBirth: formatDOB(formData.dateOfBirth),
-    };
+    // --- 1. Create FormData Object ---
+    const dataToSend = new FormData();
+
+    // --- 2. Append all text fields ---
+    Object.keys(formData).forEach((key) => {
+      // Handle Date separately
+      if (key === "dateOfBirth") {
+        const formatted = formatDOB(formData.dateOfBirth);
+        if (formatted) dataToSend.append(key, formatted);
+      } 
+      // Handle Arrays (if any) or normal strings
+      else if (Array.isArray(formData[key])) {
+         // If you have arrays, you might need to stringify them or append individually
+         dataToSend.append(key, JSON.stringify(formData[key])); 
+      }
+      else if (formData[key] !== null && formData[key] !== undefined) {
+        dataToSend.append(key, formData[key]);
+      }
+    });
+
+    // --- 3. Append Files (Only if selected) ---
+    if (photoFile) {
+      dataToSend.append("photo", photoFile); // 'photo' must match backend middleware
+    }
+    if (resumeFile) {
+      dataToSend.append("resume", resumeFile); // 'resume' must match backend middleware
+    }
 
     try {
       let res;
+      // Note: When sending FormData, browser automatically sets Content-Type to multipart/form-data
+      // We don't need to manually set it usually, but if using axios, it handles it.
+      
+      const config = { headers: { "Content-Type": "multipart/form-data" } };
+
       if (editMember) {
-        res = await API.put(`/member/${editMember._id}`, payload);
+        res = await API.put(`/member/${editMember._id}`, dataToSend, config);
       } else {
-        res = await API.post("/member", payload);
+        res = await API.post("/member", dataToSend, config);
       }
       onSuccess?.(res.data);
       onClose();
@@ -127,6 +161,19 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGrid}>
+            
+            {/* --- NEW: Photo Upload --- */}
+            <div className="flex flex-col gap-1">
+                <label style={{fontSize: '0.9rem', fontWeight: 500, color:'#555'}}>Profile Photo</label>
+                <div style={{border:'1px solid #ccc', padding:'5px', borderRadius:'4px', background:'white'}}>
+                    <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={(e) => setPhotoFile(e.target.files[0])}
+                    />
+                </div>
+            </div>
+
             <FormInput label="Name" value={formData.name}
               onChange={(v) => setFormData({ ...formData, name: v })} required />
 
@@ -226,6 +273,19 @@ function AddMember({ isOpen, onClose, editMember, onSuccess }) {
                   onChange={(v) => setFormData({ ...formData, relocationStatus: v })} />
                 <FormInput label="Preferred Job Location" value={formData.preferredJobLocation}
                   onChange={(v) => setFormData({ ...formData, preferredJobLocation: v })} />
+                
+                {/* --- NEW: Resume Upload --- */}
+                <div className="flex flex-col gap-1">
+                    <label style={{fontSize: '0.9rem', fontWeight: 500, color:'#555'}}>Upload Resume</label>
+                    <div style={{border:'1px solid #ccc', padding:'5px', borderRadius:'4px', background:'white'}}>
+                        <input 
+                            type="file" 
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => setResumeFile(e.target.files[0])}
+                        />
+                    </div>
+                </div>
+
               </>
             )}
 
