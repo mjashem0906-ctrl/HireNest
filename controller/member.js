@@ -1,3 +1,5 @@
+//------------------------------14/01-----------------------12.25------------------------
+
 const Member = require("../models/member");
 const Activity = require("../models/activity");
 
@@ -35,7 +37,21 @@ const getMemberById = async (req, res) => {
 ---------------------------------------- */
 const addMember = async (req, res) => {
   try {
+    // 1. Get clean text data
     const payload = cleanPayload(req.body);
+
+    // 2. Handle File Uploads
+    // req.files is provided by multer
+    if (req.files) {
+      if (req.files.photo) {
+        // Save path like: uploads/123456-image.jpg
+        // We replace backslashes (Windows) with forward slashes for URLs
+        payload.photoUrl = req.files.photo[0].path.replace(/\\/g, "/"); 
+      }
+      if (req.files.resume) {
+        payload.resumeLink = req.files.resume[0].path.replace(/\\/g, "/");
+      }
+    }
 
     const member = await Member.create(payload);
 
@@ -59,6 +75,16 @@ const addMember = async (req, res) => {
 const updateMember = async (req, res) => {
   try {
     const payload = cleanPayload(req.body);
+
+    // 2. Handle File Uploads (Merge with existing text payload)
+    if (req.files) {
+      if (req.files.photo) {
+        payload.photoUrl = req.files.photo[0].path.replace(/\\/g, "/");
+      }
+      if (req.files.resume) {
+        payload.resumeLink = req.files.resume[0].path.replace(/\\/g, "/");
+      }
+    }
 
     const updatedMember = await Member.findByIdAndUpdate(
       req.params.id,
@@ -124,61 +150,42 @@ const syncMemberFromSheet = async (req, res) => {
 function cleanPayload(data) {
   const allowedFields = [
     // Common
-    "name",
-    "fathersName",
-    "mobileNumber",
-    "email",
-    "gender",
-    "dateOfBirth",
-    "memberType",
-    "currentInstitutionOrCompany",
-    "district",
-    "address",
-    "photoUrl",
+    "name", "fathersName", "mobileNumber", "email", "gender",
+    "dateOfBirth", "memberType", "currentInstitutionOrCompany",
+    "district", "address", 
+    
+    // Note: We allow these to pass through if sent manually, 
+    // but the controller logic above overwrites them if a file is uploaded.
+    "photoUrl", 
     "forGrouping",
 
-    // 👇 ADDED NEW FIELD HERE 👇
-    "designation", // For Mentors (Job Role)
-    // 👆 This ensures Job Role is saved!
+    // Mentor
+    "designation", 
 
     // Job Seeker
-    "seekerNeed",
-    "highest_education",
-    "highestEducationSpecialization",
-    "highestEducationPassedOutYear",
-    "fieldofStudy_Interest",
-    "preferredJobRole_Sector",
-    "workExp",
-    "relocationStatus",
-    "preferredJobLocation",
-    "resumeLink",
+    "seekerNeed", "highest_education", "highestEducationSpecialization",
+    "highestEducationPassedOutYear", "fieldofStudy_Interest",
+    "preferredJobRole_Sector", "workExp", "relocationStatus",
+    "preferredJobLocation", "resumeLink",
 
     // Opportunity Provider
-    "jobOfferType",
-    "offeringSector",
-    "opportunityDescription",
-    "offer_Location",
-    "contactForSeekers",
+    "jobOfferType", "offeringSector", "opportunityDescription",
+    "offer_Location", "contactForSeekers",
 
     // Referee
-    "referrerStatus",
-    "referringOfferType",
-    "referringSector",
-    "referringFor",
-    "levelOfSupport",
-    "referrerContact",
+    "referrerStatus", "referringOfferType", "referringSector",
+    "referringFor", "levelOfSupport", "referrerContact",
 
     // Upskilling
-    "interest_SkillBuildingProgram",
-    "skillsToImprove",
+    "interest_SkillBuildingProgram", "skillsToImprove",
 
     // System
-    "memberReferenceNumber",
-    "symMemberStatus",
+    "memberReferenceNumber", "symMemberStatus",
   ];
 
   const payload = {};
   allowedFields.forEach((key) => {
+    // We check for undefined explicitly so we don't overwrite with nulls unless intended
     if (data[key] !== undefined) {
       payload[key] = data[key];
     }

@@ -5,6 +5,7 @@ const cors = require('cors');
 const connectDB = require('./config/connectionDB');
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const path = require('path');
 // const passport = require("./config/passport");
 // const bulkImport = require("./utils/bulkImport");
 
@@ -53,6 +54,8 @@ app.use("/dropdown", require("./routes/dropdown"));
 app.use("/activityList", require("./routes/activity"));
 app.use("/place", require("./routes/places"));
 app.use("/service", require("./routes/service"));
+// Add this near your other app.use() lines
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
 app.get('/health', (req, res) => {

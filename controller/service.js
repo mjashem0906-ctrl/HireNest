@@ -1,12 +1,22 @@
+//---------------------------15/01-----------------12.56-----------------
+
 const Service = require("../models/service");
+const Member = require("../models/member");
+const { 
+  sendJobPostNotification, 
+  sendStatusUpdateNotification, 
+  sendAdminApplicationNotification 
+} = require("../utils/emailService");
 
 /* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
-    // 👇 UPDATED: Added refereedBy to destructuring
-    const { title, description, companyName, employmentType, location, education, passedOutYear, experience, salary, role, keySkills, refereedBy } = req.body;
+    const { 
+      title, description, companyName, employmentType, location, 
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy 
+    } = req.body;
 
-    // --- DUPLICATE CHECK START ---
+    // --- DUPLICATE CHECK ---
     const existingPost = await Service.findOne({
       title: title,
       description: description,
@@ -16,7 +26,7 @@ const addServicePost = async (req, res) => {
     if (existingPost) {
       return res.status(200).json({
         success: true,
-        message: "Service created successfully", 
+        message: "Service created successfully (Duplicate prevented)", 
         data: existingPost
       });
     }
@@ -33,7 +43,7 @@ const addServicePost = async (req, res) => {
       salary,
       role,
       keySkills,
-      refereedBy, // 👈 ADDED HERE TO SAVE TO DB
+      refereedBy,
       // memberId: req.user.memberId,
     });
 
@@ -42,6 +52,7 @@ const addServicePost = async (req, res) => {
       message: "Service created successfully",
       data: service
     });
+
   } catch (error) {
     console.error("addServicePost error:", error);
     res.status(500).json({
@@ -55,11 +66,12 @@ const addServicePost = async (req, res) => {
 const getServicePost = async (req, res) => {
   try {
     const services = await Service.find()
-      .populate("memberId", "name email role")
-      .populate("refereedBy", "name email") // 👈 ADDED POPULATE HERE
+      .populate("memberId", "name email role photoUrl") // Added photoUrl
+      .populate("refereedBy", "name email")
       .populate({
         path: "appliedMembers.memberId",
-        select: "name email role",
+        // 👇 Merged: Added 'resumeLink' and 'photoUrl' here for frontend access
+        select: "name email role resumeLink photoUrl", 
       })
       .sort({ createdAt: -1 });
 
@@ -108,12 +120,14 @@ const deleteServicePost = async (req, res) => {
   }
 };
 
+/* -------------------- GET SINGLE SERVICE -------------------- */
 const getSingleServicePost = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id)
-      .populate("memberId", "name email")
-      .populate("refereedBy", "name email") // 👈 ADDED POPULATE HERE
-      .populate("appliedMembers.memberId", "name email");
+      .populate("memberId", "name email photoUrl")
+      .populate("refereedBy", "name email")
+      // 👇 Merged: Added resumeLink and photoUrl here
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
 
     if (!service) {
       return res.status(404).json({
@@ -139,10 +153,9 @@ const getSingleServicePost = async (req, res) => {
 const applyToService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const memberId = req.user.memberId;
+    const memberId = req.user.memberId; 
 
     const service = await Service.findById(serviceId);
-
     if (!service) {
       return res.status(404).json({ success: false, message: "Service not found" });
     }
@@ -162,6 +175,26 @@ const applyToService = async (req, res) => {
     });
     await service.save();
 
+    // --- EMAIL NOTIFICATION LOGIC (Merged from File 1) ---
+    try {
+      const applicant = await Member.findById(memberId);
+      if (applicant) {
+        const candidateData = {
+          name: applicant.name,
+          email: applicant.email
+        };
+
+        // Send email to Admin
+        await sendAdminApplicationNotification(
+          "jobbridgekarnataka@gmail.com", // Or fetch dynamic admin email
+          candidateData,
+          service.title
+        );
+      }
+    } catch (emailError) {
+      console.error("Admin notification email failed:", emailError);
+    }
+
     res.json({ success: true, message: "Application submitted successfully" });
   } catch (error) {
     console.error("applyToService error:", error);
@@ -179,10 +212,11 @@ const updateStatus = async (req, res) => {
       {
         $set: { "appliedMembers.$.status": status }
       },
-      { new: true } 
+      { new: true }
     )
-      .populate("memberId", "name email") 
-      .populate("appliedMembers.memberId", "name email"); 
+      .populate("memberId", "name email photoUrl")
+      // 👇 Merged: Ensure resumeLink/photoUrl persists in response so UI doesn't break
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
 
     if (!updatedJob) {
       return res.status(404).json({ message: "Job or Applicant not found" });
@@ -193,6 +227,26 @@ const updateStatus = async (req, res) => {
       message: "Status updated successfully",
       data: updatedJob
     });
+
+    // --- EMAIL NOTIFICATION LOGIC (Merged from File 1) ---
+    try {
+      // Find the specific applicant to get their email
+      const applicant = updatedJob.appliedMembers.find(
+        (a) => String(a.memberId?._id || a.memberId) === String(memberId)
+      );
+
+      if (applicant?.memberId?.email) {
+        await sendStatusUpdateNotification(
+          applicant.memberId.email,
+          applicant.memberId.name,
+          updatedJob.title,
+          status
+        );
+      }
+    } catch (emailError) {
+      console.error("Failed to send status update notification:", emailError);
+    }
+
   } catch (error) {
     console.error("updateStatus error:", error);
     res.status(500).json({
@@ -202,20 +256,21 @@ const updateStatus = async (req, res) => {
   }
 };
 
-/* -------------------- NEW: UPDATE SERVICE POST (EDIT JOB) -------------------- */
+/* -------------------- UPDATE SERVICE POST (EDIT JOB) -------------------- */
 const updateServicePost = async (req, res) => {
   try {
     const { id } = req.params;
-    // 👇 UPDATED: Added refereedBy here
-    const { title, description, companyName, employmentType, location,
-       education, passedOutYear, experience, salary, role, keySkills, refereedBy } = req.body;
+    const { 
+      title, description, companyName, employmentType, location,
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy 
+    } = req.body;
 
-    // Find the job by ID and update it with the new fields
     const updatedService = await Service.findByIdAndUpdate(
       id,
-      // 👇 UPDATED: Added refereedBy to update object
-      { title, description, companyName, employmentType, location ,
-        education, passedOutYear, experience, salary, role, keySkills, refereedBy },
+      { 
+        title, description, companyName, employmentType, location,
+        education, passedOutYear, experience, salary, role, keySkills, refereedBy 
+      },
       { new: true } 
     );
 
