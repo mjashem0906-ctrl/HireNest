@@ -10,6 +10,7 @@ import API from '../../axios';
 import { useData } from '../../context/DataContext';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import Filter from '../../components/Filter/Filter';
 
 // 👇 IMPORT THE PIPELINE COMPONENT
 import StatusPipeline from './StatusPipeline'; 
@@ -539,6 +540,28 @@ function Jobs() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showProvidedModal, setShowProvidedModal] = useState(false);
+
+    const [filters, setFilters] = useState({
+        // Create-job fields
+        title: "",
+        companyName: "",
+        role: "",
+        employmentType: "",
+        location: "",
+        experience: "",
+        salary: "",
+        education: "",
+        passedOutYear: "",
+        keySkills: "",
+        refereedBy: "",      // we will treat this as referee "name" in filter
+        description: "",
+
+        // Extra filters
+        startDate: null,
+        endDate: null,
+        initialNumber: "",   // Min applicants
+        finalNumber: ""      // Max applicants
+    });
     
     // Bulk CSV Modal States
     const [showBulkReviewModal, setShowBulkReviewModal] = useState(false);
@@ -556,7 +579,7 @@ function Jobs() {
     const [refereesList, setRefereesList] = useState([]);
 
     // Backend URL for Local file serving
-    const BACKEND_URL = "http://localhost:5000";
+    const BACKEND_URL = "http://localhost:5000";    
 
     useEffect(() => {
         if (memberContext) {
@@ -565,13 +588,334 @@ function Jobs() {
         }
     }, [memberContext]);
 
+    // Names for "Refereed Person" select
+    const refereeNameOptions = React.useMemo(
+    () => refereesList.map(r => r.name || r.email || "Unknown"),
+    [refereesList]
+    );
+
     useEffect(() => {
         fetchJobPosts();
     }, [user, jobContext]);
 
+        // ---------------------------------------------
+    // APPLY FILTERS TO A GIVEN JOB ARRAY
+    // ---------------------------------------------
+    const applyFilters = (jobs) => {
+    const search = globalFilter.trim().toLowerCase();
+
+    // Destructure our filter state
+    const {
+        title,
+        companyName,
+        role,
+        employmentType,
+        location,
+        experience,
+        salary,
+        education,
+        passedOutYear,
+        keySkills,
+        refereedBy,
+        description,
+        startDate,
+        endDate,
+        initialNumber,
+        finalNumber
+    } = filters;
+
+    // Pre-normalise text filters to lower case
+    const titleFilter        = title?.trim().toLowerCase()        || "";
+    const companyFilter      = companyName?.trim().toLowerCase()  || "";
+    const roleFilter         = role?.trim().toLowerCase()         || "";
+    const locationFilter     = location?.trim().toLowerCase()     || "";
+    const experienceFilter   = experience?.trim().toLowerCase()   || "";
+    const salaryFilter       = salary?.trim().toLowerCase()       || "";
+    const educationFilter    = education?.trim().toLowerCase()    || "";
+    const passoutFilter      = passedOutYear?.trim().toLowerCase()|| "";
+    const keySkillsFilter    = keySkills?.trim().toLowerCase()    || "";
+    const descriptionFilter  = description?.trim().toLowerCase()  || "";
+    const refereedByFilter   = refereedBy?.trim().toLowerCase()   || "";
+
+    const toDate = (val) => {
+        if (!val) return null;
+        if (val instanceof Date) return val;
+        return new Date(val);
+    };
+
+    const start = toDate(startDate);
+    const end   = toDate(endDate);
+
+    return jobs.filter((job) => {
+        // ---------------------------
+        // 0) Global search box
+        // ---------------------------
+        if (search) {
+        const haystack = [
+            job.title,
+            job.companyName,
+            job.location,
+            job.role,
+            job.description,
+            job.keySkills
+        ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+        if (!haystack.includes(search)) return false;
+        }
+
+        // ---------------------------
+        // 1) Individual text filters
+        // ---------------------------
+
+        if (titleFilter) {
+        if ((job.title || "").toLowerCase() !== titleFilter) return false;
+        }
+
+        if (companyFilter) {
+        if ((job.companyName || "").toLowerCase() !== companyFilter) return false;
+        }
+
+        if (roleFilter) {
+        if ((job.role || "").toLowerCase() !== roleFilter) return false;
+        }
+
+        if (locationFilter) {
+        if ((job.location || "").toLowerCase() !== locationFilter) return false;
+        }
+
+        if (experienceFilter) {
+        if ((job.experience || "").toLowerCase() !== experienceFilter) return false;
+        }
+
+        if (salaryFilter) {
+        if ((job.salary || "").toLowerCase() !== salaryFilter) return false;
+        }
+
+        if (educationFilter) {
+        if ((job.education || "").toLowerCase() !== educationFilter) return false;
+        }
+
+        if (passoutFilter) {
+        if ((String(job.passedOutYear || "")).toLowerCase() !== passoutFilter) return false;
+        }
+
+        // For skills, you may want equality on the whole string:
+        if (keySkillsFilter) {
+        if ((job.keySkills || "").toLowerCase() !== keySkillsFilter) return false;
+        // OR: if you split skills and want "contains" behaviour, we can adjust this separately
+        }
+
+        if (descriptionFilter) {
+        if (!(job.description || "").toLowerCase().includes(descriptionFilter)) return false;
+        }
+
+        // ---------------------------
+        // 2) Employment type (exact)
+        // ---------------------------
+        if (employmentType && job.employmentType !== employmentType) {
+        return false;
+        }
+
+        // ---------------------------
+        // 3) Refereed Person (by name/email)
+        // ---------------------------
+        if (refereedByFilter) {
+        const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
+        if (refName !== refereedByFilter) return false;
+        }
+
+        // ---------------------------
+        // 4) Date range on createdAt
+        // ---------------------------
+        if (start || end) {
+        if (!job.createdAt) return false;
+        const created = new Date(job.createdAt);
+        if (start && created < start) return false;
+        if (end && created > end) return false;
+        }
+
+        // ---------------------------
+        // 5) Applicant count range
+        // ---------------------------
+        const applicantsCount = job.appliedMembers?.length || 0;
+
+        if (initialNumber !== "" && initialNumber != null) {
+        if (applicantsCount < Number(initialNumber)) return false;
+        }
+
+        if (finalNumber !== "" && finalNumber != null) {
+        if (applicantsCount > Number(finalNumber)) return false;
+        }
+
+        return true;
+    });
+    };
+
+    // ---------------------------------------------
+    // DERIVED FILTERED LISTS
+    // ---------------------------------------------
+    const filteredJobPosts = applyFilters(jobPosts);
+    const filteredMyPost = applyFilters(myPost);
+
     const handleClick = (job) => {
         navigate(`/jobs/${job._id}`);
     };
+
+        // Unique lists for selects (optional)
+    const locationOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.location && set.add(j.location));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    const companyOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.companyName && set.add(j.companyName));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique titles for dropdown
+    const titleOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.title && set.add(j.title));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique roles for dropdown
+    const roleOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.role && set.add(j.role));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique experience values for dropdown
+    const experienceOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.experience && set.add(j.experience));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique salary values for dropdown
+    const salaryOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.salary && set.add(j.salary));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique education values for dropdown
+    const educationOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.education && set.add(j.education));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique passout years for dropdown
+    const passedOutYearOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => j.passedOutYear && set.add(j.passedOutYear));
+        return Array.from(set);
+    }, [jobPosts]);
+
+    // Unique skills for dropdown (split comma-separated lists)
+    const keySkillsOptions = React.useMemo(() => {
+        const set = new Set();
+        jobPosts.forEach(j => {
+            if (j.keySkills) {
+                j.keySkills.split(",").forEach(skill => {
+                    const trimmed = skill.trim();
+                    if (trimmed) set.add(trimmed);
+                });
+            }
+        });
+        return Array.from(set);
+    }, [jobPosts]);
+
+const filterFields = [
+  // All create-job fields:
+
+  {
+    name: 'title',
+    label: 'Job Title',
+    type: 'select',
+    options: titleOptions
+  },
+  {
+    name: 'companyName',
+    label: 'Company',
+    type: 'select',
+    options: companyOptions
+  },
+  {
+    name: 'role',
+    label: 'Job Role',
+    type: 'select',
+    options: roleOptions
+  },
+
+  {
+    name: 'employmentType',
+    label: 'Employment Type',
+    type: 'select',
+    options: EMPLOYMENT_TYPES,          // ["Full-time", ...]
+  },
+
+  {
+    name: 'location',
+    label: 'Location',
+    type: 'select',
+    options: locationOptions
+  },
+  {
+    name: 'experience',
+    label: 'Experience',
+    type: 'select',
+    options: experienceOptions
+  },
+  {
+    name: 'salary',
+    label: 'Salary',
+    type: 'select',
+    options: salaryOptions
+  },
+  {
+    name: 'education',
+    label: 'Education',
+    type: 'select',
+    options: educationOptions
+  },
+  {
+    name: 'passedOutYear',
+    label: 'Passout Year',
+    type: 'select',
+    options: passedOutYearOptions
+  },
+  {
+    name: 'keySkills',
+    label: 'Key Skills',
+    type: 'select',
+    options: keySkillsOptions
+  },
+
+  {
+    name: 'refereedBy',
+    label: 'Refereed Person',
+    type: 'select',
+    options: refereeNameOptions,        // array of strings (names/emails)
+  },
+
+  // I would keep description as text; having a dropdown for entire descriptions is not very usable.
+  { name: 'description',  label: 'Description Contains', type: 'text' },
+
+  // Extra filters you already had:
+
+  { name: 'startDate',     label: 'Posted From',     type: 'startDate' },
+  { name: 'endDate',       label: 'Posted To',       type: 'endDate' },
+  { name: 'initialNumber', label: 'Min Applicants',  type: 'initialNumber' },
+  { name: 'finalNumber',   label: 'Max Applicants',  type: 'finalNumber' }
+];
 
     // --- HELPER: FILE URL ---
     const getFileUrl = (url) => {
@@ -718,18 +1062,9 @@ function Jobs() {
     // --- EXPORT HANDLERS ---
 
     const buildJobsExportRows = () => {
-        const source = view === "myPost" ? myPost : jobPosts;
+        const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
 
-        return source
-            .filter(job => {
-            const search = globalFilter.toLowerCase();
-            return (
-                job.title?.toLowerCase().includes(search) ||
-                job.companyName?.toLowerCase().includes(search) ||
-                job.location?.toLowerCase().includes(search)
-            );
-            })
-            .map(j => ({
+        return source.map(j => ({
             JobTitle: j.title || "",
             CompanyName: j.companyName || "",
             EmploymentType: j.employmentType || "",
@@ -744,7 +1079,7 @@ function Jobs() {
             Description: j.description || "",
             PostedDate: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "",
             Applicants: j.appliedMembers?.length || 0
-            }));
+        }));
     };
 
     const exportJobsToExcel = () => {
@@ -875,33 +1210,61 @@ function Jobs() {
 
     return (
         <div className={styles.jobs}>
-            <div className={styles.header}>
-                {/* EXPORT BUTTONS (New Feature) */}
-                {user?.role === 'Admin' && (
-                    <div className={styles.exportButtons} style={{ display: 'flex', gap: '10px' }}>
-                        <button onClick={exportJobsToExcel} style={{ padding: '8px 12px', cursor: 'pointer', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '4px' }}>Export Excel</button>
-                        <button onClick={exportJobsToCSV} style={{ padding: '8px 12px', cursor: 'pointer', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px' }}>Export CSV</button>
-                    </div>
-                )}
+        <div className={styles.header}>
 
-                <div className={styles.cardSearch}>
-                    <Search size={20} />
-                    <input type="text" placeholder="Search..." value={globalFilter || ''} onChange={(e) => setGlobalFilter(e.target.value)} />
-                </div>
-                <div className={styles.center1}>
-                    <div className={classNames(styles.center, { [styles.active]: view === "request", })} onClick={() => setView("request")} >
-                        <NotebookPen size={35} /> <button className={styles.label}>Job Posts</button>
-                    </div>
-                    <div className={classNames(styles.center, { [styles.active]: view === "myPost", })} onClick={() => setView("myPost")}>
-                        <BriefcaseBusiness size={35} /> <button className={styles.label}>My Jobs</button>
-                    </div>
-                </div>
-                <div className={styles.right}></div>
+                        {/* Quick search */}
+            <div className={styles.cardSearch}>
+                <Search size={20} />
+                <input
+                type="text"
+                placeholder="Search..."
+                value={globalFilter || ''}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                />
             </div>
+
+            {/* EXPORT BUTTONS */}
+            {user?.role === 'Admin' && (
+            <div className={styles.exportButtons}>
+                <button onClick={exportJobsToExcel} className={styles.excel}>
+                Export Excel
+                </button>
+                <button onClick={exportJobsToCSV} className={styles.csv}>
+                Export CSV
+                </button>
+            </div>
+            )}
+
+            <div className={styles.center1}>
+                <div
+                className={classNames(styles.center, { [styles.active]: view === "request" })}
+                onClick={() => setView("request")}
+                >
+                <NotebookPen size={35} /> <button className={styles.label}>Job Posts</button>
+                </div>
+                <div
+                className={classNames(styles.center, { [styles.active]: view === "myPost" })}
+                onClick={() => setView("myPost")}
+                >
+                <BriefcaseBusiness size={35} /> <button className={styles.label}>My Jobs</button>
+                </div>
+            </div>
+                        {/* NEW: Advanced Filter */}
+            <Filter
+            fields={filterFields}
+            initialValues={filters}
+            onApplyFilters={(values) => {
+                setFilters(values);
+                setPage(1); // reset pagination when filters change (optional)
+            }}
+            />
+
+            <div className={styles.right}></div>
+        </div>
 
             {/* VIEW 1: JOB REQUESTS (Public/All) */}
             {view === 'request' && <>
-                <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 120 }}>
+                <div className={styles.pagination} style={{ marginBottom: 20,  }}>
                     <button onClick={() => page > 1 && setPage(page-1)} disabled={page === 1}>Previous</button>
                     <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
                     <button onClick={() => page < totalPages && setPage(page+1)} disabled={page === totalPages}>Next</button>
@@ -909,7 +1272,7 @@ function Jobs() {
                 <div className={styles.container}>
                     <h2 className={styles.heading}>Job Posts</h2>
                     <ul className={styles.activityList}>
-                        {jobPosts.map((request) => (
+                        {filteredJobPosts.map((request) => (
                             <li key={request?._id} className={styles.activityItem} style={{ cursor: 'pointer' }} onClick={() => handleClick(request)}>
                                 <div className={styles.details} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
                                     <h5 className={styles.title} style={{ marginBottom: '5px', fontSize: '1.2rem', fontWeight: 'bold' }}>{request?.title}</h5>
@@ -969,14 +1332,14 @@ function Jobs() {
             {/* VIEW 2: MY POSTS / ADMIN VIEW */}
             {view === "myPost" && (
                 <>
-                    <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 120 }}></div>
+                    <div className={styles.pagination} style={{ marginBottom: 20}}></div>
                     <div className={styles.container}>
                         <h2 className={styles.heading}>{user.role === 'Admin' ? "Manage Applications" : "My Applications"}</h2>
-                        {myPost.length === 0 ? (
+                        {filteredMyPost.length === 0 ? (
                             <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>{user.role === 'Admin' ? "No jobs posted yet." : "You haven't applied to any jobs yet."}</p>
                         ) : (
                             <ul className={styles.activityList}>
-                                {myPost.map((request) => {
+                                {filteredMyPost.map((request) => {
                                     const myStatus = getMyApplicationStatus(request);
                                     const pipelineStatus = getPipelineStatus(myStatus);
 

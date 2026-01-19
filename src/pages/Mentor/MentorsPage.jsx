@@ -111,41 +111,48 @@ const MentorsPage = () => {
 
   return (
     <div className={styles.members}>
-      <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
-        <div className={styles.headerContent}>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-            <User size={28} color="#4f46e5"/> 
-            Mentors
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
+<div
+  className={styles.headerWrapper}
+  style={{ left: sidebarWidth + 'px' }}
+>
+  <div className={styles.headerContent}>
 
-            {user?.role === 'Admin' && (
-               <div className={styles.exportButtons}>
-                <button onClick={exportMentorsToExcel}>Export Excel</button>
-                <button onClick={exportMentorsToCSV}>Export CSV</button>
-              </div>
-            )}
-            
-            {/* Only Admins see the Add Button */}
-            {user?.role === 'Admin' && (
-               <AddMentor onSuccess={handleNewMentor} />
-            )}
+    {/* Global Search */}
+    <div className={styles.cardSearch}>
+      <Search size={20} />
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
 
-            <div className={styles.cardSearch}>
-              <Search size={20} />
-              <input 
-                type="text" 
-                placeholder="Search mentors..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
-            </div>
-          </div>
+    {/* Placeholder to match ViewToggleSwitch spacing */}
+    <div style={{ width: 120 }} />
 
-        </div>
+    {/* Export Buttons */}
+    {user?.role === 'Admin' && (
+
+      
+      <div className={styles.exportButtons}>
+        <button onClick={exportMentorsToExcel} className={styles.excel}>
+          Export Excel
+        </button>
+        <button onClick={exportMentorsToCSV} className={styles.csv}>
+          Export CSV
+        </button>
       </div>
+    )}
+
+    {/* Add Mentor */}
+    {user?.role === 'Admin' && (
+      <AddMentor onSuccess={handleNewMentor} />
+    )}
+
+  </div>
+</div>
+
 
       <div style={{ height: 120 }}></div>
 

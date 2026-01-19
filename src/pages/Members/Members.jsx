@@ -484,9 +484,17 @@ if (loading) return <div className={styles.app}><div className={styles.loader}><
 
     <ViewToggleSwitch currentView={view} onToggle={handleToggle} />
     <div className={styles.exportButtons}>
-      <button onClick={exportToExcel}>Export Excel</button>
-      <button onClick={exportToCSV}>Export CSV</button>
-    </div>
+      <button onClick={exportToExcel} className={`${styles.excel}`}>
+          Export Excel
+      </button>
+      <button onClick={exportToCSV} className={`${styles.csv}`}>
+          Export CSV
+      </button>
+      </div>
+      {/* <div className={styles.exportButtons}>
+        <button onClick={exportToExcel}>Export Excel</button>
+        <button onClick={exportToCSV}>Export CSV</button>
+      </div> */}
 
     <Filter
       fields={[

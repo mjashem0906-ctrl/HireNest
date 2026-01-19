@@ -3,14 +3,14 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--accent-primary);
+  background-color: #4f46e5;
   color: white;
   border-radius: var(--radius-lg);
-  font-weight: 500;
+  font-weight: bold;
   transition: var(--transition-fast);
   
   &:hover {
-    background-color: var(--accent-hover);
+    background-color: #6366f1;
     transform: translateY(-1px);
   }
 }

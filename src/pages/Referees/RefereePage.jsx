@@ -81,38 +81,42 @@ const exportRefereesToCSV = () => {
 
   return (
     <div className={styles.members}>
-      <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
-        <div className={styles.headerContent}>
-          
-          {/* Page Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-            <UserCheck size={28} color="#4f46e5"/> 
-            Referees
-          </div>
-          
-          {/* 👇 2. PLACE THE BUTTON HERE (Between Title and Search, or after Search) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
-            <div className={styles.exportButtons}>
-              <button onClick={exportRefereesToExcel}>Export Excel</button>
-              <button onClick={exportRefereesToCSV}>Export CSV</button>
-            </div>
-            
-            {/* The Add Button Component */}
-            <AddReferee onSuccess={handleNewReferee} />
+<div
+  className={styles.headerWrapper}
+  style={{ left: sidebarWidth + 'px' }}
+>
+  <div className={styles.headerContent}>
 
-            <div className={styles.cardSearch}>
-              <Search size={20} />
-              <input 
-                type="text" 
-                placeholder="Search referees..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
-            </div>
-          </div>
+    {/* Search */}
+    <div className={styles.cardSearch}>
+      <Search size={20} />
+      <input
+        type="text"
+        placeholder="Search referees..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
 
-        </div>
-      </div>
+    {/* Spacer to match ViewToggleSwitch width */}
+    <div style={{ width: 120 }} />
+
+    {/* Export Buttons */}
+    <div className={styles.exportButtons}>
+      <button onClick={exportRefereesToExcel} className={styles.excel}>
+        Export Excel
+      </button>
+      <button onClick={exportRefereesToCSV} className={styles.csv}>
+        Export CSV
+      </button>
+    </div>
+
+    {/* Add Referee */}
+    <AddReferee onSuccess={handleNewReferee} />
+
+  </div>
+</div>
+
 
       <div style={{ height: 120 }}></div>
 

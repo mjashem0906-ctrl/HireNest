@@ -4,6 +4,7 @@ import FormInput from "../../components/UI/FormInput";
 import DropdownSelect from "../../components/UI/DropdownSelect"; 
 import API from "../../axios"; 
 import styles from "../../components/Models/AddModel.module.scss";
+import { Plus } from 'lucide-react';
 
 const initialState = {
   name: "",
@@ -55,6 +56,7 @@ function AddReferee({ onSuccess }) {
         onClick={toggleModal}
         className={styles.addRefereeBtn} 
       >
+      <Plus size={20} />
         Add Referee
       </button>
 

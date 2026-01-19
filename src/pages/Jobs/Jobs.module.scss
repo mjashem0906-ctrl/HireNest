@@ -448,20 +448,25 @@ $warning-yellow: #d97706;
 
   button {
     height: 36px;
-    padding: 0 14px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #1f2937;
+    padding: 8px 12px; // matches your inline
+    border-radius: 4px; // consistent with inline
+    border: none;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    color: #ffffff;
+
+    &.excel {
+      background-color: #10b981; // green
+    }
+
+    &.csv {
+      background-color: #3b82f6; // blue
+    }
 
     &:hover {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
+      opacity: 0.9; // subtle hover effect
     }
   }
 }

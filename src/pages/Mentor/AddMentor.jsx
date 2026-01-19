@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";   
+import { X, Plus } from "lucide-react";   
 import DateSelect from "../../components/UI/DateSelect"; // 👈 Import DateSelect
 import API from "../../axios";  
 import FormInput from "../../components/UI/FormInput"; 
@@ -79,7 +79,8 @@ function AddMentor({ onSuccess }) {
 
   return (
     <>
-      <button onClick={toggleModal} style={btnStyle}>
+      <button onClick={toggleModal} className={styles.addRefereeBtn}>
+        <Plus size={20} />
         Add Mentor
       </button>
 

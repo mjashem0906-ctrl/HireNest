@@ -20,6 +20,8 @@ function Layout({children}) {
   '/settings': 'Settings',
   '/assignFor': 'AssignFor',
   '/memberComments': 'About Members',
+  '/mentors': 'Mentors',
+  '/referees': 'Referees',
 };
 
 const getPageTitle = () => {
@@ -33,6 +35,9 @@ const getPageTitle = () => {
   if (path.startsWith('/jobs')) return 'Jobs';
   if (path.startsWith('/status-requests')) return 'Status Requests'
   if (path.startsWith('/membersWorking')) return 'Members Working in Tasks';
+  if (path.startsWith('/mentors')) return 'Mentors';
+  if (path.startsWith('/referees')) return 'Referees';
+
   return 'Dashboard';
 };
 
