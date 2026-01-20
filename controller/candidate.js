@@ -1,3 +1,6 @@
+
+//---------20/01-------------3.14--------------------------
+
 const Candidate = require("../models/candidate");
 const path = require("path");
 const fs = require("fs");
@@ -89,13 +92,24 @@ exports.registerCandidate = async (req, res) => {
       authSource
     };
 
-    // Add resume info if file was uploaded
+    // Add resume info if file was uploaded OR Cloudinary URL provided
     if (req.file) {
+      // Local file upload
       candidateData.resume = {
         filename: req.file.filename,
         path: req.file.path,
         mimetype: req.file.mimetype,
-        size: req.file.size
+        size: req.file.size,
+        storageType: "local"
+      };
+    } else if (req.body.resumeUrl) {
+      // Cloudinary URL
+      candidateData.resume = {
+        filename: "resume-cloudinary",
+        path: req.body.resumeUrl,
+        mimetype: "application/pdf", // Default, adjust as needed
+        storageType: "cloudinary",
+        cloudinaryUrl: req.body.resumeUrl
       };
     }
 
@@ -105,6 +119,15 @@ exports.registerCandidate = async (req, res) => {
     // Remove sensitive/irrelevant data from response
     const candidateResponse = candidate.toObject();
     delete candidateResponse.__v;
+
+    // Add resume URL to response
+    if (candidate.resume) {
+      if (candidate.resume.storageType === "local") {
+        candidateResponse.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+      } else if (candidate.resume.storageType === "cloudinary") {
+        candidateResponse.resumeUrl = candidate.resume.cloudinaryUrl;
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -144,14 +167,18 @@ exports.registerCandidate = async (req, res) => {
 // ✅ Get candidate profile
 exports.getCandidateProfile = async (req, res) => {
   try {
-    // For now, we'll get candidate by email from query params
-    // Later, we'll use JWT token to get the candidate ID
-    const { email } = req.query;
+    // Try to get email from query params or JWT token
+    let email = req.query.email;
+    
+    // If no email in query, try to get from JWT token (if implemented)
+    if (!email && req.user) {
+      email = req.user.email;
+    }
     
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: "Email parameter is required"
+        message: "Email parameter is required or user must be authenticated"
       });
     }
 
@@ -168,9 +195,13 @@ exports.getCandidateProfile = async (req, res) => {
     const candidateResponse = candidate.toObject();
     delete candidateResponse.__v;
     
-    // Generate resume URL if resume exists
-    if (candidate.resume && candidate.resume.filename) {
-      candidateResponse.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+    // Generate resume URL based on storage type
+    if (candidate.resume) {
+      if (candidate.resume.storageType === "local") {
+        candidateResponse.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+      } else if (candidate.resume.storageType === "cloudinary") {
+        candidateResponse.resumeUrl = candidate.resume.cloudinaryUrl;
+      }
     }
 
     res.status(200).json({
@@ -187,17 +218,20 @@ exports.getCandidateProfile = async (req, res) => {
   }
 };
 
-// ✅ Serve resume file
+// ✅ Serve resume file (for local storage only)
 exports.serveResume = async (req, res) => {
   try {
     const { filename } = req.params;
     
-    const candidate = await Candidate.findOne({ "resume.filename": filename });
+    const candidate = await Candidate.findOne({ 
+      "resume.filename": filename,
+      "resume.storageType": "local"
+    });
     
     if (!candidate || !candidate.resume) {
       return res.status(404).json({
         success: false,
-        message: "Resume not found"
+        message: "Resume not found or not stored locally"
       });
     }
 
@@ -235,10 +269,25 @@ exports.getAllCandidates = async (req, res) => {
       .select("-__v")
       .sort({ createdAt: -1 });
 
+    // Add resume URLs for each candidate
+    const candidatesWithUrls = candidates.map(candidate => {
+      const candidateObj = candidate.toObject();
+      
+      if (candidate.resume) {
+        if (candidate.resume.storageType === "local") {
+          candidateObj.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+        } else if (candidate.resume.storageType === "cloudinary") {
+          candidateObj.resumeUrl = candidate.resume.cloudinaryUrl;
+        }
+      }
+      
+      return candidateObj;
+    });
+
     res.status(200).json({
       success: true,
       count: candidates.length,
-      data: candidates
+      data: candidatesWithUrls
     });
 
   } catch (error) {
@@ -266,23 +315,41 @@ exports.updateCandidateProfile = async (req, res) => {
       updateData.experience = parseInt(updateData.experience);
     }
 
-    // Handle resume update if file uploaded
+    // Handle resume update
+    let resumeUpdate = {};
+    
     if (req.file) {
-      updateData.resume = {
+      // Local file upload
+      resumeUpdate = {
         filename: req.file.filename,
         path: req.file.path,
         mimetype: req.file.mimetype,
-        size: req.file.size
+        size: req.file.size,
+        storageType: "local"
       };
 
-      // Delete old resume file if exists
+      // Delete old local resume file if exists
       const oldCandidate = await Candidate.findById(id);
-      if (oldCandidate && oldCandidate.resume && oldCandidate.resume.path) {
+      if (oldCandidate && oldCandidate.resume && oldCandidate.resume.storageType === "local" && oldCandidate.resume.path) {
         const oldPath = path.join(__dirname, "..", oldCandidate.resume.path);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
       }
+      
+      updateData.resume = resumeUpdate;
+      
+    } else if (req.body.resumeUrl) {
+      // Cloudinary URL
+      resumeUpdate = {
+        filename: "resume-cloudinary",
+        path: req.body.resumeUrl,
+        mimetype: req.body.resumeMimeType || "application/pdf",
+        storageType: "cloudinary",
+        cloudinaryUrl: req.body.resumeUrl
+      };
+      
+      updateData.resume = resumeUpdate;
     }
 
     const candidate = await Candidate.findByIdAndUpdate(
@@ -298,10 +365,20 @@ exports.updateCandidateProfile = async (req, res) => {
       });
     }
 
+    // Add resume URL to response
+    const responseCandidate = candidate.toObject();
+    if (candidate.resume) {
+      if (candidate.resume.storageType === "local") {
+        responseCandidate.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+      } else if (candidate.resume.storageType === "cloudinary") {
+        responseCandidate.resumeUrl = candidate.resume.cloudinaryUrl;
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
-      data: candidate
+      data: responseCandidate
     });
 
   } catch (error) {
@@ -335,12 +412,27 @@ exports.checkCandidateExists = async (req, res) => {
       });
     }
 
-    const candidate = await Candidate.findOne({ email }).select("email firstName lastName status");
+    const candidate = await Candidate.findOne({ email })
+      .select("email firstName lastName status authSource resume");
     
+    // Add resume URL if exists
+    let candidateData = null;
+    if (candidate) {
+      candidateData = candidate.toObject();
+      
+      if (candidate.resume) {
+        if (candidate.resume.storageType === "local") {
+          candidateData.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+        } else if (candidate.resume.storageType === "cloudinary") {
+          candidateData.resumeUrl = candidate.resume.cloudinaryUrl;
+        }
+      }
+    }
+
     res.status(200).json({
       success: true,
       exists: !!candidate,
-      data: candidate || null
+      data: candidateData
     });
 
   } catch (error) {
@@ -348,6 +440,90 @@ exports.checkCandidateExists = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while checking candidate"
+    });
+  }
+};
+
+// ✅ Get candidate by ID (for admin)
+exports.getCandidateById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const candidate = await Candidate.findById(id).select("-__v");
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: "Candidate not found"
+      });
+    }
+
+    // Add resume URL
+    const candidateResponse = candidate.toObject();
+    if (candidate.resume) {
+      if (candidate.resume.storageType === "local") {
+        candidateResponse.resumeUrl = `/api/candidate/resume/${candidate.resume.filename}`;
+      } else if (candidate.resume.storageType === "cloudinary") {
+        candidateResponse.resumeUrl = candidate.resume.cloudinaryUrl;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: candidateResponse
+    });
+
+  } catch (error) {
+    console.error("Error fetching candidate by ID:", error);
+    
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid candidate ID"
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching candidate"
+    });
+  }
+};
+
+// ✅ Delete candidate (admin only)
+exports.deleteCandidate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const candidate = await Candidate.findById(id);
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: "Candidate not found"
+      });
+    }
+
+    // Delete local resume file if exists
+    if (candidate.resume && candidate.resume.storageType === "local" && candidate.resume.path) {
+      const filePath = path.join(__dirname, "..", candidate.resume.path);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    await Candidate.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "Candidate deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error deleting candidate:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting candidate"
     });
   }
 };

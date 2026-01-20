@@ -1,8 +1,9 @@
+//------------------------16/01----------------1.12-------
+
 const express = require("express");
 const verifyToken = require("../middleware/auth");
 const router = express.Router();
 
-// 1. IMPORT THE NEW FUNCTION HERE
 const {
   getServicePost,
   addServicePost,
@@ -10,18 +11,30 @@ const {
   getSingleServicePost,
   applyToService,
   updateStatus,
-  updateServicePost // <--- Added this
+  updateServicePost 
 } = require("../controller/service");
 
+// --- ROUTES ---
 
+// Create a Job Post (Ideally should be protected with verifyToken)
 router.post('/', addServicePost); 
+
+// Apply to a specific Job
 router.post("/:id/apply", verifyToken, applyToService);
+
+// Get specific Job Details
 router.get("/:id", verifyToken, getSingleServicePost);
+
+// Get All Jobs
 router.get('/', verifyToken, getServicePost);
+
+// Delete a Job
 router.delete('/:id', verifyToken, deleteServicePost);
+
+// Update Application Status (Must be defined BEFORE /:id patch route)
 router.patch('/status', verifyToken, updateStatus);
 
-// 2. ADD THE ROUTE TO HANDLE THE EDIT REQUEST
+// Edit/Update a Job Post
 router.patch('/:id', verifyToken, updateServicePost); 
 
 module.exports = router;

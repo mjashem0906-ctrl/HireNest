@@ -1,4 +1,6 @@
-//---------------------------15/01-----------------12.56-----------------
+
+
+//--------------------------20/01---------------------------3.19-----
 
 const Service = require("../models/service");
 const Member = require("../models/member");
@@ -31,6 +33,9 @@ const addServicePost = async (req, res) => {
       });
     }
 
+    // Set memberId if user is logged in (admin)
+    const memberId = req.user?.memberId || null;
+
     const service = await Service.create({
       title,
       description,
@@ -44,7 +49,7 @@ const addServicePost = async (req, res) => {
       role,
       keySkills,
       refereedBy,
-      // memberId: req.user.memberId,
+      memberId,
     });
 
     res.status(201).json({
@@ -55,9 +60,21 @@ const addServicePost = async (req, res) => {
 
   } catch (error) {
     console.error("addServicePost error:", error);
+    
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: messages
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: "Failed to create service",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -65,18 +82,58 @@ const addServicePost = async (req, res) => {
 /* -------------------- GET ALL SERVICES (PUBLIC) -------------------- */
 const getServicePost = async (req, res) => {
   try {
-    const services = await Service.find()
-      .populate("memberId", "name email role photoUrl") // Added photoUrl
+    // Optional query parameters for filtering
+    const { 
+      employmentType, 
+      location, 
+      search,
+      status,
+      memberId 
+    } = req.query;
+    
+    let query = {};
+    
+    // Apply filters if provided
+    if (employmentType) {
+      query.employmentType = employmentType;
+    }
+    
+    if (location) {
+      query.location = { $regex: location, $options: 'i' };
+    }
+    
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { companyName: { $regex: search, $options: 'i' } },
+        { role: { $regex: search, $options: 'i' } },
+        { keySkills: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    // Filter by status in applied members
+    if (status && memberId) {
+      query["appliedMembers"] = {
+        $elemMatch: {
+          memberId: memberId,
+          status: status
+        }
+      };
+    }
+
+    const services = await Service.find(query)
+      .populate("memberId", "name email role photoUrl")
       .populate("refereedBy", "name email")
       .populate({
         path: "appliedMembers.memberId",
-        // 👇 Merged: Added 'resumeLink' and 'photoUrl' here for frontend access
-        select: "name email role resumeLink photoUrl", 
+        select: "name email role resumeLink photoUrl"
       })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
+      count: services.length,
       data: services,
     });
   } catch (error) {
@@ -84,6 +141,7 @@ const getServicePost = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch services",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -91,7 +149,8 @@ const getServicePost = async (req, res) => {
 /* -------------------- DELETE SERVICE (ADMIN ONLY) -------------------- */
 const deleteServicePost = async (req, res) => {
   try {
-    if (req.user.role !== "Admin") {
+    // Check if user is admin
+    if (req.user?.role !== "Admin") {
       return res.status(403).json({
         success: false,
         message: "Only admin can delete services",
@@ -116,6 +175,7 @@ const deleteServicePost = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete service",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -126,7 +186,6 @@ const getSingleServicePost = async (req, res) => {
     const service = await Service.findById(req.params.id)
       .populate("memberId", "name email photoUrl")
       .populate("refereedBy", "name email")
-      // 👇 Merged: Added resumeLink and photoUrl here
       .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
 
     if (!service) {
@@ -145,6 +204,7 @@ const getSingleServicePost = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch service",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -153,52 +213,113 @@ const getSingleServicePost = async (req, res) => {
 const applyToService = async (req, res) => {
   try {
     const serviceId = req.params.id;
-    const memberId = req.user.memberId; 
+    const memberId = req.user?.memberId;
+    
+    if (!memberId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Authentication required. Please log in." 
+      });
+    }
 
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ success: false, message: "Service not found" });
     }
 
+    // Check if already applied
     const alreadyApplied = service.appliedMembers.some(
       (a) => String(a.memberId) === String(memberId)
     );
 
     if (alreadyApplied) {
-      return res.status(400).json({ success: false, message: "Already applied" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Already applied to this service" 
+      });
     }
 
-    service.appliedMembers.push({
+    // Get applicant details
+    const applicant = await Member.findById(memberId);
+    if (!applicant) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Applicant not found" 
+      });
+    }
+
+    // Use provided resumeLink or fallback to member's profile resume
+    const { resumeLink } = req.body;
+    let finalResumeLink = resumeLink || applicant.resumeLink;
+
+    // Create application record
+    const application = {
       memberId,
+      resumeLink: finalResumeLink,
       status: 'Applied',
-      appliedDate: new Date()
-    });
+      appliedAt: new Date()
+    };
+
+    service.appliedMembers.push(application);
     await service.save();
 
-    // --- EMAIL NOTIFICATION LOGIC (Merged from File 1) ---
+    // --- EMAIL NOTIFICATION ---
     try {
-      const applicant = await Member.findById(memberId);
-      if (applicant) {
-        const candidateData = {
-          name: applicant.name,
-          email: applicant.email
-        };
+      const candidateData = {
+        name: applicant.name,
+        email: applicant.email,
+        resumeLink: finalResumeLink
+      };
 
-        // Send email to Admin
-        await sendAdminApplicationNotification(
-          "jobbridgekarnataka@gmail.com", // Or fetch dynamic admin email
-          candidateData,
-          service.title
+      // Send email to Admin
+      await sendAdminApplicationNotification(
+        process.env.ADMIN_EMAIL || "jobbridgekarnataka@gmail.com",
+        candidateData,
+        service.title
+      );
+
+      // Optionally send confirmation to applicant
+      if (applicant.email) {
+        await sendStatusUpdateNotification(
+          applicant.email,
+          applicant.name,
+          service.title,
+          'Applied'
         );
       }
     } catch (emailError) {
-      console.error("Admin notification email failed:", emailError);
+      console.error("Email notification failed:", emailError);
+      // Don't fail the request if email fails
     }
 
-    res.json({ success: true, message: "Application submitted successfully" });
+    // Get updated service with populated data
+    const updatedService = await Service.findById(serviceId)
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
+
+    res.json({ 
+      success: true, 
+      message: "Application submitted successfully",
+      data: {
+        service: updatedService,
+        application: application
+      }
+    });
+    
   } catch (error) {
     console.error("applyToService error:", error);
-    res.status(500).json({ success: false, message: "Application failed" });
+    
+    if (error.name === "CastError") {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid service ID" 
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false, 
+      message: "Application failed",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 };
 
@@ -207,28 +328,42 @@ const updateStatus = async (req, res) => {
   try {
     const { jobId, memberId, status } = req.body;
 
+    // Validate status
+    const allowedStatuses = ['Applied', 'Review', 'Shortlisted', 'Offer', 'Accepted', 'Rejected'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid status" 
+      });
+    }
+
     const updatedJob = await Service.findOneAndUpdate(
       { _id: jobId, "appliedMembers.memberId": memberId },
       {
-        $set: { "appliedMembers.$.status": status }
+        $set: { 
+          "appliedMembers.$.status": status,
+          "appliedMembers.$.updatedAt": new Date()
+        }
       },
       { new: true }
     )
       .populate("memberId", "name email photoUrl")
-      // 👇 Merged: Ensure resumeLink/photoUrl persists in response so UI doesn't break
       .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
 
     if (!updatedJob) {
-      return res.status(404).json({ message: "Job or Applicant not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Job or Applicant not found" 
+      });
     }
 
     res.status(200).json({
       success: true,
-      message: "Status updated successfully",
+      message: `Status updated to ${status} successfully`,
       data: updatedJob
     });
 
-    // --- EMAIL NOTIFICATION LOGIC (Merged from File 1) ---
+    // --- EMAIL NOTIFICATION ---
     try {
       // Find the specific applicant to get their email
       const applicant = updatedJob.appliedMembers.find(
@@ -249,9 +384,18 @@ const updateStatus = async (req, res) => {
 
   } catch (error) {
     console.error("updateStatus error:", error);
+    
+    if (error.name === "CastError") {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid job ID or member ID" 
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      message: error.message
+      message: "Failed to update status",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -265,21 +409,35 @@ const updateServicePost = async (req, res) => {
       education, passedOutYear, experience, salary, role, keySkills, refereedBy 
     } = req.body;
 
-    const updatedService = await Service.findByIdAndUpdate(
-      id,
-      { 
-        title, description, companyName, employmentType, location,
-        education, passedOutYear, experience, salary, role, keySkills, refereedBy 
-      },
-      { new: true } 
-    );
-
-    if (!updatedService) {
+    // Check if user is admin or the original poster
+    const existingService = await Service.findById(id);
+    if (!existingService) {
       return res.status(404).json({
         success: false,
         message: "Service post not found",
       });
     }
+
+    // Authorization check (admin or original poster)
+    if (req.user?.role !== "Admin" && 
+        String(existingService.memberId) !== String(req.user?.memberId)) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this service",
+      });
+    }
+
+    const updatedService = await Service.findByIdAndUpdate(
+      id,
+      { 
+        title, description, companyName, employmentType, location,
+        education, passedOutYear, experience, salary, role, keySkills, refereedBy,
+        updatedAt: new Date()
+      },
+      { new: true, runValidators: true }
+    )
+      .populate("memberId", "name email photoUrl")
+      .populate("refereedBy", "name email");
 
     res.status(200).json({
       success: true,
@@ -288,9 +446,108 @@ const updateServicePost = async (req, res) => {
     });
   } catch (error) {
     console.error("updateServicePost error:", error);
+    
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: messages
+      });
+    }
+    
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid service ID",
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: "Failed to update service",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
+/* -------------------- GET APPLICATIONS FOR A SERVICE (ADMIN) -------------------- */
+const getServiceApplications = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if user is admin
+    if (req.user?.role !== "Admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin can view applications",
+      });
+    }
+
+    const service = await Service.findById(id)
+      .populate({
+        path: "appliedMembers.memberId",
+        select: "name email phone mobileNumber role photoUrl resumeLink experience skills"
+      })
+      .select("title appliedMembers");
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        serviceTitle: service.title,
+        applications: service.appliedMembers,
+        totalApplications: service.appliedMembers.length
+      }
+    });
+  } catch (error) {
+    console.error("getServiceApplications error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch applications",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
+/* -------------------- BULK CREATE SERVICES (ADMIN) -------------------- */
+const bulkCreateServices = async (req, res) => {
+  try {
+    const servicesData = req.body;
+    
+    if (!Array.isArray(servicesData) || servicesData.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an array of service data"
+      });
+    }
+
+    // Add memberId to each service
+    const memberId = req.user?.memberId;
+    const servicesWithMemberId = servicesData.map(service => ({
+      ...service,
+      memberId
+    }));
+
+    const createdServices = await Service.insertMany(servicesWithMemberId);
+
+    res.status(201).json({
+      success: true,
+      message: `Successfully created ${createdServices.length} services`,
+      data: createdServices
+    });
+  } catch (error) {
+    console.error("bulkCreateServices error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create services in bulk",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -302,5 +559,7 @@ module.exports = {
   getSingleServicePost,
   applyToService,
   updateStatus,
-  updateServicePost 
+  updateServicePost,
+  getServiceApplications,
+  bulkCreateServices
 };

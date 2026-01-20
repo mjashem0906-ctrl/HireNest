@@ -1,4 +1,5 @@
-//------------------------------14/01-----------------------12.25------------------------
+
+//--------------------19/1----------11.54------------------
 
 const Member = require("../models/member");
 const Activity = require("../models/activity");
@@ -37,19 +38,23 @@ const getMemberById = async (req, res) => {
 ---------------------------------------- */
 const addMember = async (req, res) => {
   try {
-    // 1. Get clean text data
+    // 1. Get clean text data (Now includes 'photo' and 'resume' URLs)
     const payload = cleanPayload(req.body);
 
-    // 2. Handle File Uploads
-    // req.files is provided by multer
+    // 2. Handle Cloudinary URLs (Backward Compatibility)
+    // If the frontend sends 'photo', ensure it saves to 'photoUrl' if your Schema uses that
+    if (payload.photo) payload.photoUrl = payload.photo;
+    if (payload.resume) payload.resumeLink = payload.resume;
+
+    // 3. Handle File Uploads (Fallback for Multer/Local uploads)
     if (req.files) {
       if (req.files.photo) {
-        // Save path like: uploads/123456-image.jpg
-        // We replace backslashes (Windows) with forward slashes for URLs
-        payload.photoUrl = req.files.photo[0].path.replace(/\\/g, "/"); 
+        payload.photo = req.files.photo[0].path.replace(/\\/g, "/");
+        payload.photoUrl = payload.photo; // Keep both synced
       }
       if (req.files.resume) {
-        payload.resumeLink = req.files.resume[0].path.replace(/\\/g, "/");
+        payload.resume = req.files.resume[0].path.replace(/\\/g, "/");
+        payload.resumeLink = payload.resume; // Keep both synced
       }
     }
 
@@ -74,18 +79,26 @@ const addMember = async (req, res) => {
 ---------------------------------------- */
 const updateMember = async (req, res) => {
   try {
+    // 1. Get clean data (Now includes Cloudinary URLs from req.body)
     const payload = cleanPayload(req.body);
 
-    // 2. Handle File Uploads (Merge with existing text payload)
+    // 2. Handle Cloudinary URLs (Backward Compatibility)
+    if (payload.photo) payload.photoUrl = payload.photo;
+    if (payload.resume) payload.resumeLink = payload.resume;
+
+    // 3. Handle File Uploads (Fallback - merge if files exist)
     if (req.files) {
       if (req.files.photo) {
-        payload.photoUrl = req.files.photo[0].path.replace(/\\/g, "/");
+        payload.photo = req.files.photo[0].path.replace(/\\/g, "/");
+        payload.photoUrl = payload.photo;
       }
       if (req.files.resume) {
-        payload.resumeLink = req.files.resume[0].path.replace(/\\/g, "/");
+        payload.resume = req.files.resume[0].path.replace(/\\/g, "/");
+        payload.resumeLink = payload.resume;
       }
     }
 
+    // 4. Update the Database
     const updatedMember = await Member.findByIdAndUpdate(
       req.params.id,
       { $set: payload },
@@ -154,9 +167,13 @@ function cleanPayload(data) {
     "dateOfBirth", "memberType", "currentInstitutionOrCompany",
     "district", "address", 
     
-    // Note: We allow these to pass through if sent manually, 
-    // but the controller logic above overwrites them if a file is uploaded.
+    // ✅ ADDED THESE to allow Cloudinary Links
+    "photo", 
+    "resume",
+
+    // Legacy fields (Keep them for now)
     "photoUrl", 
+    "resumeLink",
     "forGrouping",
 
     // Mentor
@@ -166,7 +183,7 @@ function cleanPayload(data) {
     "seekerNeed", "highest_education", "highestEducationSpecialization",
     "highestEducationPassedOutYear", "fieldofStudy_Interest",
     "preferredJobRole_Sector", "workExp", "relocationStatus",
-    "preferredJobLocation", "resumeLink",
+    "preferredJobLocation", 
 
     // Opportunity Provider
     "jobOfferType", "offeringSector", "opportunityDescription",

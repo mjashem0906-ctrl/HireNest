@@ -4,6 +4,7 @@ const express = require("express");
 const { getAllMembers, getMemberById, updateMember, deleteMember, addMember } = require("../controller/member");
 const verifyToken = require('../middleware/auth');
 const router = express.Router();
+const { getSignedResumeUrl } = require("../utils/cloudinary");
 
 // --- 1. Import and Configure Multer ---
 const multer = require('multer');
@@ -47,5 +48,30 @@ router.post('/', uploadFields, addMember);
 router.put("/:id", verifyToken, uploadFields, updateMember);    
 
 router.delete("/:id", verifyToken, deleteMember); // Assuming checkRole/authorizeRoles logic is inside or handled
+
+router.get("/member/resume", async (req, res) => {
+  try {
+    const { publicId } = req.query;
+
+    if (!publicId) {
+      return res.status(400).json({ message: "publicId is required" });
+    }
+
+    const signedUrl = cloudinary.utils.private_download_url(
+      publicId,
+      "pdf",
+      {
+        resource_type: "raw",
+        expires_at: Math.floor(Date.now() / 1000) + 300, // 5 min
+      }
+    );
+
+    res.json({ url: signedUrl });
+  } catch (err) {
+    console.error("Resume URL error:", err);
+    res.status(500).json({ message: "Failed to generate resume URL" });
+  }
+});
+
 
 module.exports = router;
