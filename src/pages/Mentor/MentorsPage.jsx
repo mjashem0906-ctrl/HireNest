@@ -1,13 +1,17 @@
+//------20/01-----------------------12.59------------------
+
 import React, { useEffect, useState } from 'react';
 import { User, Search, Mail, Phone, Building } from 'lucide-react'; 
-import styles from '../Members/Members.module.scss'; 
-import CustomCard from '../../components/UI/CustomCard';
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { useAuth } from '../../context/AuthContext';
-import AddMentor from './AddMentor';
-import API from '../../axios'; // ✅ Import API
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+
+// Components & Context
+import CustomCard from '../../components/UI/CustomCard';
+import AddMentor from './AddMentor';
+import API from '../../axios';
+import { useAuth } from '../../context/AuthContext';
+import styles from '../Members/Members.module.scss'; // Reusing Members styles
 
 const MentorsPage = () => {
   const { sidebarCollapsed } = useOutletContext();
@@ -15,23 +19,20 @@ const MentorsPage = () => {
 
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true); // ✅ Added Loading State
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ UPDATED: Fetch Mentors directly from API to ensure data loads for everyone
+  // --- FETCH DATA ---
   useEffect(() => {
     const fetchMentors = async () => {
       try {
         setLoading(true);
-        // This endpoint returns all members (we fixed the permissions in the backend earlier)
+        // Fetch all members and filter for Mentors client-side
         const res = await API.get('/member'); 
-        
-        // Filter only Mentors (Case insensitive check for safety)
         const mentorList = res.data.filter(m => 
-            m.memberType && m.memberType.toLowerCase() === 'mentor'
+           m.memberType && m.memberType.toLowerCase() === 'mentor'
         );
-        
         setMentors(mentorList);
       } catch (error) {
         console.error("Failed to fetch mentors:", error);
@@ -43,6 +44,7 @@ const MentorsPage = () => {
     fetchMentors();
   }, []);
 
+  // --- HANDLERS ---
   const handleNewMentor = (newMentor) => {
     setMentors((prev) => [newMentor, ...prev]);
   };
@@ -53,38 +55,34 @@ const MentorsPage = () => {
     let match = driveUrl.match(/[?&]id=([^&]+)/);
     if (match) fileId = match[1];
     if (!fileId) { match = driveUrl.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
+    if (!fileId) { match = driveUrl.match(/uc\?id=([^&]+)/); if (match) fileId = match[1]; }
     return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
   };
 
+  // --- EXPORT LOGIC ---
   const buildMentorExportRows = () => {
-  return mentors
-    .filter(member => {
-      const search = searchTerm.toLowerCase();
-      return (
-        member.name?.toLowerCase().includes(search) ||
-        member.email?.toLowerCase().includes(search)
-      );
-    })
-    .map(m => ({
-      memberReferenceNumber: m.memberReferenceNumber || "",
-      timestamp: m.timestamp || "",
-      name: m.name || "",
-      age: m.age || "",
-      gender: m.gender || "",
-      mobileNumber: m.mobileNumber || "",
-      email: m.email || "",
-      district: m.district || "",
-      symMemberStatus: m.symMemberStatus || "",
-      memberType: m.memberType || "",
-
-      mentorExpertise: (m.mentorExpertise || []).join(", "),
-      mentorSpecialization: (m.mentorSpecialization || []).join(", "),
-      fieldofStudy_Interest: m.fieldofStudy_Interest || "",
-      levelOfSupport: (m.levelOfSupport || []).join(", "),
-      declaration_Mentor: m.declaration_Mentor || "",
-      submittingEmail: m.submittingEmail || "",
-      createdAt: m.createdAt || ""
-    }));
+    return mentors
+      .filter(member => {
+        const search = searchTerm.toLowerCase();
+        return (
+          member.name?.toLowerCase().includes(search) ||
+          member.email?.toLowerCase().includes(search)
+        );
+      })
+      .map(m => ({
+        memberReferenceNumber: m.memberReferenceNumber || "",
+        name: m.name || "",
+        age: m.age || "",
+        gender: m.gender || "",
+        mobileNumber: m.mobileNumber || "",
+        email: m.email || "",
+        district: m.district || "",
+        mentorExpertise: (m.mentorExpertise || []).join(", "),
+        mentorSpecialization: (m.mentorSpecialization || []).join(", "),
+        fieldofStudy_Interest: m.fieldofStudy_Interest || "",
+        levelOfSupport: (m.levelOfSupport || []).join(", "),
+        createdAt: m.createdAt || ""
+      }));
   };
 
   const exportMentorsToExcel = () => {
@@ -92,7 +90,6 @@ const MentorsPage = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Mentors");
-
     const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     saveAs(new Blob([buffer]), `Mentors_${new Date().toISOString().slice(0,10)}.xlsx`);
   };
@@ -101,64 +98,58 @@ const MentorsPage = () => {
     const data = buildMentorExportRows();
     const ws = XLSX.utils.json_to_sheet(data);
     const csv = XLSX.utils.sheet_to_csv(ws);
-
-    saveAs(
-      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
-      `Mentors_${new Date().toISOString().slice(0,10)}.csv`
-    );
+    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `Mentors_${new Date().toISOString().slice(0,10)}.csv`);
   };
-
 
   return (
     <div className={styles.members}>
-<div
-  className={styles.headerWrapper}
-  style={{ left: sidebarWidth + 'px' }}
->
-  <div className={styles.headerContent}>
+      {/* HEADER */}
+      <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
+        <div className={styles.headerContent}>
+          
+          {/* Page Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
+            <User size={28} color="#4f46e5"/> 
+            Mentors
+          </div>
+          
+          {/* Right Side Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
 
-    {/* Global Search */}
-    <div className={styles.cardSearch}>
-      <Search size={20} />
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-    </div>
+            {/* Export Buttons (Admin Only) */}
+            {user?.role === 'Admin' && (
+               <div className={styles.exportButtons}>
+                <button onClick={exportMentorsToExcel} className={styles.excel}>Export Excel</button>
+                <button onClick={exportMentorsToCSV} className={styles.csv}>Export CSV</button>
+              </div>
+            )}
+            
+            {/* Add Mentor (Admin Only) */}
+            {user?.role === 'Admin' && (
+               <AddMentor onSuccess={handleNewMentor} />
+            )}
 
-    {/* Placeholder to match ViewToggleSwitch spacing */}
-    <div style={{ width: 120 }} />
-
-    {/* Export Buttons */}
-    {user?.role === 'Admin' && (
-
-      
-      <div className={styles.exportButtons}>
-        <button onClick={exportMentorsToExcel} className={styles.excel}>
-          Export Excel
-        </button>
-        <button onClick={exportMentorsToCSV} className={styles.csv}>
-          Export CSV
-        </button>
+            {/* Search Bar */}
+            <div className={styles.cardSearch}>
+              <Search size={20} />
+              <input 
+                type="text" 
+                placeholder="Search mentors..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    )}
-
-    {/* Add Mentor */}
-    {user?.role === 'Admin' && (
-      <AddMentor onSuccess={handleNewMentor} />
-    )}
-
-  </div>
-</div>
-
 
       <div style={{ height: 120 }}></div>
 
+      {/* CONTENT */}
       <div className={styles.cardView}>
         {loading ? (
             <div style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>
+                <div className={styles.loader} style={{margin:'0 auto 20px'}}></div>
                 Loading Mentors...
             </div>
         ) : (
@@ -183,7 +174,7 @@ const MentorsPage = () => {
                     <h3>{member.name}</h3>
                     <span style={{
                         backgroundColor: '#f3e8ff', color: '#7e22ce', 
-                        padding: '2px 8px', borderRadius: '4px', fontSize: '12px'
+                        padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500'
                     }}>
                         Mentor
                     </span>
@@ -199,7 +190,7 @@ const MentorsPage = () => {
                     }
                     
                     {member.fieldofStudy_Interest && (
-                        <div style={{marginTop:'5px', color:'#555', fontSize:'0.9rem'}}>
+                        <div style={{marginTop:'8px', color:'#555', fontSize:'0.85rem', lineHeight:'1.4'}}>
                             <strong>Expertise:</strong> {member.fieldofStudy_Interest}
                         </div>
                     )}
@@ -208,7 +199,7 @@ const MentorsPage = () => {
                 </CustomCard>
             ))}
             
-            {mentors.length === 0 && (
+            {!loading && mentors.length === 0 && (
                 <div style={{textAlign:'center', width:'100%', padding:'20px', color:'#666'}}>
                     No Mentors found.
                 </div>

@@ -1,18 +1,20 @@
+
+//-----------------20/01---------11.48-----------------------
 import React, { useState } from "react";
-import { X } from "lucide-react"; 
-import FormInput from "../../components/UI/FormInput"; 
-import DropdownSelect from "../../components/UI/DropdownSelect"; 
-import API from "../../axios"; 
+import { X, Plus } from "lucide-react"; // Combined imports
+import FormInput from "../../components/UI/FormInput";
+import DropdownSelect from "../../components/UI/DropdownSelect";
+import API from "../../axios";
 import styles from "../../components/Models/AddModel.module.scss";
-import { Plus } from 'lucide-react';
+
 
 const initialState = {
   name: "",
   mobileNumber: "",
   email: "",
   gender: "",
-  memberType: "Referee",
-  
+  memberType: "Referee", // Hardcoded as this is the Referee component
+
   // Referee Specific Fields
   referrerStatus: "",
   referringOfferType: "",
@@ -28,6 +30,7 @@ function AddReferee({ onSuccess }) {
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
+    // Reset form when closing
     if (!isOpen) setFormData(initialState);
   };
 
@@ -51,22 +54,21 @@ function AddReferee({ onSuccess }) {
 
   return (
     <>
-      {/* 👇 Button now uses the SCSS class */}
+      {/* Trigger Button with Icon */}
       <button 
         onClick={toggleModal}
         className={styles.addRefereeBtn} 
       >
-      <Plus size={20} />
         Add Referee
       </button>
 
-      {/* The Modal */}
+      {/* Modal Overlay */}
       {isOpen && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <div className={styles.header}>
               <h2>Add New Referee</h2>
-              <button onClick={toggleModal}>
+              <button onClick={toggleModal} className={styles.closeButton}>
                 <X size={18} />
               </button>
             </div>
@@ -74,7 +76,7 @@ function AddReferee({ onSuccess }) {
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGrid}>
                 <FormInput 
-                  label="Name" 
+                  label="Name *" 
                   value={formData.name}
                   onChange={(v) => setFormData({ ...formData, name: v })} 
                   required 

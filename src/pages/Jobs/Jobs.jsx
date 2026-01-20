@@ -1,5 +1,7 @@
-//-----------------------------------15/01-------------------------------------12.24
+//---------------------------20/01--------------3.38------
+
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import styles from './Jobs.module.scss';
 import { BriefcaseBusiness, NotebookPen, Plus, Search, CheckCircle, XCircle, Clock, Loader, Trash2, Pencil, X, FileText, User, Edit, Check, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
@@ -11,9 +13,7 @@ import { useData } from '../../context/DataContext';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import Filter from '../../components/Filter/Filter';
-
-// 👇 IMPORT THE PIPELINE COMPONENT
-import StatusPipeline from './StatusPipeline'; 
+import StatusPipeline from './StatusPipeline';
 
 const EMPLOYMENT_TYPES = [
     "Full-time",
@@ -25,7 +25,7 @@ const EMPLOYMENT_TYPES = [
 ];
 
 // =========================================================================================
-// COMPONENT 1: BulkCSVReviewModal (Handles editing/reviewing CSV data before upload)
+// COMPONENT 1: BulkCSVReviewModal
 // =========================================================================================
 const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, refereesList }) => {
     const [editingIndex, setEditingIndex] = useState(null);
@@ -100,7 +100,6 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
         }));
     };
 
-    // ... (Inline styles from original file preserved below for brevity)
     const modalStyles = {
         overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 },
         modal: { backgroundColor: 'white', borderRadius: '12px', padding: '30px', width: '1100px', maxWidth: '95%', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)' },
@@ -266,7 +265,7 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
 };
 
 // =========================================================================================
-// COMPONENT 2: ProvidedForm (Create/Edit Modal with CSV Upload)
+// COMPONENT 2: ProvidedForm
 // =========================================================================================
 const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [title, setTitle] = useState('');
@@ -281,7 +280,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [role, setRole] = useState('');
     const [keySkills, setKeySkills] = useState('');
     
-    // Get Member Data for Referees
     const { memberContext } = useData(); 
     const [refereedBy, setRefereedBy] = useState('');
     const [refereesList, setRefereesList] = useState([]);
@@ -293,7 +291,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         }
     }, [memberContext]);
 
-    // Initialize Form Data
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
@@ -315,7 +312,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     
                 setRefereedBy(refId);
             } else {
-                // Reset
                 setTitle('');
                 setCompanyName('');
                 setEmploymentType(EMPLOYMENT_TYPES[0]);
@@ -332,7 +328,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         }
     }, [isOpen, initialData]);
 
-    // --- CSV File Handling ---
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -370,7 +365,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             }
 
             if (bulkData.length === 1) {
-                // Scenario 1: Only one job - auto-fill the form
                 const job = bulkData[0];
                 setTitle(job.title);
                 setCompanyName(job.companyName);
@@ -386,7 +380,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 setRefereedBy('');
                 alert("Data loaded into form. Review and click Post.");
             } else {
-                // Scenario 2: Multiple jobs - Trigger bulk upload with review modal
                 onSubmit(bulkData, true);
             }
         };
@@ -426,7 +419,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     </button>
                 </div>
 
-                {/* CSV Upload Section */}
                 {!initialData && (
                     <div style={{ borderBottom: '1px solid #e5e7eb', marginBottom: '20px', paddingBottom: '10px' }}>
                         <input type="file" accept=".csv" id="csv-upload" style={{ display: 'none' }} onChange={handleFileChange} />
@@ -437,11 +429,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    {/* Job Title */}
                     <label style={modalStyles.label}>Job Title *</label>
                     <input style={modalStyles.input} type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Backend Developer" required />
 
-                    {/* Company & Role */}
                     <div style={modalStyles.row}>
                         <div style={{ flex: 1 }}>
                             <label style={modalStyles.label}>Company Name</label>
@@ -453,7 +443,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
                     </div>
 
-                    {/* Employment Type & Location */}
                     <div style={modalStyles.row}>
                         <div style={{ flex: 1 }}>
                             <label style={modalStyles.label}>Employment Type</label>
@@ -469,7 +458,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
                     </div>
 
-                    {/* Experience & Salary */}
                     <div style={modalStyles.row}>
                         <div style={{ flex: 1 }}>
                             <label style={modalStyles.label}>Experience</label>
@@ -481,7 +469,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
                     </div>
 
-                    {/* Education & Year */}
                     <div style={modalStyles.row}>
                         <div style={{ flex: 2 }}>
                             <label style={modalStyles.label}>Education</label>
@@ -493,7 +480,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
                     </div>
 
-                    {/* REFEREED PERSON DROPDOWN */}
                     <label style={modalStyles.label}>Refereed Person (Optional)</label>
                     <select 
                         style={modalStyles.select} 
@@ -512,16 +498,226 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         )}
                     </select>
 
-                    {/* Skills */}
                     <label style={modalStyles.label}>Key Skills</label>
                     <input style={modalStyles.input} type="text" value={keySkills} onChange={(e) => setKeySkills(e.target.value)} placeholder="e.g. React, Node.js, SQL" />
                     
-                    {/* Description */}
                     <label style={modalStyles.label}>Description</label>
                     <textarea style={modalStyles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the job role..." required />
 
                     <button type="submit" style={modalStyles.button}>
                         {initialData ? 'Update Job' : 'Post Job'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+// =========================================================================================
+// COMPONENT 3: ResumeUploadModal
+// =========================================================================================
+const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle }) => {
+    const [resumeFile, setResumeFile] = useState(null);
+    const [fileName, setFileName] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setResumeFile(null);
+            setFileName('');
+            setIsUploading(false);
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
+        setResumeFile(null);
+        setFileName('');
+    }, [jobTitle]);
+
+    if (!isOpen) return null;
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Please upload a PDF or Word document only');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size should be less than 5MB');
+                return;
+            }
+
+            setResumeFile(file);
+            setFileName(file.name);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!resumeFile) {
+            alert('Please select a resume file');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            await onUpload(resumeFile);
+            setResumeFile(null);
+            setFileName('');
+            onClose();
+        } catch (error) {
+            alert('Failed to upload resume');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleClose = () => {
+        setResumeFile(null);
+        setFileName('');
+        setIsUploading(false);
+        onClose();
+    };
+
+    const modalStyles = {
+        overlay: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+        },
+        modal: {
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '24px',
+            width: '500px',
+            maxWidth: '90%',
+            position: 'relative'
+        },
+        title: {
+            margin: '0 0 20px 0',
+            color: '#111827',
+            fontSize: '1.25rem'
+        },
+        fileInput: {
+            width: '100%',
+            padding: '12px',
+            border: '2px dashed #d1d5db',
+            borderRadius: '6px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'border-color 0.2s'
+        },
+        selectedFile: {
+            backgroundColor: '#f3f4f6',
+            padding: '10px',
+            borderRadius: '6px',
+            width: '100%',
+            textAlign: 'center',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            marginTop: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+        },
+        button: {
+            padding: '12px 24px',
+            backgroundColor: '#2563eb',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: '600',
+            width: '100%',
+            transition: 'background-color 0.2s'
+        },
+        disabledButton: {
+            backgroundColor: '#9ca3af',
+            cursor: 'not-allowed'
+        }
+    };
+
+    return (
+        <div style={modalStyles.overlay}>
+            <div style={modalStyles.modal}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={modalStyles.title}>Upload Resume for {jobTitle}</h3>
+                    <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="file"
+                        id="resume-upload"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                    />
+
+                    <label 
+                        htmlFor="resume-upload" 
+                        style={modalStyles.fileInput}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
+                        onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileText size={20} />
+                            <span>Click to select resume</span>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                            (PDF/DOC/DOCX, max 5MB)
+                        </div>
+                        
+                        {fileName ? (
+                            <div style={modalStyles.selectedFile}>
+                                <FileText size={16} />
+                                <span><strong>Selected:</strong> {fileName}</span>
+                            </div>
+                        ) : (
+                            <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '8px' }}>
+                                No file selected
+                            </div>
+                        )}
+                    </label>
+
+                    <button
+                        type="submit"
+                        disabled={!resumeFile || isUploading}
+                        style={{
+                            ...modalStyles.button,
+                            ...((!resumeFile || isUploading) && modalStyles.disabledButton)
+                        }}
+                        onMouseEnter={(e) => {
+                            if (resumeFile && !isUploading) {
+                                e.currentTarget.style.backgroundColor = '#1d4ed8';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (resumeFile && !isUploading) {
+                                e.currentTarget.style.backgroundColor = '#2563eb';
+                            }
+                        }}
+                    >
+                        {isUploading ? 'Uploading...' : 'Upload & Apply'}
                     </button>
                 </form>
             </div>
@@ -563,11 +759,10 @@ function Jobs() {
         finalNumber: ""      // Max applicants
     });
     
-    // Bulk CSV Modal States
     const [showBulkReviewModal, setShowBulkReviewModal] = useState(false);
     const [bulkReviewJobs, setBulkReviewJobs] = useState([]);
-    
-    // Edit state
+    const [showResumeModal, setShowResumeModal] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
     const [editingJob, setEditingJob] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -575,11 +770,10 @@ function Jobs() {
     const { jobContext, memberContext } = useData();
     const navigate = useNavigate();
 
-    // Referees List
     const [refereesList, setRefereesList] = useState([]);
 
     // Backend URL for Local file serving
-    const BACKEND_URL = "http://localhost:5000";    
+    const BACKEND_URL = "http://localhost:5000";
 
     useEffect(() => {
         if (memberContext) {
@@ -590,168 +784,164 @@ function Jobs() {
 
     // Names for "Refereed Person" select
     const refereeNameOptions = React.useMemo(
-    () => refereesList.map(r => r.name || r.email || "Unknown"),
-    [refereesList]
+        () => refereesList.map(r => r.name || r.email || "Unknown"),
+        [refereesList]
     );
 
-    useEffect(() => {
-        fetchJobPosts();
-    }, [user, jobContext]);
-
-        // ---------------------------------------------
+    // ---------------------------------------------
     // APPLY FILTERS TO A GIVEN JOB ARRAY
     // ---------------------------------------------
     const applyFilters = (jobs) => {
-    const search = globalFilter.trim().toLowerCase();
+        const search = globalFilter.trim().toLowerCase();
 
-    // Destructure our filter state
-    const {
-        title,
-        companyName,
-        role,
-        employmentType,
-        location,
-        experience,
-        salary,
-        education,
-        passedOutYear,
-        keySkills,
-        refereedBy,
-        description,
-        startDate,
-        endDate,
-        initialNumber,
-        finalNumber
-    } = filters;
+        // Destructure our filter state
+        const {
+            title,
+            companyName,
+            role,
+            employmentType,
+            location,
+            experience,
+            salary,
+            education,
+            passedOutYear,
+            keySkills,
+            refereedBy,
+            description,
+            startDate,
+            endDate,
+            initialNumber,
+            finalNumber
+        } = filters;
 
-    // Pre-normalise text filters to lower case
-    const titleFilter        = title?.trim().toLowerCase()        || "";
-    const companyFilter      = companyName?.trim().toLowerCase()  || "";
-    const roleFilter         = role?.trim().toLowerCase()         || "";
-    const locationFilter     = location?.trim().toLowerCase()     || "";
-    const experienceFilter   = experience?.trim().toLowerCase()   || "";
-    const salaryFilter       = salary?.trim().toLowerCase()       || "";
-    const educationFilter    = education?.trim().toLowerCase()    || "";
-    const passoutFilter      = passedOutYear?.trim().toLowerCase()|| "";
-    const keySkillsFilter    = keySkills?.trim().toLowerCase()    || "";
-    const descriptionFilter  = description?.trim().toLowerCase()  || "";
-    const refereedByFilter   = refereedBy?.trim().toLowerCase()   || "";
+        // Pre-normalise text filters to lower case
+        const titleFilter = title?.trim().toLowerCase() || "";
+        const companyFilter = companyName?.trim().toLowerCase() || "";
+        const roleFilter = role?.trim().toLowerCase() || "";
+        const locationFilter = location?.trim().toLowerCase() || "";
+        const experienceFilter = experience?.trim().toLowerCase() || "";
+        const salaryFilter = salary?.trim().toLowerCase() || "";
+        const educationFilter = education?.trim().toLowerCase() || "";
+        const passoutFilter = passedOutYear?.trim().toLowerCase() || "";
+        const keySkillsFilter = keySkills?.trim().toLowerCase() || "";
+        const descriptionFilter = description?.trim().toLowerCase() || "";
+        const refereedByFilter = refereedBy?.trim().toLowerCase() || "";
 
-    const toDate = (val) => {
-        if (!val) return null;
-        if (val instanceof Date) return val;
-        return new Date(val);
-    };
+        const toDate = (val) => {
+            if (!val) return null;
+            if (val instanceof Date) return val;
+            return new Date(val);
+        };
 
-    const start = toDate(startDate);
-    const end   = toDate(endDate);
+        const start = toDate(startDate);
+        const end = toDate(endDate);
 
-    return jobs.filter((job) => {
-        // ---------------------------
-        // 0) Global search box
-        // ---------------------------
-        if (search) {
-        const haystack = [
-            job.title,
-            job.companyName,
-            job.location,
-            job.role,
-            job.description,
-            job.keySkills
-        ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+        return jobs.filter((job) => {
+            // ---------------------------
+            // 0) Global search box
+            // ---------------------------
+            if (search) {
+                const haystack = [
+                    job.title,
+                    job.companyName,
+                    job.location,
+                    job.role,
+                    job.description,
+                    job.keySkills
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
 
-        if (!haystack.includes(search)) return false;
-        }
+                if (!haystack.includes(search)) return false;
+            }
 
-        // ---------------------------
-        // 1) Individual text filters
-        // ---------------------------
+            // ---------------------------
+            // 1) Individual text filters
+            // ---------------------------
 
-        if (titleFilter) {
-        if ((job.title || "").toLowerCase() !== titleFilter) return false;
-        }
+            if (titleFilter) {
+                if ((job.title || "").toLowerCase() !== titleFilter) return false;
+            }
 
-        if (companyFilter) {
-        if ((job.companyName || "").toLowerCase() !== companyFilter) return false;
-        }
+            if (companyFilter) {
+                if ((job.companyName || "").toLowerCase() !== companyFilter) return false;
+            }
 
-        if (roleFilter) {
-        if ((job.role || "").toLowerCase() !== roleFilter) return false;
-        }
+            if (roleFilter) {
+                if ((job.role || "").toLowerCase() !== roleFilter) return false;
+            }
 
-        if (locationFilter) {
-        if ((job.location || "").toLowerCase() !== locationFilter) return false;
-        }
+            if (locationFilter) {
+                if ((job.location || "").toLowerCase() !== locationFilter) return false;
+            }
 
-        if (experienceFilter) {
-        if ((job.experience || "").toLowerCase() !== experienceFilter) return false;
-        }
+            if (experienceFilter) {
+                if ((job.experience || "").toLowerCase() !== experienceFilter) return false;
+            }
 
-        if (salaryFilter) {
-        if ((job.salary || "").toLowerCase() !== salaryFilter) return false;
-        }
+            if (salaryFilter) {
+                if ((job.salary || "").toLowerCase() !== salaryFilter) return false;
+            }
 
-        if (educationFilter) {
-        if ((job.education || "").toLowerCase() !== educationFilter) return false;
-        }
+            if (educationFilter) {
+                if ((job.education || "").toLowerCase() !== educationFilter) return false;
+            }
 
-        if (passoutFilter) {
-        if ((String(job.passedOutYear || "")).toLowerCase() !== passoutFilter) return false;
-        }
+            if (passoutFilter) {
+                if ((String(job.passedOutYear || "")).toLowerCase() !== passoutFilter) return false;
+            }
 
-        // For skills, you may want equality on the whole string:
-        if (keySkillsFilter) {
-        if ((job.keySkills || "").toLowerCase() !== keySkillsFilter) return false;
-        // OR: if you split skills and want "contains" behaviour, we can adjust this separately
-        }
+            // For skills, you may want equality on the whole string:
+            if (keySkillsFilter) {
+                if ((job.keySkills || "").toLowerCase() !== keySkillsFilter) return false;
+                // OR: if you split skills and want "contains" behaviour, we can adjust this separately
+            }
 
-        if (descriptionFilter) {
-        if (!(job.description || "").toLowerCase().includes(descriptionFilter)) return false;
-        }
+            if (descriptionFilter) {
+                if (!(job.description || "").toLowerCase().includes(descriptionFilter)) return false;
+            }
 
-        // ---------------------------
-        // 2) Employment type (exact)
-        // ---------------------------
-        if (employmentType && job.employmentType !== employmentType) {
-        return false;
-        }
+            // ---------------------------
+            // 2) Employment type (exact)
+            // ---------------------------
+            if (employmentType && job.employmentType !== employmentType) {
+                return false;
+            }
 
-        // ---------------------------
-        // 3) Refereed Person (by name/email)
-        // ---------------------------
-        if (refereedByFilter) {
-        const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
-        if (refName !== refereedByFilter) return false;
-        }
+            // ---------------------------
+            // 3) Refereed Person (by name/email)
+            // ---------------------------
+            if (refereedByFilter) {
+                const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
+                if (refName !== refereedByFilter) return false;
+            }
 
-        // ---------------------------
-        // 4) Date range on createdAt
-        // ---------------------------
-        if (start || end) {
-        if (!job.createdAt) return false;
-        const created = new Date(job.createdAt);
-        if (start && created < start) return false;
-        if (end && created > end) return false;
-        }
+            // ---------------------------
+            // 4) Date range on createdAt
+            // ---------------------------
+            if (start || end) {
+                if (!job.createdAt) return false;
+                const created = new Date(job.createdAt);
+                if (start && created < start) return false;
+                if (end && created > end) return false;
+            }
 
-        // ---------------------------
-        // 5) Applicant count range
-        // ---------------------------
-        const applicantsCount = job.appliedMembers?.length || 0;
+            // ---------------------------
+            // 5) Applicant count range
+            // ---------------------------
+            const applicantsCount = job.appliedMembers?.length || 0;
 
-        if (initialNumber !== "" && initialNumber != null) {
-        if (applicantsCount < Number(initialNumber)) return false;
-        }
+            if (initialNumber !== "" && initialNumber != null) {
+                if (applicantsCount < Number(initialNumber)) return false;
+            }
 
-        if (finalNumber !== "" && finalNumber != null) {
-        if (applicantsCount > Number(finalNumber)) return false;
-        }
+            if (finalNumber !== "" && finalNumber != null) {
+                if (applicantsCount > Number(finalNumber)) return false;
+            }
 
-        return true;
-    });
+            return true;
+        });
     };
 
     // ---------------------------------------------
@@ -764,7 +954,7 @@ function Jobs() {
         navigate(`/jobs/${job._id}`);
     };
 
-        // Unique lists for selects (optional)
+    // Unique lists for selects (optional)
     const locationOptions = React.useMemo(() => {
         const set = new Set();
         jobPosts.forEach(j => j.location && set.add(j.location));
@@ -833,115 +1023,90 @@ function Jobs() {
         return Array.from(set);
     }, [jobPosts]);
 
-const filterFields = [
-  // All create-job fields:
-
-  {
-    name: 'title',
-    label: 'Job Title',
-    type: 'select',
-    options: titleOptions
-  },
-  {
-    name: 'companyName',
-    label: 'Company',
-    type: 'select',
-    options: companyOptions
-  },
-  {
-    name: 'role',
-    label: 'Job Role',
-    type: 'select',
-    options: roleOptions
-  },
-
-  {
-    name: 'employmentType',
-    label: 'Employment Type',
-    type: 'select',
-    options: EMPLOYMENT_TYPES,          // ["Full-time", ...]
-  },
-
-  {
-    name: 'location',
-    label: 'Location',
-    type: 'select',
-    options: locationOptions
-  },
-  {
-    name: 'experience',
-    label: 'Experience',
-    type: 'select',
-    options: experienceOptions
-  },
-  {
-    name: 'salary',
-    label: 'Salary',
-    type: 'select',
-    options: salaryOptions
-  },
-  {
-    name: 'education',
-    label: 'Education',
-    type: 'select',
-    options: educationOptions
-  },
-  {
-    name: 'passedOutYear',
-    label: 'Passout Year',
-    type: 'select',
-    options: passedOutYearOptions
-  },
-  {
-    name: 'keySkills',
-    label: 'Key Skills',
-    type: 'select',
-    options: keySkillsOptions
-  },
-
-  {
-    name: 'refereedBy',
-    label: 'Refereed Person',
-    type: 'select',
-    options: refereeNameOptions,        // array of strings (names/emails)
-  },
-
-  // I would keep description as text; having a dropdown for entire descriptions is not very usable.
-  { name: 'description',  label: 'Description Contains', type: 'text' },
-
-  // Extra filters you already had:
-
-  { name: 'startDate',     label: 'Posted From',     type: 'startDate' },
-  { name: 'endDate',       label: 'Posted To',       type: 'endDate' },
-  { name: 'initialNumber', label: 'Min Applicants',  type: 'initialNumber' },
-  { name: 'finalNumber',   label: 'Max Applicants',  type: 'finalNumber' }
-];
+    const filterFields = [
+        // All create-job fields:
+        {
+            name: 'title',
+            label: 'Job Title',
+            type: 'select',
+            options: titleOptions
+        },
+        {
+            name: 'companyName',
+            label: 'Company',
+            type: 'select',
+            options: companyOptions
+        },
+        {
+            name: 'role',
+            label: 'Job Role',
+            type: 'select',
+            options: roleOptions
+        },
+        {
+            name: 'employmentType',
+            label: 'Employment Type',
+            type: 'select',
+            options: EMPLOYMENT_TYPES,          // ["Full-time", ...]
+        },
+        {
+            name: 'location',
+            label: 'Location',
+            type: 'select',
+            options: locationOptions
+        },
+        {
+            name: 'experience',
+            label: 'Experience',
+            type: 'select',
+            options: experienceOptions
+        },
+        {
+            name: 'salary',
+            label: 'Salary',
+            type: 'select',
+            options: salaryOptions
+        },
+        {
+            name: 'education',
+            label: 'Education',
+            type: 'select',
+            options: educationOptions
+        },
+        {
+            name: 'passedOutYear',
+            label: 'Passout Year',
+            type: 'select',
+            options: passedOutYearOptions
+        },
+        {
+            name: 'keySkills',
+            label: 'Key Skills',
+            type: 'select',
+            options: keySkillsOptions
+        },
+        {
+            name: 'refereedBy',
+            label: 'Refereed Person',
+            type: 'select',
+            options: refereeNameOptions,        // array of strings (names/emails)
+        },
+        // I would keep description as text; having a dropdown for entire descriptions is not very usable.
+        { name: 'description',  label: 'Description Contains', type: 'text' },
+        // Extra filters you already had:
+        { name: 'startDate',     label: 'Posted From',     type: 'startDate' },
+        { name: 'endDate',       label: 'Posted To',       type: 'endDate' },
+        { name: 'initialNumber', label: 'Min Applicants',  type: 'initialNumber' },
+        { name: 'finalNumber',   label: 'Max Applicants',  type: 'finalNumber' }
+    ];
 
     // --- HELPER: FILE URL ---
     const getFileUrl = (url) => {
         if (!url) return "#";
-        // Handle Local Uploads vs Cloud links
         if (url.startsWith("uploads") || url.includes("\\")) {
             return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
         }
         return url;
-    };
-
-    // --- CRUD OPERATIONS ---
-
-    const handleDelete = async (jobId, e) => {
-        e.stopPropagation(); 
-        if (!window.confirm("Are you sure you want to delete this job post?")) return;
-
-        try {
-            await API.delete(`/service/${jobId}`);
-            setJobPosts(prev => prev.filter(job => job._id !== jobId));
-            setMyPost(prev => prev.filter(job => job._id !== jobId));
-            alert("Job deleted successfully");
-        } catch (error) {
-            console.error("Delete failed:", error);
-            alert("Failed to delete job.");
-        }
     };
 
     const checkIsApplied = (job, userId) => {
@@ -963,7 +1128,7 @@ const filterFields = [
         switch (dbStatus) {
             case 'Applied': return 'Submitted';
             case 'Review': return 'Review';
-            case 'Shortlisted': return 'Interview'; 
+            case 'Shortlisted': return 'Interview';
             case 'Offer': return 'Offer';
             case 'Accepted': return 'Hired';
             case 'Rejected': return 'Rejected';
@@ -971,7 +1136,135 @@ const filterFields = [
         }
     };
 
-    // --- EDIT & MODAL HANDLERS ---
+    const hasDefaultResume = () => {
+        return user?.resumeLink ? true : false;
+    };
+
+    // --- API Operations ---
+    const fetchJobPosts = async () => {
+        try {
+            const res = await API.get('/service');
+            const allJobs = res.data.data;
+            setJobPosts(allJobs);
+
+            if (user) {
+                if (user.role === 'Admin') {
+                    const adminJobs = allJobs.filter(job => 
+                        String(job.memberId?._id || job.memberId) === String(user.memberId)
+                    );
+                    setMyPost(adminJobs);
+                } else {
+                    const myApplications = allJobs.filter(job => 
+                        checkIsApplied(job, user.memberId)
+                    );
+                    setMyPost(myApplications);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching jobs:", error);
+            if (jobContext && jobContext.length > 0) setJobPosts(jobContext);
+        }
+    };
+
+    const handleDelete = async (jobId, e) => {
+        e.stopPropagation(); 
+        if (!window.confirm("Are you sure you want to delete this job post?")) return;
+
+        try {
+            await API.delete(`/service/${jobId}`);
+            setJobPosts(prev => prev.filter(job => job._id !== jobId));
+            setMyPost(prev => prev.filter(job => job._id !== jobId));
+            alert("Job deleted successfully");
+        } catch (error) {
+            console.error("Delete failed:", error);
+            alert("Failed to delete job.");
+        }
+    };
+
+    const handleStatusChange = async (jobId, memberId, newStatus) => {
+        try {
+            await API.patch(`/service/status`, { jobId, memberId, status: newStatus });
+            alert(`Status updated to ${newStatus}`);
+            fetchJobPosts();
+        } catch (error) {
+            console.error("Failed to update status", error);
+        }
+    };
+
+    const uploadToCloudinary = async (file) => {
+        if (!file) return null;
+        const cloudName = "dwelwaavj";
+        const uploadPreset = "jobbridge_preset";
+        const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+        const data = new FormData();
+        data.append("file", file);
+        data.append("upload_preset", uploadPreset);
+
+        try {
+            const res = await axios.post(api, data);
+            return res.data.secure_url;
+        } catch (error) {
+            console.error("Cloudinary Upload Error:", error);
+            throw new Error("Failed to upload file to cloud.");
+        }
+    };
+
+    const handleApply = async (job, resumeFile = null) => {
+        try {
+            if (!resumeFile && user.role === 'Member') {
+                setSelectedJob(job);
+                setShowResumeModal(true);
+                return;
+            }
+
+            let finalResumeLink = null;
+            if (resumeFile) {
+                finalResumeLink = await uploadToCloudinary(resumeFile);
+            }
+
+            console.log("Applying for job with resumeLink:", finalResumeLink);
+            const applyRes = await API.post(`/service/${job._id}/apply`, {
+                resumeLink: finalResumeLink
+            });
+            console.log("Apply Response:", applyRes.data);
+
+            alert("Applied successfully");
+            fetchJobPosts();
+            setShowResumeModal(false);
+        } catch (error) {
+            alert(error.response?.data?.message || "Failed to apply");
+        }
+    };
+
+    const handleUploadAndApply = async (resumeFile) => {
+        if (selectedJob) {
+            await handleApply(selectedJob, resumeFile);
+        }
+    };
+
+    const handleApplyClick = (e, job) => {
+        e.stopPropagation();
+        if (isApplied(job)) return;
+
+        if (hasDefaultResume()) {
+            const useDefault = window.confirm(
+                "You have a default resume on file. Would you like to use it?\n\n" +
+                "Click OK to use default resume\n" +
+                "Click Cancel to upload a different resume"
+            );
+
+            if (useDefault) {
+                handleApply(job);
+            } else {
+                setSelectedJob(job);
+                setShowResumeModal(true);
+            }
+        } else {
+            setSelectedJob(job);
+            setShowResumeModal(true);
+        }
+    };
 
     const handleEditClick = (e, job) => {
         e.stopPropagation();
@@ -1010,7 +1303,35 @@ const filterFields = [
         }
     };
 
-    // --- BULK CSV HANDLERS ---
+    const handleAddProvided = async (jobData) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        const dataToSend = {
+            ...jobData,
+            refereedBy: jobData.refereedBy || null
+        };
+
+        try {
+            const response = await API.post('/service', dataToSend);
+            const newJob = response.data.data || response.data;
+
+            setJobPosts(prev => [newJob, ...prev]);
+            
+            if (user.role === 'Admin') {
+                setMyPost(prev => [newJob, ...prev]);
+            }
+            
+            handleCloseModal();
+            alert("Job posted successfully!");
+        } catch (error) {
+            console.error("Error adding Job:", error);
+            alert("Failed to save job.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleBulkCSVUpload = (data) => {
         setBulkReviewJobs(data);
         setShowBulkReviewModal(true);
@@ -1048,7 +1369,6 @@ const filterFields = [
 
     const handleFormSubmit = async (data, isBulk = false) => {
         if (isBulk) {
-            // Show bulk review modal instead of immediate posting
             handleBulkCSVUpload(data);
         } else {
             if (editingJob) {
@@ -1059,8 +1379,7 @@ const filterFields = [
         }
     };
 
-    // --- EXPORT HANDLERS ---
-
+    // --- Export Functions ---
     const buildJobsExportRows = () => {
         const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
 
@@ -1103,83 +1422,7 @@ const filterFields = [
         );
     };
 
-    // --- API CALLS ---
-
-    const fetchJobPosts = async () => {
-        try {
-            const res = await API.get('/service');
-            const allJobs = res.data.data;
-            setJobPosts(allJobs);
-
-            if (user) {
-                if (user.role === 'Admin') {
-                    const adminJobs = allJobs.filter(job => 
-                        String(job.memberId?._id || job.memberId) === String(user.memberId)
-                    );
-                    setMyPost(adminJobs);
-                } else {
-                    const myApplications = allJobs.filter(job => 
-                        checkIsApplied(job, user.memberId)
-                    );
-                    setMyPost(myApplications);
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-            if (jobContext && jobContext.length > 0) setJobPosts(jobContext);
-        }
-    };
-
-    const handleStatusChange = async (jobId, memberId, newStatus) => {
-        try {
-            await API.patch(`/service/status`, { jobId, memberId, status: newStatus });
-            alert(`Status updated to ${newStatus}`);
-            fetchJobPosts(); 
-        } catch (error) {
-            console.error("Failed to update status", error);
-        }
-    };
-
-    const handleAddProvided = async (jobData) => {
-        if (isSubmitting) return;
-        setIsSubmitting(true);
-
-        const dataToSend = {
-            ...jobData,
-            refereedBy: jobData.refereedBy || null
-        };
-
-        try {
-            const response = await API.post('/service', dataToSend);
-            const newJob = response.data.data || response.data;
-
-            setJobPosts(prev => [newJob, ...prev]);
-            
-            if (user.role === 'Admin') {
-                setMyPost(prev => [newJob, ...prev]);
-            }
-            
-            handleCloseModal();
-            alert("Job posted successfully!");
-
-        } catch (error) {
-            console.error("Error adding Job:", error);
-            alert("Failed to save job.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleApply = async (job) => {
-        try {
-            await API.post(`/service/${job._id}/apply`);
-            alert("Applied successfully");
-            fetchJobPosts(); 
-        } catch (error) {
-            alert(error.response?.data?.message || "Failed to apply");
-        }
-    };
-
+    // --- UI Components ---
     const isApplied = (job) => checkIsApplied(job, user?.memberId);
 
     const renderStatusBadge = (status) => {
@@ -1208,63 +1451,68 @@ const filterFields = [
         </div>
     );
 
+    // --- Effects ---
+    useEffect(() => {
+        fetchJobPosts();
+    }, [user, jobContext]);
+
     return (
         <div className={styles.jobs}>
-        <div className={styles.header}>
+            <div className={styles.header}>
+                {/* Quick search */}
+                <div className={styles.cardSearch}>
+                    <Search size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={globalFilter || ''}
+                        onChange={(e) => setGlobalFilter(e.target.value)}
+                    />
+                </div>
 
-                        {/* Quick search */}
-            <div className={styles.cardSearch}>
-                <Search size={20} />
-                <input
-                type="text"
-                placeholder="Search..."
-                value={globalFilter || ''}
-                onChange={(e) => setGlobalFilter(e.target.value)}
+                {/* EXPORT BUTTONS */}
+                {user?.role === 'Admin' && (
+                    <div className={styles.exportButtons}>
+                        <button onClick={exportJobsToExcel} className={styles.excel}>
+                            Export Excel
+                        </button>
+                        <button onClick={exportJobsToCSV} className={styles.csv}>
+                            Export CSV
+                        </button>
+                    </div>
+                )}
+
+                <div className={styles.center1}>
+                    <div
+                        className={classNames(styles.center, { [styles.active]: view === "request" })}
+                        onClick={() => setView("request")}
+                    >
+                        <NotebookPen size={35} /> <button className={styles.label}>Job Posts</button>
+                    </div>
+                    <div
+                        className={classNames(styles.center, { [styles.active]: view === "myPost" })}
+                        onClick={() => setView("myPost")}
+                    >
+                        <BriefcaseBusiness size={35} /> <button className={styles.label}>My Jobs</button>
+                    </div>
+                </div>
+                
+                {/* NEW: Advanced Filter */}
+                <Filter
+                    fields={filterFields}
+                    initialValues={filters}
+                    onApplyFilters={(values) => {
+                        setFilters(values);
+                        setPage(1); // reset pagination when filters change (optional)
+                    }}
                 />
-            </div>
 
-            {/* EXPORT BUTTONS */}
-            {user?.role === 'Admin' && (
-            <div className={styles.exportButtons}>
-                <button onClick={exportJobsToExcel} className={styles.excel}>
-                Export Excel
-                </button>
-                <button onClick={exportJobsToCSV} className={styles.csv}>
-                Export CSV
-                </button>
+                <div className={styles.right}></div>
             </div>
-            )}
-
-            <div className={styles.center1}>
-                <div
-                className={classNames(styles.center, { [styles.active]: view === "request" })}
-                onClick={() => setView("request")}
-                >
-                <NotebookPen size={35} /> <button className={styles.label}>Job Posts</button>
-                </div>
-                <div
-                className={classNames(styles.center, { [styles.active]: view === "myPost" })}
-                onClick={() => setView("myPost")}
-                >
-                <BriefcaseBusiness size={35} /> <button className={styles.label}>My Jobs</button>
-                </div>
-            </div>
-                        {/* NEW: Advanced Filter */}
-            <Filter
-            fields={filterFields}
-            initialValues={filters}
-            onApplyFilters={(values) => {
-                setFilters(values);
-                setPage(1); // reset pagination when filters change (optional)
-            }}
-            />
-
-            <div className={styles.right}></div>
-        </div>
 
             {/* VIEW 1: JOB REQUESTS (Public/All) */}
             {view === 'request' && <>
-                <div className={styles.pagination} style={{ marginBottom: 20,  }}>
+                <div className={styles.pagination} style={{ marginBottom: 20 }}>
                     <button onClick={() => page > 1 && setPage(page-1)} disabled={page === 1}>Previous</button>
                     <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
                     <button onClick={() => page < totalPages && setPage(page+1)} disabled={page === totalPages}>Next</button>
@@ -1289,7 +1537,7 @@ const filterFields = [
                                             </span>
                                         )}
                                         {request?.employmentType && (
-                                             <span style={{ 
+                                            <span style={{ 
                                                 backgroundColor: '#e0e7ff', color: '#3730a3', 
                                                 padding: '2px 8px', borderRadius: '4px', 
                                                 fontSize: '0.8rem', fontWeight: '500' 
@@ -1312,7 +1560,11 @@ const filterFields = [
                                 </div>
                                 <div>
                                     {user.role === "Member" && (
-                                        <button className={isApplied(request) ? styles.appliedButton : styles.applyButton} disabled={isApplied(request)} onClick={(e) => { e.stopPropagation(); if (!isApplied(request)) handleApply(request); }}>
+                                        <button
+                                            className={isApplied(request) ? styles.appliedButton : styles.applyButton}
+                                            disabled={isApplied(request)}
+                                            onClick={(e) => handleApplyClick(e, request)}
+                                        >
                                             {isApplied(request) ? "Applied" : "Apply"}
                                         </button>
                                     )}
@@ -1329,7 +1581,7 @@ const filterFields = [
                 </div>
             </>}
 
-            {/* VIEW 2: MY POSTS / ADMIN VIEW */}
+            {/* VIEW 2: MY POSTS / APPLICATIONS */}
             {view === "myPost" && (
                 <>
                     <div className={styles.pagination} style={{ marginBottom: 20}}></div>
@@ -1372,13 +1624,13 @@ const filterFields = [
                                             {/* MEMBER VIEW: Pipeline */}
                                             {user.role === 'Member' && (
                                                 <div style={{ width: '100%', borderTop: '1px solid #eee', marginTop: '10px', paddingTop: '10px' }}>
-                                                     {myStatus === 'Rejected' ? (
+                                                    {myStatus === 'Rejected' ? (
                                                         <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', textAlign: 'center' }}>
                                                             Application Rejected
                                                         </div>
-                                                     ) : (
+                                                    ) : (
                                                         <StatusPipeline status={pipelineStatus} />
-                                                     )}
+                                                    )}
                                                 </div>
                                             )}
 
@@ -1392,7 +1644,7 @@ const filterFields = [
                                                                 <thead style={{ backgroundColor: '#f9fafb' }}>
                                                                     <tr style={{ textAlign: 'left', color: '#4b5563' }}>
                                                                         <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Name</th>
-                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Resume</th> {/* 👈 Resume Column */}
+                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Resume</th>
                                                                         <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
                                                                         <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Action</th>
                                                                     </tr>
@@ -1402,17 +1654,32 @@ const filterFields = [
                                                                         <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
                                                                             <td style={{ padding: '10px' }}>{app.memberId?.name}</td>
                                                                             <td style={{ padding: '10px' }}>
-                                                                                {app.memberId?.resumeLink ? (
+                                                                                {(app.resumeLink || app.memberId?.resumeLink) ? (
                                                                                     <a 
-                                                                                        href={getFileUrl(app.memberId.resumeLink)} 
+                                                                                        href={getFileUrl(app.resumeLink || app.memberId.resumeLink)} 
                                                                                         target="_blank" 
                                                                                         rel="noopener noreferrer"
-                                                                                        style={{ color: '#2563eb', textDecoration: 'underline', display:'flex', alignItems:'center', gap:'5px' }}
+                                                                                        style={{
+                                                                                            display: 'inline-flex',
+                                                                                            alignItems: 'center',
+                                                                                            gap: '6px',
+                                                                                            padding: '6px 14px',
+                                                                                            backgroundColor: '#dbeafe',
+                                                                                            color: '#1d4ed8',
+                                                                                            borderRadius: '6px',
+                                                                                            fontSize: '0.85rem',
+                                                                                            fontWeight: '600',
+                                                                                            textDecoration: 'none',
+                                                                                            transition: 'all 0.2s',
+                                                                                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.1)'
+                                                                                        }}
+                                                                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#bfdbfe'}
+                                                                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
                                                                                     >
-                                                                                        <FileText size={14} /> View
+                                                                                        <FileText size={16} /> View Resume
                                                                                     </a>
                                                                                 ) : (
-                                                                                    <span style={{ color: '#9ca3af', fontStyle:'italic' }}>No Resume</span>
+                                                                                    <span style={{ color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem' }}>No Resume</span>
                                                                                 )}
                                                                             </td>
                                                                             <td style={{ padding: '10px' }}>{renderStatusBadge(app.status || 'Applied')}</td>
@@ -1465,6 +1732,13 @@ const filterFields = [
                 onSave={handleSaveBulkJobs}
                 onBulkSubmit={handleSubmitBulkJobs}
                 refereesList={refereesList}
+            />
+
+            <ResumeUploadModal
+                isOpen={showResumeModal}
+                onClose={() => setShowResumeModal(false)}
+                onUpload={handleUploadAndApply}
+                jobTitle={selectedJob?.title}
             />
 
             {/* LOADING OVERLAY */}

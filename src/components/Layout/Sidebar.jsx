@@ -1,8 +1,21 @@
+
+
+//--------------------------------19/01--------------------5.21-----------------
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-// Ensure GraduationCap is imported
-import { Home, Users, FolderOpen, CheckSquare, List, X, Settings, UserCheck, ClipboardCheck, User, BriefcaseBusiness, GraduationCap } from 'lucide-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Home, 
+  Users, 
+  FolderOpen, 
+  UserCheck, 
+  User, 
+  BriefcaseBusiness, 
+  GraduationCap, 
+  X, 
+  ChevronLeft, 
+  ChevronRight 
+} from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
 import { useAuth } from '../../context/AuthContext';
@@ -10,33 +23,40 @@ import { useAuth } from '../../context/AuthContext';
 function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
   const { user } = useAuth();
 
+  // Safety check: if user data isn't loaded yet, don't crash
+  if (!user) return null;
+
   let menuItems = [];
-  
+
   if (user.role === "Admin") {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
-      { path: '/members', icon: Users, label: 'Members', adminOnly: true },
-      // Admin sees Mentors
-      { path: '/mentors', icon: GraduationCap, label: 'Mentors', adminOnly: true }, 
-      { path: '/referees', icon: UserCheck, label: 'Referees', adminOnly: true },
-      { path: '/createUser', icon: User, label: 'Create new user', adminOnly: true },
-      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs', adminOnly: true },
+      { path: '/members', icon: Users, label: 'Members' },
+      { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
+      { path: '/referees', icon: UserCheck, label: 'Job Referee' },
+      { path: '/createUser', icon: User, label: 'Create new user' },
+      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
     ];
-  }
-  else if(user.role === "Member"){
-   menuItems=[
-     { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
-     // ✅ ADDED: Members can now see Mentors in sidebar
-     { path: '/mentors', icon: GraduationCap, label: 'Mentors' }, 
-     { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs'}
-   ] 
+  } else if (user.role === "Member") {
+    menuItems = [
+      { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
+      { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
+      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' }
+    ];
+  } else if (user.role === "IT_Member") {
+    // Optional: Add logic for IT_Member if they have a different view
+    menuItems = [
+        { path: '/', icon: Home, label: 'Dashboard' },
+        { path: '/members', icon: Users, label: 'Members' },
+        { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
+    ];
   }
 
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''} ${isCollapsed ? styles.collapsed : ''}`}>
       <div className={styles.header}>
         <div className={`${styles.logo} ${isCollapsed ? styles.hideLogo : ''}`}>
-          <img src={logo} alt="Logo" width={200} className={styles.logoImg} />
+          <img src={logo} alt="JobBridge Logo" width={200} className={styles.logoImg} />
         </div>
 
         <div className={styles.collapseToggle}>
@@ -51,19 +71,17 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       </div>
 
       <nav className={styles.nav}>
-        {menuItems.map((item) => {
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-              onClick={onClose}
-            >
-              <item.icon size={20} className={styles.icon} />
-              {!isCollapsed && <span className={styles.label}>{item.label}</span>}
-            </NavLink>
-          );
-        })}
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+            onClick={onClose} // Closes sidebar on mobile when clicked
+          >
+            <item.icon size={20} className={styles.icon} />
+            {!isCollapsed && <span className={styles.label}>{item.label}</span>}
+          </NavLink>
+        ))}
       </nav>
     </aside>
   );

@@ -1,3 +1,9 @@
+//--------20/01-------------------------12.34----------------------
+
+// ==========================================
+// 1. Variables & Mixins
+// ==========================================
+
 // --- Variables ---
 $primary-blue: #2563eb;
 $primary-hover: #1d4ed8;
@@ -24,10 +30,28 @@ $warning-yellow: #d97706;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+// ==========================================
+// 2. Main Layout & Header
+// ==========================================
+
 // --- Main Container ---
 .jobs {
   width: 100%;
   padding-bottom: 80px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+
+  .heading {
+    font-size: 1.5rem;
+    color: $text-dark;
+    margin-bottom: 20px;
+    border-bottom: 2px solid $bg-light;
+    padding-bottom: 10px;
+  }
 }
 
 // --- Header Section ---
@@ -95,48 +119,9 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Pagination ---
-.pagination {
-  @include flex-center;
-  gap: 15px;
-  margin-top: 30px;
-  margin-bottom: 20px;
-
-  button {
-    padding: 8px 16px;
-    border: 1px solid $border-color;
-    background-color: #fff;
-    border-radius: 6px;
-    cursor: pointer;
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    &:hover:not(:disabled) {
-      background-color: $bg-light;
-    }
-  }
-
-  .pageInfo {
-    font-size: 0.9rem;
-    color: $text-medium;
-  }
-}
-
-// --- Main Content ---
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 20px;
-
-  .heading {
-    font-size: 1.5rem;
-    color: $text-dark;
-    margin-bottom: 20px;
-    border-bottom: 2px solid $bg-light;
-    padding-bottom: 10px;
-  }
-}
+// ==========================================
+// 3. Components & Cards
+// ==========================================
 
 // --- Job List ---
 .activityList {
@@ -217,7 +202,55 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Buttons ---
+// --- Status Badges ---
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &.applied { background-color: #e0f2fe; color: #0369a1; }
+  &.shortlisted { background-color: #fef3c7; color: #d97706; }
+  &.accepted { background-color: #dcfce7; color: #166534; }
+  &.rejected { background-color: #fee2e2; color: #991b1b; }
+}
+
+// --- Pagination ---
+.pagination {
+  @include flex-center;
+  gap: 15px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+
+  button {
+    padding: 8px 16px;
+    border: 1px solid $border-color;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    &:hover:not(:disabled) {
+      background-color: $bg-light;
+    }
+  }
+
+  .pageInfo {
+    font-size: 0.9rem;
+    color: $text-medium;
+  }
+}
+
+// ==========================================
+// 4. Buttons & Actions
+// ==========================================
+
+// --- General Buttons ---
 .applyButton, .appliedButton {
   padding: 8px 20px;
   border-radius: 6px;
@@ -240,7 +273,7 @@ $warning-yellow: #d97706;
   cursor: default;
 }
 
-// --- Admin Actions ---
+// --- Admin Actions (Icons) ---
 .adminActions {
   display: flex;
   gap: 8px;
@@ -258,22 +291,6 @@ $warning-yellow: #d97706;
 
   .btnEdit { background-color: #dbeafe; color: $primary-blue; }
   .btnDelete { background-color: #fee2e2; color: $danger-red; }
-}
-
-// --- Status Badges ---
-.statusBadge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-
-  &.applied { background-color: #e0f2fe; color: #0369a1; }
-  &.shortlisted { background-color: #fef3c7; color: #d97706; }
-  &.accepted { background-color: #dcfce7; color: #166534; }
-  &.rejected { background-color: #fee2e2; color: #991b1b; }
 }
 
 // --- Floating Add Button ---
@@ -296,7 +313,36 @@ $warning-yellow: #d97706;
   &:hover { transform: scale(1.1); }
 }
 
-// --- Applicants Table (Admin) ---
+// --- Export Buttons ---
+.exportButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  button {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+  }
+}
+
+// ==========================================
+// 5. Admin Tables
+// ==========================================
+
 .applicantsSection {
   width: 100%;
   margin-top: 15px;
@@ -350,7 +396,10 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Modal Form ---
+// ==========================================
+// 6. Modal Forms
+// ==========================================
+
 .modalOverlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -439,7 +488,6 @@ $warning-yellow: #d97706;
     }
   }
 }
-
 
 .exportButtons {
   display: flex;

@@ -1,15 +1,54 @@
+//------------------20/01------------------12.51-------------
+
+// ==========================================
+// 1. Main Layout Containers
+// ==========================================
+
+.members {
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+.app {
+  height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.membersList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.tableView {
+  padding: 24px 32px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  margin: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+// ==========================================
+// 2. Headers & Navigation
+// ==========================================
+
 .headerWrapper {
   position: fixed;
-  top: 64px; // same as your header height
+  top: 64px; // Matches global header height
   right: 0;
   z-index: 1;
   background-color: #f1f5f9;
   padding: 15px;
+  transition: left 0.3s ease, width 0.3s ease; // Smooth transition for sidebar toggle
 
-    @media (max-width: 768px) {
-    left: 0 !important;        // always start at left
-    width: 100% !important;    // full width
-    padding: 10px;             // optional: smaller padding
+  @media (max-width: 768px) {
+    left: 0 !important;
+    width: 100% !important;
+    padding: 10px;
     z-index: 10;
   }
 }
@@ -21,13 +60,7 @@
   width: 100%;
 }
 
-.members {
-  max-width: 100%;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: 40px;
-}
-
+// Global Header Style (if used separately)
 .header {
   position: fixed;
   top: 64px;
@@ -40,10 +73,10 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-md);
-  transition: left 0.3s ease;  // <-- smooth move when sidebar toggles
-  width: calc(100% - 280px);   // <-- prevent right side gap
+  transition: left 0.3s ease;
+  width: calc(100% - 280px);
 
-  // When sidebar is collapsed
+  // When sidebar is collapsed (Parent class required)
   .collapsed & {
     left: 90px;
     width: calc(100% - 90px);
@@ -55,6 +88,55 @@
   }
 }
 
+// ==========================================
+// 3. Search Bar
+// ==========================================
+
+.cardSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: var(--radius-xl);
+  padding: 0 var(--spacing-md);
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: var(--background-hover);
+  }
+
+  svg {
+    color: var(--text-muted);
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    padding: var(--spacing-xs) 0;
+    transition: color 0.2s ease;
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+  }
+}
+
+// ==========================================
+// 4. Buttons & Actions
+// ==========================================
+
+// Standard Add Button
 .addButton {
   display: flex;
   align-items: center;
@@ -65,16 +147,174 @@
   border-radius: var(--radius-lg);
   font-weight: 500;
   transition: var(--transition-fast);
-  
+
   &:hover {
     background-color: var(--accent-hover);
     transform: translateY(-1px);
   }
 }
 
+// Alternative Add Button (Gray)
+.addBtn {
+  padding: 6px 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background-color: #bdbcbc;
+  cursor: pointer;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background-color: #07f7ff;
+  }
+}
+
+// Export Buttons (Excel/CSV)
+.exportButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  button {
+    height: 36px;
+    padding: 8px 12px; // matches your inline
+    border-radius: 4px; // consistent with inline
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #131212;
+
+    &.excel {
+      background-color: #10b981; // green
+    }
+
+    &.csv {
+      background-color: #3b82f6; // blue
+    }
+
+    &:hover {
+      opacity: 0.9; // subtle hover effect
+    }
+  }
+}
+
+// ==========================================
+// 5. Member Cards
+// ==========================================
+
+.memberCard {
+  transition: all 0.25s ease;
+  background: #f1f5f9;
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02) !important;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2) !important;
+  }
+}
+
+.memberHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 75px;
+  height: 75px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  color: white;
+}
+
+.memberInfo {
+  flex: 1;
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-transform: capitalize;
+  }
+}
+
+.memberDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+
+    svg {
+      color: var(--text-muted);
+    }
+  }
+}
+
+// ==========================================
+// 6. Card Actions (Edit/Delete)
+// ==========================================
+
+.memberActions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.editButton,
+.deleteButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.editButton {
+  color: var(--accent-primary);
+  &:hover {
+    background-color: rgba(26, 115, 232, 0.1);
+  }
+}
+
+.deleteButton {
+  color: var(--error);
+  &:hover {
+    background-color: rgba(234, 67, 53, 0.1);
+  }
+}
+
+// ==========================================
+// 7. Forms
+// ==========================================
+
 .formCard {
   margin-bottom: var(--spacing-xl);
-  
+
   h3 {
     margin-bottom: var(--spacing-lg);
     color: var(--text-primary);
@@ -102,7 +342,7 @@
 
 .businessDetails {
   margin-top: var(--spacing-lg);
-  
+
   h4 {
     margin-bottom: var(--spacing-md);
     color: var(--text-primary);
@@ -126,7 +366,9 @@
   color: var(--text-secondary);
   font-weight: 500;
   transition: var(--transition-fast);
-  
+  background: transparent;
+  cursor: pointer;
+
   &:hover {
     background-color: var(--bg-tertiary);
   }
@@ -139,232 +381,40 @@
   border-radius: var(--radius-md);
   font-weight: 500;
   transition: var(--transition-fast);
-  
+  border: none;
+  cursor: pointer;
+
   &:hover {
     background-color: var(--accent-hover);
   }
 }
 
-.membersList {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--spacing-lg);
-}
-
-.memberCard {
-  transition: all 0.25s ease;
-  background: #f1f5f9;
-
-  &:hover {
-    transform: translateY(-6px) scale(1.02) !important;
-    box-shadow: 0 8px 20px rgba(59,130,246,0.2) !important;
-  }
-}
-
-
-.memberHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-}
-
-.avatar {
-  display: flex;
-  align-items: center;
-  justify-content:center;
-  width: 75px;
-  height: 75px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  color: white;
-  //object-fit: contain;
-}
-
-.memberInfo {
-  flex: 1;
-  
-  h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 2px;
-  }
-  
-  p {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    text-transform: capitalize;
-  }
-}
-
-.memberActions {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-.editButton, .deleteButton {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: transparent;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-}
-
-.editButton {
-  color: var(--accent-primary);
-  
-  &:hover {
-    background-color: rgba(26, 115, 232, 0.1);
-  }
-}
-
-.deleteButton {
-  color: var(--error);
-  
-  &:hover {
-    background-color: rgba(234, 67, 53, 0.1);
-  }
-}
-
-.memberDetails {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  
-  div {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    
-    svg {
-      color: var(--text-muted);
-    }
-  }
-}
-.addBtn {
-  padding: 6px 12px;
-  font-size: 18px;
-  border-radius: 6px;
-  border: none;
-  background-color: #bdbcbc;
-  cursor: pointer;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background-color: #07f7ff;
-  }
-}
-
-.cardSearch {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background-color: white;
-  border-radius: var(--radius-xl);
-  padding: 0 var(--spacing-md);
-  height: 40px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* subtle elevation */
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.cardSearch:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  background-color: var(--background-hover); /* optional hover bg */
-}
-
-.cardSearch svg {
-  color: var(--text-muted);
-  margin-right: var(--spacing-sm);
-  flex-shrink: 0;
-  transition: color 0.2s ease;
-}
-
-.cardSearch input {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  padding: var(--spacing-xs) 0;
-  transition: color 0.2s ease;
-}
-
-.cardSearch input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.8;
-}
-
-.tableView {
-  padding: 24px 32px;
-  background: #f1f5f9;
-  border-radius: 12px;
-  margin: 0 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
+// ==========================================
+// 8. Loader Animation
+// ==========================================
 
 .loader {
-  --c:no-repeat linear-gradient(rgb(0, 53, 151) 0 0);
-  background: 
-    var(--c),var(--c),var(--c),
-    var(--c),var(--c),var(--c),
-    var(--c),var(--c),var(--c);
+  --c: no-repeat linear-gradient(rgb(0, 53, 151) 0 0);
+  background:
+    var(--c), var(--c), var(--c),
+    var(--c), var(--c), var(--c),
+    var(--c), var(--c), var(--c);
   background-size: 16px 16px;
-  animation: 
+  animation:
     l32-1 1s infinite,
     l32-2 1s infinite;
 }
+
 @keyframes l32-1 {
-  0%,100% {width:45px;height: 45px}
-  35%,65% {width:65px;height: 65px}
+  0%, 100% { width: 45px; height: 45px; }
+  35%, 65% { width: 65px; height: 65px; }
 }
+
 @keyframes l32-2 {
-  0%,40%  {background-position: 0 0,0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,  50% 50% }
-  60%,100%{background-position: 0 50%, 0 100%,50% 100%,100% 100%,100% 50%,100% 0,50% 0,0 0,  50% 50% }
-}
-
-.app {
-  height: 70vh;
-  display: flex;
-  justify-content: center;
-   align-items: center;
-  
-}
-
-.exportButtons {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  button {
-    height: 36px;
-    padding: 8px 12px; // matches your inline
-    border-radius: 4px; // consistent with inline
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #ffffff;
-
-    &.excel {
-      background-color: #10b981; // green
-    }
-
-    &.csv {
-      background-color: #3b82f6; // blue
-    }
-
-    &:hover {
-      opacity: 0.9; // subtle hover effect
-    }
+  0%, 40% {
+    background-position: 0 0, 0 50%, 0 100%, 50% 100%, 100% 100%, 100% 50%, 100% 0, 50% 0, 50% 50%;
+  }
+  60%, 100% {
+    background-position: 0 50%, 0 100%, 50% 100%, 100% 100%, 100% 50%, 100% 0, 50% 0, 0 0, 50% 50%;
   }
 }

@@ -1,284 +1,343 @@
+//--------------------------------------20/01-------------1.54------
+
 import React, { useEffect, useState } from 'react';
-import { Plus, User, Phone, Mail, Calendar, Building, Edit, Trash2,ListFilter, Search } from 'lucide-react';
-import ViewToggleSwitch from '../../components/Toggle/ViewToggleSwitch';
-import styles from './Members.module.scss';
-import CustomCard from '../../components/UI/CustomCard';
-import {  useNavigate } from "react-router-dom";
-import DataTable from '../../components/Table/DataTable';
-import API from '../../axios';
-import Filter from '../../components/Filter/Filter';
-import AddMember from '../../components/Models/AddMember'
-import { useData } from '../../context/DataContext';
-import FilterStatus from '../../components/Filter/FIlterStatus';
-import { parseDOB } from '../../utils/dateUtils';
-import { useAuth } from '../../context/AuthContext';
-import { useOutletContext } from 'react-router-dom';
+import { Plus, User, Phone, Mail, Calendar, Building, Edit, Trash2, ListFilter, Search } from 'lucide-react';
+import { useNavigate, useOutletContext } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
+// Components
+import ViewToggleSwitch from '../../components/Toggle/ViewToggleSwitch';
+import CustomCard from '../../components/UI/CustomCard';
+import DataTable from '../../components/Table/DataTable';
+import Filter from '../../components/Filter/Filter';
+import AddMember from '../../components/Models/AddMember';
+import FilterStatus from '../../components/Filter/FilterStatus';
+
+// Context & Utils
+import API from '../../axios';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
+import { parseDOB } from '../../utils/dateUtils';
+import styles from './Members.module.scss';
+
 function Members() {
-  const { sidebarCollapsed } = useOutletContext();
-  const sidebarWidth = sidebarCollapsed ? 90 : 280; // match sidebar
+  const outletContext = useOutletContext();
+  const sidebarCollapsed = outletContext ? outletContext.sidebarCollapsed : false;
+  const sidebarWidth = sidebarCollapsed ? 90 : 280;
 
+  const navigate = useNavigate();
+  const { memberContext, setMemberContext } = useData();
+  const { user } = useAuth();
+
+  // --- STATE ---
+  const [allMembers, setAllMembers] = useState([]); // Master Data
+  const [membersData, setMembersData] = useState([]); // Filtered Data
+  const [view, setView] = useState('card');
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [editMember, setEditMember] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState({});
+  const [filterValues, setFilterValues] = useState({});
+
+  // --- COLUMNS ---
   const memberColumns = [
-  { accessorKey: 'memberReferenceNumber', header: 'Ref. No', enableResizing: true, size: 100 },
-  { accessorKey: 'name', header: 'Name', enableResizing: true, size: 200  },
-  { accessorKey: 'memberType', header: 'Member Type', enableResizing: true, size: 160  },
-  { accessorKey: 'symMemberStatus', header: 'Member Status', enableResizing: true, size: 160  },
-  { accessorKey: 'gender', header: 'Gender', enableResizing: true, size: 100  },
-  { accessorKey: 'age', header: 'Age', enableResizing: true, size: 70  },
-  { accessorKey: 'district', header: 'District', enableResizing: true, size: 150  },
-];
+    { accessorKey: 'memberReferenceNumber', header: 'Ref. No', enableResizing: true, size: 100 },
+    { accessorKey: 'name', header: 'Name', enableResizing: true, size: 200 },
+    { accessorKey: 'memberType', header: 'Member Type', enableResizing: true, size: 160 },
+    { accessorKey: 'symMemberStatus', header: 'Member Status', enableResizing: true, size: 160 },
+    { accessorKey: 'gender', header: 'Gender', enableResizing: true, size: 100 },
+    { accessorKey: 'age', header: 'Age', enableResizing: true, size: 70 },
+    { accessorKey: 'district', header: 'District', enableResizing: true, size: 150 },
+  ];
 
-    const [allMembers,setAllMembers] = useState([]); //All data
-    const [membersData, setMembersData]=useState([]); // Filtered Data
-    const [view, setView] = useState('card');
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [editMember, setEditMember] = useState(null);
-    const [showModal, setShowModal] = useState(false);
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [activeFilters, setActiveFilters] = useState({}); //for to show the which filter is applied
-    const [filterValues,setFilterValues] = useState({});//for two way filter change
-    const {memberContext,setMemberContext} = useData(); // get all Member data from data context (Initial fetch during login)
-    const {user} = useAuth();
-        useEffect(() => {
-          fetchData();
-          }, [memberContext]);
+  // --- INITIAL FETCH ---
+  useEffect(() => {
+    fetchData();
+  }, [memberContext]);
 
-    const fetchData = async()=>{
-      const member = await memberContext.sort((a,b)=>a.memberReferenceNumber-b.memberReferenceNumber)
-      setMembersData(member);
-      setAllMembers(memberContext);
+  const fetchData = () => {
+      const sortedMembers = sortByReferenceNumber(memberContext);
+
+      setAllMembers(sortedMembers);
+      setMembersData(sortedMembers);
       setLoading(false);
-      
+    };
+
+    const sortByReferenceNumber = (list = []) =>
+      [...list].sort(
+        (a, b) => (a.memberReferenceNumber ?? 0) - (b.memberReferenceNumber ?? 0)
+      );
+
+  // --- HELPERS ---
+  const unique = (arr) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  
+  const getDirectImageUrl = (driveUrl) => {
+    if (!driveUrl) return null;
+    let fileId = null;
+    
+    // Case 1: id= in query params
+    let match = driveUrl.match(/[?&]id=([^&]+)/);
+    if (match) fileId = match[1];
+
+    // Case 2: /d/{fileId}/ in path
+    if (!fileId) {
+      match = driveUrl.match(/\/d\/([^/]+)/);
+      if (match) fileId = match[1];
     }
- //Filter the subtasks based on filter
-        const applyFilters = (filters) => {
-          if (!filters || Object.values(filters).every((v) => v === ""||  v === null ||(Array.isArray(v) && v.length === 0))) {
-            setMembersData(allMembers); // ✅ show all again
-            setActiveFilters({}); // Clear active filters
-            return;
-          }
-          
-          let filtered = [...allMembers];
-          const newActiveFilters = {};
-          
-          if (filters.name) {
-            filtered = filtered.filter(
-              (p) => p.name === filters.name
-            );
-            newActiveFilters.name = filters.name;
-          }
-          
-          if (filters.initialNumber !== undefined && filters.initialNumber !== "") {
-            filtered = filtered.filter((p) => p.age >= Number(filters.initialNumber));
-            newActiveFilters.initialNumber = filters.initialNumber;
-          }
 
-          if (filters.finalNumber !== undefined && filters.finalNumber !== "") {
-            filtered = filtered.filter((p) => p.age <= Number(filters.finalNumber));
-            newActiveFilters.finalNumber = filters.finalNumber;
-          }
-        
-          if (filters.district) {
-            filtered = filtered.filter(
-              (p) => p.district === filters.district
-            );
-            newActiveFilters.district = filters.district;
-          }
+    // Case 3: uc?id=FILE_ID format
+    if (!fileId) {
+      match = driveUrl.match(/uc\?id=([^&]+)/);
+      if (match) fileId = match[1];
+    }
 
-          if (filters.nDistrict) {
-            filtered = filtered.filter(
-              (p) => p.nativePlace === filters.nDistrict
-            );
-            newActiveFilters.nDistrict = filters.nDistrict;
-          }
-          if (filters.profession) {
-            filtered = filtered.filter(
-              (p) => p.profession === filters.profession
-            );
-            newActiveFilters.profession = filters.profession;
-          }
-        
-          if (filters.memberType) {
-            filtered = filtered.filter(
-              (p) => p.memberType === filters.memberType
-            );
-            newActiveFilters.memberType = filters.memberType;
-          }
-          if (filters.forGrouping && filters.forGrouping.length > 0) {
-            filtered = filtered.filter(
-              (p) =>
-                Array.isArray(p.forGrouping) &&
-                p.forGrouping.some((tag) => filters.forGrouping.includes(tag))
-            );
-            newActiveFilters.forGrouping = filters.forGrouping;
-          }
+    // Case 4: direct fileId pasted
+    if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) {
+      fileId = driveUrl;
+    }
 
-          if (filters.gender) {
-            filtered = filtered.filter(p => p.gender === filters.gender);
-            newActiveFilters.gender = filters.gender;
-          }
+    return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
+  };
 
-          if (filters.symMemberStatus) {
-            filtered = filtered.filter(p => p.symMemberStatus === filters.symMemberStatus);
-            newActiveFilters.symMemberStatus = filters.symMemberStatus;
-          }
+  const calculateAge = (dob) => {
+    if (!dob) return;
 
-          if (filters.seekerNeed?.length) {
-            filtered = filtered.filter(p =>
-              p.seekerNeed?.some(v => filters.seekerNeed.includes(v))
-            );
-            newActiveFilters.seekerNeed = filters.seekerNeed;
-          }
+    const birthDate = parseDOB(dob);
+    if (!birthDate || isNaN(birthDate)) return;
 
-          if (filters.highest_education) {
-            filtered = filtered.filter(p => p.highest_education === filters.highest_education);
-            newActiveFilters.highest_education = filters.highest_education;
-          }
+    const today = new Date();
 
-          if (filters.preferredJobRole_Sector) {
-            filtered = filtered.filter(p => p.preferredJobRole_Sector === filters.preferredJobRole_Sector);
-            newActiveFilters.preferredJobRole_Sector = filters.preferredJobRole_Sector;
-          }
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
 
-          if (filters.workExp) {
-            filtered = filtered.filter(p => p.workExp === filters.workExp);
-            newActiveFilters.workExp = filters.workExp;
-          }
+    if (days < 0) {
+      months -= 1;
+      days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    }
 
-          if (filters.relocationStatus) {
-            filtered = filtered.filter(p => p.relocationStatus === filters.relocationStatus);
-            newActiveFilters.relocationStatus = filters.relocationStatus;
-          }
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
 
-          if (filters.jobOfferType?.length) {
-            filtered = filtered.filter(p =>
-              p.jobOfferType?.some(v => filters.jobOfferType.includes(v))
-            );
-            newActiveFilters.jobOfferType = filters.jobOfferType;
-          }
+    return { years, months, days };
+  };
 
-          if (filters.offeringSector?.length) {
-            filtered = filtered.filter(p =>
-              p.offeringSector?.some(v => filters.offeringSector.includes(v))
-            );
-            newActiveFilters.offeringSector = filters.offeringSector;
-          }
+  const formatAge = (dob) => {
+    const age = calculateAge(dob);
+    return age ? `${age.years} years, ${age.months} months` : "—";
+  };
 
-          if (filters.referrerStatus) {
-            filtered = filtered.filter(p => p.referrerStatus === filters.referrerStatus);
-            newActiveFilters.referrerStatus = filters.referrerStatus;
-          }
+  // --- EXPORT LOGIC ---
+  const buildExportRows = () => {
+    return membersData.map(m => ({
+      // Core
+      RefNo: m.memberReferenceNumber || "",
+      Name: m.name || "",
+      Age: m.age || "",
+      Gender: m.gender || "",
+      Mobile: m.mobileNumber || "",
+      Email: m.email || "",
+      District: m.district || "",
+      Role: m.memberType || "",
+      Status: m.symMemberStatus || "",
+      
+      // Additional personal info
+      Profession: m.profession || "",
+      NativeDistrict: m.nativePlace || "",
+      Address: m.address || "",
+      
+      // Job Seeker
+      SeekerNeed: (m.seekerNeed || []).join(", "),
+      Education: m.highest_education || "",
+      FieldOfStudy: m.fieldofStudy_Interest || "",
+      PreferredRole: m.preferredJobRole_Sector || "",
+      Experience: m.workExp || "",
+      Relocation: m.relocationStatus || "",
+      PreferredLocation: m.preferredJobLocation || "",
+      ResumeLink: m.resumeLink || "",
+      
+      // Opportunity Provider
+      OfferType: (m.jobOfferType || []).join(", "),
+      OfferingSector: (m.offeringSector || []).join(", "),
+      OpportunityDescription: m.opportunityDescription || "",
+      OfferLocation: m.offer_Location || "",
+      ContactForSeekers: m.contactForSeekers || "",
+      
+      // Referee
+      ReferrerStatus: m.referrerStatus || "",
+      ReferringOfferType: (m.referringOfferType || []).join(", "),
+      ReferringSector: (m.referringSector || []).join(", "),
+      ReferringFor: m.referringFor || "",
+      LevelOfSupport: (m.levelOfSupport || []).join(", "),
+      ReferrerContact: m.referrerContact || "",
+      
+      // Upskiller
+      SkillProgram: m.interest_SkillBuildingProgram || "",
+      SkillsToImprove: (m.skillsToImprove || []).join(", "),
+      
+      // Grouping
+      GroupTags: (m.forGrouping || []).join(", "),
+      
+      // Timestamps
+      CreatedDate: m.timestamp || "",
+      SubmittedEmail: m.submittingEmail || "",
+    }));
+  };
 
-          if (filters.levelOfSupport?.length) {
-            filtered = filtered.filter(p =>
-              p.levelOfSupport?.some(v => filters.levelOfSupport.includes(v))
-            );
-            newActiveFilters.levelOfSupport = filters.levelOfSupport;
-          }
+  const exportToExcel = () => {
+    const data = buildExportRows();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Members");
+    const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([buffer], { type: "application/octet-stream" }), `Members_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
-          if (filters.interest_SkillBuildingProgram) {
-            filtered = filtered.filter(p => p.interest_SkillBuildingProgram === filters.interest_SkillBuildingProgram);
-            newActiveFilters.interest_SkillBuildingProgram = filters.interest_SkillBuildingProgram;
-          }
+  const exportToCSV = () => {
+    const data = buildExportRows();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `Members_${new Date().toISOString().slice(0, 10)}.csv`);
+  };
 
-          setMembersData(filtered);
-          setActiveFilters(newActiveFilters);
-          setFilterValues(filters);
-        };
-
-      // Filter configuration for members
+  // --- FILTER LOGIC ---
   const membersFilterConfig = {
     labels: {
-      name: 'Name',
-      initialNumber: 'Min Age',
-      finalNumber: 'Max Age',
+      name: 'Name', 
+      initialNumber: 'Min Age', 
+      finalNumber: 'Max Age', 
       district: 'District',
-      memberType: 'Member Type',
-
-      gender: 'Gender',
+      nDistrict: 'Native District',
+      profession: 'Profession',
+      memberType: 'Member Type', 
+      gender: 'Gender', 
       symMemberStatus: 'Member Status',
-      seekerNeed: 'Seeker Need',
-      highest_education: 'Highest Education',
+      seekerNeed: 'Seeker Need', 
+      highest_education: 'Highest Education', 
       preferredJobRole_Sector: 'Preferred Job Role',
-      workExp: 'Work Experience',
-      relocationStatus: 'Relocation',
+      workExp: 'Work Experience', 
+      relocationStatus: 'Relocation Status', 
       jobOfferType: 'Job Offer Type',
-      offeringSector: 'Offering Sector',
-      referrerStatus: 'Referrer Status',
+      offeringSector: 'Offering Sector', 
+      referrerStatus: 'Referrer Status', 
       levelOfSupport: 'Level Of Support',
       interest_SkillBuildingProgram: 'Skill Program',
+      forGrouping: 'Group Tags'
     },
     fieldTypes: {
-      name: 'string',
-      initialNumber: 'number',
-      finalNumber: 'number',
+      name: 'string', 
+      initialNumber: 'number', 
+      finalNumber: 'number', 
       district: 'string',
-      memberType: 'string',
-
-      gender: 'string',
-      symMemberStatus: 'string',
+      nDistrict: 'string',
+      profession: 'string',
+      memberType: 'string', 
+      gender: 'string', 
+      symMemberStatus: 'string', 
       seekerNeed: 'array',
-      highest_education: 'string',
-      preferredJobRole_Sector: 'string',
+      highest_education: 'string', 
+      preferredJobRole_Sector: 'string', 
       workExp: 'string',
-      relocationStatus: 'string',
-      jobOfferType: 'array',
+      relocationStatus: 'string', 
+      jobOfferType: 'array', 
       offeringSector: 'array',
-      referrerStatus: 'string',
-      levelOfSupport: 'array',
+      referrerStatus: 'string', 
+      levelOfSupport: 'array', 
       interest_SkillBuildingProgram: 'string',
+      forGrouping: 'array'
     },
     formatters: {
-      array: (value) => {
-        if (Array.isArray(value)) {
-          return value.join(', ');
-        }
-        return value;
-      },
-      number: (value) => {
-        return value ? value.toString() : '';
-      }
+      array: (value) => Array.isArray(value) ? value.join(', ') : value,
+      number: (value) => value ? value.toString() : '',
     }
   };
 
+  const applyFilters = (filters) => {
+    if (!filters || Object.values(filters).every((v) => v === "" || v === null || (Array.isArray(v) && v.length === 0))) {
+      setMembersData(allMembers);
+      setActiveFilters({});
+      setFilterValues({});
+      return;
+    }
 
-        // Clear individual filter
+    let filtered = [...allMembers];
+    const newActiveFilters = {};
+
+    // Exact Match Filters
+    const exactFilters = [
+      'name', 'district', 'memberType', 'gender', 'symMemberStatus', 'profession', 
+      'highest_education', 'preferredJobRole_Sector', 'workExp', 'relocationStatus', 
+      'referrerStatus', 'interest_SkillBuildingProgram'
+    ];
+    
+    exactFilters.forEach(key => {
+      if (filters[key]) {
+        filtered = filtered.filter(p => p[key] === filters[key]);
+        newActiveFilters[key] = filters[key];
+      }
+    });
+
+    // Specific Mapping Filters
+    if (filters.nDistrict) {
+      filtered = filtered.filter(p => p.nativePlace === filters.nDistrict);
+      newActiveFilters.nDistrict = filters.nDistrict;
+    }
+
+    // Number Ranges
+    if (filters.initialNumber !== undefined && filters.initialNumber !== "") {
+      filtered = filtered.filter((p) => p.age >= Number(filters.initialNumber));
+      newActiveFilters.initialNumber = filters.initialNumber;
+    }
+    if (filters.finalNumber !== undefined && filters.finalNumber !== "") {
+      filtered = filtered.filter((p) => p.age <= Number(filters.finalNumber));
+      newActiveFilters.finalNumber = filters.finalNumber;
+    }
+
+    // Array Filters (Contains)
+    const arrayFilters = ['seekerNeed', 'jobOfferType', 'offeringSector', 'levelOfSupport', 'forGrouping'];
+    arrayFilters.forEach(key => {
+      if (filters[key]?.length) {
+        filtered = filtered.filter(p => {
+          const memberArray = p[key] || [];
+          return filters[key].some(filterValue => memberArray.includes(filterValue));
+        });
+        newActiveFilters[key] = filters[key];
+      }
+    });
+
+    const sortedFiltered = sortByReferenceNumber(filtered);
+    setMembersData(sortedFiltered);
+    setActiveFilters(newActiveFilters);
+    setFilterValues(filters);
+  };
+
   const clearFilter = (filterKey) => {
     const newActiveFilters = { ...activeFilters };
     const newFilterValues = { ...filterValues };
-    
     delete newActiveFilters[filterKey];
     delete newFilterValues[filterKey];
-    
     setActiveFilters(newActiveFilters);
     setFilterValues(newFilterValues);
-    
     applyFilters(newFilterValues);
   };
 
-  // Clear all filters
   const clearAllFilters = () => {
     setMembersData(allMembers);
     setActiveFilters({});
     setFilterValues({});
   };
 
-    const handleToggle = (newView) => {setView(newView); };
-
-   const handleEditMember = async(updated) => {
-     try {
-        setMembersData(prev =>
-          prev.map((member) => member._id === updated._id ? updated : member)
-        );
-        setAllMembers(prev =>
-          prev.map((member) => member._id === updated._id ? updated : member)
-        );
-        setMemberContext(prev =>
-          prev.map((member) => member._id === updated._id ? updated : member)
-        );
+  // --- CRUD OPERATIONS ---
+  const handleEditMember = async (updated) => {
+    try {
+      const updateList = (list) => list.map((m) => m._id === updated._id ? updated : m);
+      setMembersData(prev => updateList(prev));
+      setAllMembers(prev => updateList(prev));
+      setMemberContext(prev => updateList(prev));
       setEditMember(null);
       setShowModal(false);
     } catch (error) {
@@ -286,187 +345,47 @@ function Members() {
     }
   };
 
-   const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to PERMANENTLY delete this member?')) {
       try {
-        // ---------------------------------------------------------
-        // ✅ STEP 1: Send the delete command to the Backend
-        // NOTE: Check your server.js to see if this should be '/members' or '/user'
-        // Since your route is router.delete("/:id"), we just need the base + id
-        // ---------------------------------------------------------
-        await API.delete(`/member/${id}`); 
-        
-        // ✅ STEP 2: If Backend succeeds, update the Frontend
+        await API.delete(`/member/${id}`);
         alert("Member deleted successfully");
-
-        // Update all states to remove the deleted member locally
-        const remainingMembers = allMembers.filter(member => member._id !== id);
-        setAllMembers(remainingMembers);
-        setMembersData(remainingMembers); // Update current view
-        setMemberContext(remainingMembers); // Update context
-           
+        const remaining = allMembers.filter(member => member._id !== id);
+        setAllMembers(remaining);
+        setMembersData(remaining);
+        setMemberContext(remaining);
       } catch (err) {
         console.error("Delete failed:", err);
-        alert("Failed to delete member. Please check your connection.");
+        alert("Failed to delete member.");
       }
     }
   };
 
   const handleEdit = (member) => {
     setEditMember({ ...member });
-     setShowModal(true);
+    setShowModal(true);
   };
 
   const handleRowClick = (row) => {
-        navigate(`/member/${row._id}`);
-    };
-
-      const calculateAge = (dob) => {
-                    if (!dob) return;
-    
-                    const birthDate = parseDOB(dob);
-                    if (!birthDate || isNaN(birthDate)) return;
-    
-                    const today = new Date();
-    
-                    let years = today.getFullYear() - birthDate.getFullYear();
-                    let months = today.getMonth() - birthDate.getMonth();
-                    let days = today.getDate() - birthDate.getDate();
-    
-                    if (days < 0) {
-                      months -= 1;
-                      days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-                    }
-    
-                    if (months < 0) {
-                      years -= 1;
-                      months += 12;
-                    }
-    
-                    return { years, months, days };
-                  };
-
-                   const formatAge = (dob) => {
-    const age = calculateAge(dob);
-    return age ? `${age.years} years, ${age.months} months` : "—";
+    navigate(`/member/${row._id}`);
   };
 
-const getDirectImageUrl = (driveUrl) => {
-  if (!driveUrl) return null;
+  const handleToggle = (newView) => { 
+    setView(newView); 
+  };
 
-  let fileId = null;
+  if (loading) return <div className={styles.app}><div className={styles.loader}></div></div>;
 
-  // Case 1: id= in query params (open?id=FILE_ID, uc?id=FILE_ID, etc.)
-  let match = driveUrl.match(/[?&]id=([^&]+)/);
-  if (match) fileId = match[1];
+  // Prepare filter options
+  const districts = unique(allMembers.map((m) => m.district));
+  const professions = unique(allMembers.map((m) => m.profession));
+  const memberTypes = unique(allMembers.map((m) => m.memberType));
+  const groupTags = unique(allMembers.flatMap((m) => m.forGrouping || []).filter(Boolean));
 
-  // Case 2: /d/{fileId}/ in path
-  if (!fileId) {
-    match = driveUrl.match(/\/d\/([^/]+)/);
-    if (match) fileId = match[1];
-  }
-
-  // Case 3: uc?id=FILE_ID format
-  if (!fileId) {
-    match = driveUrl.match(/uc\?id=([^&]+)/);
-    if (match) fileId = match[1];
-  }
-
-  // Case 4: direct fileId pasted (25+ chars, alphanumeric + _-)
-  if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) {
-    fileId = driveUrl;
-  }
-
-  // If still not found, return original link
-  if (!fileId) return driveUrl;
-
-  // Default: always return a working thumbnail link
-  return `https://drive.google.com/thumbnail?id=${fileId}`;
-};
-
-const unique = (arr) => [...new Set(arr.filter(Boolean))]; // Removes duplicates & empty
-
-const districts = unique(allMembers.map((m) => m.district)).sort((a,b)=> a.localeCompare(b));
-const professions = unique(allMembers.map((m) => m.profession)).sort((a,b)=> a.localeCompare(b));
-const memberTypes = unique(allMembers.map((m) => m.memberType)).sort((a,b)=> a.localeCompare(b));
-const groupTags = unique(allMembers.flatMap((m) => m.forGrouping || []).filter(Boolean)).sort((a,b)=> a.localeCompare(b));
-const buildExportRows = () => {
-  return membersData.map(m => ({
-    // Core
-    memberReferenceNumber: m.memberReferenceNumber || "",
-    timestamp: m.timestamp || "",
-    name: m.name || "",
-    age: m.age || "",
-    gender: m.gender || "",
-    mobileNumber: m.mobileNumber || "",
-    email: m.email || "",
-    district: m.district || "",
-    address: m.address || "",
-    symMemberStatus: m.symMemberStatus || "",
-    memberType: m.memberType || "",
-
-    // Job Seeker
-    seekerNeed: (m.seekerNeed || []).join(", "),
-    highest_education: m.highest_education || "",
-    fieldofStudy_Interest: m.fieldofStudy_Interest || "",
-    preferredJobRole_Sector: m.preferredJobRole_Sector || "",
-    workExp: m.workExp || "",
-    relocationStatus: m.relocationStatus || "",
-    preferredJobLocation: m.preferredJobLocation || "",
-    resumeLink: m.resumeLink || "",
-    declaration_Seeker: m.declaration_Seeker || "",
-
-    // Opportunity Provider
-    jobOfferType: (m.jobOfferType || []).join(", "),
-    offeringSector: (m.offeringSector || []).join(", "),
-    opportunityDescription: m.opportunityDescription || "",
-    offer_Location: m.offer_Location || "",
-    contactForSeekers: m.contactForSeekers || "",
-    declaration_Recruiter: m.declaration_Recruiter || "",
-
-    // Referee
-    referrerStatus: m.referrerStatus || "",
-    referringOfferType: (m.referringOfferType || []).join(", "),
-    referringSector: (m.referringSector || []).join(", "),
-    referringFor: m.referringFor || "",
-    levelOfSupport: (m.levelOfSupport || []).join(", "),
-    referrerContact: m.referrerContact || "",
-    declaration_Referee: m.declaration_Referee || "",
-
-    // Upskiller
-    interest_SkillBuildingProgram: m.interest_SkillBuildingProgram || "",
-    skillsToImprove: (m.skillsToImprove || []).join(", "),
-    declaration_Upskiller: m.declaration_Upskiller || "",
-    submittingEmail: m.submittingEmail || "",
-  }));
-};
-
-const exportToExcel = () => {
-  const data = buildExportRows();
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Members");
-
-  const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  const file = new Blob([buffer], { type: "application/octet-stream" });
-
-  saveAs(file, `Members_Full_${new Date().toISOString().slice(0,10)}.xlsx`);
-};
-
-const exportToCSV = () => {
-  const data = buildExportRows();
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const csv = XLSX.utils.sheet_to_csv(worksheet);
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  saveAs(blob, `Members_Full_${new Date().toISOString().slice(0,10)}.csv`);
-};
-if (loading) return <div className={styles.app}><div className={styles.loader}></div></div> ;
   return (
-    
     <div className={styles.members}>
-<div
+      {/* HEADER */}
+      <div
   className={styles.headerWrapper}
   style={{ left: sidebarWidth + 'px' }} // dynamically adjust according to sidebarCollapsed
 >
@@ -523,116 +442,87 @@ if (loading) return <div className={styles.app}><div className={styles.loader}><
   </div>
 </div>
 
-      <div style={{height:120}}></div>
-       <AddMember
+      <div style={{ height: 120 }}></div>
+
+      {/* MODAL & STATUS BAR */}
+      <AddMember
         isOpen={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditMember(null);
-        }}
-        onEdit={handleEditMember}
+        onClose={() => { setShowModal(false); setEditMember(null); }}
+        onSuccess={handleEditMember}
         editMember={editMember}
       />
-        {view === 'table' &&
-                <div className={styles.tableView}>
-                  {/* Filter Status Indicator */}
-              <FilterStatus 
-                activeFilters={activeFilters}
-                onClearFilter={clearFilter}
-                onClearAll={clearAllFilters}
-                filterConfig={membersFilterConfig}
-                data-page-type="members"
-              />
 
-                  <DataTable data={membersData}  columns={memberColumns} globalFilter={globalFilter}
-                    onGlobalFilterChange={setGlobalFilter} onRowClick={handleRowClick} />
-                </div>
-              }
+      <FilterStatus
+        activeFilters={activeFilters}
+        onClearFilter={clearFilter}
+        onClearAll={clearAllFilters}
+        filterConfig={membersFilterConfig}
+        data-page-type="members"
+      />
 
-        {view === 'card' &&
-        (
-      <div className={styles.cardView}>
-             {/* Filter Status Indicator */}
-              <FilterStatus 
-                activeFilters={activeFilters}
-                onClearFilter={clearFilter}
-                onClearAll={clearAllFilters}
-                filterConfig={membersFilterConfig}
-                data-page-type="members"
-              />
-
-        <div className={styles.membersList}>
-          {membersData.filter(member => {
-          const search = globalFilter?.toLowerCase() || '';
-          return (
-            member.name?.toLowerCase().includes(search) ||
-            member.profession?.toLowerCase().includes(search) ||
-            member.personalEmail?.toLowerCase().includes(search) ||
-            member.mobileNumber?.toLowerCase().includes(search) ||
-            member.memberReferenceNumber?.toString().includes(search)
-          );
-        }).map((member) => 
-                   (
-            
-            
-            <CustomCard key={member._id} className={styles.memberCard} hover >
-              
-              <div className={styles.memberHeader} >
-                    
-                  <img onClick={()=>{navigate(`/member/${member._id}`)}}
-                      src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
-                      alt={member.name}
-                      className={styles.avatar}
-                      onError={(e) => {
-                        e.target.src = "/members/AnonymousImage.jpg";
-                      }}
-                    />
-            
-                
-                <div className={styles.memberInfo} onClick={()=>{navigate(`/member/${member._id}`)}}>
-                  <h3>{member.name}</h3>
-                  <p>{member.memberType}</p>
-                </div>
-                {user?.role === 'Admin' && (
-                <div className={styles.memberActions}>
-                  <button
-                    className={styles.editButton}
-                    onClick={() => handleEdit(member)}
-                    title="Edit member"
-                  >
-                    <Edit size={16} />
-                  </button> 
-                
-                  <button
-                    className={styles.deleteButton}
-                    onClick={() => handleDelete(member._id)}
-                    title="Delete member"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>)}
-              </div>
-              <div onClick={()=>{navigate(`/member/${member._id}`)}} >
-              <div className={styles.memberDetails}>
-                <div><p>Ref No: {member.memberReferenceNumber}</p></div>
-                <div><Mail size={16} /> {member.email}</div>
-                <div><Phone size={16} /> {member.mobileNumber}</div>
-                <div><Calendar size={16} />{member.age}</div>
-                <div><Building size={16} /> {member.district}</div>
-              </div>
-              </div>
-            </CustomCard>
-          ))}
-
+      {/* CONTENT VIEWS */}
+      {view === 'table' ? (
+        <div className={styles.tableView}>
+          <DataTable 
+            data={membersData} 
+            columns={memberColumns} 
+            globalFilter={globalFilter}
+            onGlobalFilterChange={setGlobalFilter} 
+            onRowClick={handleRowClick} 
+          />
         </div>
+      ) : (
+        <div className={styles.cardView}>
+          <div className={styles.membersList}>
+            {membersData.filter(member => {
+              const search = globalFilter?.toLowerCase() || '';
+              return (
+                member.name?.toLowerCase().includes(search) ||
+                member.email?.toLowerCase().includes(search) ||
+                member.profession?.toLowerCase().includes(search) ||
+                member.personalEmail?.toLowerCase().includes(search) ||
+                member.mobileNumber?.toLowerCase().includes(search) ||
+                member.memberReferenceNumber?.toString().includes(search)
+              );
+            }).map((member) => (
+              <CustomCard key={member._id} className={styles.memberCard} hover>
+                <div className={styles.memberHeader}>
+                  <img
+                    onClick={() => navigate(`/member/${member._id}`)}
+                    src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
+                    alt={member.name}
+                    className={styles.avatar}
+                    onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
+                  />
+                  <div className={styles.memberInfo} onClick={() => navigate(`/member/${member._id}`)}>
+                    <h3>{member.name}</h3>
+                    <p>{member.memberType}</p>
+                  </div>
+                  {user?.role === 'Admin' && (
+                    <div className={styles.memberActions}>
+                      <button className={styles.editButton} onClick={() => handleEdit(member)} title="Edit member">
+                        <Edit size={16} />
+                      </button>
+                      <button className={styles.deleteButton} onClick={() => handleDelete(member._id)} title="Delete member">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div onClick={() => navigate(`/member/${member._id}`)} className={styles.memberDetails}>
+                  <div><p>Ref No: {member.memberReferenceNumber}</p></div>
+                  <div><Mail size={16} /> {member.email}</div>
+                  <div><Phone size={16} /> {member.mobileNumber}</div>
+                  <div><Calendar size={16} /> {member.age || formatAge(member.dob)}</div>
+                  <div><Building size={16} /> {member.district}</div>
+                </div>
+              </CustomCard>
+            ))}
+          </div>
         </div>
-        
-       ) }
-        
-
-      
-        </div>  
-  )
+      )}
+    </div>
+  );
 }
 
-export default Members
+export default Members;

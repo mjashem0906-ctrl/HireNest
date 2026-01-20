@@ -1,19 +1,5 @@
-.addButton {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: #4f46e5;
-  color: white;
-  border-radius: var(--radius-lg);
-  font-weight: bold;
-  transition: var(--transition-fast);
-  
-  &:hover {
-    background-color: #6366f1;
-    transform: translateY(-1px);
-  }
-}
+//-------------------------20/01--------------------11.43------------------
+/* --- Modal & Overlay Layout --- */
 
 .overlay {
   position: fixed;
@@ -46,7 +32,7 @@
   justify-content: space-between;
   padding: var(--spacing-lg);
   border-bottom: 1px solid var(--border-light);
-  
+
   h2 {
     margin: 0;
     font-size: 1.5rem;
@@ -64,13 +50,14 @@
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   transition: var(--transition-fast);
-  
+
   &:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
   }
 }
 
+/* --- Form Layout --- */
 .form {
   padding: var(--spacing-lg);
 }
@@ -90,16 +77,47 @@
   border-top: 1px solid var(--border-light);
 }
 
-.cancelButton {
+/* --- Buttons --- */
+
+/* Generic Add Button (Theme based) */
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
+  background-color: var(--accent-primary);
+  color: white;
+  border-radius: var(--radius-lg);
   font-weight: 500;
   transition: var(--transition-fast);
-  
+
   &:hover {
-    background-color: var(--bg-tertiary);
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+}
+
+/* Specific Referee/Mentor Button (Indigo) */
+.addRefereeBtn {
+  background-color: #4f46e5;
+  color: white;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #4338ca;
+  }
+
+  &:active {
+    transform: translateY(1px);
   }
 }
 
@@ -110,15 +128,26 @@
   border-radius: var(--radius-md);
   font-weight: 500;
   transition: var(--transition-fast);
-  
+
   &:hover {
     background-color: var(--accent-hover);
   }
 }
 
+.cancelButton {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: var(--transition-fast);
 
-//service form scss
+  &:hover {
+    background-color: var(--bg-tertiary);
+  }
+}
 
+/* --- File Upload Components --- */
 .fileUploadWrapper {
   display: flex;
   flex-direction: column;
@@ -146,25 +175,65 @@
   display: none;
 }
 
-.addRefereeBtn {
-  background-color: #4f46e5; /* The exact Indigo color */
-  color: white;
-  padding: 8px 24px;         /* Matches px-6 py-2 */
-  border-radius: 6px;        /* Matches rounded-md */
-  font-weight: 600;          /* Semibold text */
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  font-size: 14px;
+// Add to your existing AddModel.module.scss
+
+.fileUploadSection {
   display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background-color: #4338ca; /* Darker indigo on hover */
-  }
-
-  &:active {
-    transform: translateY(1px); /* Slight click effect */
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
   }
 }
+
+.fileInputContainer {
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  input[type="file"] {
+    flex: 1;
+  }
+}
+
+.progressBar {
+  margin-top: 5px;
+  height: 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  
+  div {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+    font-size: 10px;
+    color: white;
+    text-align: center;
+    line-height: 6px;
+  }
+}
+
+.fileStatus {
+  font-size: 0.75rem;
+  color: #16a34a;
+  margin-top: 4px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+// Keep your existing styles for overlay, modal, header, actions, etc.

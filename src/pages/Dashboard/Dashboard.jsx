@@ -1,17 +1,38 @@
-//-------------------------------14/01--------------------------------11.33----------
+
+//---------------6.51-----------------20/01--------------------------
+
+//-------------------------------UPDATED DASHBOARD--------------------------------
+import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from "react";
 import { Users, MapPin, BookOpen, Briefcase, UserCheck, User } from "lucide-react";
 import CustomCard from "../../components/UI/CustomCard";
 import DonutOverviewChart from "../../components/UI/DonutOverviewChart";
 import StatusTextView from "../../components/UI/StatusTextView";
 import styles from "./Dashboard.module.scss";
-// import API from "../../axios"; // Unused import removed for cleanliness
 import { useData } from "../../context/DataContext";
+// 👇 1. Import Auth Context
+import { useAuth } from "../../context/AuthContext"; 
 
 function MemberDashboard() {
+  const navigate = useNavigate();
+  const { user } = useAuth(); // 👇 2. Get current user info
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { memberContext, setMemberContext } = useData(); 
+  const { memberContext } = useData(); 
+
+  // 👇 3. Add this Redirect Logic
+  useEffect(() => {
+    if (user?.role === "Member") {
+      // If the user is a simple Member, send them directly to their profile
+      // We use { replace: true } so they can't press "Back" to return here
+      navigate(`/member/${user.memberId}`, { replace: true });
+    }
+  }, [user, navigate]);
+
+  // 👇 4. Prevent the Dashboard from rendering/flashing while redirecting
+  if (user?.role === "Member") {
+    return null; 
+  }
 
   useEffect(() => {
     setMembers(memberContext);
@@ -27,17 +48,11 @@ function MemberDashboard() {
   // === Basic stats ===
   const totalMembers = members.length;
 
-  // --- FIX APPLIED HERE ---
-  // We use (m.memberType || "") to ensure we always have a string, 
-  // preventing the "trim of undefined" crash.
   const seekers = members.filter((m) => {
-    const type = m.memberType || ""; // Fallback to empty string if undefined
+    const type = m.memberType || ""; 
     return type.trim() === "" || type.includes("Job Seeker");
   }).length;
-  // ------------------------
 
-  // These lines were using optional chaining (?.) which is good, 
-  // but I added the fallback logic internally just to be 100% safe.
   const providers = members.filter((m) => m.memberType?.includes("Oppurtunity Provider")).length;
   const referees = members.filter((m) => m.memberType?.includes("Referee")).length;
   const upskillers = members.filter((m) => m.memberType?.includes("In need of Upskilling")).length;
@@ -51,7 +66,6 @@ function MemberDashboard() {
   function countBy(array, key) {
     const counts = {};
     array.forEach((item) => {
-      // This line is already safe because you used || "Unknown"
       const value = item[key] || "Unknown";
       counts[value] = (counts[value] || 0) + 1;
     });
@@ -78,14 +92,13 @@ function MemberDashboard() {
   const topDistricts = districtStats.slice(0, 5);
   const topEducations = educationStats.slice(0, 5);
 
-  // === Stat Cards ===
   const stats = [
-    { title: "Total Members", count: totalMembers, icon: Users, color: "#4ECDC4" },
-    { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#45B7D1" },
-    { title: "Opportunity Providers", count: providers, icon: UserCheck, color: "#FFEAA7" },
-    { title: "Referrers", count: referees, icon: User, color: "#DDA0DD" },
-    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#FFA500" },
-    { title: "Mentors", count: mentors, icon: MapPin, color: "#FF6B6B" },
+    { title: "Total Members", count: totalMembers, icon: Users, color: "#4ECDC4", path: "/members" },
+    { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#45B7D1", path: "/members" }, 
+    { title: "Opportunity Providers", count: providers, icon: UserCheck, color: "#FFEAA7", path: "/members" },
+    { title: "Job Referee", count: referees, icon: User, color: "#DDA0DD", path: "/referees" },
+    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#FFA500", path: "/members" },
+    { title: "Mentors", count: mentors, icon: MapPin, color: "#FF6B6B", path: "/mentors" },
   ];
 
   return (
@@ -93,7 +106,13 @@ function MemberDashboard() {
       {/* === Stat Overview === */}
       <div className={styles.statsGrid}>
         {stats.map((stat, i) => (
-          <CustomCard key={i} className={styles.statCard} hover>
+          <CustomCard 
+            key={i} 
+            className={styles.statCard} 
+            hover
+            onClick={() => navigate(stat.path)}
+            style={{ cursor: "pointer" }} 
+          >
             <div className={styles.statIcon} style={{ backgroundColor: stat.color }}>
               <stat.icon size={24} />
             </div>
