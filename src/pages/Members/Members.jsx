@@ -12,7 +12,7 @@ import CustomCard from '../../components/UI/CustomCard';
 import DataTable from '../../components/Table/DataTable';
 import Filter from '../../components/Filter/Filter';
 import AddMember from '../../components/Models/AddMember';
-import FilterStatus from '../../components/Filter/FilterStatus';
+import FilterStatus from '../../components/Filter/FIlterStatus';
 
 // Context & Utils
 import API from '../../axios';
