@@ -2,60 +2,64 @@ const mongoose = require("mongoose");
 
 const memberSchema = new mongoose.Schema(
   {
-    memberReferenceNumber: String,  // Column A
-    timestamp: String,              // Column B
-    name: String,                   // Column C
-    dateOfBirth: String,            // ✅ Added (Required for Age calculation)
-    age: String,                    // Column D (Optional, since we have DOB)
-    gender: String,                 // Column E
-    mobileNumber: String,           // Column F
-    email: String,                  // Column G
-    district: String,               // Column H (Address)
-    address: String,                // ✅ Added (Full Address)
-    symMemberStatus: String,        // Column I
-    memberType: String,             // Column J
-    photoUrl: String,               // ✅ Added (Profile Photo)
+    memberReferenceNumber: String,
+    timestamp: String,
+    name: String,
+    dateOfBirth: String,
+    age: String,
+    gender: String,
+    mobileNumber: String,
+    email: String,
+    district: String,
+    address: String,
+    symMemberStatus: String,
+    memberType: String,
+    photoUrl: String,
 
-    // ✅ SHARED PROFESSIONAL INFO (Mentors & Job Seekers)
-    currentInstitutionOrCompany: String, // Company / Institution
-    designation: String,                 // Job Role / Designation (Mentor)
+    // ✅ ADDED: Professional details for Referees/Others
+    occupation: String, 
+    companyDetails: String,
+
+    // Shared Professional Info
+    currentInstitutionOrCompany: String,
+    designation: String, 
     
     // Job Seeker
-    seekerNeed: [String],           // Column K
-    highest_education: String,      // Column L
-    highestEducationSpecialization: String, // ✅ Added (Specialization of Highest Education)
-    highestEducationPassedOutYear: String, // ✅ Added (Year of Passing Highest Education)
-    fieldofStudy_Interest: String,  // Column M (Shared with Mentor as Expertise)
-    preferredJobRole_Sector: String,// Column N
-    workExp: String,                // Column O (Shared with Mentor as Experience)
-    relocationStatus: String,       // Column P
-    preferredJobLocation: String,   // Column Q 
-    resumeLink: String,             // Column R
-    declaration_Seeker: String,     // Column S
+    seekerNeed: [String],
+    highest_education: String,
+    highestEducationSpecialization: String,
+    highestEducationPassedOutYear: String,
+    fieldofStudy_Interest: String,
+    preferredJobRole_Sector: String,
+    workExp: String,
+    relocationStatus: String,
+    preferredJobLocation: String, 
+    resumeLink: String,
+    declaration_Seeker: String,
     
     // Opportunity Provider
-    jobOfferType: [String],         // Column T
-    offeringSector: [String],       // Column U
-    opportunityDescription: String, // Column V
-    offer_Location: String,         // Column W
-    contactForSeekers: String,      // Column X
-    declaration_Recruiter: String,  // Column Y
+    jobOfferType: [String],
+    offeringSector: [String],
+    opportunityDescription: String,
+    offer_Location: String,
+    contactForSeekers: String,
+    declaration_Recruiter: String,
 
-    // Referee
-    referrerStatus: String,         // Column Z
-    referringOfferType: [String],   // Column AA
-    referringSector: [String],      // Column AB
-    referringFor: String,           // Column AC
-    levelOfSupport: [String],       // Column AD
-    referrerContact: String,        // Column AE
-    declaration_Referee: String,    // Column AF
+    // Referee specific fields
+    referrerStatus: String,
+    referringOfferType: [String],
+    referringSector: [String],
+    referringFor: String,
+    levelOfSupport: [String],
+    referrerContact: String,
+    declaration_Referee: String,
 
     // Upskiller
-    interest_SkillBuildingProgram: String, // Column AG
-    skillsToImprove: [String],             // Column AH
-    declaration_Upskiller: String,         // Column AI
+    interest_SkillBuildingProgram: String,
+    skillsToImprove: [String],
+    declaration_Upskiller: String,
     
-    submittingEmail: String,        // Form Submitting email auto recorded
+    submittingEmail: String,
   },
   { timestamps: true }
 );
