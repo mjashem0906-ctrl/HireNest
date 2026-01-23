@@ -119,7 +119,7 @@ function App() {
             
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/:id" element={<JobDetail />} />
-
+ 
             {/* Error Pages */}
             <Route path="unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
