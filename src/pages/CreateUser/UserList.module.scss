@@ -6,10 +6,10 @@
   background-color: #f1f5f9;
   padding: 15px;
 
-    @media (max-width: 768px) {
-    left: 0 !important;        // always start at left
-    width: 100% !important;    // full width
-    padding: 10px;             // optional: smaller padding
+  @media (max-width: 768px) {
+    left: 0 !important; // always start at left
+    width: 100% !important; // full width
+    padding: 10px; // optional: smaller padding
     z-index: 10;
   }
 }
@@ -37,13 +37,15 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  background-color: var(--surface-elevated); /* ✅ theme */
+  background-color: var(--surface-elevated);
+  /* ✅ theme */
   min-width: 600px;
 
   thead th {
     position: sticky;
     top: 0;
-    background-color: var(--bg-tertiary); /* ✅ theme */
+    background-color: var(--bg-tertiary);
+    /* ✅ theme */
     z-index: 1;
   }
 
@@ -51,21 +53,29 @@
   td {
     padding: var(--spacing-md);
     text-align: left;
-    border-bottom: 1px solid var(--border-light); /* ✅ theme */
+    border-bottom: 1px solid var(--border-light);
+    /* ✅ theme */
   }
 
   th {
     font-weight: 600;
-    color: var(--text-secondary); /* ✅ theme */
+    color: var(--text-secondary);
+    /* ✅ theme */
   }
-    th:hover {
-    background-color: var(--bg-secondary); /* ✅ theme */
+
+  th:hover {
+    background-color: var(--bg-secondary);
+    /* ✅ theme */
   }
-tr:hover {
-    background-color: var(--bg-tertiary); /* ✅ theme */
+
+  tr:hover {
+    background-color: var(--bg-tertiary);
+    /* ✅ theme */
   }
+
   tr {
-    background-color: var(--bg-secondary); /* ✅ theme */
+    background-color: var(--bg-secondary);
+    /* ✅ theme */
   }
 
 }
@@ -98,15 +108,18 @@ tr:hover {
   position: relative;
   display: flex;
   align-items: center;
-  background-color: white; /* ✅ theme */
+  background-color: white;
+  /* ✅ theme */
   border-radius: var(--radius-xl);
   padding: 0 var(--spacing-md);
   height: 40px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* subtle elevation */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* subtle elevation */
   transition: box-shadow 0.2s ease, background-color 0.2s ease;
 
   svg {
-    color: var(--text-muted); /* ✅ theme */
+    color: var(--text-muted);
+    /* ✅ theme */
     margin-right: var(--spacing-sm);
   }
 
@@ -115,11 +128,13 @@ tr:hover {
     background: none;
     border: none;
     outline: none;
-    color: var(--text-primary); /* ✅ theme */
+    color: var(--text-primary);
+    /* ✅ theme */
     font-size: 0.875rem;
 
     &::placeholder {
-      color: var(--text-muted); /* ✅ theme */
+      color: var(--text-muted);
+      /* ✅ theme */
     }
   }
 }
@@ -134,26 +149,28 @@ tr:hover {
     border-radius: 20px;
     font-weight: bold;
     font-size: 0.9rem;
-    background-color: var(--bg-tertiary); /* ✅ theme */
-    color: var(--text-primary); /* ✅ theme */
+    background-color: var(--bg-tertiary);
+    /* ✅ theme */
+    color: var(--text-primary);
+    /* ✅ theme */
   }
 }
 
 .header {
   position: fixed;
   top: 64px;
-  left:280px;
+  left: 280px;
   right: 0;
   z-index: 30;
-  
+
   background-color: var(--surface-elevated);
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-md); // Optional: ensure spacing
-  transition: left 0.3s ease;  // <-- smooth move when sidebar toggles
-  width: calc(100% - 280px);   // <-- prevent right side gap
+  transition: left 0.3s ease; // <-- smooth move when sidebar toggles
+  width: calc(100% - 280px); // <-- prevent right side gap
 
   // When sidebar is collapsed
   .collapsed & {
@@ -162,8 +179,8 @@ tr:hover {
   }
 
   @media (max-width: 769px) {
-   left:0;
-   width: 100%;
+    left: 0;
+    width: 100%;
   }
 }
 
@@ -172,14 +189,16 @@ tr:hover {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: #4f46e5; /* ✅ theme */
+  background-color: #4f46e5;
+  /* ✅ theme */
   color: white;
   border-radius: var(--radius-lg);
   font-weight: bold;
   transition: var(--transition-fast);
 
   &:hover {
-    background-color: #6366f1; /* ✅ theme */
+    background-color: #6366f1;
+    /* ✅ theme */
     transform: translateY(-1px);
   }
 }

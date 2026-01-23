@@ -22,7 +22,7 @@ function Layout({ children }) {
     '/assignFor': 'AssignFor',
     '/memberComments': 'About Members',
     '/mentors': 'Mentors',
-    '/referees': 'Referees',
+    '/referees': 'Job Referees',
   };
 
   const getPageTitle = () => {
@@ -40,7 +40,7 @@ function Layout({ children }) {
     if (path.startsWith('/status-requests')) return 'Status Requests';
     if (path.startsWith('/membersWorking')) return 'Members Working in Tasks';
     if (path.startsWith('/mentors')) return 'Mentors';
-    if (path.startsWith('/referees')) return 'Referees';
+    if (path.startsWith('/referees')) return 'Job Referees';
 
     // 3. Fallback
     return 'Dashboard';

@@ -1,26 +1,34 @@
-
-//-----------------20/01---------11.48-----------------------
 import React, { useState } from "react";
-import { X, Plus } from "lucide-react"; // Combined imports
+import { X, Plus } from "lucide-react";
 import FormInput from "../../components/UI/FormInput";
 import DropdownSelect from "../../components/UI/DropdownSelect";
 import API from "../../axios";
 import styles from "../../components/Models/AddModel.module.scss";
-
 
 const initialState = {
   name: "",
   mobileNumber: "",
   email: "",
   gender: "",
-  memberType: "Referee", // Hardcoded as this is the Referee component
+  age: "",
+  memberType: "Referee",
 
-  // Referee Specific Fields
+  // Referee Specific Fields - match Member model
   referrerStatus: "",
-  referringOfferType: "",
-  referringSector: "",
+  referringOfferType: "", // Single string (not array)
+  referringSector: "", // Single string (not array)
   referringFor: "",
-  levelOfSupport: "",
+  levelOfSupport: "", // Single string (not array)
+  occupation: "",
+  companyDetails: "",
+  sector: "", // ✅ This should be saved
+  jobOfferType: "", // Single string (not array)
+  opportunityDescription: "", // ✅ Use this field for description
+  referrerContact: "",
+  offer_Location: "", // ✅ Note: underscore, not camelCase
+  symMemberStatus: "Active", // ✅ This is the field name in Member model
+  address: "",
+  district: "",
 };
 
 function AddReferee({ onSuccess }) {
@@ -30,7 +38,6 @@ function AddReferee({ onSuccess }) {
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
-    // Reset form when closing
     if (!isOpen) setFormData(initialState);
   };
 
@@ -40,29 +47,39 @@ function AddReferee({ onSuccess }) {
     setBtnLoading(true);
 
     try {
+      // DEBUG: Log what we're sending
+      console.log("=== FRONTEND DEBUG: Sending referee data ===");
+      console.log("Full formData:", JSON.stringify(formData, null, 2));
+      
       const res = await API.post("/member", formData);
+      
       if (onSuccess) onSuccess(res.data);
       alert("Referee added successfully!");
       toggleModal();
     } catch (err) {
-      console.error(err);
-      alert("Failed to add referee");
+      console.error("Error adding referee:", err);
+      console.error("Error response:", err.response?.data);
+      alert("Failed to add referee. Check console for details.");
     } finally {
       setBtnLoading(false);
     }
   };
 
+  const statusOptions = [
+    { value: "Active", label: "Active" },
+    { value: "Inactive", label: "Inactive" },
+    { value: "May be in Future", label: "May be in Future" },
+    { value: "Yes", label: "Yes" },
+    { value: "No", label: "No" },
+  ];
+
   return (
     <>
-      {/* Trigger Button with Icon */}
-      <button 
-        onClick={toggleModal}
-        className={styles.addRefereeBtn} 
-      >
-        Add Referee
+      <button onClick={toggleModal} className={styles.addRefereeBtn}>
+        <Plus size={20} />
+        Add Job Referee
       </button>
 
-      {/* Modal Overlay */}
       {isOpen && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
@@ -75,6 +92,7 @@ function AddReferee({ onSuccess }) {
 
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGrid}>
+                {/* Basic Info */}
                 <FormInput 
                   label="Name *" 
                   value={formData.name}
@@ -94,6 +112,13 @@ function AddReferee({ onSuccess }) {
                   onChange={(v) => setFormData({ ...formData, email: v })} 
                 />
 
+                <FormInput 
+                  label="Age" 
+                  value={formData.age}
+                  onChange={(v) => setFormData({ ...formData, age: v })} 
+                  type="number"
+                />
+
                 <DropdownSelect
                   label="Gender"
                   value={formData.gender}
@@ -106,34 +131,107 @@ function AddReferee({ onSuccess }) {
                 />
 
                 <FormInput 
-                  label="Referrer Status" 
-                  value={formData.referrerStatus}
-                  onChange={(v) => setFormData({ ...formData, referrerStatus: v })} 
+                  label="Occupation" 
+                  value={formData.occupation}
+                  onChange={(v) => setFormData({ ...formData, occupation: v })} 
                 />
-                
+
                 <FormInput 
-                  label="Referring Offer Type" 
-                  value={formData.referringOfferType}
-                  onChange={(v) => setFormData({ ...formData, referringOfferType: v })} 
+                  label="Company Details" 
+                  value={formData.companyDetails}
+                  onChange={(v) => setFormData({ ...formData, companyDetails: v })} 
                 />
-                
+
+                {/* Status Fields */}
+                <DropdownSelect
+                  label="Solidarity Member Status"
+                  value={formData.symMemberStatus}
+                  options={statusOptions}
+                  onChange={(v) => setFormData({ ...formData, symMemberStatus: v })}
+                />
+
+                <DropdownSelect
+                  label="Referrer Status"
+                  value={formData.referrerStatus}
+                  options={statusOptions}
+                  onChange={(v) => setFormData({ ...formData, referrerStatus: v })}
+                />
+
+                {/* Location Fields */}
+                <FormInput 
+                  label="District" 
+                  value={formData.district}
+                  onChange={(v) => setFormData({ ...formData, district: v })} 
+                />
+
+                <FormInput 
+                  label="Address" 
+                  value={formData.address}
+                  onChange={(v) => setFormData({ ...formData, address: v })} 
+                />
+
+                {/* IMPORTANT: Field name is offer_Location (with underscore) */}
+                <FormInput 
+                  label="Offer Location" 
+                  value={formData.offer_Location}
+                  onChange={(v) => setFormData({ ...formData, offer_Location: v })} 
+                />
+
+                {/* Sector Fields */}
+                <FormInput 
+                  label="Sector" 
+                  value={formData.sector}
+                  onChange={(v) => setFormData({ ...formData, sector: v })} 
+                />
+
                 <FormInput 
                   label="Referring Sector" 
                   value={formData.referringSector}
                   onChange={(v) => setFormData({ ...formData, referringSector: v })} 
                 />
-                
+
+                {/* Offer Type Fields */}
+                <FormInput 
+                  label="Job Offer Type" 
+                  value={formData.jobOfferType}
+                  onChange={(v) => setFormData({ ...formData, jobOfferType: v })} 
+                />
+
+                <FormInput 
+                  label="Referring Offer Type" 
+                  value={formData.referringOfferType}
+                  onChange={(v) => setFormData({ ...formData, referringOfferType: v })} 
+                />
+
+                {/* Additional Fields */}
                 <FormInput 
                   label="Referring For" 
                   value={formData.referringFor}
                   onChange={(v) => setFormData({ ...formData, referringFor: v })} 
                 />
-                
+
                 <FormInput 
                   label="Level of Support" 
                   value={formData.levelOfSupport}
                   onChange={(v) => setFormData({ ...formData, levelOfSupport: v })} 
                 />
+
+                <FormInput 
+                  label="Referrer Contact" 
+                  value={formData.referrerContact}
+                  onChange={(v) => setFormData({ ...formData, referrerContact: v })} 
+                />
+
+                {/* IMPORTANT: Field name is opportunityDescription */}
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <FormInput 
+                    label="Description" 
+                    value={formData.opportunityDescription}
+                    onChange={(v) => setFormData({ ...formData, opportunityDescription: v })}
+                    textarea
+                    rows={4}
+                  />
+                </div>
               </div>
 
               <div className={styles.actions}>

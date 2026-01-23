@@ -27,7 +27,7 @@ $warning-yellow: #d97706;
   background-color: white;
   border: 1px solid $border-color;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 // ==========================================
@@ -51,71 +51,6 @@ $warning-yellow: #d97706;
     margin-bottom: 20px;
     border-bottom: 2px solid $bg-light;
     padding-bottom: 10px;
-  }
-}
-
-// --- Header Section ---
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 1px solid $border-color;
-
-  .cardSearch {
-    display: flex;
-    align-items: center;
-    background-color: $bg-light;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid $border-color;
-
-    input {
-      border: none;
-      background: transparent;
-      margin-left: 8px;
-      outline: none;
-      font-size: 0.95rem;
-      width: 200px;
-    }
-  }
-
-  .center1 {
-    display: flex;
-    gap: 30px;
-
-    .center {
-      @include flex-center;
-      flex-direction: column;
-      cursor: pointer;
-      color: $text-light;
-      transition: color 0.3s;
-
-      &.active {
-        color: $primary-blue;
-        .label {
-          color: $primary-blue;
-          font-weight: 600;
-        }
-      }
-
-      .label {
-        background: none;
-        border: none;
-        margin-top: 5px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        color: inherit;
-      }
-    }
-  }
-
-  .right {
-    width: 200px; // Spacer
   }
 }
 
@@ -212,10 +147,25 @@ $warning-yellow: #d97706;
   font-size: 0.85rem;
   font-weight: 600;
 
-  &.applied { background-color: #e0f2fe; color: #0369a1; }
-  &.shortlisted { background-color: #fef3c7; color: #d97706; }
-  &.accepted { background-color: #dcfce7; color: #166534; }
-  &.rejected { background-color: #fee2e2; color: #991b1b; }
+  &.applied {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+
+  &.shortlisted {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+
+  &.accepted {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  &.rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
 }
 
 // --- Pagination ---
@@ -231,10 +181,12 @@ $warning-yellow: #d97706;
     background-color: #fff;
     border-radius: 6px;
     cursor: pointer;
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
+
     &:hover:not(:disabled) {
       background-color: $bg-light;
     }
@@ -251,7 +203,8 @@ $warning-yellow: #d97706;
 // ==========================================
 
 // --- General Buttons ---
-.applyButton, .appliedButton {
+.applyButton,
+.appliedButton {
   padding: 8px 20px;
   border-radius: 6px;
   font-weight: 600;
@@ -264,7 +217,10 @@ $warning-yellow: #d97706;
 .applyButton {
   background-color: $primary-blue;
   color: #fff;
-  &:hover { background-color: $primary-hover; }
+
+  &:hover {
+    background-color: $primary-hover;
+  }
 }
 
 .appliedButton {
@@ -286,11 +242,21 @@ $warning-yellow: #d97706;
     cursor: pointer;
     @include flex-center;
     transition: opacity 0.2s;
-    &:hover { opacity: 0.8; }
+
+    &:hover {
+      opacity: 0.8;
+    }
   }
 
-  .btnEdit { background-color: #dbeafe; color: $primary-blue; }
-  .btnDelete { background-color: #fee2e2; color: $danger-red; }
+  .btnEdit {
+    background-color: #dbeafe;
+    color: $primary-blue;
+  }
+
+  .btnDelete {
+    background-color: #fee2e2;
+    color: $danger-red;
+  }
 }
 
 // --- Floating Add Button ---
@@ -310,7 +276,9 @@ $warning-yellow: #d97706;
   transition: transform 0.2s;
   z-index: 50;
 
-  &:hover { transform: scale(1.1); }
+  &:hover {
+    transform: scale(1.1);
+  }
 }
 
 // --- Export Buttons ---
@@ -382,7 +350,9 @@ $warning-yellow: #d97706;
       color: $text-dark;
     }
 
-    tr:last-child td { border-bottom: none; }
+    tr:last-child td {
+      border-bottom: none;
+    }
   }
 
   .statusSelect {
@@ -392,7 +362,11 @@ $warning-yellow: #d97706;
     background-color: #fff;
     cursor: pointer;
     font-size: 0.85rem;
-    &:focus { outline: 2px solid $primary-blue; border-color: transparent; }
+
+    &:focus {
+      outline: 2px solid $primary-blue;
+      border-color: transparent;
+    }
   }
 }
 
@@ -402,7 +376,10 @@ $warning-yellow: #d97706;
 
 .modalOverlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(2px);
   @include flex-center;
@@ -425,16 +402,23 @@ $warning-yellow: #d97706;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    
-    h2 { margin: 0; font-size: 1.5rem; color: $text-dark; }
-    
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: $text-dark;
+    }
+
     .closeBtn {
       background: none;
       border: none;
       cursor: pointer;
       color: $text-light;
       padding: 4px;
-      &:hover { color: $text-dark; }
+
+      &:hover {
+        color: $text-dark;
+      }
     }
   }
 
@@ -447,7 +431,9 @@ $warning-yellow: #d97706;
       color: $text-medium;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
       padding: 10px 12px;
       border-radius: 6px;
@@ -455,6 +441,7 @@ $warning-yellow: #d97706;
       font-size: 0.95rem;
       margin-bottom: 16px;
       box-sizing: border-box;
+
       &:focus {
         outline: none;
         border-color: $primary-blue;
@@ -470,7 +457,10 @@ $warning-yellow: #d97706;
     .formRow {
       display: flex;
       gap: 16px;
-      & > div { flex: 1; }
+
+      &>div {
+        flex: 1;
+      }
     }
 
     .submitBtn {
@@ -484,7 +474,10 @@ $warning-yellow: #d97706;
       font-size: 1rem;
       font-weight: 600;
       margin-top: 10px;
-      &:hover { background-color: $primary-hover; }
+
+      &:hover {
+        background-color: $primary-hover;
+      }
     }
   }
 }
@@ -517,4 +510,99 @@ $warning-yellow: #d97706;
       opacity: 0.9; // subtle hover effect
     }
   }
+}
+
+.headerWrapper {
+  position: fixed;
+  top: 64px; // Matches global header height
+  right: 0;
+  z-index: 11;
+  background-color: #f1f5f9;
+  padding: 15px;
+  transition: left 0.3s ease, width 0.3s ease; // Smooth transition for sidebar toggle
+
+  @media (max-width: 768px) {
+    left: 0 !important;
+    width: 100% !important;
+    padding: 10px;
+    z-index: 10;
+  }
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.center {
+  @include flex-center;
+  flex-direction: column;
+  cursor: pointer;
+  color: $text-light;
+  transition: color 0.3s;
+
+  &.active {
+    color: $primary-blue;
+
+    .label {
+      color: $primary-blue;
+      font-weight: 600;
+    }
+  }
+
+  .label {
+    background: none;
+    border: none;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: inherit;
+  }
+}
+
+.cardSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: var(--radius-xl);
+  padding: 0 var(--spacing-md);
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background-color: var(--background-hover);
+  }
+
+  svg {
+    color: var(--text-muted);
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    padding: var(--spacing-xs) 0;
+    transition: color 0.2s ease;
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+  }
+}
+
+.center1 {
+  display: flex;
+  gap: 30px;
 }

@@ -1,4 +1,3 @@
-
 //---------------------20/01------3.07-------------
 
 import React, { useEffect, useState } from "react";
@@ -56,6 +55,9 @@ const initialState = {
   referringFor: "",
   levelOfSupport: "",
   referrerContact: "",
+  // NEW FIELDS: Moved to Referee section
+  occupation: "",
+  companyDetails: "",
 
   // --- Upskilling ---
   interest_SkillBuildingProgram: "",
@@ -96,6 +98,9 @@ function AddMember({
         photoUrl: editMember.photoUrl || "",
         resumeLink: editMember.resumeLink || "",
         forGrouping: editMember.forGrouping || [],
+        // NEW FIELDS: Initialize from editMember
+        occupation: editMember.occupation || "",
+        companyDetails: editMember.companyDetails || "",
       });
     } else {
       // Create Mode
@@ -227,6 +232,9 @@ function AddMember({
         jobOfferType: Array.isArray(formData.jobOfferType) ? formData.jobOfferType : formData.jobOfferType,
         offeringSector: Array.isArray(formData.offeringSector) ? formData.offeringSector : formData.offeringSector,
         levelOfSupport: Array.isArray(formData.levelOfSupport) ? formData.levelOfSupport : formData.levelOfSupport,
+        // NEW FIELDS: Include occupation and companyDetails
+        occupation: formData.occupation || "",
+        companyDetails: formData.companyDetails || "",
       };
 
       // Clean up undefined/null values
@@ -385,7 +393,7 @@ function AddMember({
             />
 
             <DropdownSelect
-              label="Member Status"
+              label=" Solidarity Member Status"
               value={formData.symMemberStatus}
               options={[
                 { value: "Active", label: "Active" },
@@ -586,6 +594,21 @@ function AddMember({
                   label="Referrer Contact" 
                   value={formData.referrerContact} 
                   onChange={(v) => setFormData({ ...formData, referrerContact: v })} 
+                />
+                
+                {/* NEW: Occupation and Company Details for Referees only */}
+                <FormInput 
+                  label="Occupation" 
+                  value={formData.occupation} 
+                  onChange={(v) => setFormData({ ...formData, occupation: v })} 
+                  placeholder="e.g., Software Engineer, Doctor, Teacher"
+                />
+
+                <FormInput 
+                  label="Company Details" 
+                  value={formData.companyDetails} 
+                  onChange={(v) => setFormData({ ...formData, companyDetails: v })} 
+                  placeholder="e.g., Company Name, Industry, Role"
                 />
               </>
             )}

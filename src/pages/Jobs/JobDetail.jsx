@@ -1,9 +1,10 @@
-//------15/01----------------11.59--------------------------------------
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./JobDetail.module.scss"; 
 import { useData } from "../../context/DataContext";
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios'; // Add this import
+import API from '../../axios'; // If you have an API utility
 import { Mail, Phone, Briefcase, Award, CheckCircle, Zap, Users, Star, Calendar, GraduationCap, Type } from 'lucide-react';
 
 // --- HELPERS ---
@@ -52,6 +53,7 @@ function JobDetail() {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const { jobContext, memberContext } = useData(); 
   const { user } = useAuth();
@@ -60,16 +62,50 @@ function JobDetail() {
   const [matches, setMatches] = useState([]);
   const [applicants, setApplicants] = useState([]);
 
-  // 1. Fetch Job
+  // 1. Fetch Job - UPDATED TO FETCH DIRECTLY FROM API
   useEffect(() => {
-    if (jobContext.length > 0) {
-      const foundJob = jobContext.find(j => j._id === id);
-      setJob(foundJob || null);
-      setLoading(false);
-    }
-  }, [jobContext, id]);
+    const fetchJob = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // First check if job exists in context
+        if (jobContext.length > 0) {
+          const foundJob = jobContext.find(j => j._id === id);
+          if (foundJob) {
+            setJob(foundJob);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // If not found in context, fetch from API
+        const response = await API.get(`/service/${id}`);
+        if (response.data.success) {
+          setJob(response.data.data);
+        } else {
+          setError("Job not found");
+        }
+      } catch (err) {
+        console.error("Error fetching job:", err);
+        setError("Failed to load job details");
+        
+        // Fallback to context if API fails
+        if (jobContext.length > 0) {
+          const foundJob = jobContext.find(j => j._id === id);
+          if (foundJob) {
+            setJob(foundJob);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // 2. Process Candidates
+    fetchJob();
+  }, [id, jobContext]); // Add jobContext as dependency
+
+  // 2. Process Candidates - ONLY when job is loaded
   useEffect(() => {
     if (job && memberContext && memberContext.length > 0) {
       processData();
@@ -160,6 +196,7 @@ function JobDetail() {
   const getScoreColor = (s) => s >= 80 ? '#16a34a' : s >= 50 ? '#2563eb' : '#ca8a04';
 
   if (loading) return <div style={{padding:'50px', textAlign:'center'}}>Loading...</div>;
+  if (error) return <div className={styles.container} style={{padding:'50px', textAlign:'center', color:'red'}}>{error}</div>;
   if (!job) return <div className={styles.container}>Job not found</div>;
 
   return (

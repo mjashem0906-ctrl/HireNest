@@ -1,7 +1,5 @@
-//------20/01-----------------------12.59------------------
-
 import React, { useEffect, useState } from 'react';
-import { User, Search, Mail, Phone, Building } from 'lucide-react'; 
+import { User, Search, Mail, Phone, Building } from 'lucide-react';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -107,39 +105,29 @@ const MentorsPage = () => {
       <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
         <div className={styles.headerContent}>
           
-          {/* Page Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-            <User size={28} color="#4f46e5"/> 
-            Mentors
+          {/* Search Bar */}
+          <div className={styles.cardSearch}>
+            <Search size={20} />
+            <input 
+              type="text" 
+              placeholder="Search mentors..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+            />
           </div>
-          
-          {/* Right Side Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
 
-            {/* Export Buttons (Admin Only) */}
-            {user?.role === 'Admin' && (
-               <div className={styles.exportButtons}>
-                <button onClick={exportMentorsToExcel} className={styles.excel}>Export Excel</button>
-                <button onClick={exportMentorsToCSV} className={styles.csv}>Export CSV</button>
-              </div>
-            )}
-            
-            {/* Add Mentor (Admin Only) */}
-            {user?.role === 'Admin' && (
-               <AddMentor onSuccess={handleNewMentor} />
-            )}
-
-            {/* Search Bar */}
-            <div className={styles.cardSearch}>
-              <Search size={20} />
-              <input 
-                type="text" 
-                placeholder="Search mentors..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
+          {/* Export Buttons (Admin Only) */}
+          {user?.role === 'Admin' && (
+            <div className={styles.exportButtons}>
+              <button onClick={exportMentorsToExcel} className={styles.excel}>Export Excel</button>
+              <button onClick={exportMentorsToCSV} className={styles.csv}>Export CSV</button>
             </div>
-          </div>
+          )}
+          
+          {/* Add Mentor (Admin Only) */}
+          {user?.role === 'Admin' && (
+            <AddMentor onSuccess={handleNewMentor} />
+          )}
         </div>
       </div>
 
@@ -148,63 +136,73 @@ const MentorsPage = () => {
       {/* CONTENT */}
       <div className={styles.cardView}>
         {loading ? (
-            <div style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>
-                <div className={styles.loader} style={{margin:'0 auto 20px'}}></div>
-                Loading Mentors...
-            </div>
+          <div style={{ textAlign: 'center', marginTop: '50px', color: '#666' }}>
+            <div className={styles.loader} style={{margin:'0 auto 20px'}}></div>
+            Loading Mentors...
+          </div>
         ) : (
-            <div className={styles.membersList}>
+          <div className={styles.membersList}>
             {mentors.filter(member => {
-                const search = searchTerm.toLowerCase();
-                return (
+              const search = searchTerm.toLowerCase();
+              return (
                 member.name?.toLowerCase().includes(search) ||
                 member.email?.toLowerCase().includes(search)
-                );
+              );
             }).map((member) => (
-                <CustomCard key={member._id} className={styles.memberCard} hover>
+              <CustomCard key={member._id} className={styles.memberCard} hover>
                 <div className={styles.memberHeader}>
-                    <img 
-                    onClick={() => navigate(`/member/${member._id}`)}
+                  <img 
+                    // Only make clickable for Admin users
+                    onClick={user?.role === 'Admin' ? () => navigate(`/member/${member._id}`) : undefined}
                     src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
                     alt={member.name}
                     className={styles.avatar}
                     onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
-                    />
-                    <div className={styles.memberInfo} onClick={() => navigate(`/member/${member._id}`)}>
+                    style={{ cursor: user?.role === 'Admin' ? 'pointer' : 'default' }}
+                  />
+                  <div 
+                    className={styles.memberInfo} 
+                    onClick={user?.role === 'Admin' ? () => navigate(`/member/${member._id}`) : undefined}
+                    style={{ cursor: user?.role === 'Admin' ? 'pointer' : 'default' }}
+                  >
                     <h3>{member.name}</h3>
                     <span style={{
-                        backgroundColor: '#f3e8ff', color: '#7e22ce', 
-                        padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500'
+                      backgroundColor: '#f3e8ff', color: '#7e22ce', 
+                      padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500'
                     }}>
-                        Mentor
+                      Mentor
                     </span>
-                    </div>
+                  </div>
                 </div>
                 
-                <div onClick={() => navigate(`/member/${member._id}`)}>
-                    <div className={styles.memberDetails}>
+                {/* Only make details clickable for Admin users */}
+                <div 
+                  onClick={user?.role === 'Admin' ? () => navigate(`/member/${member._id}`) : undefined}
+                  style={{ cursor: user?.role === 'Admin' ? 'pointer' : 'default' }}
+                >
+                  <div className={styles.memberDetails}>
                     <div><Mail size={16} /> {member.email}</div>
                     <div><Phone size={16} /> {member.mobileNumber}</div>
                     {member.currentInstitutionOrCompany && 
-                        <div><Building size={16} /> {member.currentInstitutionOrCompany}</div>
+                      <div><Building size={16} /> {member.currentInstitutionOrCompany}</div>
                     }
                     
                     {member.fieldofStudy_Interest && (
-                        <div style={{marginTop:'8px', color:'#555', fontSize:'0.85rem', lineHeight:'1.4'}}>
-                            <strong>Expertise:</strong> {member.fieldofStudy_Interest}
-                        </div>
+                      <div style={{marginTop:'8px', color:'#555', fontSize:'0.85rem', lineHeight:'1.4'}}>
+                        <strong>Expertise:</strong> {member.fieldofStudy_Interest}
+                      </div>
                     )}
-                    </div>
+                  </div>
                 </div>
-                </CustomCard>
+              </CustomCard>
             ))}
             
             {!loading && mentors.length === 0 && (
-                <div style={{textAlign:'center', width:'100%', padding:'20px', color:'#666'}}>
-                    No Mentors found.
-                </div>
+              <div style={{textAlign:'center', width:'100%', padding:'20px', color:'#666'}}>
+                No Mentors found.
+              </div>
             )}
-            </div>
+          </div>
         )}
       </div>
     </div>

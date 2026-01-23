@@ -46,7 +46,7 @@ function Members() {
     { accessorKey: 'memberReferenceNumber', header: 'Ref. No', enableResizing: true, size: 100 },
     { accessorKey: 'name', header: 'Name', enableResizing: true, size: 200 },
     { accessorKey: 'memberType', header: 'Member Type', enableResizing: true, size: 160 },
-    { accessorKey: 'symMemberStatus', header: 'Member Status', enableResizing: true, size: 160 },
+    { accessorKey: 'symMemberStatus', header: 'Solidarity Member Status', enableResizing: true, size: 160 },
     { accessorKey: 'gender', header: 'Gender', enableResizing: true, size: 100 },
     { accessorKey: 'age', header: 'Age', enableResizing: true, size: 70 },
     { accessorKey: 'district', header: 'District', enableResizing: true, size: 150 },
@@ -143,7 +143,7 @@ function Members() {
       Email: m.email || "",
       District: m.district || "",
       Role: m.memberType || "",
-      Status: m.symMemberStatus || "",
+      'Solidarity Member Status': m.symMemberStatus || "",
       
       // Additional personal info
       Profession: m.profession || "",
@@ -215,7 +215,7 @@ function Members() {
       profession: 'Profession',
       memberType: 'Member Type', 
       gender: 'Gender', 
-      symMemberStatus: 'Member Status',
+      symMemberStatus: 'Solidarity Member Status',
       seekerNeed: 'Seeker Need', 
       highest_education: 'Highest Education', 
       preferredJobRole_Sector: 'Preferred Job Role',
@@ -395,7 +395,7 @@ function Members() {
       <Search size={20} />
       <input
         type="text"
-        placeholder="Search..."
+        placeholder="Search members..."
         value={globalFilter || ''}
         onChange={(e) => setGlobalFilter(e.target.value)}
       />
@@ -410,10 +410,6 @@ function Members() {
           Export CSV
       </button>
       </div>
-      {/* <div className={styles.exportButtons}>
-        <button onClick={exportToExcel}>Export Excel</button>
-        <button onClick={exportToCSV}>Export CSV</button>
-      </div> */}
 
     <Filter
       fields={[
@@ -422,17 +418,12 @@ function Members() {
         { name: "finalNumber", label: "Max Age", type: "finalNumber" },
         { name: "district", label: "District", type: "select", options: districts },
         { name: "memberType", label: "Member Type", type: "select", options: memberTypes },
-
         { name: "gender", label: "Gender", type: "select", options: unique(allMembers.map(m => m.gender)) },
-        { name: "symMemberStatus", label: "Member Status", type: "select", options: unique(allMembers.map(m => m.symMemberStatus)) },
-
+        { name: "symMemberStatus", label: "Solidarity Member Status", type: "select", options: unique(allMembers.map(m => m.symMemberStatus)) },
         { name: "highest_education", label: "Highest Education", type: "select", options: unique(allMembers.map(m => m.highest_education)) },
         { name: "preferredJobRole_Sector", label: "Preferred Job Role", type: "select", options: unique(allMembers.map(m => m.preferredJobRole_Sector)) },
-
         { name: "relocationStatus", label: "Relocation Status", type: "select", options: unique(allMembers.map(m => m.relocationStatus)) },
-
         { name: "referrerStatus", label: "Referrer Status", type: "select", options: unique(allMembers.map(m => m.referrerStatus)) },
-
         // { name: "levelOfSupport", label: "Level Of Support", type: "multiSelect", options: unique(allMembers.flatMap(m => m.levelOfSupport || [])) },
       ]}
       onApplyFilters={applyFilters}

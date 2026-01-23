@@ -1,8 +1,6 @@
-//---------------------------20/01--------------3.38------
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from './Jobs.module.scss';
 import { BriefcaseBusiness, NotebookPen, Plus, Search, CheckCircle, XCircle, Clock, Loader, Trash2, Pencil, X, FileText, User, Edit, Check, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -14,6 +12,8 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import Filter from '../../components/Filter/Filter';
 import StatusPipeline from './StatusPipeline';
+import debounce from 'lodash/debounce';
+import PropTypes from 'prop-types';
 
 const EMPLOYMENT_TYPES = [
     "Full-time",
@@ -86,7 +86,7 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
         const updatedJobs = [...editedJobs];
         updatedJobs.splice(actualIndex, 1);
         setEditedJobs(updatedJobs);
-        
+
         if (currentJobs.length === 1 && currentPage > 0) {
             setCurrentPage(currentPage - 1);
         }
@@ -133,7 +133,7 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
             <div style={modalStyles.modal}>
                 <div style={modalStyles.header}>
                     <h2 style={modalStyles.title}>Review & Edit CSV Jobs</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
                         <X size={24} />
                     </button>
                 </div>
@@ -164,7 +164,7 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                                 const actualIndex = startIndex + index;
                                 const isEditing = editingIndex === actualIndex;
                                 const isExpanded = expandedRows[actualIndex];
-                                
+
                                 return (
                                     <React.Fragment key={actualIndex}>
                                         <tr>
@@ -264,6 +264,15 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
     );
 };
 
+BulkCSVReviewModal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    jobsData: PropTypes.array,
+    onSave: PropTypes.func.isRequired,
+    onBulkSubmit: PropTypes.func.isRequired,
+    refereesList: PropTypes.array
+};
+
 // =========================================================================================
 // COMPONENT 2: ProvidedForm
 // =========================================================================================
@@ -279,8 +288,8 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [salary, setSalary] = useState('');
     const [role, setRole] = useState('');
     const [keySkills, setKeySkills] = useState('');
-    
-    const { memberContext } = useData(); 
+
+    const { memberContext } = useData();
     const [refereedBy, setRefereedBy] = useState('');
     const [refereesList, setRefereesList] = useState([]);
 
@@ -305,11 +314,11 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 setSalary(initialData.salary || '');
                 setRole(initialData.role || '');
                 setKeySkills(initialData.keySkills || '');
-                
-                const refId = initialData.refereedBy && typeof initialData.refereedBy === 'object' 
-                    ? initialData.refereedBy._id 
+
+                const refId = initialData.refereedBy && typeof initialData.refereedBy === 'object'
+                    ? initialData.refereedBy._id
                     : (initialData.refereedBy || '');
-                    
+
                 setRefereedBy(refId);
             } else {
                 setTitle('');
@@ -332,66 +341,93 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Enhanced file validation
+        const allowedTypes = ['text/csv', 'application/vnd.ms-excel'];
+        if (!allowedTypes.includes(file.type) && !file.name.endsWith('.csv')) {
+            alert('Please upload a valid CSV file');
+            e.target.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size should be less than 5MB');
+            e.target.value = '';
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (event) => {
-            const text = event.target.result;
-            const rows = text.split('\n').filter(row => row.trim() !== '');
-            if (rows.length < 2) return alert("CSV is empty or invalid format");
+            try {
+                const text = event.target.result;
+                const rows = text.split('\n').filter(row => row.trim() !== '');
+                if (rows.length < 2) {
+                    alert("CSV is empty or invalid format");
+                    return;
+                }
 
-            const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-            const bulkData = [];
+                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+                const bulkData = [];
 
-            for (let i = 1; i < rows.length; i++) {
-                const values = rows[i].split(',').map(v => v.trim());
-                const entry = {};
-                headers.forEach((header, index) => {
-                    entry[header] = values[index] || "";
-                });
-                
-                bulkData.push({
-                    title: entry.title,
-                    companyName: entry.companyname || entry.companyName || "",
-                    role: entry.role || "",
-                    employmentType: entry.employmenttype || entry.employmentType || "Full-time",
-                    location: entry.location || "",
-                    experience: entry.experience || "",
-                    salary: entry.salary || "",
-                    education: entry.education || "",
-                    passedOutYear: entry.passedoutyear || entry.passedOutYear || "",
-                    keySkills: entry.keyskills || entry.keySkills || "",
-                    description: entry.description || "",
-                    refereedBy: "" 
-                });
-            }
+                for (let i = 1; i < rows.length; i++) {
+                    const values = rows[i].split(',').map(v => v.trim());
+                    const entry = {};
+                    headers.forEach((header, index) => {
+                        entry[header] = values[index] || "";
+                    });
 
-            if (bulkData.length === 1) {
-                const job = bulkData[0];
-                setTitle(job.title);
-                setCompanyName(job.companyName);
-                setRole(job.role);
-                setEmploymentType(job.employmentType);
-                setLocation(job.location);
-                setExperience(job.experience);
-                setSalary(job.salary);
-                setEducation(job.education);
-                setPassedOutYear(job.passedOutYear);
-                setKeySkills(job.keySkills);
-                setDescription(job.description);
-                setRefereedBy('');
-                alert("Data loaded into form. Review and click Post.");
-            } else {
-                onSubmit(bulkData, true);
+                    bulkData.push({
+                        title: entry.title,
+                        companyName: entry.companyname || entry.companyName || "",
+                        role: entry.role || "",
+                        employmentType: entry.employmenttype || entry.employmentType || "Full-time",
+                        location: entry.location || "",
+                        experience: entry.experience || "",
+                        salary: entry.salary || "",
+                        education: entry.education || "",
+                        passedOutYear: entry.passedoutyear || entry.passedOutYear || "",
+                        keySkills: entry.keyskills || entry.keySkills || "",
+                        description: entry.description || "",
+                        refereedBy: ""
+                    });
+                }
+
+                if (bulkData.length === 1) {
+                    const job = bulkData[0];
+                    setTitle(job.title);
+                    setCompanyName(job.companyName);
+                    setRole(job.role);
+                    setEmploymentType(job.employmentType);
+                    setLocation(job.location);
+                    setExperience(job.experience);
+                    setSalary(job.salary);
+                    setEducation(job.education);
+                    setPassedOutYear(job.passedOutYear);
+                    setKeySkills(job.keySkills);
+                    setDescription(job.description);
+                    setRefereedBy('');
+                    alert("Data loaded into form. Review and click Post.");
+                } else {
+                    onSubmit(bulkData, true);
+                }
+            } catch (error) {
+                console.error("CSV parsing error:", error);
+                alert("Error parsing CSV file. Please check the format.");
             }
         };
+
+        reader.onerror = () => {
+            alert("Error reading file. Please try again.");
+        };
+
         reader.readAsText(file);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit({ 
+        onSubmit({
             title, companyName, employmentType, location, description,
             education, passedOutYear, experience, salary, role, keySkills,
-            refereedBy: refereedBy || null 
+            refereedBy: refereedBy || null
         }, false);
     };
 
@@ -414,7 +450,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             <div style={modalStyles.modal}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
                     <h2 style={{ margin: 0, color: '#111827' }}>{initialData ? 'Edit Job Post' : 'Create Job Post'}</h2>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
                         <X size={24} />
                     </button>
                 </div>
@@ -481,9 +517,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     </div>
 
                     <label style={modalStyles.label}>Refereed Person (Optional)</label>
-                    <select 
-                        style={modalStyles.select} 
-                        value={refereedBy} 
+                    <select
+                        style={modalStyles.select}
+                        value={refereedBy}
                         onChange={(e) => setRefereedBy(e.target.value)}
                     >
                         <option value="">Select a Referee (Optional)</option>
@@ -500,7 +536,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
                     <label style={modalStyles.label}>Key Skills</label>
                     <input style={modalStyles.input} type="text" value={keySkills} onChange={(e) => setKeySkills(e.target.value)} placeholder="e.g. React, Node.js, SQL" />
-                    
+
                     <label style={modalStyles.label}>Description</label>
                     <textarea style={modalStyles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the job role..." required />
 
@@ -511,6 +547,32 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             </div>
         </div>
     );
+};
+
+ProvidedForm.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    initialData: PropTypes.shape({
+        title: PropTypes.string,
+        companyName: PropTypes.string,
+        employmentType: PropTypes.string,
+        location: PropTypes.string,
+        description: PropTypes.string,
+        education: PropTypes.string,
+        passedOutYear: PropTypes.string,
+        experience: PropTypes.string,
+        salary: PropTypes.string,
+        role: PropTypes.string,
+        keySkills: PropTypes.string,
+        refereedBy: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.shape({
+                _id: PropTypes.string,
+                name: PropTypes.string
+            })
+        ])
+    })
 };
 
 // =========================================================================================
@@ -659,7 +721,7 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle }) => {
             <div style={modalStyles.modal}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <h3 style={modalStyles.title}>Upload Resume for {jobTitle}</h3>
-                    <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                    <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
                         <X size={24} />
                     </button>
                 </div>
@@ -673,8 +735,8 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle }) => {
                         style={{ display: 'none' }}
                     />
 
-                    <label 
-                        htmlFor="resume-upload" 
+                    <label
+                        htmlFor="resume-upload"
                         style={modalStyles.fileInput}
                         onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
                         onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
@@ -686,7 +748,7 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle }) => {
                         <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
                             (PDF/DOC/DOCX, max 5MB)
                         </div>
-                        
+
                         {fileName ? (
                             <div style={modalStyles.selectedFile}>
                                 <FileText size={16} />
@@ -725,6 +787,13 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle }) => {
     );
 };
 
+ResumeUploadModal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onUpload: PropTypes.func.isRequired,
+    jobTitle: PropTypes.string
+};
+
 // =========================================================================================
 // MAIN COMPONENT: Jobs
 // =========================================================================================
@@ -732,10 +801,13 @@ function Jobs() {
     const [globalFilter, setGlobalFilter] = useState('');
     const [jobPosts, setJobPosts] = useState([]);
     const [myPost, setMyPost] = useState([]);
-    const [view, setView] = useState('request');
+    const [view, setView] = useState('request'); // 'request' (Job Posts), 'myPost' (Applicants/My Jobs)
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [showProvidedModal, setShowProvidedModal] = useState(false);
+
+    const { sidebarCollapsed } = useOutletContext();
+    const sidebarWidth = sidebarCollapsed ? 90 : 280;
 
     const [filters, setFilters] = useState({
         // Create-job fields
@@ -758,13 +830,22 @@ function Jobs() {
         initialNumber: "",   // Min applicants
         finalNumber: ""      // Max applicants
     });
-    
+
     const [showBulkReviewModal, setShowBulkReviewModal] = useState(false);
     const [bulkReviewJobs, setBulkReviewJobs] = useState([]);
     const [showResumeModal, setShowResumeModal] = useState(false);
     const [selectedJob, setSelectedJob] = useState(null);
     const [editingJob, setEditingJob] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [loadingState, setLoadingState] = useState({
+        fetching: false,
+        applying: false,
+        uploading: false,
+        deleting: false,
+        filtering: false
+    });
+    const [error, setError] = useState(null);
 
     const { user } = useAuth();
     const { jobContext, memberContext } = useData();
@@ -774,6 +855,72 @@ function Jobs() {
 
     // Backend URL for Local file serving
     const BACKEND_URL = "http://localhost:5000";
+
+    // Constants
+    const JOBS_PER_PAGE = 10;
+
+    // FIXED: Move checkIsApplied function BEFORE it's used
+    const checkIsApplied = (job, userId) => {
+        if (!job.appliedMembers || !userId || job.appliedMembers.length === 0) {
+            return false;
+        }
+
+        const userIdStr = String(userId).trim();
+
+        // Debug: Log the first applied member structure
+        if (job.appliedMembers.length > 0) {
+            console.log("Applied member structure:", job.appliedMembers[0]);
+            console.log("User ID being checked:", userIdStr);
+        }
+
+        return job.appliedMembers.some(app => {
+            // Try all possible field names for member ID
+            const possibleIds = [
+                app.memberId?._id,
+                app.memberId,
+                app.member?._id,
+                app.member,
+                app.userId?._id,
+                app.userId,
+                app.applicantId?._id,
+                app.applicantId,
+                app._id // Sometimes the member object is directly stored
+            ].filter(id => id != null);
+
+            const found = possibleIds.some(id => String(id).trim() === userIdStr);
+
+            if (found) {
+                console.log("Found matching application for job:", job.title);
+            }
+
+            return found;
+        });
+    };
+
+    // FIXED: Enhanced getMyApplicationStatus function
+    const getMyApplicationStatus = (job) => {
+        if (!job.appliedMembers || !user?.memberId) return null;
+
+        const userIdStr = String(user.memberId).trim();
+        const application = job.appliedMembers.find(app => {
+            // Try all possible field names for member ID
+            const possibleIds = [
+                app.memberId?._id,
+                app.memberId,
+                app.member?._id,
+                app.member,
+                app.userId?._id,
+                app.userId,
+                app.applicantId?._id,
+                app.applicantId,
+                app._id
+            ].filter(id => id != null);
+
+            return possibleIds.some(id => String(id).trim() === userIdStr);
+        });
+
+        return application ? application.status || "Applied" : null;
+    };
 
     useEffect(() => {
         if (memberContext) {
@@ -791,7 +938,7 @@ function Jobs() {
     // ---------------------------------------------
     // APPLY FILTERS TO A GIVEN JOB ARRAY
     // ---------------------------------------------
-    const applyFilters = (jobs) => {
+    const applyFilters = useCallback((jobs) => {
         const search = globalFilter.trim().toLowerCase();
 
         // Destructure our filter state
@@ -838,7 +985,7 @@ function Jobs() {
 
         return jobs.filter((job) => {
             // ---------------------------
-            // 0) Global search box
+            // 0) Global search box (fuzzy matching)
             // ---------------------------
             if (search) {
                 const haystack = [
@@ -857,45 +1004,45 @@ function Jobs() {
             }
 
             // ---------------------------
-            // 1) Individual text filters
+            // 1) Individual text filters (partial matching)
             // ---------------------------
 
             if (titleFilter) {
-                if ((job.title || "").toLowerCase() !== titleFilter) return false;
+                if (!(job.title || "").toLowerCase().includes(titleFilter)) return false;
             }
 
             if (companyFilter) {
-                if ((job.companyName || "").toLowerCase() !== companyFilter) return false;
+                if (!(job.companyName || "").toLowerCase().includes(companyFilter)) return false;
             }
 
             if (roleFilter) {
-                if ((job.role || "").toLowerCase() !== roleFilter) return false;
+                if (!(job.role || "").toLowerCase().includes(roleFilter)) return false;
             }
 
             if (locationFilter) {
-                if ((job.location || "").toLowerCase() !== locationFilter) return false;
+                if (!(job.location || "").toLowerCase().includes(locationFilter)) return false;
             }
 
             if (experienceFilter) {
-                if ((job.experience || "").toLowerCase() !== experienceFilter) return false;
+                if (!(job.experience || "").toLowerCase().includes(experienceFilter)) return false;
             }
 
             if (salaryFilter) {
-                if ((job.salary || "").toLowerCase() !== salaryFilter) return false;
+                if (!(job.salary || "").toLowerCase().includes(salaryFilter)) return false;
             }
 
             if (educationFilter) {
-                if ((job.education || "").toLowerCase() !== educationFilter) return false;
+                if (!(job.education || "").toLowerCase().includes(educationFilter)) return false;
             }
 
             if (passoutFilter) {
-                if ((String(job.passedOutYear || "")).toLowerCase() !== passoutFilter) return false;
+                if (!(String(job.passedOutYear || "")).toLowerCase().includes(passoutFilter)) return false;
             }
 
-            // For skills, you may want equality on the whole string:
+            // For skills, check if any skill contains the filter
             if (keySkillsFilter) {
-                if ((job.keySkills || "").toLowerCase() !== keySkillsFilter) return false;
-                // OR: if you split skills and want "contains" behaviour, we can adjust this separately
+                const jobSkills = (job.keySkills || "").toLowerCase();
+                if (!jobSkills.includes(keySkillsFilter)) return false;
             }
 
             if (descriptionFilter) {
@@ -910,11 +1057,11 @@ function Jobs() {
             }
 
             // ---------------------------
-            // 3) Refereed Person (by name/email)
+            // 3) Refereed Person (by name/email, partial matching)
             // ---------------------------
             if (refereedByFilter) {
                 const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
-                if (refName !== refereedByFilter) return false;
+                if (!refName.includes(refereedByFilter)) return false;
             }
 
             // ---------------------------
@@ -942,13 +1089,64 @@ function Jobs() {
 
             return true;
         });
-    };
+    }, [filters, globalFilter]);
 
     // ---------------------------------------------
-    // DERIVED FILTERED LISTS
+    // DERIVED FILTERED LISTS (Memoized)
     // ---------------------------------------------
-    const filteredJobPosts = applyFilters(jobPosts);
-    const filteredMyPost = applyFilters(myPost);
+    const filteredJobPosts = useMemo(() => applyFilters(jobPosts), [jobPosts, applyFilters]);
+
+    // FIXED: For "Applicants" tab, show ALL jobs for admin, and applied jobs for members
+    const filteredMyPost = useMemo(() => {
+        if (view === "myPost") {
+            if (user?.role === 'Admin') {
+                // For admin in "Applicants" tab: Show ALL jobs
+                return applyFilters(jobPosts);
+            } else {
+                // For members in "My Jobs": Show only their applications
+                if (!user?.memberId) return [];
+
+                const memberJobs = jobPosts.filter(job => {
+                    return checkIsApplied(job, user.memberId);
+                });
+
+                return applyFilters(memberJobs);
+            }
+        }
+        return [];
+    }, [view, jobPosts, user, applyFilters, checkIsApplied]);
+
+    // Paginated jobs based on view
+    const paginatedJobs = useMemo(() => {
+        const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
+        return source.slice(
+            (page - 1) * JOBS_PER_PAGE,
+            page * JOBS_PER_PAGE
+        );
+    }, [view, filteredMyPost, filteredJobPosts, page]);
+
+    // Update total pages when filtered results change
+    useEffect(() => {
+        const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
+        const newTotalPages = Math.ceil(source.length / JOBS_PER_PAGE);
+        setTotalPages(newTotalPages || 1);
+
+        // Reset to page 1 if current page exceeds total pages
+        if (page > newTotalPages && newTotalPages > 0) {
+            setPage(1);
+        }
+    }, [view, filteredMyPost, filteredJobPosts, page]);
+
+    // Scroll to top when page changes
+    useEffect(() => {
+        // Find the main content container (adjust selector as needed based on Layout)
+        const mainContent = document.querySelector(`.${styles.jobs}`) || window;
+        if (mainContent.scrollIntoView) {
+            mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [page, view]);
 
     const handleClick = (job) => {
         navigate(`/jobs/${job._id}`);
@@ -1092,12 +1290,12 @@ function Jobs() {
             options: refereeNameOptions,        // array of strings (names/emails)
         },
         // I would keep description as text; having a dropdown for entire descriptions is not very usable.
-        { name: 'description',  label: 'Description Contains', type: 'text' },
+        { name: 'description', label: 'Description Contains', type: 'text' },
         // Extra filters you already had:
-        { name: 'startDate',     label: 'Posted From',     type: 'startDate' },
-        { name: 'endDate',       label: 'Posted To',       type: 'endDate' },
-        { name: 'initialNumber', label: 'Min Applicants',  type: 'initialNumber' },
-        { name: 'finalNumber',   label: 'Max Applicants',  type: 'finalNumber' }
+        { name: 'startDate', label: 'Posted From', type: 'startDate' },
+        { name: 'endDate', label: 'Posted To', type: 'endDate' },
+        { name: 'initialNumber', label: 'Min Applicants', type: 'initialNumber' },
+        { name: 'finalNumber', label: 'Max Applicants', type: 'finalNumber' }
     ];
 
     // --- HELPER: FILE URL ---
@@ -1107,21 +1305,6 @@ function Jobs() {
             return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
         }
         return url;
-    };
-
-    const checkIsApplied = (job, userId) => {
-        if (!job.appliedMembers || !userId) return false;
-        return job.appliedMembers.some(
-            app => String(app.memberId?._id || app.memberId) === String(userId)
-        );
-    };
-
-    const getMyApplicationStatus = (job) => {
-        if (!job.appliedMembers || !user?.memberId) return null;
-        const application = job.appliedMembers.find(
-            app => String(app.memberId?._id || app.memberId) === String(user.memberId)
-        );
-        return application ? application.status || "Applied" : null;
     };
 
     const getPipelineStatus = (dbStatus) => {
@@ -1143,34 +1326,48 @@ function Jobs() {
     // --- API Operations ---
     const fetchJobPosts = async () => {
         try {
+            setLoadingState(prev => ({ ...prev, fetching: true }));
+            setError(null);
+
             const res = await API.get('/service');
             const allJobs = res.data.data;
             setJobPosts(allJobs);
 
+            // For admin: Show all jobs in "Applicants" tab
+            // For members: Show only their applications
             if (user) {
                 if (user.role === 'Admin') {
-                    const adminJobs = allJobs.filter(job => 
-                        String(job.memberId?._id || job.memberId) === String(user.memberId)
-                    );
-                    setMyPost(adminJobs);
+                    // For admin, we'll show all jobs in the "Applicants" tab
+                    setMyPost(allJobs);
                 } else {
-                    const myApplications = allJobs.filter(job => 
+                    // For members: Show only their applications
+                    // Using the enhanced checkIsApplied function
+                    const myApplications = allJobs.filter(job =>
                         checkIsApplied(job, user.memberId)
                     );
+
+                    console.log("Member applications found:", myApplications.length);
+                    console.log("Member ID:", user.memberId);
                     setMyPost(myApplications);
                 }
             }
         } catch (error) {
             console.error("Error fetching jobs:", error);
+            setError("Unable to load jobs. Please try again later.");
+
+            // Fallback to context if available
             if (jobContext && jobContext.length > 0) setJobPosts(jobContext);
+        } finally {
+            setLoadingState(prev => ({ ...prev, fetching: false }));
         }
     };
 
     const handleDelete = async (jobId, e) => {
-        e.stopPropagation(); 
+        e.stopPropagation();
         if (!window.confirm("Are you sure you want to delete this job post?")) return;
 
         try {
+            setLoadingState(prev => ({ ...prev, deleting: true }));
             await API.delete(`/service/${jobId}`);
             setJobPosts(prev => prev.filter(job => job._id !== jobId));
             setMyPost(prev => prev.filter(job => job._id !== jobId));
@@ -1178,6 +1375,8 @@ function Jobs() {
         } catch (error) {
             console.error("Delete failed:", error);
             alert("Failed to delete job.");
+        } finally {
+            setLoadingState(prev => ({ ...prev, deleting: false }));
         }
     };
 
@@ -1188,6 +1387,7 @@ function Jobs() {
             fetchJobPosts();
         } catch (error) {
             console.error("Failed to update status", error);
+            alert("Failed to update status. Please try again.");
         }
     };
 
@@ -1202,16 +1402,21 @@ function Jobs() {
         data.append("upload_preset", uploadPreset);
 
         try {
+            setLoadingState(prev => ({ ...prev, uploading: true }));
             const res = await axios.post(api, data);
             return res.data.secure_url;
         } catch (error) {
             console.error("Cloudinary Upload Error:", error);
             throw new Error("Failed to upload file to cloud.");
+        } finally {
+            setLoadingState(prev => ({ ...prev, uploading: false }));
         }
     };
 
     const handleApply = async (job, resumeFile = null) => {
         try {
+            setLoadingState(prev => ({ ...prev, applying: true }));
+
             if (!resumeFile && user.role === 'Member') {
                 setSelectedJob(job);
                 setShowResumeModal(true);
@@ -1234,6 +1439,8 @@ function Jobs() {
             setShowResumeModal(false);
         } catch (error) {
             alert(error.response?.data?.message || "Failed to apply");
+        } finally {
+            setLoadingState(prev => ({ ...prev, applying: false }));
         }
     };
 
@@ -1292,7 +1499,7 @@ function Jobs() {
 
             setJobPosts(prev => prev.map(job => (job._id === updatedJob._id ? updatedJob : job)));
             setMyPost(prev => prev.map(job => (job._id === updatedJob._id ? updatedJob : job)));
-            
+
             alert("Job updated successfully!");
             handleCloseModal();
         } catch (error) {
@@ -1317,11 +1524,11 @@ function Jobs() {
             const newJob = response.data.data || response.data;
 
             setJobPosts(prev => [newJob, ...prev]);
-            
+
             if (user.role === 'Admin') {
                 setMyPost(prev => [newJob, ...prev]);
             }
-            
+
             handleCloseModal();
             alert("Job posted successfully!");
         } catch (error) {
@@ -1344,17 +1551,17 @@ function Jobs() {
 
     const handleSubmitBulkJobs = async (editedJobs) => {
         if (!editedJobs.length) return;
-        
+
         setIsSubmitting(true);
         try {
             const jobsToSubmit = editedJobs.map(job => ({
                 ...job,
                 refereedBy: job.refereedBy || null
             }));
-            
+
             const uploadPromises = jobsToSubmit.map(job => API.post('/service', job));
             await Promise.all(uploadPromises);
-            
+
             alert(`${editedJobs.length} jobs uploaded successfully!`);
             fetchJobPosts();
             setShowBulkReviewModal(false);
@@ -1408,7 +1615,7 @@ function Jobs() {
         XLSX.utils.book_append_sheet(wb, ws, "Jobs");
 
         const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-        saveAs(new Blob([buffer]), `Jobs_${new Date().toISOString().slice(0,10)}.xlsx`);
+        saveAs(new Blob([buffer]), `Jobs_${new Date().toISOString().slice(0, 10)}.xlsx`);
     };
 
     const exportJobsToCSV = () => {
@@ -1418,7 +1625,7 @@ function Jobs() {
 
         saveAs(
             new Blob([csv], { type: "text/csv;charset=utf-8;" }),
-            `Jobs_${new Date().toISOString().slice(0,10)}.csv`
+            `Jobs_${new Date().toISOString().slice(0, 10)}.csv`
         );
     };
 
@@ -1442,277 +1649,435 @@ function Jobs() {
 
     const renderAdminActionButtons = (request) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={(e) => handleEditClick(e, request)} title="Edit Post" style={{ padding: '8px', color: '#2563eb', backgroundColor: '#dbeafe', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={(e) => handleEditClick(e, request)} title="Edit Post" style={{ padding: '8px', color: '#2563eb', backgroundColor: '#dbeafe', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Edit job">
                 <Pencil size={20} />
             </button>
-            <button onClick={(e) => handleDelete(request._id, e)} title="Delete Post" style={{ padding: '8px', color: '#ef4444', backgroundColor: '#fee2e2', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={(e) => handleDelete(request._id, e)} title="Delete Post" style={{ padding: '8px', color: '#ef4444', backgroundColor: '#fee2e2', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Delete job">
                 <Trash2 size={20} />
             </button>
         </div>
     );
+
+    // --- Handlers ---
+    const handleResetFilters = () => {
+        setGlobalFilter('');
+        setFilters({
+            title: "",
+            companyName: "",
+            role: "",
+            employmentType: "",
+            location: "",
+            experience: "",
+            salary: "",
+            education: "",
+            passedOutYear: "",
+            keySkills: "",
+            refereedBy: "",
+            description: "",
+            startDate: null,
+            endDate: null,
+            initialNumber: "",
+            finalNumber: ""
+        });
+        setPage(1);
+    };
+
+    // Debounced search
+    const debouncedSearch = useCallback(
+        debounce((value) => {
+            setGlobalFilter(value);
+            setPage(1);
+        }, 300),
+        []
+    );
+
+    const handleSearchChange = (e) => {
+        debouncedSearch(e.target.value);
+    };
 
     // --- Effects ---
     useEffect(() => {
         fetchJobPosts();
     }, [user, jobContext]);
 
+    // Add debug useEffect to see what's happening
+    useEffect(() => {
+        if (user?.role === 'Member' && view === 'myPost') {
+            console.log("=== DEBUG: MEMBER MY JOBS TAB ===");
+            console.log("User member ID:", user.memberId);
+            console.log("Total job posts:", jobPosts.length);
+            console.log("My post array:", myPost.length);
+            console.log("Filtered my post:", filteredMyPost.length);
+
+            // Check a few jobs to see their appliedMembers structure
+            if (jobPosts.length > 0) {
+                const sampleJob = jobPosts[0];
+                console.log("Sample job:", sampleJob.title);
+                console.log("Sample job appliedMembers:", sampleJob.appliedMembers);
+
+                // Check if member has applied to any job
+                const appliedJobs = jobPosts.filter(job => checkIsApplied(job, user.memberId));
+                console.log("Jobs member has applied to:", appliedJobs.length);
+            }
+        }
+    }, [user, view, jobPosts, myPost, filteredMyPost]);
+
+    // Job count display
+    const totalJobs = view === "myPost" ? filteredMyPost.length : filteredJobPosts.length;
+    const totalAllJobs = view === "myPost" ? myPost.length : jobPosts.length;
+
     return (
         <div className={styles.jobs}>
-            <div className={styles.header}>
-                {/* Quick search */}
-                <div className={styles.cardSearch}>
-                    <Search size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        value={globalFilter || ''}
-                        onChange={(e) => setGlobalFilter(e.target.value)}
+            <div
+                className={styles.headerWrapper}
+                style={{ left: sidebarWidth + "px" }}
+            >
+                <div className={styles.headerContent}>
+                    {/* Quick search */}
+                    <div className={styles.cardSearch}>
+                        <Search size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={globalFilter || ""}
+                            onChange={handleSearchChange}
+                            aria-label="Search jobs"
+                        />
+                    </div>
+
+                    {/* Tabs - FIXED: Show "Job Posts" and "Applicants" for admin, "My Jobs" for members */}
+                    <div className={styles.center1}>
+                        <div
+                            className={classNames(styles.center, {
+                                [styles.active]: view === "request",
+                            })}
+                            onClick={() => setView("request")}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => e.key === "Enter" && setView("request")}
+                        >
+                            <NotebookPen size={35} />{" "}
+                            <button type="button" className={styles.label}>
+                                Job Posts
+                            </button>
+                        </div>
+
+                        <div
+                            className={classNames(styles.center, {
+                                [styles.active]: view === "myPost",
+                            })}
+                            onClick={() => setView("myPost")}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => e.key === "Enter" && setView("myPost")}
+                        >
+                            <BriefcaseBusiness size={35} />{" "}
+                            <button type="button" className={styles.label}>
+                                {user?.role === "Admin" ? "Applicants" : "My Jobs"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* EXPORT BUTTONS */}
+                    {user?.role === "Admin" && (
+                        <div className={styles.exportButtons}>
+                            <button onClick={exportJobsToExcel} className={styles.excel}>
+                                Export Excel
+                            </button>
+                            <button onClick={exportJobsToCSV} className={styles.csv}>
+                                Export CSV
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Advanced Filter */}
+                    <Filter
+                        fields={filterFields}
+                        initialValues={filters}
+                        onApplyFilters={(values) => {
+                            setFilters(values);
+                            setPage(1);
+                        }}
                     />
+
+                    <div className={styles.right}></div>
                 </div>
-
-                {/* EXPORT BUTTONS */}
-                {user?.role === 'Admin' && (
-                    <div className={styles.exportButtons}>
-                        <button onClick={exportJobsToExcel} className={styles.excel}>
-                            Export Excel
-                        </button>
-                        <button onClick={exportJobsToCSV} className={styles.csv}>
-                            Export CSV
-                        </button>
-                    </div>
-                )}
-
-                <div className={styles.center1}>
-                    <div
-                        className={classNames(styles.center, { [styles.active]: view === "request" })}
-                        onClick={() => setView("request")}
-                    >
-                        <NotebookPen size={35} /> <button className={styles.label}>Job Posts</button>
-                    </div>
-                    <div
-                        className={classNames(styles.center, { [styles.active]: view === "myPost" })}
-                        onClick={() => setView("myPost")}
-                    >
-                        <BriefcaseBusiness size={35} /> <button className={styles.label}>My Jobs</button>
-                    </div>
-                </div>
-                
-                {/* NEW: Advanced Filter */}
-                <Filter
-                    fields={filterFields}
-                    initialValues={filters}
-                    onApplyFilters={(values) => {
-                        setFilters(values);
-                        setPage(1); // reset pagination when filters change (optional)
-                    }}
-                />
-
-                <div className={styles.right}></div>
             </div>
+
+            {/* Job Count Display */}
+            <div className={styles.jobCount}>
+                Showing {totalJobs} of {totalAllJobs} jobs
+                {totalJobs !== totalAllJobs && (
+                    <span className={styles.filteredNote}> (filtered)</span>
+                )}
+            </div>
+
+            {/* Error Display */}
+            {error && (
+                <div className={styles.errorAlert}>
+                    {error}
+                    <button onClick={() => setError(null)} className={styles.closeError}>
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
 
             {/* VIEW 1: JOB REQUESTS (Public/All) */}
             {view === 'request' && <>
-                <div className={styles.pagination} style={{ marginBottom: 20 }}>
-                    <button onClick={() => page > 1 && setPage(page-1)} disabled={page === 1}>Previous</button>
+                <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 80 }}>
+                    <button
+                        onClick={() => page > 1 && setPage(page - 1)}
+                        disabled={page === 1 || loadingState.fetching}
+                    >
+                        Previous
+                    </button>
                     <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-                    <button onClick={() => page < totalPages && setPage(page+1)} disabled={page === totalPages}>Next</button>
+                    <button
+                        onClick={() => page < totalPages && setPage(page + 1)}
+                        disabled={page === totalPages || loadingState.fetching}
+                    >
+                        Next
+                    </button>
                 </div>
-                <div className={styles.container}>
-                    <h2 className={styles.heading}>Job Posts</h2>
-                    <ul className={styles.activityList}>
-                        {filteredJobPosts.map((request) => (
-                            <li key={request?._id} className={styles.activityItem} style={{ cursor: 'pointer' }} onClick={() => handleClick(request)}>
-                                <div className={styles.details} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                                    <h5 className={styles.title} style={{ marginBottom: '5px', fontSize: '1.2rem', fontWeight: 'bold' }}>{request?.title}</h5>
-                                    
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
-                                        {request?.companyName && (
-                                            <span style={{ fontWeight: '600', color: '#1f2937' }}>
-                                                {request.companyName}
-                                            </span>
-                                        )}
-                                        {request?.location && (
-                                            <span>
-                                                {request.location}
-                                            </span>
-                                        )}
-                                        {request?.employmentType && (
-                                            <span style={{ 
-                                                backgroundColor: '#e0e7ff', color: '#3730a3', 
-                                                padding: '2px 8px', borderRadius: '4px', 
-                                                fontSize: '0.8rem', fontWeight: '500' 
-                                            }}>
-                                                {request.employmentType}
-                                            </span>
-                                        )}
-                                    </div>
-                                    
-                                    {request?.refereedBy && (
-                                        <div style={{ display:'flex', alignItems:'center', gap:'6px', fontSize:'0.85rem', color:'#4b5563', marginBottom:'5px' }}>
-                                            <User size={14} />
-                                            <span>
-                                                Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
-                                            </span>
-                                        </div>
-                                    )}
 
-                                    {request?.description && <p className={styles.description} style={{ margin: 0, marginTop: '5px' }}>{request.description}</p>}
-                                </div>
-                                <div>
-                                    {user.role === "Member" && (
-                                        <button
-                                            className={isApplied(request) ? styles.appliedButton : styles.applyButton}
-                                            disabled={isApplied(request)}
-                                            onClick={(e) => handleApplyClick(e, request)}
-                                        >
-                                            {isApplied(request) ? "Applied" : "Apply"}
-                                        </button>
-                                    )}
-                                    {user.role === "Admin" && renderAdminActionButtons(request)}
-                                </div>
-                                <div className={styles.timeInfo}>
-                                    {request?.createdAt && !isNaN(new Date(request?.createdAt)) ? (
-                                        <>{new Date(request?.createdAt).toLocaleDateString()}{' • '}{formatDistanceToNow(new Date(request?.createdAt), { addSuffix: true })}</>
-                                    ) : <span>Just Now</span>}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </>}
-
-            {/* VIEW 2: MY POSTS / APPLICATIONS */}
-            {view === "myPost" && (
-                <>
-                    <div className={styles.pagination} style={{ marginBottom: 20}}></div>
+                {loadingState.fetching ? (
+                    <div className={styles.loadingContainer}>
+                        <Loader className="animate-spin" size={32} />
+                        <p>Loading jobs...</p>
+                    </div>
+                ) : (
                     <div className={styles.container}>
-                        <h2 className={styles.heading}>{user.role === 'Admin' ? "Manage Applications" : "My Applications"}</h2>
-                        {filteredMyPost.length === 0 ? (
-                            <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>{user.role === 'Admin' ? "No jobs posted yet." : "You haven't applied to any jobs yet."}</p>
+                        <h2 className={styles.heading}>Job Posts</h2>
+                        {paginatedJobs.length === 0 ? (
+                            <div className={styles.noResults}>
+                                <p>No jobs found. Try adjusting your filters.</p>
+                            </div>
                         ) : (
                             <ul className={styles.activityList}>
-                                {filteredMyPost.map((request) => {
-                                    const myStatus = getMyApplicationStatus(request);
-                                    const pipelineStatus = getPipelineStatus(myStatus);
+                                {paginatedJobs.map((request) => (
+                                    <li key={request?._id} className={styles.activityItem} style={{ cursor: 'pointer' }} onClick={() => handleClick(request)}>
+                                        <div className={styles.details} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+                                            <h5 className={styles.title} style={{ marginBottom: '5px', fontSize: '1.2rem', fontWeight: 'bold' }}>{request?.title}</h5>
 
-                                    return (
-                                        <li key={request._id} className={styles.activityItem} style={{ cursor: 'default', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', gap: '15px' }}>
-                                            <div className={styles.details} style={{ cursor: 'pointer', width: '100%' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-                                                    
-                                                    <div onClick={() => handleClick(request)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                                                        <h5 className={styles.title} style={{ fontSize: '1.2rem', margin: 0, marginBottom: '5px' }}>{request.title}</h5>
-                                                        
-                                                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
-                                                            {request?.companyName && <span style={{ fontWeight: '600', color: '#1f2937' }}>{request.companyName}</span>}
-                                                            {request?.location && <span>{request.location}</span>}
-                                                            {request?.employmentType && <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500' }}>{request.employmentType}</span>}
-                                                        </div>
-
-                                                        {request?.refereedBy && (
-                                                            <div style={{ fontSize:'0.85rem', color:'#4b5563' }}>
-                                                                Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
-                                                            </div>
-                                                        )}
-
-                                                        <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '4px' }}>Posted on: {new Date(request.createdAt).toLocaleDateString()}</p>
-                                                    </div>
-                                                    {user.role === 'Admin' && renderAdminActionButtons(request)}
-                                                </div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
+                                                {request?.companyName && (
+                                                    <span style={{ fontWeight: '600', color: '#1f2937' }}>
+                                                        {request.companyName}
+                                                    </span>
+                                                )}
+                                                {request?.location && (
+                                                    <span>
+                                                        {request.location}
+                                                    </span>
+                                                )}
+                                                {request?.employmentType && (
+                                                    <span style={{
+                                                        backgroundColor: '#e0e7ff', color: '#3730a3',
+                                                        padding: '2px 8px', borderRadius: '4px',
+                                                        fontSize: '0.8rem', fontWeight: '500'
+                                                    }}>
+                                                        {request.employmentType}
+                                                    </span>
+                                                )}
                                             </div>
-                                            
-                                            {/* MEMBER VIEW: Pipeline */}
-                                            {user.role === 'Member' && (
-                                                <div style={{ width: '100%', borderTop: '1px solid #eee', marginTop: '10px', paddingTop: '10px' }}>
-                                                    {myStatus === 'Rejected' ? (
-                                                        <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', textAlign: 'center' }}>
-                                                            Application Rejected
-                                                        </div>
-                                                    ) : (
-                                                        <StatusPipeline status={pipelineStatus} />
-                                                    )}
+
+                                            {request?.refereedBy && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px' }}>
+                                                    <User size={14} />
+                                                    <span>
+                                                        Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
+                                                    </span>
                                                 </div>
                                             )}
 
-                                            {/* ADMIN VIEW: Applicants Table */}
-                                            {user.role === 'Admin' && (
-                                                <div style={{ width: '100%', marginTop:'10px' }}>
-                                                    <h6 style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px' }}>Applicants ({request.appliedMembers?.length || 0})</h6>
-                                                    {request.appliedMembers?.length > 0 ? (
-                                                        <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
-                                                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                                                <thead style={{ backgroundColor: '#f9fafb' }}>
-                                                                    <tr style={{ textAlign: 'left', color: '#4b5563' }}>
-                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Name</th>
-                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Resume</th>
-                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
-                                                                        <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Action</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    {request.appliedMembers.map((app, idx) => (
-                                                                        <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                                                            <td style={{ padding: '10px' }}>{app.memberId?.name}</td>
-                                                                            <td style={{ padding: '10px' }}>
-                                                                                {(app.resumeLink || app.memberId?.resumeLink) ? (
-                                                                                    <a 
-                                                                                        href={getFileUrl(app.resumeLink || app.memberId.resumeLink)} 
-                                                                                        target="_blank" 
-                                                                                        rel="noopener noreferrer"
-                                                                                        style={{
-                                                                                            display: 'inline-flex',
-                                                                                            alignItems: 'center',
-                                                                                            gap: '6px',
-                                                                                            padding: '6px 14px',
-                                                                                            backgroundColor: '#dbeafe',
-                                                                                            color: '#1d4ed8',
-                                                                                            borderRadius: '6px',
-                                                                                            fontSize: '0.85rem',
-                                                                                            fontWeight: '600',
-                                                                                            textDecoration: 'none',
-                                                                                            transition: 'all 0.2s',
-                                                                                            boxShadow: '0 1px 2px rgba(37, 99, 235, 0.1)'
-                                                                                        }}
-                                                                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#bfdbfe'}
-                                                                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
-                                                                                    >
-                                                                                        <FileText size={16} /> View Resume
-                                                                                    </a>
-                                                                                ) : (
-                                                                                    <span style={{ color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem' }}>No Resume</span>
-                                                                                )}
-                                                                            </td>
-                                                                            <td style={{ padding: '10px' }}>{renderStatusBadge(app.status || 'Applied')}</td>
-                                                                            <td style={{ padding: '10px' }}>
-                                                                                <select style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }} value={app.status || 'Applied'} onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}>
-                                                                                    <option value="Applied">Applied</option>
-                                                                                    <option value="Review">Review</option>
-                                                                                    <option value="Shortlisted">Shortlisted</option>
-                                                                                    <option value="Offer">Offer</option>
-                                                                                    <option value="Accepted">Accepted</option>
-                                                                                    <option value="Rejected">Rejected</option>
-                                                                                </select>
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    ) : <p style={{ fontStyle:'italic', color:'#888' }}>No applicants yet.</p>}
-                                                </div>
+                                            {request?.description && <p className={styles.description} style={{ margin: 0, marginTop: '5px' }}>{request.description}</p>}
+                                        </div>
+                                        <div>
+                                            {user.role === "Member" && (
+                                                <button
+                                                    className={isApplied(request) ? styles.appliedButton : styles.applyButton}
+                                                    disabled={isApplied(request) || loadingState.applying}
+                                                    onClick={(e) => handleApplyClick(e, request)}
+                                                >
+                                                    {isApplied(request) ? "Applied" : loadingState.applying ? "Applying..." : "Apply"}
+                                                </button>
                                             )}
-                                        </li>
-                                    );
-                                })}
+                                            {user.role === "Admin" && renderAdminActionButtons(request)}
+                                        </div>
+                                        <div className={styles.timeInfo}>
+                                            {request?.createdAt && !isNaN(new Date(request?.createdAt)) ? (
+                                                <>{new Date(request?.createdAt).toLocaleDateString()}{' • '}{formatDistanceToNow(new Date(request?.createdAt), { addSuffix: true })}</>
+                                            ) : <span>Just Now</span>}
+                                        </div>
+                                    </li>
+                                ))}
                             </ul>
                         )}
                     </div>
+                )}
+            </>}
+
+            {/* VIEW 2: APPLICANTS (Admin) or MY JOBS (Member) */}
+            {view === "myPost" && (
+                <>
+                    <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 80 }}>
+                        <button
+                            onClick={() => page > 1 && setPage(page - 1)}
+                            disabled={page === 1 || loadingState.fetching}
+                        >
+                            Previous
+                        </button>
+                        <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
+                        <button
+                            onClick={() => page < totalPages && setPage(page + 1)}
+                            disabled={page === totalPages || loadingState.fetching}
+                        >
+                            Next
+                        </button>
+                    </div>
+
+                    {loadingState.fetching ? (
+                        <div className={styles.loadingContainer}>
+                            <Loader className="animate-spin" size={32} />
+                            <p>Loading your jobs...</p>
+                        </div>
+                    ) : (
+                        <div className={styles.container}>
+                            <h2 className={styles.heading}>{user.role === 'Admin' ? "Manage Applications" : "My Jobs"}</h2>
+                            {filteredMyPost.length === 0 ? (
+                                <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
+                                    {user.role === 'Admin' ? "No jobs posted yet." : "You haven't applied to any jobs yet."}
+                                </p>
+                            ) : (
+                                <ul className={styles.activityList}>
+                                    {paginatedJobs.map((request) => {
+                                        const myStatus = getMyApplicationStatus(request);
+                                        const pipelineStatus = getPipelineStatus(myStatus);
+
+                                        return (
+                                            <li key={request._id} className={styles.activityItem} style={{ cursor: 'default', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', gap: '15px' }}>
+                                                <div className={styles.details} style={{ cursor: 'pointer', width: '100%' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+
+                                                        <div onClick={() => handleClick(request)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
+                                                            <h5 className={styles.title} style={{ fontSize: '1.2rem', margin: 0, marginBottom: '5px' }}>{request.title}</h5>
+
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
+                                                                {request?.companyName && <span style={{ fontWeight: '600', color: '#1f2937' }}>{request.companyName}</span>}
+                                                                {request?.location && <span>{request.location}</span>}
+                                                                {request?.employmentType && <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500' }}>{request.employmentType}</span>}
+                                                            </div>
+
+                                                            {request?.refereedBy && (
+                                                                <div style={{ fontSize: '0.85rem', color: '#4b5563' }}>
+                                                                    Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
+                                                                </div>
+                                                            )}
+
+                                                            <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '4px' }}>Posted on: {new Date(request.createdAt).toLocaleDateString()}</p>
+                                                        </div>
+                                                        {user.role === 'Admin' && renderAdminActionButtons(request)}
+                                                    </div>
+                                                </div>
+
+                                                {/* MEMBER VIEW: Pipeline */}
+                                                {user.role === 'Member' && (
+                                                    <div style={{ width: '100%', borderTop: '1px solid #eee', marginTop: '10px', paddingTop: '10px' }}>
+                                                        {myStatus === 'Rejected' ? (
+                                                            <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', textAlign: 'center' }}>
+                                                                Application Rejected
+                                                            </div>
+                                                        ) : (
+                                                            <StatusPipeline status={pipelineStatus} />
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* ADMIN VIEW: Applicants Table */}
+                                                {user.role === 'Admin' && (
+                                                    <div style={{ width: '100%', marginTop: '10px' }}>
+                                                        <h6 style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px' }}>Applicants ({request.appliedMembers?.length || 0})</h6>
+                                                        {request.appliedMembers?.length > 0 ? (
+                                                            <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
+                                                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                                                    <thead style={{ backgroundColor: '#f9fafb' }}>
+                                                                        <tr style={{ textAlign: 'left', color: '#4b5563' }}>
+                                                                            <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Name</th>
+                                                                            <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Resume</th>
+                                                                            <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
+                                                                            <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Action</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {request.appliedMembers.map((app, idx) => (
+                                                                            <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                                                                <td style={{ padding: '10px' }}>{app.memberId?.name}</td>
+                                                                                <td style={{ padding: '10px' }}>
+                                                                                    {(app.resumeLink || app.memberId?.resumeLink) ? (
+                                                                                        <a
+                                                                                            href={getFileUrl(app.resumeLink || app.memberId.resumeLink)}
+                                                                                            target="_blank"
+                                                                                            rel="noopener noreferrer"
+                                                                                            style={{
+                                                                                                display: 'inline-flex',
+                                                                                                alignItems: 'center',
+                                                                                                gap: '6px',
+                                                                                                padding: '6px 14px',
+                                                                                                backgroundColor: '#dbeafe',
+                                                                                                color: '#1d4ed8',
+                                                                                                borderRadius: '6px',
+                                                                                                fontSize: '0.85rem',
+                                                                                                fontWeight: '600',
+                                                                                                textDecoration: 'none',
+                                                                                                transition: 'all 0.2s',
+                                                                                                boxShadow: '0 1px 2px rgba(37, 99, 235, 0.1)'
+                                                                                            }}
+                                                                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#bfdbfe'}
+                                                                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
+                                                                                        >
+                                                                                            <FileText size={16} /> View Resume
+                                                                                        </a>
+                                                                                    ) : (
+                                                                                        <span style={{ color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem' }}>No Resume</span>
+                                                                                    )}
+                                                                                </td>
+                                                                                <td style={{ padding: '10px' }}>{renderStatusBadge(app.status || 'Applied')}</td>
+                                                                                <td style={{ padding: '10px' }}>
+                                                                                    <select style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }} value={app.status || 'Applied'} onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}>
+                                                                                        <option value="Applied">Applied</option>
+                                                                                        <option value="Review">Review</option>
+                                                                                        <option value="Shortlisted">Shortlisted</option>
+                                                                                        <option value="Offer">Offer</option>
+                                                                                        <option value="Accepted">Accepted</option>
+                                                                                        <option value="Rejected">Rejected</option>
+                                                                                    </select>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        ) : <p style={{ fontStyle: 'italic', color: '#888' }}>No applicants yet.</p>}
+                                                    </div>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </div>
+                    )}
                 </>
             )}
 
             {/* ADD BUTTON (Admin Only) */}
             {user.role === "Admin" &&
-                <button className={styles.addButton1} onClick={() => { setEditingJob(null); setShowProvidedModal(true); }}>
+                <button
+                    className={styles.addButton1}
+                    onClick={() => { setEditingJob(null); setShowProvidedModal(true); }}
+                    disabled={loadingState.fetching}
+                    aria-label="Add new job"
+                >
                     <Plus size={20} />
                 </button>
             }
@@ -1752,5 +2117,9 @@ function Jobs() {
         </div>
     );
 }
+
+Jobs.propTypes = {
+    // Add prop types if needed
+};
 
 export default Jobs;

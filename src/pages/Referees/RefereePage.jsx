@@ -1,7 +1,6 @@
 //------------------20/01--------------1.17---------------
-
 import React, { useEffect, useState } from 'react';
-import { UserCheck, Search, Mail, Phone, Building } from 'lucide-react'; 
+import { UserCheck, Search, Mail, Phone, Building, Briefcase, Building2 } from 'lucide-react'; 
 import { useNavigate, useOutletContext } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -21,10 +20,9 @@ const RefereePage = () => {
   const { memberContext } = useData();
   const navigate = useNavigate();
 
-  // --- FETCH / FILTER DATA ---
+  // Fetch referees
   useEffect(() => {
     if (memberContext) {
-      // Filter for Referees from the global context
       const filtered = memberContext.filter(m => 
         m.memberType && m.memberType.toLowerCase() === 'referee'
       );
@@ -36,43 +34,46 @@ const RefereePage = () => {
     setReferees((prev) => [newReferee, ...prev]); 
   };
 
-  // --- IMAGE HELPER ---
-  const getDirectImageUrl = (driveUrl) => {
-    if (!driveUrl) return null;
-    let fileId = null;
-    let match = driveUrl.match(/[?&]id=([^&]+)/);
-    if (match) fileId = match[1];
-    if (!fileId) { match = driveUrl.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
-    if (!fileId) { match = driveUrl.match(/uc\?id=([^&]+)/); if (match) fileId = match[1]; }
-    return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
+  // Handle click to view referee details
+  const handleRefereeClick = (referee) => {
+    // Navigate to referee details page with all referee data
+    navigate(`/referee/${referee._id}`, { 
+      state: { refereeData: referee } 
+    });
   };
 
-  // --- EXPORT LOGIC ---
+  // Export functions remain the same...
   const buildRefereeExportRows = () => {
     return referees.filter(member => {
         const search = searchTerm.toLowerCase();
         return (
           member.name?.toLowerCase().includes(search) ||
           member.email?.toLowerCase().includes(search) ||
-          member.district?.toLowerCase().includes(search)
+          member.district?.toLowerCase().includes(search) ||
+          member.occupation?.toLowerCase().includes(search) ||
+          member.companyDetails?.toLowerCase().includes(search)
         );
       }).map(m => ({
-        memberReferenceNumber: m.memberReferenceNumber || "",
         name: m.name || "",
-        age: m.age || "",
-        gender: m.gender || "",
         mobileNumber: m.mobileNumber || "",
         email: m.email || "",
-        district: m.district || "",
-        
+        age: m.age || "",
+        gender: m.gender || "",
+        occupation: m.occupation || "",
+        companyDetails: m.companyDetails || "",
+        sector: m.sector || "",
+        solidarityMemberStatus: m.solidarityMemberStatus || "",
         referrerStatus: m.referrerStatus || "",
-        referringOfferType: (m.referringOfferType || []).join(", "),
-        referringSector: (m.referringSector || []).join(", "),
+        referringOfferType: m.referringOfferType || "",
+        referringSector: m.referringSector || "",
         referringFor: m.referringFor || "",
-        levelOfSupport: (m.levelOfSupport || []).join(", "),
+        levelOfSupport: m.levelOfSupport || "",
+        jobOfferType: m.jobOfferType || "",
+        description: m.description || "",
         referrerContact: m.referrerContact || "",
-        declaration_Referee: m.declaration_Referee || "",
-        timestamp: m.timestamp || "",
+        offerLocation: m.offerLocation || "",
+        address: m.address || "",
+        district: m.district || "",
     }));
   };
 
@@ -96,40 +97,28 @@ const RefereePage = () => {
     <div className={styles.members}>
       <div className={styles.headerWrapper} style={{ left: sidebarWidth + 'px' }}>
         <div className={styles.headerContent}>
-          
-          {/* Page Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-            <UserCheck size={28} color="#4f46e5"/> 
-            Referees
+          <div className={styles.cardSearch}>
+            <Search size={20} />
+            <input 
+              type="text" 
+              placeholder="Search job referees..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+            />
           </div>
           
-          {/* 👇 2. PLACE THE BUTTON HERE (Between Title and Search, or after Search) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
-            <div className={styles.exportButtons}>
-              <button onClick={exportRefereesToExcel}>Export Excel</button>
-              <button onClick={exportRefereesToCSV}>Export CSV</button>
-            </div>
-            
-            {/* The Add Button Component */}
-            <AddReferee onSuccess={handleNewReferee} />
-
-            <div className={styles.cardSearch}>
-              <Search size={20} />
-              <input 
-                type="text" 
-                placeholder="Search referees..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
-            </div>
+          <div className={styles.exportButtons}>
+            <button onClick={exportRefereesToExcel} className={styles.excel}>Export Excel</button>
+            <button onClick={exportRefereesToCSV} className={styles.csv}>Export CSV</button>
           </div>
-
+          
+          <AddReferee onSuccess={handleNewReferee} />
         </div>
       </div>
 
       <div style={{ height: 120 }}></div>
 
-      {/* CONTENT LIST */}
+      {/* Referee List */}
       <div className={styles.cardView}>
         <div className={styles.membersList}>
           {referees.filter(member => {
@@ -137,38 +126,58 @@ const RefereePage = () => {
             return (
               member.name?.toLowerCase().includes(search) ||
               member.email?.toLowerCase().includes(search) ||
-              member.district?.toLowerCase().includes(search)
+              member.district?.toLowerCase().includes(search) ||
+              member.occupation?.toLowerCase().includes(search) ||
+              member.companyDetails?.toLowerCase().includes(search)
             );
           }).map((member) => (
-            <CustomCard key={member._id} className={styles.memberCard} hover>
+            <CustomCard 
+              key={member._id} 
+              className={styles.memberCard} 
+              hover
+              onClick={() => handleRefereeClick(member)}
+            >
               <div className={styles.memberHeader}>
                 <img 
-                  onClick={() => navigate(`/member/${member._id}`)}
-                  src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
+                  src={member.photoUrl || "/members/AnonymousImage.jpg"}
                   alt={member.name}
                   className={styles.avatar}
                   onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
                 />
-                <div className={styles.memberInfo} onClick={() => navigate(`/member/${member._id}`)}>
+                <div className={styles.memberInfo}>
                   <h3>{member.name}</h3>
                   <span style={{ 
                     backgroundColor: '#e0e7ff', color: '#4338ca', 
                     padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '500' 
                   }}>
-                    {member.referrerStatus || "Referee"}
+                    {member.referrerStatus || member.solidarityMemberStatus || "Referee"}
                   </span>
                 </div>
               </div>
               
-              <div onClick={() => navigate(`/member/${member._id}`)}>
+              <div>
                 <div className={styles.memberDetails}>
-                  <div><Mail size={16} /> {member.email}</div>
-                  <div><Phone size={16} /> {member.mobileNumber}</div>
-                  <div><Building size={16} /> {member.district}</div>
+                  {member.email && <div><Mail size={16} /> {member.email}</div>}
+                  {member.mobileNumber && <div><Phone size={16} /> {member.mobileNumber}</div>}
+                  {member.district && <div><Building size={16} /> {member.district}</div>}
                   
-                  {member.referringSector && member.referringSector.length > 0 && (
+                  {member.occupation && (
                     <div style={{marginTop:'8px', color:'#555', fontSize:'0.85rem'}}>
-                      <strong>Sector:</strong> {Array.isArray(member.referringSector) ? member.referringSector.join(", ") : member.referringSector}
+                      <Briefcase size={16} style={{verticalAlign: 'middle', marginRight: '6px'}} />
+                      <strong>Occupation:</strong> {member.occupation}
+                    </div>
+                  )}
+                  
+                  {member.companyDetails && (
+                    <div style={{marginTop:'4px', color:'#555', fontSize:'0.85rem'}}>
+                      <Building2 size={16} style={{verticalAlign: 'middle', marginRight: '6px'}} />
+                      <strong>Company:</strong> {member.companyDetails}
+                    </div>
+                  )}
+                  
+                  {member.sector && (
+                    <div style={{marginTop:'4px', color:'#555', fontSize:'0.85rem'}}>
+                      <strong>Sector:</strong> {member.sector}
                     </div>
                   )}
                 </div>

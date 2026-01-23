@@ -6,7 +6,7 @@ import API from '../../axios';
 import { useData } from '../../context/DataContext';
 import { parseDOB } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
-import { Edit, ChevronDown, ChevronUp, Users, FileText } from 'lucide-react'; 
+import { Edit, ChevronDown, ChevronUp, Users, FileText, Briefcase, Building } from 'lucide-react'; 
 import AddMember from '../../components/Models/AddMember';
 
 function MembersDetail() {
@@ -184,6 +184,9 @@ function MembersDetail() {
     const displayPhoto = member.photo || member.photoUrl;
     const displayResume = member.resume || member.resumeLink;
     const displayAge = member.age || (age ? `${age.years} years` : "N/A");
+    
+    // Check if member is Referee type
+    const isReferee = member?.memberType === 'Referee';
 
     return (
         <div className={styles.detailsContainer}>
@@ -198,6 +201,23 @@ function MembersDetail() {
                 <h3>{member?.name}</h3>
                 <p className='my-3'>Ref No. {member?.memberReferenceNumber || "N/A"}</p>
                 <p className='my-3'>{member?.memberType || "N/A"}</p>
+                
+                {/* Show Occupation in sidebar if available */}
+                {member?.occupation && (
+                    <p className='my-3' style={{ color: '#4f46e5', fontWeight: '500' }}>
+                        <Briefcase size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+                        {member.occupation}
+                    </p>
+                )}
+                
+                {/* Show Company Details in sidebar if available */}
+                {member?.companyDetails && (
+                    <p className='my-3' style={{ color: '#666', fontSize: '0.9rem' }}>
+                        <Building size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+                        {member.companyDetails}
+                    </p>
+                )}
+                
                 <p className='my-3'>{member?.currentInstitutionOrCompany || "N/A"}</p>
                 <p className='my-3'>{member?.district || "N/A"}</p>
             </div>
@@ -225,9 +245,30 @@ function MembersDetail() {
                     <div><strong>Gender:</strong> {member?.gender || "N/A"}</div>
                     <div><strong>Mobile No:</strong> {member?.mobileNumber || "N/A"}</div>
                     <div><strong>Email:</strong> {member?.email || "N/A"}</div>
-                    <div><strong>Member Status:</strong> {member?.symMemberStatus || "Active"}</div>
+                    
+                    {/* Solidarity Member Status - Show for Referees */}
+                    {isReferee ? (
+                        <div><strong>Solidarity Member Status:</strong> {member?.referrerStatus || "Active"}</div>
+                    ) : (
+                        <div><strong>Solidarity Member Status:</strong> {member?.symMemberStatus || "Active"}</div>
+                    )}
+                    
                     <div><strong>District:</strong> {member?.district || "N/A"}</div>
                     <div><strong>Address:</strong> {member?.address || "N/A"}</div>
+                    
+                    {/* NEW: Occupation Field */}
+                    {member?.occupation && (
+                        <div>
+                            <strong>Occupation:</strong> {member.occupation}
+                        </div>
+                    )}
+                    
+                    {/* NEW: Company Details Field */}
+                    {member?.companyDetails && (
+                        <div>
+                            <strong>Company Details:</strong> {member.companyDetails}
+                        </div>
+                    )}
                 </div>
 
                 <h3>Professional Info</h3>
@@ -281,13 +322,36 @@ function MembersDetail() {
                         </>
                     )}
                     
-                    {(member?.memberType === 'Opportunity Provider' || member?.memberType === 'Referee') && (
+                    {member?.memberType === 'Opportunity Provider' && (
                         <>
-                            <div><strong>Job Offer Type:</strong> {safeRender(member?.jobOfferType || member?.referringOfferType)}</div>
-                            <div><strong>Offering Sector:</strong> {safeRender(member?.offeringSector || member?.referringSector)}</div>
+                            <div><strong>Job Offer Type:</strong> {safeRender(member?.jobOfferType)}</div>
+                            <div><strong>Offering Sector:</strong> {safeRender(member?.offeringSector)}</div>
                             <div><strong>Description:</strong> {member?.opportunityDescription || "N/A"}</div>
                             <div><strong>Offer Location:</strong> {member?.offer_Location || "N/A"}</div>
-                            <div><strong>Contact:</strong> {member?.contactForSeekers || member?.referrerContact || "N/A"}</div>
+                            <div><strong>Contact:</strong> {member?.contactForSeekers || "N/A"}</div>
+                        </>
+                    )}
+                    
+                    {/* UPDATED: Referee specific fields */}
+                    {member?.memberType === 'Referee' && (
+                        <>
+                            <div><strong>Job Offer Type:</strong> {safeRender(member?.referringOfferType)}</div>
+                            <div><strong>Offering Sector:</strong> {safeRender(member?.referringSector)}</div>
+                            <div><strong>Description:</strong> {member?.opportunityDescription || "N/A"}</div>
+                            <div><strong>Offer Location:</strong> {member?.offer_Location || "N/A"}</div>
+                            <div><strong>Contact:</strong> {member?.referrerContact || "N/A"}</div>
+                            <div><strong>Referring For:</strong> {member?.referringFor || "N/A"}</div>
+                            <div><strong>Level of Support:</strong> {member?.levelOfSupport || "N/A"}</div>
+                            <div><strong>Referrer Status:</strong> {member?.referrerStatus || "Active"}</div>
+                            
+                            {/* Show Occupation and Company Details for Referees if not already shown in Personal Info */}
+                            {!member?.occupation && member?.occupation && (
+                                <div><strong>Occupation:</strong> {member.occupation}</div>
+                            )}
+                            
+                            {!member?.companyDetails && member?.companyDetails && (
+                                <div><strong>Company Details:</strong> {member.companyDetails}</div>
+                            )}
                         </>
                     )}
                     
