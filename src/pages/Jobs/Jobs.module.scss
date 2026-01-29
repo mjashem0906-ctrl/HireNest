@@ -1,4 +1,611 @@
-//--------20/01-------------------------12.34----------------------
+// //--------20/01-------------------------12.34----------------------
+
+// // ==========================================
+// // 1. Variables & Mixins
+// // ==========================================
+
+// // --- Variables ---
+// $primary-blue: #2563eb;
+// $primary-hover: #1d4ed8;
+// $text-dark: #111827;
+// $text-medium: #374151;
+// $text-light: #6b7280;
+// $bg-light: #f9fafb;
+// $border-color: #e5e7eb;
+// $danger-red: #ef4444;
+// $success-green: #166534;
+// $warning-yellow: #d97706;
+
+// // --- Mixins ---
+// @mixin flex-center {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// }
+
+// @mixin card-shadow {
+//   background-color: white;
+//   border: 1px solid $border-color;
+//   border-radius: 12px;
+//   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+// }
+
+// // ==========================================
+// // 2. Main Layout & Header
+// // ==========================================
+
+// // --- Main Container ---
+// .jobs {
+//   width: 100%;
+//   padding-bottom: 80px;
+// }
+
+// .container {
+//   max-width: 1000px;
+//   margin: 0 auto;
+//   padding: 0 20px;
+
+//   .heading {
+//     font-size: 1.5rem;
+//     color: $text-dark;
+//     margin-bottom: 20px;
+//     border-bottom: 2px solid $bg-light;
+//     padding-bottom: 10px;
+//   }
+// }
+
+// // ==========================================
+// // 3. Components & Cards
+// // ==========================================
+
+// // --- Job List ---
+// .activityList {
+//   list-style: none;
+//   padding: 0;
+//   margin: 0;
+// }
+
+// .activityItem {
+//   @include card-shadow;
+//   padding: 20px;
+//   margin-bottom: 16px;
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: flex-start;
+//   transition: transform 0.2s, box-shadow 0.2s;
+//   gap: 20px;
+
+//   &:hover {
+//     transform: translateY(-2px);
+//     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+//     border-color: #bfdbfe;
+//   }
+
+//   .details {
+//     flex: 1;
+
+//     .title {
+//       font-size: 1.25rem;
+//       font-weight: 700;
+//       color: $text-dark;
+//       margin: 0 0 8px 0;
+//     }
+
+//     .metaTags {
+//       display: flex;
+//       flex-wrap: wrap;
+//       align-items: center;
+//       gap: 12px;
+//       font-size: 0.9rem;
+//       color: $text-medium;
+//       margin-bottom: 10px;
+
+//       .company {
+//         font-weight: 600;
+//         color: $text-dark;
+//       }
+
+//       .badge {
+//         background-color: #e0e7ff;
+//         color: #3730a3;
+//         padding: 2px 10px;
+//         border-radius: 12px;
+//         font-size: 0.8rem;
+//         font-weight: 500;
+//       }
+//     }
+
+//     .description {
+//       color: $text-medium;
+//       margin: 0;
+//       line-height: 1.5;
+//       font-size: 0.95rem;
+//     }
+//   }
+
+//   .sidebar {
+//     display: flex;
+//     flex-direction: column;
+//     align-items: flex-end;
+//     gap: 10px;
+
+//     .timeInfo {
+//       font-size: 0.8rem;
+//       color: $text-light;
+//       white-space: nowrap;
+//     }
+//   }
+// }
+
+// // --- Status Badges ---
+// .statusBadge {
+//   display: flex;
+//   align-items: center;
+//   gap: 6px;
+//   padding: 6px 12px;
+//   border-radius: 20px;
+//   font-size: 0.85rem;
+//   font-weight: 600;
+
+//   &.applied {
+//     background-color: #e0f2fe;
+//     color: #0369a1;
+//   }
+
+//   &.shortlisted {
+//     background-color: #fef3c7;
+//     color: #d97706;
+//   }
+
+//   &.accepted {
+//     background-color: #dcfce7;
+//     color: #166534;
+//   }
+
+//   &.rejected {
+//     background-color: #fee2e2;
+//     color: #991b1b;
+//   }
+// }
+
+// // --- Pagination ---
+// .pagination {
+//   @include flex-center;
+//   gap: 15px;
+//   margin-top: 30px;
+//   margin-bottom: 20px;
+
+//   button {
+//     padding: 8px 16px;
+//     border: 1px solid $border-color;
+//     background-color: #fff;
+//     border-radius: 6px;
+//     cursor: pointer;
+
+//     &:disabled {
+//       opacity: 0.5;
+//       cursor: not-allowed;
+//     }
+
+//     &:hover:not(:disabled) {
+//       background-color: $bg-light;
+//     }
+//   }
+
+//   .pageInfo {
+//     font-size: 0.9rem;
+//     color: $text-medium;
+//   }
+// }
+
+// // ==========================================
+// // 4. Buttons & Actions
+// // ==========================================
+
+// // --- General Buttons ---
+// .applyButton,
+// .appliedButton {
+//   padding: 8px 20px;
+//   border-radius: 6px;
+//   font-weight: 600;
+//   font-size: 0.9rem;
+//   cursor: pointer;
+//   border: none;
+//   transition: background 0.2s;
+// }
+
+// .applyButton {
+//   background-color: $primary-blue;
+//   color: #fff;
+
+//   &:hover {
+//     background-color: $primary-hover;
+//   }
+// }
+
+// .appliedButton {
+//   background-color: #d1d5db;
+//   color: $text-medium;
+//   cursor: default;
+// }
+
+// // --- Admin Actions (Icons) ---
+// .adminActions {
+//   display: flex;
+//   gap: 8px;
+
+//   button {
+//     width: 36px;
+//     height: 36px;
+//     border-radius: 50%;
+//     border: none;
+//     cursor: pointer;
+//     @include flex-center;
+//     transition: opacity 0.2s;
+
+//     &:hover {
+//       opacity: 0.8;
+//     }
+//   }
+
+//   .btnEdit {
+//     background-color: #dbeafe;
+//     color: $primary-blue;
+//   }
+
+//   .btnDelete {
+//     background-color: #fee2e2;
+//     color: $danger-red;
+//   }
+// }
+
+// // --- Floating Add Button ---
+// .addButton1 {
+//   position: fixed;
+//   bottom: 30px;
+//   right: 30px;
+//   width: 56px;
+//   height: 56px;
+//   border-radius: 50%;
+//   background-color: $primary-blue;
+//   color: white;
+//   border: none;
+//   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+//   cursor: pointer;
+//   @include flex-center;
+//   transition: transform 0.2s;
+//   z-index: 50;
+
+//   &:hover {
+//     transform: scale(1.1);
+//   }
+// }
+
+// // --- Export Buttons ---
+// .exportButtons {
+//   display: flex;
+//   align-items: center;
+//   gap: 10px;
+
+//   button {
+//     height: 36px;
+//     padding: 0 14px;
+//     border-radius: 6px;
+//     border: 1px solid #e5e7eb;
+//     background: #ffffff;
+//     color: #1f2937;
+//     font-size: 13px;
+//     font-weight: 600;
+//     cursor: pointer;
+//     transition: all 0.2s ease;
+
+//     &:hover {
+//       background: #2563eb;
+//       color: #ffffff;
+//       border-color: #2563eb;
+//     }
+//   }
+// }
+
+// // ==========================================
+// // 5. Admin Tables
+// // ==========================================
+
+// .applicantsSection {
+//   width: 100%;
+//   margin-top: 15px;
+//   padding-top: 15px;
+//   border-top: 1px dashed $border-color;
+
+//   h6 {
+//     margin: 0 0 10px 0;
+//     font-size: 0.95rem;
+//     color: $text-dark;
+//   }
+// }
+
+// .tableWrapper {
+//   overflow-x: auto;
+//   border: 1px solid $border-color;
+//   border-radius: 8px;
+//   background-color: #fff;
+
+//   table {
+//     width: 100%;
+//     border-collapse: collapse;
+//     font-size: 0.9rem;
+
+//     th {
+//       text-align: left;
+//       background-color: $bg-light;
+//       color: $text-medium;
+//       padding: 12px;
+//       border-bottom: 1px solid $border-color;
+//       font-weight: 600;
+//     }
+
+//     td {
+//       padding: 12px;
+//       border-bottom: 1px solid $bg-light;
+//       color: $text-dark;
+//     }
+
+//     tr:last-child td {
+//       border-bottom: none;
+//     }
+//   }
+
+//   .statusSelect {
+//     padding: 6px;
+//     border-radius: 4px;
+//     border: 1px solid $border-color;
+//     background-color: #fff;
+//     cursor: pointer;
+//     font-size: 0.85rem;
+
+//     &:focus {
+//       outline: 2px solid $primary-blue;
+//       border-color: transparent;
+//     }
+//   }
+// }
+
+// // ==========================================
+// // 6. Modal Forms
+// // ==========================================
+
+// .modalOverlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   background-color: rgba(0, 0, 0, 0.5);
+//   backdrop-filter: blur(2px);
+//   @include flex-center;
+//   z-index: 1000;
+// }
+
+// .modalContent {
+//   background-color: white;
+//   border-radius: 12px;
+//   padding: 30px;
+//   width: 650px;
+//   max-width: 90%;
+//   max-height: 90vh;
+//   overflow-y: auto;
+//   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+//   position: relative;
+
+//   .modalHeader {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+//     margin-bottom: 24px;
+
+//     h2 {
+//       margin: 0;
+//       font-size: 1.5rem;
+//       color: $text-dark;
+//     }
+
+//     .closeBtn {
+//       background: none;
+//       border: none;
+//       cursor: pointer;
+//       color: $text-light;
+//       padding: 4px;
+
+//       &:hover {
+//         color: $text-dark;
+//       }
+//     }
+//   }
+
+//   form {
+//     label {
+//       display: block;
+//       margin-bottom: 6px;
+//       font-weight: 600;
+//       font-size: 0.9rem;
+//       color: $text-medium;
+//     }
+
+//     input,
+//     select,
+//     textarea {
+//       width: 100%;
+//       padding: 10px 12px;
+//       border-radius: 6px;
+//       border: 1px solid #d1d5db;
+//       font-size: 0.95rem;
+//       margin-bottom: 16px;
+//       box-sizing: border-box;
+
+//       &:focus {
+//         outline: none;
+//         border-color: $primary-blue;
+//         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+//       }
+//     }
+
+//     textarea {
+//       min-height: 100px;
+//       resize: vertical;
+//     }
+
+//     .formRow {
+//       display: flex;
+//       gap: 16px;
+
+//       &>div {
+//         flex: 1;
+//       }
+//     }
+
+//     .submitBtn {
+//       width: 100%;
+//       padding: 12px;
+//       background-color: $primary-blue;
+//       color: white;
+//       border: none;
+//       border-radius: 6px;
+//       cursor: pointer;
+//       font-size: 1rem;
+//       font-weight: 600;
+//       margin-top: 10px;
+
+//       &:hover {
+//         background-color: $primary-hover;
+//       }
+//     }
+//   }
+// }
+
+// .exportButtons {
+//   display: flex;
+//   align-items: center;
+//   gap: 10px;
+
+//   button {
+//     height: 36px;
+//     padding: 8px 12px; // matches your inline
+//     border-radius: 4px; // consistent with inline
+//     border: none;
+//     font-size: 13px;
+//     font-weight: 600;
+//     cursor: pointer;
+//     transition: all 0.2s ease;
+//     color: #ffffff;
+
+//     &.excel {
+//       background-color: #10b981; // green
+//     }
+
+//     &.csv {
+//       background-color: #3b82f6; // blue
+//     }
+
+//     &:hover {
+//       opacity: 0.9; // subtle hover effect
+//     }
+//   }
+// }
+
+// .headerWrapper {
+//   position: fixed;
+//   top: 64px; // Matches global header height
+//   right: 0;
+//   z-index: 11;
+//   background-color: #f1f5f9;
+//   padding: 15px;
+//   transition: left 0.3s ease, width 0.3s ease; // Smooth transition for sidebar toggle
+
+//   @media (max-width: 768px) {
+//     left: 0 !important;
+//     width: 100% !important;
+//     padding: 10px;
+//     z-index: 10;
+//   }
+// }
+
+// .headerContent {
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   width: 100%;
+// }
+
+// .center {
+//   @include flex-center;
+//   flex-direction: column;
+//   cursor: pointer;
+//   color: $text-light;
+//   transition: color 0.3s;
+
+//   &.active {
+//     color: $primary-blue;
+
+//     .label {
+//       color: $primary-blue;
+//       font-weight: 600;
+//     }
+//   }
+
+//   .label {
+//     background: none;
+//     border: none;
+//     margin-top: 5px;
+//     font-size: 0.85rem;
+//     cursor: pointer;
+//     color: inherit;
+//   }
+// }
+
+// .cardSearch {
+//   position: relative;
+//   display: flex;
+//   align-items: center;
+//   background-color: white;
+//   border-radius: var(--radius-xl);
+//   padding: 0 var(--spacing-md);
+//   height: 40px;
+//   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+//   transition: box-shadow 0.2s ease, background-color 0.2s ease;
+
+//   &:hover {
+//     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+//     background-color: var(--background-hover);
+//   }
+
+//   svg {
+//     color: var(--text-muted);
+//     margin-right: var(--spacing-sm);
+//     flex-shrink: 0;
+//     transition: color 0.2s ease;
+//   }
+
+//   input {
+//     flex: 1;
+//     background: none;
+//     border: none;
+//     outline: none;
+//     color: var(--text-primary);
+//     font-size: 0.875rem;
+//     padding: var(--spacing-xs) 0;
+//     transition: color 0.2s ease;
+
+//     &::placeholder {
+//       color: var(--text-muted);
+//       opacity: 0.8;
+//     }
+//   }
+// }
+
+// .center1 {
+//   display: flex;
+//   gap: 30px;
+// }
 
 // ==========================================
 // 1. Variables & Mixins
@@ -36,8 +643,10 @@ $warning-yellow: #d97706;
 
 // --- Main Container ---
 .jobs {
-  width: 100%;
-  padding-bottom: 80px;
+  max-width: 100%;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
 .container {
@@ -52,6 +661,12 @@ $warning-yellow: #d97706;
     border-bottom: 2px solid $bg-light;
     padding-bottom: 10px;
   }
+}
+
+// Header Spacer - DYNAMIC height (set via JS)
+.headerSpacer {
+  width: 100%;
+  // Height will be set inline via JS
 }
 
 // ==========================================
@@ -137,7 +752,670 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Status Badges ---
+// ==========================================
+// 4. Headers & Navigation - UPDATED FOR ICON CENTERING
+// ==========================================
+
+.headerWrapper {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  z-index: 100;
+  background-color: #f1f5f9;
+  padding: 16px 20px;
+  transition: left 0.3s ease, width 0.3s ease;
+  min-height: auto;
+  width: calc(100% - 280px);
+  
+  @media (max-width: 768px) {
+    left: 0 !important;
+    width: 100% !important;
+    padding: 12px 16px;
+  }
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+// Top Row: Search, Tabs, Export Buttons - UPDATED FOR CENTERED ICONS
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 16px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+
+// Tabs Container - CENTERED BETWEEN SEARCH AND EXPORT BUTTONS
+.center1 {
+  display: flex;
+  gap: 40px; /* Increased gap for better spacing */
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  @media (max-width: 768px) {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 20px;
+    order: 2; /* Tabs appear second on mobile */
+    margin: 10px 0;
+  }
+}
+
+// Individual Tab Item - UPDATED FOR BETTER ICON CENTERING
+.center {
+  @include flex-center;
+  flex-direction: column;
+  cursor: pointer;
+  color: $text-light;
+  transition: all 0.3s;
+  min-width: 80px; /* Ensure consistent width */
+  
+  &:hover {
+    color: $primary-blue;
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    color: $primary-blue;
+
+    .label {
+      color: $primary-blue;
+      font-weight: 600;
+    }
+    
+    .icon {
+      background-color: rgba($primary-blue, 0.1);
+      border-color: $primary-blue;
+    }
+  }
+
+  .icon {
+    width: 48px;
+    height: 48px;
+    @include flex-center;
+    border-radius: 12px;
+    border: 2px solid $border-color;
+    background-color: white;
+    transition: all 0.3s;
+    margin-bottom: 8px;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .label {
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: inherit;
+    text-align: center;
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    min-width: 70px;
+    
+    .icon {
+      width: 44px;
+      height: 44px;
+      
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+}
+
+// ==========================================
+// 5. Horizontal Filter Bar
+// ==========================================
+
+.horizontalFilterBar {
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 50;
+  
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+}
+
+// Scroll Container
+.filterScrollContainer {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  
+  // Custom scrollbar styling
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+    
+    &:hover {
+      background: #a1a1a1;
+    }
+  }
+}
+
+// Single Filter Row
+.filterRow {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  min-width: min-content;
+  padding: 2px 0;
+  align-items: flex-start;
+  
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
+}
+
+// Individual Filter Field
+.filterField {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  max-width: 150px;
+  height: 70px;
+  
+  @media (max-width: 768px) {
+    min-width: 130px;
+    max-width: 140px;
+    height: 68px;
+  }
+  
+  .filterLabel {
+    font-size: 11px;
+    font-weight: 700;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+  
+  // Container for select
+  .selectContainer {
+    position: relative;
+    width: 100%;
+    height: 36px;
+    
+    // Ensure react-select takes full height
+    & > * {
+      height: 100%;
+    }
+  }
+  
+  // Reset filter button
+  .resetFilterButton {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0;
+    font-size: 10px;
+    
+    &:hover {
+      background: #dc2626;
+    }
+  }
+  
+  // React Select Styling
+  .reactSelect {
+    width: 100%;
+    height: 100%;
+    
+    :global {
+      .react-select__control {
+        min-height: 36px !important;
+        height: 36px !important;
+        max-height: 36px !important;
+        font-size: 13px !important;
+        border-radius: 6px !important;
+        border-color: #d1d5db !important;
+        
+        &:hover {
+          border-color: #9ca3af !important;
+        }
+        
+        &--is-focused {
+          border-color: #4f46e5 !important;
+          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+        }
+      }
+      
+      .react-select__value-container {
+        height: 34px !important;
+        padding: 0 8px !important;
+        align-items: center !important;
+      }
+      
+      .react-select__single-value {
+        font-size: 13px !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+      }
+      
+      .react-select__placeholder {
+        font-size: 13px !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+        color: #9ca3af !important;
+      }
+      
+      .react-select__input-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+      }
+      
+      .react-select__indicator {
+        padding: 6px !important;
+      }
+      
+      .react-select__menu {
+        margin-top: 2px !important;
+        border-radius: 6px !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        z-index: 9999 !important;
+      }
+      
+      .react-select__option {
+        font-size: 13px !important;
+        padding: 8px 12px !important;
+        min-height: 36px !important;
+        display: flex !important;
+        align-items: center !important;
+        
+        &:hover {
+          background-color: #f3f4f6 !important;
+        }
+        
+        &--is-selected {
+          background-color: #4f46e5 !important;
+          color: white !important;
+        }
+      }
+      
+      .react-select__menu-list {
+        z-index: 9999 !important;
+        max-height: 250px !important;
+      }
+    }
+  }
+}
+
+// Pending filter actions
+.pendingActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  animation: slideIn 0.3s ease;
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .applyButton {
+    padding: 6px 16px;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+  }
+  
+  .cancelButton {
+    padding: 6px 16px;
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #e5e7eb;
+      transform: translateY(-1px);
+    }
+  }
+  
+  .pendingCount {
+    font-size: 12px;
+    color: #92400e;
+    margin-left: auto;
+    font-weight: 500;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .pendingCount {
+      margin-left: 0;
+      text-align: center;
+    }
+  }
+}
+
+// Clear All Container
+.clearAllContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  
+  @media (max-width: 768px) {
+    justify-content: center;
+  }
+}
+
+// Clear All Button
+.clearAllButton {
+  padding: 6px 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  
+  &:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+// ==========================================
+// 6. Simple Active Filters Display
+// ==========================================
+
+.activeFiltersSimple {
+  width: 100%;
+  background: white;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-top: 12px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.activeFiltersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.activeFiltersTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.clearAllSmall {
+  padding: 4px 8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #dc2626;
+  }
+}
+
+.activeFiltersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.activeFilterItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+}
+
+.filterKey {
+  font-weight: 600;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.filterValue {
+  color: #111827;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.removeFilter {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #9ca3af;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 10px;
+  margin-left: 2px;
+  flex-shrink: 0;
+  
+  &:hover {
+    background: #6b7280;
+  }
+}
+
+// ==========================================
+// 7. Search Bar
+// ==========================================
+
+.cardSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 40px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+  flex: 1;
+  max-width: 400px;
+  min-width: 280px;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    width: 100%;
+    min-width: auto;
+    order: 1; // Ensure search appears first on mobile
+  }
+
+  &:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+
+  svg {
+    color: #6b7280;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #111827;
+    font-size: 14px;
+    padding: 8px 0;
+    width: 100%;
+
+    &::placeholder {
+      color: #9ca3af;
+    }
+  }
+}
+
+// ==========================================
+// 8. Export Buttons
+// ==========================================
+
+.exportButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0; // Prevent shrinking
+  
+  button {
+    height: 36px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ffffff;
+
+    &.excel {
+      background-color: #10b981;
+    }
+
+    &.csv {
+      background-color: #3b82f6;
+    }
+
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    order: 3; // Ensure export buttons appear last on mobile
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// ==========================================
+// 9. Status Badges
+// ==========================================
+
 .statusBadge {
   display: flex;
   align-items: center;
@@ -168,7 +1446,10 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Pagination ---
+// ==========================================
+// 10. Pagination
+// ==========================================
+
 .pagination {
   @include flex-center;
   gap: 15px;
@@ -199,7 +1480,7 @@ $warning-yellow: #d97706;
 }
 
 // ==========================================
-// 4. Buttons & Actions
+// 11. Buttons & Actions
 // ==========================================
 
 // --- General Buttons ---
@@ -281,34 +1562,68 @@ $warning-yellow: #d97706;
   }
 }
 
-// --- Export Buttons ---
-.exportButtons {
+// ==========================================
+// 12. Job Count & Error Display
+// ==========================================
+
+.jobCount {
+  text-align: center;
+  margin: 20px 0;
+  color: $text-medium;
+  font-size: 0.95rem;
+  
+  .filteredNote {
+    color: $primary-blue;
+    font-style: italic;
+  }
+}
+
+.errorAlert {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 20px auto;
+  max-width: 1000px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-
-  button {
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #1f2937;
-    font-size: 13px;
-    font-weight: 600;
+  
+  .closeError {
+    background: none;
+    border: none;
+    color: #991b1b;
     cursor: pointer;
-    transition: all 0.2s ease;
-
+    padding: 4px;
+    
     &:hover {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
+      color: #7f1d1d;
     }
   }
 }
 
+.loadingContainer {
+  @include flex-center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 40px;
+  color: $text-medium;
+  
+  p {
+    margin: 0;
+  }
+}
+
+.noResults {
+  text-align: center;
+  padding: 40px;
+  color: $text-light;
+  font-style: italic;
+}
+
 // ==========================================
-// 5. Admin Tables
+// 13. Admin Tables
 // ==========================================
 
 .applicantsSection {
@@ -371,7 +1686,7 @@ $warning-yellow: #d97706;
 }
 
 // ==========================================
-// 6. Modal Forms
+// 14. Modal Forms
 // ==========================================
 
 .modalOverlay {
@@ -482,127 +1797,71 @@ $warning-yellow: #d97706;
   }
 }
 
-.exportButtons {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+// ==========================================
+// 15. Responsive Adjustments for ICONS
+// ==========================================
 
-  button {
-    height: 36px;
-    padding: 8px 12px; // matches your inline
-    border-radius: 4px; // consistent with inline
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: #ffffff;
-
-    &.excel {
-      background-color: #10b981; // green
-    }
-
-    &.csv {
-      background-color: #3b82f6; // blue
-    }
-
-    &:hover {
-      opacity: 0.9; // subtle hover effect
-    }
+@media (max-width: 768px) {
+  .filterRow {
+    gap: 10px;
   }
-}
-
-.headerWrapper {
-  position: fixed;
-  top: 64px; // Matches global header height
-  right: 0;
-  z-index: 11;
-  background-color: #f1f5f9;
-  padding: 15px;
-  transition: left 0.3s ease, width 0.3s ease; // Smooth transition for sidebar toggle
-
-  @media (max-width: 768px) {
-    left: 0 !important;
-    width: 100% !important;
-    padding: 10px;
-    z-index: 10;
+  
+  .filterField {
+    min-width: 130px;
+    max-width: 140px;
+    height: 68px;
   }
-}
-
-.headerContent {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.center {
-  @include flex-center;
-  flex-direction: column;
-  cursor: pointer;
-  color: $text-light;
-  transition: color 0.3s;
-
-  &.active {
-    color: $primary-blue;
-
-    .label {
-      color: $primary-blue;
-      font-weight: 600;
+  
+  .cardSearch {
+    width: 100%;
+  }
+  
+  .exportButtons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .activeFiltersList {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .filterValue {
+    max-width: 200px;
+  }
+  
+  // Mobile adjustments for centered icons
+  .center1 {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 20px;
+    order: 2; // Tabs appear second on mobile
+    margin: 10px 0;
+  }
+  
+  .center {
+    flex-direction: column;
+    min-width: 70px;
+    
+    .icon {
+      width: 44px;
+      height: 44px;
+      
+      svg {
+        width: 22px;
+        height: 22px;
+      }
     }
   }
-
-  .label {
-    background: none;
-    border: none;
-    margin-top: 5px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    color: inherit;
+  
+  .activityItem {
+    flex-direction: column;
+    gap: 15px;
   }
-}
-
-.cardSearch {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background-color: white;
-  border-radius: var(--radius-xl);
-  padding: 0 var(--spacing-md);
-  height: 40px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    background-color: var(--background-hover);
+  
+  .pagination {
+    flex-wrap: wrap;
+    gap: 10px;
   }
-
-  svg {
-    color: var(--text-muted);
-    margin-right: var(--spacing-sm);
-    flex-shrink: 0;
-    transition: color 0.2s ease;
-  }
-
-  input {
-    flex: 1;
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    padding: var(--spacing-xs) 0;
-    transition: color 0.2s ease;
-
-    &::placeholder {
-      color: var(--text-muted);
-      opacity: 0.8;
-    }
-  }
-}
-
-.center1 {
-  display: flex;
-  gap: 30px;
 }

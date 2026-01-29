@@ -87,8 +87,9 @@ import CandidateDashboard from './pages/CandidateDashboard/CandidateDashboard';
 import Jobs from './pages/Jobs/Jobs';
 import JobDetail from "./pages/Jobs/JobDetail";
 import RefereePage from './pages/Referees/RefereePage';
-import RefereeDetailsPage from './pages/Referees/RefereeDetailsPage'; // Add this import
+import RefereeDetailsPage from './pages/Referees/RefereeDetailsPage';
 import MentorsPage from './pages/Mentor/MentorsPage';
+import MentorDetails from './pages/Mentor/MentorDetails'; // Add this import
 
 function App() {
   return (
@@ -112,14 +113,15 @@ function App() {
             
             {/* General Routes */}
             <Route path="mentors" element={<MentorsPage />} />
+            <Route path="mentor/:id" element={<MentorDetails />} /> {/* Add this route */}
             
             {/* Referee Routes */}
             <Route path="referees" element={<RefereePage />} />
-            <Route path="referee/:id" element={<RefereeDetailsPage />} /> {/* Add this route */}
+            <Route path="referee/:id" element={<RefereeDetailsPage />} />
             
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/:id" element={<JobDetail />} />
- 
+
             {/* Error Pages */}
             <Route path="unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />

@@ -1,37 +1,66 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Plus } from "lucide-react";   
-import DateSelect from "../../components/UI/DateSelect"; // 👈 Import DateSelect
+import DateSelect from "../../components/UI/DateSelect";
 import API from "../../axios";  
 import FormInput from "../../components/UI/FormInput"; 
 import DropdownSelect from "../../components/UI/DropdownSelect"; 
 import styles from "../../components/Models/AddModel.module.scss"; 
 
-const initialState = {
-  name: "",
-  mobileNumber: "",
-  email: "",
-  gender: "",
-  dateOfBirth: null, // 👈 Added Date of Birth
-  memberType: "Mentor", 
-  
-  // Mentor Specific Fields
-  currentInstitutionOrCompany: "", 
-  designation: "",                 
-  fieldofStudy_Interest: "",       
-  workExp: "",                     
-};
-
-function AddMentor({ onSuccess }) {
+function AddMentor({ onSuccess, editData, isEditing, onClose }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState(initialState);
+  const [formData, setFormData] = useState({
+    name: "",
+    mobileNumber: "",
+    email: "",
+    gender: "",
+    dateOfBirth: null,
+    memberType: "Mentor",
+    currentInstitutionOrCompany: "", 
+    designation: "",                 
+    fieldofStudy_Interest: "",       
+    workExp: "",                     
+  });
   const [btnLoading, setBtnLoading] = useState(false);
+
+  useEffect(() => {
+    if (editData && isEditing) {
+      setFormData({
+        name: editData.name || "",
+        mobileNumber: editData.mobileNumber || "",
+        email: editData.email || "",
+        gender: editData.gender || "",
+        dateOfBirth: editData.dateOfBirth || null,
+        memberType: "Mentor",
+        currentInstitutionOrCompany: editData.currentInstitutionOrCompany || "",
+        designation: editData.designation || "",
+        fieldofStudy_Interest: editData.fieldofStudy_Interest || "",
+        workExp: editData.workExp || "",
+      });
+      setIsOpen(true);
+    }
+  }, [editData, isEditing]);
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
-    if (!isOpen) setFormData(initialState);
+    if (!isOpen) {
+      setFormData({
+        name: "",
+        mobileNumber: "",
+        email: "",
+        gender: "",
+        dateOfBirth: null,
+        memberType: "Mentor",
+        currentInstitutionOrCompany: "", 
+        designation: "",                 
+        fieldofStudy_Interest: "",       
+        workExp: "", 
+      });
+    }
+    if (onClose && isOpen) {
+      onClose();
+    }
   };
 
-  // Helper to format date as YYYY-MM-DD for the backend
   const formatDOB = (date) => {
     if (!date) return null;
     const d = new Date(date);
@@ -46,50 +75,48 @@ function AddMentor({ onSuccess }) {
     if (btnLoading) return;
     setBtnLoading(true);
 
-    // Prepare payload with formatted date
     const payload = {
-        ...formData,
-        dateOfBirth: formatDOB(formData.dateOfBirth),
+      ...formData,
+      dateOfBirth: formatDOB(formData.dateOfBirth),
     };
 
     try {
-      const res = await API.post("/member", payload);
+      let res;
+      if (isEditing && editData) {
+        res = await API.put(`/member/${editData._id}`, payload);
+      } else {
+        res = await API.post("/member", payload);
+      }
+      
       if (onSuccess) onSuccess(res.data);
-      alert("Mentor added successfully!");
+      alert(isEditing ? "Mentor updated successfully!" : "Mentor added successfully!");
       toggleModal();
     } catch (err) {
       console.error(err);
-      alert("Failed to add mentor");
+      alert(isEditing ? "Failed to update mentor" : "Failed to add mentor");
     } finally {
       setBtnLoading(false);
     }
   };
 
-  // Button Style
-  const btnStyle = {
-    backgroundColor: '#4f46e5',
-    color: 'white',
-    padding: '8px 24px',
-    borderRadius: '6px',
-    fontWeight: '600',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '14px',
-  };
+  const modalTitle = isEditing ? "Edit Mentor" : "Add New Mentor";
+  const submitButtonText = isEditing ? "Update Mentor" : "Save Mentor";
 
   return (
     <>
-      <button onClick={toggleModal} className={styles.addRefereeBtn}>
-        <Plus size={20} />
-        Add Mentor
-      </button>
+      {!isEditing && (
+        <button onClick={toggleModal} className={styles.addRefereeBtn}>
+          <Plus size={20} />
+          Add Mentor
+        </button>
+      )}
 
       {isOpen && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <div className={styles.header}>
-              <h2>Add New Mentor</h2>
-              <button onClick={toggleModal}>
+              <h2>{modalTitle}</h2>
+              <button onClick={toggleModal} className={styles.closeButton}>
                 <X size={18} />
               </button>
             </div>
@@ -125,7 +152,6 @@ function AddMentor({ onSuccess }) {
                   onChange={(v) => setFormData({ ...formData, gender: v })}
                 />
 
-                {/* 👇 ADDED DATE OF BIRTH FIELD */}
                 <DateSelect
                   label="Date of Birth"
                   value={formData.dateOfBirth}
@@ -166,7 +192,7 @@ function AddMentor({ onSuccess }) {
                   Cancel
                 </button>
                 <button type="submit" disabled={btnLoading} className={styles.submitButton}>
-                  {btnLoading ? "Saving..." : "Save Mentor"}
+                  {btnLoading ? "Saving..." : submitButtonText}
                 </button>
               </div>
             </form>
