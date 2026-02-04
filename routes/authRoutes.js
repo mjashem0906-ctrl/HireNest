@@ -21,6 +21,7 @@
 // );
 
 // module.exports = router;
+<<<<<<< HEAD
 const router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
@@ -67,3 +68,5 @@ router.get("/google/callback",
 
 
 module.exports = router;
+=======
+>>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8

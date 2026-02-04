@@ -166,7 +166,11 @@
 //     "name", "fathersName", "mobileNumber", "email", "gender",
 //     "dateOfBirth", "memberType", "currentInstitutionOrCompany",
 //     "district", "address", 
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
 //     // ✅ ADDED THESE to allow Cloudinary Links
 //     "photo", 
 //     "resume",
@@ -378,17 +382,29 @@ function cleanPayload(data) {
     "forGrouping", "nativePlace", "profession", "age",
 
     // ✅ Added for Occupation & Company Details
+<<<<<<< HEAD
     "occupation",
     "companyDetails",
 
     // Mentor
     "designation",
+=======
+    "occupation", 
+    "companyDetails",
+
+    // Mentor
+    "designation", 
+>>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
 
     // Job Seeker
     "seekerNeed", "highest_education", "highestEducationSpecialization",
     "highestEducationPassedOutYear", "fieldofStudy_Interest",
     "preferredJobRole_Sector", "workExp", "relocationStatus",
+<<<<<<< HEAD
     "preferredJobLocation",
+=======
+    "preferredJobLocation", 
+>>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
 
     // Opportunity Provider
     "jobOfferType", "offeringSector", "opportunityDescription",
@@ -403,6 +419,7 @@ function cleanPayload(data) {
 
     // System
     "memberReferenceNumber", "symMemberStatus",
+<<<<<<< HEAD
 
     // ✅ ADDED: Naukri-style fields
     "careerProfile", "certifications", "languages",
@@ -411,6 +428,10 @@ function cleanPayload(data) {
   ];
 
 
+=======
+  ];
+
+>>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
   const payload = {};
   allowedFields.forEach((key) => {
     if (data[key] !== undefined) {
