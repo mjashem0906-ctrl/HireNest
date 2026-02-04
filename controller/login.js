@@ -6,7 +6,6 @@ const Member = require("../models/member");
 
 
 //Register new user
-<<<<<<< HEAD
 const register = async (req, res) => {
   const { memberId, username, password, role } = req.body;
   // const {username,password,role} = req.body;
@@ -23,24 +22,6 @@ const register = async (req, res) => {
     const newUser = await User.create({ memberId, username, password: hashPwd, role });
     // const member = await Member.findById(memberId);
 
-=======
-const register = async(req,res)=>{
-  const {memberId,username,password,role} = req.body;
-  // const {username,password,role} = req.body;
-  if (!username || !password) {
-        return res.status(400).json({ message: "username and password is required" })
-    }
-  try{
-    let user = await User.findOne({username});
-    if(user){
-      return res.status(400).json({error:"Username is already exist"})
-    }
-    const hashPwd = await bcrypt.hash(password, 10)
-    // const newUser = await User.create({username,password:hashPwd,role});
-    const newUser = await User.create({memberId,username,password:hashPwd,role});
-    // const member = await Member.findById(memberId);
-   
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
     //  await Activity.create({
     //           type: 'USER',
     //           action: 'created',
@@ -50,21 +31,12 @@ const register = async(req,res)=>{
     //           },
     //           targetId: newUser._id,
     //         });
-<<<<<<< HEAD
 
     res.status(201).json({ message: "User added successfully", user: newUser });
   } catch (err) {
     console.error("Error adding User:", err);
     res.status(500).json({ message: "Server Error", error: err.message });
   }
-=======
-  
-          res.status(201).json({message:"User added successfully",user:newUser});
-          }catch(err){
-              console.error("Error adding User:",err);
-              res.status(500).json({message:"Server Error",error:err.message});
-          }
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
 
 }
 
@@ -79,11 +51,7 @@ const login = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-<<<<<<< HEAD
     if (!isMatch)
-=======
-    if (!isMatch )
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
       return res.status(400).json({ message: "Invalid credentials or role" });
 
     const token = jwt.sign({ userId: user._id, role: user.role, memberId: user.memberId }, process.env.SECRET_KEY, {
@@ -95,17 +63,12 @@ const login = async (req, res) => {
       sameSite: 'None',
       secure: true,
       maxAge: 2 * 60 * 60 * 1000,
-<<<<<<< HEAD
     }).json({ message: "Login successful", success: true, user: { role: user.role, username: user.username, memberId: user.memberId } });
-=======
-    }).json({ message: "Login successful",success: true,user: { role: user.role, username: user.username,memberId:user.memberId }} );
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 }
 
-<<<<<<< HEAD
 const getAllUser = async (req, res) => {
   const users = await User.find().populate("memberId", "name photoUrl")
   return res.json(users);
@@ -211,24 +174,3 @@ const updateProfile = async (req, res) => {
 };
 
 module.exports = { login, logOut, check, register, getAllUser, updateProfile }
-=======
-const getAllUser = async(req,res)=>{
-    const users = await User.find().populate("memberId","name photoUrl")
-    return res.json(users);
-}
-
- //logout
-const logOut= (req, res) => {
-  res.clearCookie("token", {
-  httpOnly: true,
-  secure: true,
-  sameSite: "None",
-}).json({ message: "Logged out" });
-}
-
-//check
-const check= async (req, res) => {
-  res.json({ userId: req.user.userId, role: req.user.role,memberId: req.user.memberId });
-}
-module.exports ={login,logOut,check,register,getAllUser}
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8

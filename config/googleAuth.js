@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
@@ -48,14 +47,3 @@ passport.use(new GoogleStrategy({
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
-=======
-const { google } = require("googleapis");
-const path = require("path");
-
-const auth = new google.auth.GoogleAuth({
-  keyFile: path.join(__dirname, "../credentials.json"),
-  scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-});
-
-module.exports = auth;
->>>>>>> 83d05d0a459a0ec8738316ab2b45cddae3775eb8
