@@ -57,6 +57,30 @@
   }
 }
 
+/* --- Tabs --- */
+.tabContainer {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 1rem;
+}
+
+.tabContainer button {
+  padding: 1rem 1.5rem;
+  border: none;
+  background: none;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.tabContainer button.activeTab {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+}
+
 /* --- Form Layout --- */
 .form {
   padding: var(--spacing-lg);
@@ -66,7 +90,37 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+}
+
+.certFormRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.certFormRow input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.miniBtn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
 }
 
 .actions {
@@ -74,51 +128,8 @@
   gap: var(--spacing-md);
   justify-content: flex-end;
   padding-top: var(--spacing-lg);
+  margin-top: 1rem;
   border-top: 1px solid var(--border-light);
-}
-
-/* --- Buttons --- */
-
-/* Generic Add Button (Theme based) */
-.addButton {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--accent-primary);
-  color: white;
-  border-radius: var(--radius-lg);
-  font-weight: 500;
-  transition: var(--transition-fast);
-
-  &:hover {
-    background-color: var(--accent-hover);
-    transform: translateY(-1px);
-  }
-}
-
-/* Specific Referee/Mentor Button (Indigo) */
-.addRefereeBtn {
-  background-color: #4f46e5;
-  color: white;
-  padding: 8px 24px;
-  border-radius: 6px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background-color: #4338ca;
-  }
-
-  &:active {
-    transform: translateY(1px);
-  }
 }
 
 .submitButton {
@@ -127,11 +138,8 @@
   color: white;
   border-radius: var(--radius-md);
   font-weight: 500;
-  transition: var(--transition-fast);
-
-  &:hover {
-    background-color: var(--accent-hover);
-  }
+  border: none;
+  cursor: pointer;
 }
 
 .cancelButton {
@@ -140,100 +148,18 @@
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-weight: 500;
-  transition: var(--transition-fast);
-
-  &:hover {
-    background-color: var(--bg-tertiary);
-  }
-}
-
-/* --- File Upload Components --- */
-.fileUploadWrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-.fileLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #f1f1f1;
-  color: #333;
-  padding: 10px 16px;
-  border-radius: 6px;
+  background: white;
   cursor: pointer;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background-color: #e2e2e2;
-  }
 }
-
-.fileInput {
-  display: none;
-}
-
-// Add to your existing AddModel.module.scss
 
 .fileUploadSection {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  
+
   label {
     font-size: 0.9rem;
     font-weight: 500;
     color: #555;
   }
 }
-
-.fileInputContainer {
-  border: 1px solid #ccc;
-  padding: 8px;
-  border-radius: 4px;
-  background: white;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  
-  input[type="file"] {
-    flex: 1;
-  }
-}
-
-.progressBar {
-  margin-top: 5px;
-  height: 6px;
-  background-color: #f0f0f0;
-  border-radius: 3px;
-  overflow: hidden;
-  
-  div {
-    height: 100%;
-    background-color: #4CAF50;
-    transition: width 0.3s ease;
-    font-size: 10px;
-    color: white;
-    text-align: center;
-    line-height: 6px;
-  }
-}
-
-.fileStatus {
-  font-size: 0.75rem;
-  color: #16a34a;
-  margin-top: 4px;
-}
-
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-  max-height: 70vh;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-// Keep your existing styles for overlay, modal, header, actions, etc.

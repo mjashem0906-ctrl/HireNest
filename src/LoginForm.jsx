@@ -22,7 +22,6 @@ const LoginForm = () => {
     window.location.href = "http://localhost:5000/api/auth/google";
   };
 
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,7 +47,8 @@ const LoginForm = () => {
       <div className="login-container">
         <div className="login-box">
           <h2 className="login-title">Welcome Back</h2>
-          <p className="login-subtitle">Sign in to access your account</p>
+          <p className="login-subtitle">Sign in to your account</p>
+
           <form onSubmit={handleLogin}>
             <input
               type="text"
@@ -90,25 +90,42 @@ const LoginForm = () => {
             >
               {loading ? "Logging in..." : "Login"}
             </button>
-            
+
             <div className="divider">
               <span>OR</span>
             </div>
 
             <button
-            type="button"
-            className="google-login-button"
-            onClick={loginWithGoogle}
+              type="button"
+              className="google-login-button"
+              onClick={loginWithGoogle}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                width: '100%',
+                padding: '12px',
+                backgroundColor: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                color: '#333'
+              }}
             >
-              <FcGoogle size={20} />
+              <FcGoogle size={24} />
               <span>Continue with Google</span>
             </button>
-
           </form>
         </div>
       </div>
     </div>
   );
 };
+
+
 
 export default LoginForm;

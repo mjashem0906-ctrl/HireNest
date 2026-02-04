@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+//------------31/01--------------------------------4.33---------------------------
+
+import React, { useState } from "react";
 import { X, Plus } from "lucide-react";
 import FormInput from "../../components/UI/FormInput";
 import DropdownSelect from "../../components/UI/DropdownSelect";
 import API from "../../axios";
-import styles from "../../components/Models/AddModel.module.scss";
+import styles from "../../components/Models/AddModel.module.scss"; // Ensure you have this SCSS file
 
-// Initial state
 const initialState = {
   name: "",
   mobileNumber: "",
@@ -13,66 +14,33 @@ const initialState = {
   gender: "",
   age: "",
   memberType: "Referee",
+
+  // Referee Specific Fields
   referrerStatus: "",
-  referringOfferType: "",
-  referringSector: "",
+  referringOfferType: "", 
+  referringSector: "", 
   referringFor: "",
-  levelOfSupport: "",
+  levelOfSupport: "", 
   occupation: "",
   companyDetails: "",
-  sector: "",
-  jobOfferType: "",
-  opportunityDescription: "",
+  sector: "", 
+  jobOfferType: "", 
+  opportunityDescription: "", 
   referrerContact: "",
-  offer_Location: "",
-  symMemberStatus: "Active",
+  offer_Location: "", // Note: matches backend underscore convention
+  symMemberStatus: "Active", 
   address: "",
   district: "",
 };
 
-function AddReferee({ onSuccess, editData, isEditing, onClose }) {
+function AddReferee({ onSuccess }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState(initialState);
   const [btnLoading, setBtnLoading] = useState(false);
 
-  // Handle edit data
-  useEffect(() => {
-    if (editData && isEditing) {
-      setFormData({
-        name: editData.name || "",
-        mobileNumber: editData.mobileNumber || "",
-        email: editData.email || "",
-        gender: editData.gender || "",
-        age: editData.age || "",
-        memberType: "Referee",
-        referrerStatus: editData.referrerStatus || "",
-        referringOfferType: editData.referringOfferType || "",
-        referringSector: editData.referringSector || "",
-        referringFor: editData.referringFor || "",
-        levelOfSupport: editData.levelOfSupport || "",
-        occupation: editData.occupation || "",
-        companyDetails: editData.companyDetails || "",
-        sector: editData.sector || "",
-        jobOfferType: editData.jobOfferType || "",
-        opportunityDescription: editData.opportunityDescription || "",
-        referrerContact: editData.referrerContact || "",
-        offer_Location: editData.offer_Location || "",
-        symMemberStatus: editData.symMemberStatus || "Active",
-        address: editData.address || "",
-        district: editData.district || "",
-      });
-      setIsOpen(true);
-    }
-  }, [editData, isEditing]);
-
   const toggleModal = () => {
     setIsOpen(!isOpen);
-    if (!isOpen) {
-      setFormData(initialState);
-    }
-    if (onClose && isOpen) {
-      onClose();
-    }
+    if (!isOpen) setFormData(initialState);
   };
 
   const handleSubmit = async (e) => {
@@ -81,21 +49,19 @@ function AddReferee({ onSuccess, editData, isEditing, onClose }) {
     setBtnLoading(true);
 
     try {
-      let res;
-      if (isEditing && editData) {
-        // Update existing referee
-        res = await API.put(`/member/${editData._id}`, formData);
-      } else {
-        // Create new referee
-        res = await API.post("/member", formData);
-      }
+      // DEBUG: Log what we're sending
+      console.log("=== FRONTEND DEBUG: Sending referee data ===");
+      console.log("Full formData:", JSON.stringify(formData, null, 2));
+      
+      const res = await API.post("/member", formData);
       
       if (onSuccess) onSuccess(res.data);
-      alert(isEditing ? "Referee updated successfully!" : "Referee added successfully!");
+      alert("Referee added successfully!");
       toggleModal();
     } catch (err) {
-      console.error("Error saving referee:", err);
-      alert(isEditing ? "Failed to update referee" : "Failed to add referee");
+      console.error("Error adding referee:", err);
+      console.error("Error response:", err.response?.data);
+      alert("Failed to add referee. Check console for details.");
     } finally {
       setBtnLoading(false);
     }
@@ -109,23 +75,18 @@ function AddReferee({ onSuccess, editData, isEditing, onClose }) {
     { value: "No", label: "No" },
   ];
 
-  const modalTitle = isEditing ? "Edit Referee" : "Add New Referee";
-  const submitButtonText = isEditing ? "Update Referee" : "Save Referee";
-
   return (
     <>
-      {!isEditing && (
-        <button onClick={toggleModal} className={styles.addRefereeBtn}>
-          <Plus size={20} />
-          Add Job Referee
-        </button>
-      )}
+      <button onClick={toggleModal} className={styles.addRefereeBtn} style={{display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', background:'#8b5cf6', color:'white', border:'none', borderRadius:'6px', cursor:'pointer'}}>
+        <Plus size={20} />
+        Add Job Referee
+      </button>
 
       {isOpen && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <div className={styles.header}>
-              <h2>{modalTitle}</h2>
+              <h2>Add New Referee</h2>
               <button onClick={toggleModal} className={styles.closeButton}>
                 <X size={18} />
               </button>
@@ -211,6 +172,7 @@ function AddReferee({ onSuccess, editData, isEditing, onClose }) {
                   onChange={(v) => setFormData({ ...formData, address: v })} 
                 />
 
+                {/* IMPORTANT: Field name is offer_Location (with underscore) */}
                 <FormInput 
                   label="Offer Location" 
                   value={formData.offer_Location}
@@ -262,7 +224,7 @@ function AddReferee({ onSuccess, editData, isEditing, onClose }) {
                   onChange={(v) => setFormData({ ...formData, referrerContact: v })} 
                 />
 
-                {/* Description Field */}
+                {/* Description */}
                 <div style={{ gridColumn: "1 / -1" }}>
                   <FormInput 
                     label="Description" 
@@ -287,7 +249,7 @@ function AddReferee({ onSuccess, editData, isEditing, onClose }) {
                   disabled={btnLoading} 
                   className={styles.submitButton}
                 >
-                  {btnLoading ? "Saving..." : submitButtonText}
+                  {btnLoading ? "Saving..." : "Save Referee"}
                 </button>
               </div>
             </form>

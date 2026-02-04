@@ -1,0 +1,356 @@
+.container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    gap: 2rem;
+}
+
+.welcome h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.welcome p {
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
+.profileAlert {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    max-width: 400px;
+}
+
+.profileAlert:hover {
+    transform: translateY(-2px);
+}
+
+.progressCircle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(#3b82f6 var(--progress, 0%), #e2e8f0 0);
+    font-size: 0.75rem;
+    font-weight: 700;
+    position: relative;
+}
+
+.progressCircle span {
+    background: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alertText h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1d4ed8;
+}
+
+.alertText p {
+    font-size: 0.85rem;
+    color: #1e40af;
+    margin: 0.2rem 0 0;
+}
+
+/* Grid Layout */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+.section {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+.fullWidth {
+    grid-column: span 2;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.titleIcon {
+    width: 36px;
+    height: 36px;
+    background: #f8fafc;
+    color: #3b82f6;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.sectionHeader h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.sectionHeader button {
+    background: transparent;
+    color: #3b82f6;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Mini Cards (Applications) */
+.cardList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.miniCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.miniCard:hover {
+    background: #f1f5f9;
+}
+
+.cardInfo h4 {
+    font-size: 1rem;
+    margin: 0;
+    color: #1e293b;
+}
+
+.cardInfo p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0.2rem 0 0;
+}
+
+.statusBadge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.applied {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.review {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.shortlisted {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.rejected {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+/* Mentor Grid */
+.mentorGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1.2rem;
+}
+
+.mentorMiniCard {
+    text-align: center;
+    cursor: pointer;
+    padding: 0.8rem;
+    border-radius: 1rem;
+    transition: transform 0.2s;
+}
+
+.mentorMiniCard:hover {
+    transform: translateY(-4px);
+    background: #f8fafc;
+}
+
+.mentorMiniCard img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 0.8rem;
+    border: 2px solid #e2e8f0;
+}
+
+.mentorMiniCard h4 {
+    font-size: 0.9rem;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mentorMiniCard p {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0.3rem 0 0;
+}
+
+/* Job Table */
+.jobTable {
+    display: flex;
+    flex-direction: column;
+}
+
+.jobRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr 40px;
+    align-items: center;
+    padding: 1.2rem;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.jobRow:last-child {
+    border-bottom: none;
+}
+
+.jobRow:hover {
+    background: #f8fafc;
+}
+
+.jobMain {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.jobIcon {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+}
+
+.jobInfo h4 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.jobInfo p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0.2rem 0 0;
+}
+
+.jobMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.jobMeta span {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.arrow {
+    color: #cbd5e1;
+}
+
+.empty {
+    text-align: center;
+    padding: 3rem 0;
+    color: #94a3b8;
+}
+
+.empty p {
+    margin: 1rem 0;
+}
+
+.empty button {
+    background: #3b82f6;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.loading {
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #64748b;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fullWidth {
+        grid-column: auto;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profileAlert {
+        max-width: 100%;
+        width: 100%;
+    }
+}

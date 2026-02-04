@@ -1,4 +1,422 @@
-//-----------------------20/01-----------------------------6.49----------------------------
+// //-------------------------30/01-----------------------2.40-------------------------
+
+// import React, { useEffect, useState } from 'react';
+// import { useParams, useNavigate } from 'react-router-dom';
+// import styles from './MembersDetail.module.scss';
+// import API from '../../axios';
+// import { useData } from '../../context/DataContext';
+// import { parseDOB } from '../../utils/dateUtils';
+// import { useAuth } from '../../context/AuthContext';
+// import {
+//     ChevronDown, ChevronUp, Users, FileText,
+//     Briefcase, Building, Award, Target, User, Languages,
+//     Home, Smartphone, Mail, Calendar, MapPin, Camera
+// } from 'lucide-react'; // Removed Edit from imports
+// import AddMember from '../../components/Models/AddMember';
+
+// function MembersDetail() {
+//     const { id } = useParams();
+//     const navigate = useNavigate();
+//     const [member, setMember] = useState(null);
+//     const [loading, setLoading] = useState(true);
+//     const [postedJobs, setPostedJobs] = useState([]);
+//     const [expandedJobIds, setExpandedJobIds] = useState([]);
+
+//     const { memberContext, userContext } = useData();
+//     const [age, setAge] = useState(null);
+//     const [showModal, setShowModal] = useState(false);
+//     const [editingMember, setEditingMember] = useState(null);
+//     const [initialTab, setInitialTab] = useState("basic");
+//     const { user } = useAuth();
+
+//     const BACKEND_URL = "http://localhost:5000";
+
+//     useEffect(() => {
+//         fetchMember();
+//     }, [memberContext, id, userContext]);
+
+//     const fetchMember = async () => {
+//         try {
+//             setLoading(true);
+//             let filtered = null;
+
+//             // 1. Try to find in context first (Faster)
+//             if (memberContext && memberContext.length > 0) {
+//                 filtered = memberContext.find(m => String(m._id) === String(id));
+//             }
+
+//             // 2. If not in context or context is empty, Fetch from API
+//             if (!filtered) {
+//                 try {
+//                     // Logic to handle "me" or specific ID
+//                     let targetId = id;
+
+//                     // If requesting "me" but we don't know the memberId yet
+//                     if (targetId === 'me') {
+//                         if (user?.memberId) {
+//                             targetId = user.memberId;
+//                         } else {
+//                             // No memberId found for this user. Auto-create a profile now.
+//                             console.log("Auto-creating profile for new user...");
+//                             const createResponse = await API.post('/auth/update-profile', {
+//                                 role: user?.role === 'Mentor' ? 'Mentor' : 'Job Seeker', // Default role
+//                                 profileData: {
+//                                     name: user?.username?.split('@')[0] || "New User",
+//                                     email: user?.username,
+//                                     memberType: user?.role === 'Mentor' ? 'Mentor' : 'Job Seeker',
+//                                     symMemberStatus: 'Active'
+//                                 }
+//                             });
+
+//                             // Update local user context if possible (optional but good for sync)
+//                             if (createResponse.data.user?.memberId) {
+//                                 // Assuming we could update context, but for now let's just use the ID
+//                                 targetId = createResponse.data.user.memberId;
+//                             }
+//                         }
+//                     }
+
+//                     if (targetId && targetId !== 'undefined') {
+//                         const response = await API.get(`/member/${targetId}`);
+//                         filtered = response.data;
+//                     }
+
+//                 } catch (err) {
+//                     console.error("API Fetch Error:", err);
+
+//                     // Fallback for 404 on specific ID if it matches current user (legacy logic)
+//                     if (err.response?.status === 404 && user?.memberId === id) {
+//                         // ... (existing fallback logic if needed)
+//                     }
+//                 }
+//             }
+
+//             setMember(filtered);
+
+//             if (filtered?.dateOfBirth) {
+//                 const calculated = calculateAge(filtered.dateOfBirth);
+//                 setAge(calculated);
+//             }
+
+//             if (filtered) fetchMemberJobs(filtered._id);
+
+//         } catch (err) {
+//             console.error("Error in fetching Member details", err);
+//         } finally {
+//             setLoading(false);
+//         }
+//     }
+
+//     const fetchMemberJobs = async (memberId) => {
+//         try {
+//             if (!memberId || memberId === 'me') return;
+//             const res = await API.get('/service');
+//             const allJobs = res.data.data || res.data;
+//             const myJobs = allJobs.filter(job =>
+//                 String(job.memberId?._id || job.memberId) === String(memberId)
+//             );
+//             setPostedJobs(myJobs);
+//         } catch (err) {
+//             console.error("Error fetching member jobs:", err);
+//         }
+//     };
+
+//     const toggleJobDetails = (jobId) => {
+//         setExpandedJobIds(prev =>
+//             prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
+//         );
+//     };
+
+//     const calculateAge = (dob) => {
+//         if (!dob) return;
+//         const birthDate = parseDOB(dob);
+//         if (!birthDate || isNaN(birthDate)) return;
+//         const today = new Date();
+//         let years = today.getFullYear() - birthDate.getFullYear();
+//         let months = today.getMonth() - birthDate.getMonth();
+//         let days = today.getDate() - birthDate.getDate();
+//         if (days < 0) {
+//             months -= 1;
+//             days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+//         }
+//         if (months < 0) {
+//             years -= 1;
+//             months += 12;
+//         }
+//         return { years, months, days };
+//     };
+
+//     const handleEdit = (member, tab = "basic") => {
+//         setEditingMember(member);
+//         setInitialTab(tab);
+//         setShowModal(true);
+//     };
+
+//     const getProfileImageUrl = (url) => {
+//         if (!url) return "/members/AnonymousImage.jpg";
+//         if (url.startsWith("uploads") || url.includes("\\")) {
+//             return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
+//         }
+//         // ... (Google Drive logic kept for compatibility)
+//         let fileId = null;
+//         let match = url.match(/[?&]id=([^&]+)/);
+//         if (match) fileId = match[1];
+//         if (!fileId) { match = url.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
+//         if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
+//         if (url.startsWith("http")) return url;
+//         return url;
+//     };
+
+//     const handleUpdate = async (field, value) => {
+//         try {
+//             const updatedMember = { ...member };
+
+//             if (field.includes('.')) {
+//                 const [parent, child] = field.split('.');
+//                 updatedMember[parent] = { ...updatedMember[parent], [child]: value };
+
+//                 if (field === 'careerProfile.role') updatedMember.preferredJobRole_Sector = value;
+//                 if (field === 'careerProfile.location') updatedMember.preferredJobLocation = value;
+//             } else {
+//                 updatedMember[field] = value;
+//                 if (field === 'preferredJobRole_Sector') {
+//                     updatedMember.careerProfile = { ...updatedMember.careerProfile, role: value };
+//                 }
+//                 if (field === 'preferredJobLocation') {
+//                     updatedMember.careerProfile = { ...updatedMember.careerProfile, location: value };
+//                 }
+//             }
+
+//             const res = await API.put(`/member/${member._id}`, updatedMember);
+//             setMember(res.data);
+
+//             if (field === 'dateOfBirth') {
+//                 setAge(calculateAge(value));
+//             }
+//         } catch (err) {
+//             console.error("Update failed", err);
+//         }
+//     };
+
+//     // REMOVED EditableValue component entirely since we're keeping only the main edit button
+
+//     const getFileUrl = (url) => {
+//         if (!url) return null;
+//         if (url.startsWith("http")) return url;
+//         if (url.startsWith("uploads") || url.includes("\\")) {
+//             const cleanPath = url.replace(/\\/g, "/");
+//             return `${BACKEND_URL}/${cleanPath.startsWith("uploads/") ? cleanPath : `uploads/${cleanPath}`}`;
+//         }
+//         return url;
+//     };
+
+//     if (loading) {
+//         return (
+//             <div className={styles.loadingContainer}>
+//                 <div className="loader"></div>
+//                 <p>Retrieving profile data...</p>
+//             </div>
+//         );
+//     }
+
+//     if (!member) {
+//         return (
+//             <div className={styles.errorContainer}>
+//                 <Users size={60} color="#cbd5e1" />
+//                 <h2>Member not found</h2>
+//                 <p>The profile you are looking for doesn't exist or you don't have permission to view it.</p>
+//                 <button onClick={() => navigate(-1)}>Go Back</button>
+//             </div>
+//         );
+//     }
+
+//     return (
+//         <div className={styles.container}>
+//             {/* 1. Header Card (Naukri Style) */}
+//             <div className={styles.headerCard}>
+//                 <div className={styles.profileSection}>
+//                     <div className={styles.avatarWrapper}>
+//                         <img
+//                             src={getProfileImageUrl(member.photoUrl || member.photo)}
+//                             alt={member.name}
+//                             className={styles.avatar}
+//                         />
+//                         {(user?.role === 'Admin' || user?.memberId === member._id || id === 'me') && (
+//                             <button className={styles.editAvatar} title="Change Profile Picture">
+//                                 <Camera size={16} />
+//                             </button>
+//                         )}
+//                     </div>
+//                     <div className={styles.mainInfo}>
+//                         <h1>{member.name}</h1>
+//                         <p className={styles.designation}>{member.designation || "Candidate"}</p>
+//                         <div className={styles.quickStats}>
+//                             <span><MapPin size={14} /> {member.district || "Location N/A"}</span>
+//                             <span><Briefcase size={14} /> {member.workExp || "0"} Years Exp</span>
+//                             <span><Target size={14} /> {member.memberType}</span>
+//                         </div>
+//                     </div>
+//                 </div>
+//                 {/* ONLY EDIT BUTTON IN THE ENTIRE PAGE */}
+//                 {(user?.role === 'Admin' || String(user?.memberId) === String(member._id) || id === 'me') && (
+//                     <button className={styles.editProfileBtn} onClick={() => handleEdit(member)}>
+//                         Edit Profile
+//                     </button>
+//                 )}
+//             </div>
+
+//             <div className={styles.profileContent}>
+//                 {/* Left Column */}
+//                 <div className={styles.mainColumn}>
+
+//                     {/* Career Profile Section */}
+//                     <section className={styles.card}>
+//                         <div className={styles.cardHeader}>
+//                             <Target size={20} className={styles.icon} />
+//                             <h3>Career Profile</h3>
+//                             {/* REMOVED edit button */}
+//                         </div>
+//                         <div className={styles.detailsGrid}>
+//                             <div className={styles.item}>
+//                                 <label>Desired Role</label>
+//                                 <span className={styles.value}>{member.careerProfile?.role || member.preferredJobRole_Sector || "N/A"}</span>
+//                             </div>
+//                             <div className={styles.item}>
+//                                 <label>Industry</label>
+//                                 <span className={styles.value}>{member.careerProfile?.industry || "N/A"}</span>
+//                             </div>
+//                             <div className={styles.item}>
+//                                 <label>Desired Location</label>
+//                                 <span className={styles.value}>{member.careerProfile?.location || member.preferredJobLocation || "N/A"}</span>
+//                             </div>
+//                             <div className={styles.item}>
+//                                 <label>Expected Salary</label>
+//                                 <span className={styles.value}>{member.careerProfile?.expectedSalary || "N/A"}</span>
+//                             </div>
+//                         </div>
+//                     </section>
+
+//                     {/* Certifications Section */}
+//                     <section className={styles.card}>
+//                         <div className={styles.cardHeader}>
+//                             <Award size={20} className={styles.icon} />
+//                             <h3>Certifications</h3>
+//                             {/* REMOVED edit button */}
+//                         </div>
+//                         <div className={styles.certList}>
+//                             {member.certifications?.length > 0 ? member.certifications.map((cert, idx) => (
+//                                 <div key={idx} className={styles.certItem}>
+//                                     <div>
+//                                         <h4>{cert.title}</h4>
+//                                         <p>{cert.organization} • {cert.year}</p>
+//                                     </div>
+//                                     {cert.link && <a href={cert.link} target="_blank">View Certificate</a>}
+//                                 </div>
+//                             )) : (
+//                                 <p className={styles.emptyText}>No certifications added yet.</p>
+//                             )}
+//                         </div>
+//                     </section>
+
+//                     {/* Education Section */}
+//                     <section className={styles.card}>
+//                         <div className={styles.cardHeader}>
+//                             <Building size={20} className={styles.icon} />
+//                             <h3>Education</h3>
+//                             {/* REMOVED edit button */}
+//                         </div>
+//                         <div className={styles.eduContent}>
+//                             <h4>{member.highest_education || "Education Details N/A"}</h4>
+//                             <p>{member.fieldofStudy_Interest || member.highestEducationSpecialization}</p>
+//                             <p className={styles.meta}>Batch: {member.highestEducationPassedOutYear || "N/A"}</p>
+//                         </div>
+//                     </section>
+//                 </div>
+
+//                 {/* Right Column */}
+//                 <div className={styles.sideColumn}>
+
+//                     {/* Personal Details */}
+//                     <section className={styles.card}>
+//                         <div className={styles.cardHeader}>
+//                             <User size={20} className={styles.icon} />
+//                             <h3>Personal Details</h3>
+//                             {/* REMOVED edit button */}
+//                         </div>
+//                         <div className={styles.sideDetails}>
+//                             <div className={styles.sideItem}>
+//                                 <Smartphone size={16} />
+//                                 <div><label>Mobile</label><span className={styles.value}>{member.mobileNumber || "N/A"}</span></div>
+//                             </div>
+//                             <div className={styles.sideItem}>
+//                                 <Mail size={16} />
+//                                 <div><label>Email</label><span className={styles.value}>{member.email || "N/A"}</span></div>
+//                             </div>
+//                             <div className={styles.sideItem}>
+//                                 <Calendar size={16} />
+//                                 <div><label>Age/DOB</label><span className={styles.value}>{member.dateOfBirth || "N/A"}</span></div>
+//                             </div>
+//                             <div className={styles.sideItem}>
+//                                 <Home size={16} />
+//                                 <div><label>Address</label><span className={styles.value}>{member.address || "N/A"}</span></div>
+//                             </div>
+//                         </div>
+//                         <hr />
+//                         <div className={styles.moreDetails}>
+//                             <p><strong>Father's Name:</strong> {member.fatherName || member.fathersName || "N/A"}</p>
+//                             <p><strong>Marital Status:</strong> {member.maritalStatus || "N/A"}</p>
+//                             <p><strong>Hometown:</strong> {member.hometown || "N/A"}</p>
+//                         </div>
+//                     </section>
+
+//                     {/* Languages Section */}
+//                     <section className={styles.card}>
+//                         <div className={styles.cardHeader}>
+//                             <Languages size={20} className={styles.icon} />
+//                             <h3>Languages</h3>
+//                             {/* REMOVED edit button */}
+//                         </div>
+//                         <div className={styles.tagCloud}>
+//                             {member.languages?.length > 0 ? member.languages.map((lang, idx) => (
+//                                 <span key={idx} className={styles.tag}>{lang}</span>
+//                             )) : <p className={styles.emptyText}>None listed</p>}
+//                         </div>
+//                     </section>
+
+//                     {/* Resume Card */}
+//                     <section className={`${styles.card} ${styles.resumeCard}`}>
+//                         <h3>Resume</h3>
+//                         {member.resumeLink || member.resume ? (
+//                             <a href={getFileUrl(member.resumeLink || member.resume)} target="_blank" className={styles.resumeBtn}>
+//                                 <FileText size={18} /> View Document
+//                             </a>
+//                         ) : (
+//                             <p>No resume uploaded</p>
+//                         )}
+//                     </section>
+//                 </div>
+//             </div>
+
+//             <AddMember
+//                 isOpen={showModal}
+//                 onClose={() => {
+//                     setShowModal(false);
+//                     setEditingMember(null);
+//                 }}
+//                 editMember={editingMember}
+//                 initialTab={initialTab}
+//                 onSuccess={(updatedMember) => {
+//                     setMember(updatedMember);
+//                     setShowModal(false);
+//                     setEditingMember(null);
+//                 }}
+//             />
+//         </div>
+//     );
+// }
+
+// export default MembersDetail;
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './MembersDetail.module.scss';
@@ -6,7 +424,14 @@ import API from '../../axios';
 import { useData } from '../../context/DataContext';
 import { parseDOB } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
-import { Edit, ChevronDown, ChevronUp, Users, FileText, Briefcase, Building } from 'lucide-react'; 
+import {
+    Users, FileText, Briefcase, Building, Award, 
+    Target, User, Languages, Home, Smartphone, 
+    Mail, Calendar, MapPin, Camera, ExternalLink,
+    GraduationCap, DollarSign, Globe, Heart,
+    Award as CertificateIcon, BookOpen, Clock,
+    CheckCircle, Star
+} from 'lucide-react';
 import AddMember from '../../components/Models/AddMember';
 
 function MembersDetail() {
@@ -14,18 +439,18 @@ function MembersDetail() {
     const navigate = useNavigate();
     const [member, setMember] = useState(null);
     const [loading, setLoading] = useState(true);
-    
-    // State for Jobs & Expanded Rows
     const [postedJobs, setPostedJobs] = useState([]);
     const [expandedJobIds, setExpandedJobIds] = useState([]);
+    const [activeTab, setActiveTab] = useState('overview');
+    const [showContactInfo, setShowContactInfo] = useState(false);
 
     const { memberContext, userContext } = useData();
     const [age, setAge] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingMember, setEditingMember] = useState(null);
+    const [initialTab, setInitialTab] = useState("basic");
     const { user } = useAuth();
-    
-    // Define Backend URL for local uploads
+
     const BACKEND_URL = "http://localhost:5000";
 
     useEffect(() => {
@@ -34,30 +459,57 @@ function MembersDetail() {
 
     const fetchMember = async () => {
         try {
+            setLoading(true);
             let filtered = null;
 
-            if (user?.role === "Admin") {
+            if (memberContext && memberContext.length > 0) {
                 filtered = memberContext.find(m => String(m._id) === String(id));
-            } else if (user?.role === "Member") {
-                filtered = userContext;
-                // If user is viewing someone else's profile, find that specific member
-                if (filtered?._id !== id && memberContext.length > 0) {
-                    filtered = memberContext.find(m => String(m._id) === String(id));
+            }
+
+            if (!filtered) {
+                try {
+                    let targetId = id;
+                    if (targetId === 'me') {
+                        if (user?.memberId) {
+                            targetId = user.memberId;
+                        } else {
+                            console.log("Auto-creating profile for new user...");
+                            const createResponse = await API.post('/auth/update-profile', {
+                                role: user?.role === 'Mentor' ? 'Mentor' : 'Job Seeker',
+                                profileData: {
+                                    name: user?.username?.split('@')[0] || "New User",
+                                    email: user?.username,
+                                    memberType: user?.role === 'Mentor' ? 'Mentor' : 'Job Seeker',
+                                    symMemberStatus: 'Active'
+                                }
+                            });
+                            if (createResponse.data.user?.memberId) {
+                                targetId = createResponse.data.user.memberId;
+                            }
+                        }
+                    }
+
+                    if (targetId && targetId !== 'undefined') {
+                        const response = await API.get(`/member/${targetId}`);
+                        filtered = response.data;
+                    }
+
+                } catch (err) {
+                    console.error("API Fetch Error:", err);
                 }
             }
-            
+
             setMember(filtered);
-            
+
             if (filtered?.dateOfBirth) {
                 const calculated = calculateAge(filtered.dateOfBirth);
                 setAge(calculated);
             }
-            
-            // Fetch related jobs
-            if (filtered) fetchMemberJobs(filtered._id); 
-            
+
+            if (filtered) fetchMemberJobs(filtered._id);
+
         } catch (err) {
-            console.error("Error in fetching Members", err);
+            console.error("Error in fetching Member details", err);
         } finally {
             setLoading(false);
         }
@@ -65,9 +517,10 @@ function MembersDetail() {
 
     const fetchMemberJobs = async (memberId) => {
         try {
-            const res = await API.get('/service'); 
+            if (!memberId || memberId === 'me') return;
+            const res = await API.get('/service');
             const allJobs = res.data.data || res.data;
-            const myJobs = allJobs.filter(job => 
+            const myJobs = allJobs.filter(job =>
                 String(job.memberId?._id || job.memberId) === String(memberId)
             );
             setPostedJobs(myJobs);
@@ -77,7 +530,7 @@ function MembersDetail() {
     };
 
     const toggleJobDetails = (jobId) => {
-        setExpandedJobIds(prev => 
+        setExpandedJobIds(prev =>
             prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]
         );
     };
@@ -101,21 +554,17 @@ function MembersDetail() {
         return { years, months, days };
     };
 
-    const handleEdit = (member) => { 
-        setEditingMember(member); 
-        setShowModal(true); 
+    const handleEdit = (member, tab = "basic") => {
+        setEditingMember(member);
+        setInitialTab(tab);
+        setShowModal(true);
     };
-    
-    // --- 1. Helper for Profile Images ---
+
     const getProfileImageUrl = (url) => {
         if (!url) return "/members/AnonymousImage.jpg";
-
-        // Handle Local Uploads
         if (url.startsWith("uploads") || url.includes("\\")) {
             return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
         }
-
-        // Handle Google Drive
         let fileId = null;
         let match = url.match(/[?&]id=([^&]+)/);
         if (match) fileId = match[1];
@@ -123,356 +572,507 @@ function MembersDetail() {
             match = url.match(/\/d\/([^/]+)/); 
             if (match) fileId = match[1]; 
         }
-        if (!fileId) { 
-            match = url.match(/uc\?id=([^&]+)/); 
-            if (match) fileId = match[1]; 
-        }
-        if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(url)) { 
-            fileId = url; 
-        }
-        
         if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
-        
-        // If it's already a full internet link
         if (url.startsWith("http")) return url;
-        
         return url;
     };
 
-    // --- 2. Helper for Resumes/Files (Non-thumbnail) ---
     const getFileUrl = (url) => {
         if (!url) return null;
-        
-        // If it's already a full internet link
-        if (url.startsWith("http") || url.startsWith("https")) return url;
-
-        // Handle Local Uploads
+        if (url.startsWith("http")) return url;
         if (url.startsWith("uploads") || url.includes("\\")) {
             const cleanPath = url.replace(/\\/g, "/");
-            const finalPath = cleanPath.startsWith("uploads/") ? cleanPath : `uploads/${cleanPath}`;
-            return `${BACKEND_URL}/${finalPath}`;
+            return `${BACKEND_URL}/${cleanPath.startsWith("uploads/") ? cleanPath : `uploads/${cleanPath}`}`;
         }
-
         return url;
     };
 
-    // --- 3. Helper to safely render Arrays ---
-    const safeRender = (value) => {
-        if (Array.isArray(value)) {
-            return value.filter(v => v).join(', ');
-        }
-        return value || "";
+    const formatExperience = (exp) => {
+        if (!exp) return "0 Years Exp";
+        if (typeof exp === 'string') return exp;
+        return `${exp} Years Exp`;
+    };
+
+    const getMemberTypeColor = (type) => {
+        const colors = {
+            'Job Seeker': '#3b82f6',
+            'Mentor': '#8b5cf6',
+            'Opportunity Provider': '#10b981',
+            'Referee': '#f59e0b',
+            'Upskiller': '#ec4899'
+        };
+        return colors[type] || '#64748b';
     };
 
     if (loading) {
         return (
-            <div className={styles.app}>
+            <div className={styles.loadingContainer}>
                 <div className={styles.loader}></div>
+                <p>Loading Profile...</p>
             </div>
         );
     }
-    
+
     if (!member) {
         return (
-            <div className={styles.detailsContainer}>
-                <p>Member not found.</p>
+            <div className={styles.errorContainer}>
+                <Users size={60} color="#cbd5e1" />
+                <h2>Member Not Found</h2>
+                <p>The profile you're looking for doesn't exist or you don't have permission to view it.</p>
+                <button onClick={() => navigate(-1)}>Go Back</button>
             </div>
         );
     }
 
-    // Handle both old and new data field names
-    const displayPhoto = member.photo || member.photoUrl;
-    const displayResume = member.resume || member.resumeLink;
-    const displayAge = member.age || (age ? `${age.years} years` : "N/A");
-    
-    // Check if member is Referee type
-    const isReferee = member?.memberType === 'Referee';
-
     return (
-        <div className={styles.detailsContainer}>
-            {/* Sidebar */}
-            <div className={styles.profileSidebar}>
-                 <img
-                 src={getProfileImageUrl(displayPhoto)}
-                 alt={member?.name}
-                 className={styles.profilePhoto}
-                 onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
-                />
-                <h3>{member?.name}</h3>
-                <p className='my-3'>Ref No. {member?.memberReferenceNumber || "N/A"}</p>
-                <p className='my-3'>{member?.memberType || "N/A"}</p>
-                
-                {/* Show Occupation in sidebar if available */}
-                {member?.occupation && (
-                    <p className='my-3' style={{ color: '#4f46e5', fontWeight: '500' }}>
-                        <Briefcase size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-                        {member.occupation}
-                    </p>
-                )}
-                
-                {/* Show Company Details in sidebar if available */}
-                {member?.companyDetails && (
-                    <p className='my-3' style={{ color: '#666', fontSize: '0.9rem' }}>
-                        <Building size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
-                        {member.companyDetails}
-                    </p>
-                )}
-                
-                <p className='my-3'>{member?.currentInstitutionOrCompany || "N/A"}</p>
-                <p className='my-3'>{member?.district || "N/A"}</p>
+        <div className={styles.container}>
+            {/* Header Section */}
+            <div className={styles.headerCard}>
+                <div className={styles.profileSection}>
+                    <div className={styles.avatarWrapper}>
+                        <img
+                            src={getProfileImageUrl(member.photoUrl || member.photo)}
+                            alt={member.name}
+                            className={styles.avatar}
+                        />
+                        {(user?.role === 'Admin' || user?.memberId === member._id || id === 'me') && (
+                            <button className={styles.editAvatar} title="Change Profile Picture">
+                                <Camera size={16} />
+                            </button>
+                        )}
+                        {member.symMemberStatus === 'Active' && (
+                            <div className={styles.statusBadge}>
+                                <CheckCircle size={12} />
+                                Active
+                            </div>
+                        )}
+                    </div>
+                    <div className={styles.mainInfo}>
+                        <div className={styles.nameRow}>
+                            <h1>{member.name}</h1>
+                            <span 
+                                className={styles.memberTypeBadge}
+                                style={{ backgroundColor: getMemberTypeColor(member.memberType) }}
+                            >
+                                {member.memberType}
+                            </span>
+                        </div>
+                        <p className={styles.designation}>
+                            {member.designation || member.profession || "Professional"}
+                        </p>
+                        <div className={styles.bio}>
+                            {member.bio || member.professionalSummary || "No bio available"}
+                        </div>
+                        <div className={styles.quickStats}>
+                            <div className={styles.statItem}>
+                                <MapPin size={16} />
+                                <span>{member.district || "Location N/A"}</span>
+                            </div>
+                            <div className={styles.statItem}>
+                                <Briefcase size={16} />
+                                <span>{formatExperience(member.workExp)}</span>
+                            </div>
+                            <div className={styles.statItem}>
+                                <Globe size={16} />
+                                <span>{member.relocationStatus || "Flexible"}</span>
+                            </div>
+                            <div className={styles.statItem}>
+                                <Calendar size={16} />
+                                <span>Member since {new Date(member.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.actionButtons}>
+                    {(user?.role === 'Admin' || String(user?.memberId) === String(member._id) || id === 'me') && (
+                        <button className={styles.editProfileBtn} onClick={() => handleEdit(member)}>
+                            <span>Edit Profile</span>
+                            <ExternalLink size={16} />
+                        </button>
+                    )}
+                    <button className={styles.contactBtn} onClick={() => setShowContactInfo(!showContactInfo)}>
+                        Contact Info
+                    </button>
+                </div>
             </div>
-            
-            {(user?.role === 'Admin' || user?.memberId === member?._id) && (
-                <button className={styles.addButton1} onClick={() => handleEdit(member)}>
-                    <Edit size={20} />
-                </button>
+
+            {/* Contact Info Modal */}
+            {showContactInfo && (
+                <div className={styles.contactModal}>
+                    <div className={styles.contactContent}>
+                        <h3>Contact Information</h3>
+                        <div className={styles.contactDetails}>
+                            <div>
+                                <Smartphone size={18} />
+                                <strong>Phone:</strong> {member.mobileNumber || "Not provided"}
+                            </div>
+                            <div>
+                                <Mail size={18} />
+                                <strong>Email:</strong> {member.email || "Not provided"}
+                            </div>
+                            <div>
+                                <Home size={18} />
+                                <strong>Address:</strong> {member.address || "Not provided"}
+                            </div>
+                        </div>
+                        <button 
+                            className={styles.closeContact}
+                            onClick={() => setShowContactInfo(false)}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
             )}
 
+            {/* Navigation Tabs */}
+            <div className={styles.tabNavigation}>
+                <button 
+                    className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
+                    onClick={() => setActiveTab('overview')}
+                >
+                    Overview
+                </button>
+                <button 
+                    className={`${styles.tab} ${activeTab === 'experience' ? styles.active : ''}`}
+                    onClick={() => setActiveTab('experience')}
+                >
+                    Experience
+                </button>
+                <button 
+                    className={`${styles.tab} ${activeTab === 'education' ? styles.active : ''}`}
+                    onClick={() => setActiveTab('education')}
+                >
+                    Education
+                </button>
+                <button 
+                    className={`${styles.tab} ${activeTab === 'skills' ? styles.active : ''}`}
+                    onClick={() => setActiveTab('skills')}
+                >
+                    Skills
+                </button>
+            </div>
+
+            <div className={styles.profileContent}>
+                {/* Left Column - Main Content */}
+                <div className={styles.mainColumn}>
+                    {/* Career Profile Section */}
+                    <section className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <Target size={20} className={styles.icon} />
+                            <h3>Career Profile</h3>
+                            <Star size={16} className={styles.starIcon} />
+                        </div>
+                        <div className={styles.detailsGrid}>
+                            <div className={styles.item}>
+                                <label>
+                                    <Target size={14} />
+                                    Desired Role
+                                </label>
+                                <span className={styles.value}>
+                                    {member.careerProfile?.role || member.preferredJobRole_Sector || "Not specified"}
+                                </span>
+                            </div>
+                            <div className={styles.item}>
+                                <label>
+                                    <Building size={14} />
+                                    Industry
+                                </label>
+                                <span className={styles.value}>
+                                    {member.careerProfile?.industry || "Not specified"}
+                                </span>
+                            </div>
+                            <div className={styles.item}>
+                                <label>
+                                    <MapPin size={14} />
+                                    Desired Location
+                                </label>
+                                <span className={styles.value}>
+                                    {member.careerProfile?.location || member.preferredJobLocation || "Anywhere"}
+                                </span>
+                            </div>
+                            <div className={styles.item}>
+                                <label>
+                                    <DollarSign size={14} />
+                                    Expected Salary
+                                </label>
+                                <span className={styles.value}>
+                                    {member.careerProfile?.expectedSalary || "Not specified"}
+                                </span>
+                            </div>
+                        </div>
+                        {member.preferredJobRole_Sector && (
+                            <div className={styles.preferences}>
+                                <h4>Additional Preferences</h4>
+                                <div className={styles.tagCloud}>
+                                    {member.preferredJobRole_Sector.split(',').map((role, idx) => (
+                                        <span key={idx} className={styles.tag}>{role.trim()}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Education Section */}
+                    <section className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <GraduationCap size={20} className={styles.icon} />
+                            <h3>Education</h3>
+                        </div>
+                        <div className={styles.eduContent}>
+                            <div className={styles.eduHeader}>
+                                <h4>{member.highest_education || "Education Details"}</h4>
+                                <span className={styles.eduYear}>
+                                    {member.highestEducationPassedOutYear || "N/A"}
+                                </span>
+                            </div>
+                            <p className={styles.fieldOfStudy}>
+                                {member.fieldofStudy_Interest || member.highestEducationSpecialization || "Field of study not specified"}
+                            </p>
+                            <div className={styles.eduMeta}>
+                                {member.educationInstitution && (
+                                    <span className={styles.institution}>
+                                        <Building size={14} />
+                                        {member.educationInstitution}
+                                    </span>
+                                )}
+                                {member.educationGrade && (
+                                    <span className={styles.grade}>
+                                        <Star size={14} />
+                                        Grade: {member.educationGrade}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Skills Section */}
+                    {member.skillsToImprove && member.skillsToImprove.length > 0 && (
+                        <section className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <BookOpen size={20} className={styles.icon} />
+                                <h3>Skills & Interests</h3>
+                            </div>
+                            <div className={styles.skillsSection}>
+                                <div className={styles.skillCategory}>
+                                    <h4>Skills to Improve</h4>
+                                    <div className={styles.tagCloud}>
+                                        {member.skillsToImprove.map((skill, idx) => (
+                                            <span key={idx} className={`${styles.tag} ${styles.skillTag}`}>
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                {member.interest_SkillBuildingProgram && (
+                                    <div className={styles.skillCategory}>
+                                        <h4>Learning Interests</h4>
+                                        <p className={styles.learningInterest}>
+                                            {member.interest_SkillBuildingProgram}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                {/* Right Column - Sidebar */}
+                <div className={styles.sideColumn}>
+                    {/* Personal Details */}
+                    <section className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <User size={20} className={styles.icon} />
+                            <h3>Personal Details</h3>
+                        </div>
+                        <div className={styles.sideDetails}>
+                            <div className={styles.sideItem}>
+                                <Smartphone size={18} />
+                                <div>
+                                    <label>Mobile</label>
+                                    <span className={styles.value}>
+                                        {member.mobileNumber || "Not provided"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.sideItem}>
+                                <Mail size={18} />
+                                <div>
+                                    <label>Email</label>
+                                    <span className={styles.value}>
+                                        {member.email || "Not provided"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.sideItem}>
+                                <Calendar size={18} />
+                                <div>
+                                    <label>Age/DOB</label>
+                                    <span className={styles.value}>
+                                        {member.dateOfBirth ? `${member.dateOfBirth} (${age?.years || 'N/A'} years)` : "Not provided"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.sideItem}>
+                                <Home size={18} />
+                                <div>
+                                    <label>Address</label>
+                                    <span className={styles.value}>
+                                        {member.address || "Not provided"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <hr className={styles.divider} />
+                        <div className={styles.moreDetails}>
+                            <div className={styles.detailRow}>
+                                <strong>Father's Name:</strong>
+                                <span>{member.fatherName || member.fathersName || "N/A"}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <strong>Marital Status:</strong>
+                                <span>{member.maritalStatus || "N/A"}</span>
+                            </div>
+                            <div className={styles.detailRow}>
+                                <strong>Hometown:</strong>
+                                <span>{member.hometown || "N/A"}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Languages Section */}
+                    {member.languages && member.languages.length > 0 && (
+                        <section className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <Languages size={20} className={styles.icon} />
+                                <h3>Languages</h3>
+                            </div>
+                            <div className={styles.languageSection}>
+                                <div className={styles.tagCloud}>
+                                    {member.languages.map((lang, idx) => (
+                                        <span key={idx} className={`${styles.tag} ${styles.languageTag}`}>
+                                            {lang}
+                                            {lang.toLowerCase().includes('english') && ' 🇬🇧'}
+                                            {lang.toLowerCase().includes('hindi') && ' 🇮🇳'}
+                                            {lang.toLowerCase().includes('kannada') && ' 🇮🇳'}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Certifications Section */}
+                    <section className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <CertificateIcon size={20} className={styles.icon} />
+                            <h3>Certifications</h3>
+                        </div>
+                        <div className={styles.certList}>
+                            {member.certifications?.length > 0 ? member.certifications.map((cert, idx) => (
+                                <div key={idx} className={styles.certItem}>
+                                    <div className={styles.certInfo}>
+                                        <h4>{cert.title}</h4>
+                                        <p className={styles.certOrg}>{cert.organization}</p>
+                                        <p className={styles.certYear}>
+                                            <Clock size={12} />
+                                            {cert.year || "N/A"}
+                                        </p>
+                                    </div>
+                                    {cert.link && (
+                                        <a 
+                                            href={cert.link} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className={styles.certLink}
+                                        >
+                                            View
+                                        </a>
+                                    )}
+                                </div>
+                            )) : (
+                                <div className={styles.emptyCert}>
+                                    <Award size={24} />
+                                    <p>No certifications added yet</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Resume Card */}
+                    <section className={`${styles.card} ${styles.resumeCard}`}>
+                        <div className={styles.resumeHeader}>
+                            <FileText size={24} />
+                            <h3>Resume</h3>
+                        </div>
+                        {member.resumeLink || member.resume ? (
+                            <div className={styles.resumeActions}>
+                                <a 
+                                    href={getFileUrl(member.resumeLink || member.resume)} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className={styles.resumeBtn}
+                                >
+                                    <FileText size={18} /> View Resume
+                                </a>
+                                <a 
+                                    href={getFileUrl(member.resumeLink || member.resume)} 
+                                    download
+                                    className={styles.downloadBtn}
+                                >
+                                    Download
+                                </a>
+                            </div>
+                        ) : (
+                            <div className={styles.noResume}>
+                                <FileText size={32} />
+                                <p>No resume uploaded</p>
+                                {(user?.role === 'Admin' || String(user?.memberId) === String(member._id) || id === 'me') && (
+                                    <button 
+                                        className={styles.uploadResume}
+                                        onClick={() => handleEdit(member, 'documents')}
+                                    >
+                                        Upload Resume
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Group Tags */}
+                    {member.forGrouping && member.forGrouping.length > 0 && (
+                        <section className={styles.card}>
+                            <div className={styles.cardHeader}>
+                                <Users size={20} className={styles.icon} />
+                                <h3>Group Tags</h3>
+                            </div>
+                            <div className={styles.tagCloud}>
+                                {member.forGrouping.map((tag, idx) => (
+                                    <span key={idx} className={`${styles.tag} ${styles.groupTag}`}>
+                                        #{tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            </div>
+
+            {/* Edit Profile Modal */}
             <AddMember
                 isOpen={showModal}
-                onClose={() => setShowModal(false)}
+                onClose={() => {
+                    setShowModal(false);
+                    setEditingMember(null);
+                }}
                 editMember={editingMember}
-                onSuccess={(updatedMember) => { 
-                    setMember(updatedMember); 
+                initialTab={initialTab}
+                onSuccess={(updatedMember) => {
+                    setMember(updatedMember);
+                    setShowModal(false);
+                    setEditingMember(null);
                 }}
             />
-
-            {/* Main Content */}
-            <div className={styles.profileMain}>
-                <h3>Personal Info</h3>
-                <div className={styles.infoGrid}>
-                    <div><strong>Age:</strong> {displayAge}</div>
-                    <div><strong>Gender:</strong> {member?.gender || "N/A"}</div>
-                    <div><strong>Mobile No:</strong> {member?.mobileNumber || "N/A"}</div>
-                    <div><strong>Email:</strong> {member?.email || "N/A"}</div>
-                    
-                    {/* Solidarity Member Status - Show for Referees */}
-                    {isReferee ? (
-                        <div><strong>Solidarity Member Status:</strong> {member?.referrerStatus || "Active"}</div>
-                    ) : (
-                        <div><strong>Solidarity Member Status:</strong> {member?.symMemberStatus || "Active"}</div>
-                    )}
-                    
-                    <div><strong>District:</strong> {member?.district || "N/A"}</div>
-                    <div><strong>Address:</strong> {member?.address || "N/A"}</div>
-                    
-                    {/* NEW: Occupation Field */}
-                    {member?.occupation && (
-                        <div>
-                            <strong>Occupation:</strong> {member.occupation}
-                        </div>
-                    )}
-                    
-                    {/* NEW: Company Details Field */}
-                    {member?.companyDetails && (
-                        <div>
-                            <strong>Company Details:</strong> {member.companyDetails}
-                        </div>
-                    )}
-                </div>
-
-                <h3>Professional Info</h3>
-                <div className={styles.infoGrid}>
-                    {member?.memberType === 'Mentor' && (
-                        <>
-                            <div><strong>Current Institution/Company:</strong> {member?.currentInstitutionOrCompany || "N/A"}</div>
-                            <div><strong>Designation:</strong> {member?.designation || "N/A"}</div>
-                            <div><strong>Expertise/Field:</strong> {member?.fieldofStudy_Interest || "N/A"}</div>
-                            <div><strong>Experience:</strong> {member?.workExp ? `${member.workExp} Years` : "N/A"}</div>
-                        </>
-                    )}
-                    
-                    {member?.memberType === 'Job Seeker' && (
-                        <>
-                            <div><strong>Member Need:</strong> {safeRender(member?.seekerNeed)}</div>
-                            <div><strong>Highest Education:</strong> {member?.highest_education || "N/A"}</div>
-                            <div><strong>Field of Study/Interest:</strong> {member?.fieldofStudy_Interest || "N/A"}</div>
-                            <div><strong>Preferred Job Role/Sector:</strong> {member?.preferredJobRole_Sector || "N/A"}</div>
-                            <div><strong>Work Experience:</strong> {member?.workExp || "N/A"}</div>
-                            <div><strong>Relocation Status:</strong> {member?.relocationStatus || "N/A"}</div>
-                            <div><strong>Preferred Job Location:</strong> {member?.preferredJobLocation || "N/A"}</div>
-                            <div>
-                                <strong>Resume: </strong> 
-                                {displayResume ? (
-                                    <a 
-                                        href={getFileUrl(displayResume)} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                            marginLeft: '8px',
-                                            backgroundColor: '#4f46e5',
-                                            color: 'white',
-                                            padding: '6px 12px',
-                                            borderRadius: '4px',
-                                            textDecoration: 'none',
-                                            fontWeight: '500',
-                                            fontSize: '0.9rem',
-                                            cursor: 'pointer',
-                                            border: 'none'
-                                        }}
-                                    >
-                                        <FileText size={16} />
-                                        View Resume
-                                    </a>
-                                ) : "N/A"}
-                            </div>
-                        </>
-                    )}
-                    
-                    {member?.memberType === 'Opportunity Provider' && (
-                        <>
-                            <div><strong>Job Offer Type:</strong> {safeRender(member?.jobOfferType)}</div>
-                            <div><strong>Offering Sector:</strong> {safeRender(member?.offeringSector)}</div>
-                            <div><strong>Description:</strong> {member?.opportunityDescription || "N/A"}</div>
-                            <div><strong>Offer Location:</strong> {member?.offer_Location || "N/A"}</div>
-                            <div><strong>Contact:</strong> {member?.contactForSeekers || "N/A"}</div>
-                        </>
-                    )}
-                    
-                    {/* UPDATED: Referee specific fields */}
-                    {member?.memberType === 'Referee' && (
-                        <>
-                            <div><strong>Job Offer Type:</strong> {safeRender(member?.referringOfferType)}</div>
-                            <div><strong>Offering Sector:</strong> {safeRender(member?.referringSector)}</div>
-                            <div><strong>Description:</strong> {member?.opportunityDescription || "N/A"}</div>
-                            <div><strong>Offer Location:</strong> {member?.offer_Location || "N/A"}</div>
-                            <div><strong>Contact:</strong> {member?.referrerContact || "N/A"}</div>
-                            <div><strong>Referring For:</strong> {member?.referringFor || "N/A"}</div>
-                            <div><strong>Level of Support:</strong> {member?.levelOfSupport || "N/A"}</div>
-                            <div><strong>Referrer Status:</strong> {member?.referrerStatus || "Active"}</div>
-                            
-                            {/* Show Occupation and Company Details for Referees if not already shown in Personal Info */}
-                            {!member?.occupation && member?.occupation && (
-                                <div><strong>Occupation:</strong> {member.occupation}</div>
-                            )}
-                            
-                            {!member?.companyDetails && member?.companyDetails && (
-                                <div><strong>Company Details:</strong> {member.companyDetails}</div>
-                            )}
-                        </>
-                    )}
-                    
-                    {member?.memberType === 'In need of Upskilling' && (
-                        <>
-                            <div><strong>Interest in Skill Building Program:</strong> {member?.interest_SkillBuildingProgram || "N/A"}</div>
-                            <div><strong>Skills to Improve:</strong> {safeRender(member?.skillsToImprove)}</div>
-                        </>
-                    )}
-                </div>
-
-                {/* Referred Opportunities */}
-                {postedJobs.length > 0 && (
-                    <>
-                        <h3 style={{ marginTop: '30px' }}>Referred Opportunities ({postedJobs.length})</h3>
-                        <div className={styles.tableContainer}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th>Job Title</th>
-                                        <th>Company</th>
-                                        <th>Location</th>
-                                        <th>Posted On</th>
-                                        <th>Applicants</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {postedJobs.map(job => (
-                                        <React.Fragment key={job._id}>
-                                            <tr style={{ borderBottom: expandedJobIds.includes(job._id) ? 'none' : '1px solid #eee' }}>
-                                                <td style={{ fontWeight: '600' }}>{job.title}</td>
-                                                <td>{job.companyName}</td>
-                                                <td>{job.location}</td>
-                                                <td>{new Date(job.createdAt).toLocaleDateString()}</td>
-                                                <td>
-                                                    <span style={{ display:'flex', alignItems:'center', gap:'5px', fontWeight:'bold', color: '#4f46e5'}}>
-                                                        <Users size={16}/> {job.appliedMembers?.length || 0}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button 
-                                                        onClick={() => toggleJobDetails(job._id)}
-                                                        style={{
-                                                            padding: '6px 12px', 
-                                                            backgroundColor: '#f3f4f6', 
-                                                            color: '#333',
-                                                            border: '1px solid #ccc', 
-                                                            borderRadius: '4px', 
-                                                            cursor: 'pointer', 
-                                                            fontSize: '0.8rem', 
-                                                            display:'flex', 
-                                                            alignItems:'center', 
-                                                            gap:'5px'
-                                                        }}
-                                                    >
-                                                        {expandedJobIds.includes(job._id) ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-                                                        Details
-                                                    </button>
-                                                </td>
-                                            </tr>
-
-                                            {expandedJobIds.includes(job._id) && (
-                                                <tr style={{ backgroundColor: '#f9fafb' }}>
-                                                    <td colSpan="6" style={{ padding: '15px' }}>
-                                                        <div style={{ marginLeft: '10px' }}>
-                                                            <h5 style={{ margin: '0 0 10px 0', color:'#555', fontSize:'0.95rem' }}>Applicant Status:</h5>
-                                                            
-                                                            {job.appliedMembers?.length > 0 ? (
-                                                                <table style={{ 
-                                                                    width: '100%', 
-                                                                    borderCollapse: 'collapse', 
-                                                                    fontSize:'0.9rem', 
-                                                                    backgroundColor:'white', 
-                                                                    border:'1px solid #e5e7eb' 
-                                                                }}>
-                                                                    <thead>
-                                                                        <tr style={{ borderBottom:'1px solid #eee', color:'#6b7280' }}>
-                                                                            <th style={{ padding:'8px', textAlign:'left' }}>Name</th>
-                                                                            <th style={{ padding:'8px', textAlign:'left' }}>Status</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {job.appliedMembers.map((app, idx) => (
-                                                                            <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>
-                                                                                <td style={{ padding:'8px' }}>{app.memberId?.name || "Unknown"}</td>
-                                                                                <td style={{ padding:'8px' }}>
-                                                                                    <span style={{
-                                                                                        padding: '2px 8px', 
-                                                                                        borderRadius: '4px', 
-                                                                                        fontSize: '0.8rem', 
-                                                                                        fontWeight:'500',
-                                                                                        backgroundColor: app.status === 'Accepted' ? '#dcfce7' : 
-                                                                                                         app.status === 'Rejected' ? '#fee2e2' : 
-                                                                                                         app.status === 'Shortlisted' ? '#fef3c7' : '#e0f2fe',
-                                                                                        color: app.status === 'Accepted' ? '#166534' : 
-                                                                                               app.status === 'Rejected' ? '#991b1b' : 
-                                                                                               app.status === 'Shortlisted' ? '#d97706' : '#0369a1'
-                                                                                    }}>
-                                                                                        {app.status || 'Applied'}
-                                                                                    </span>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
-                                                            ) : (
-                                                                <p style={{ color:'#888', fontStyle:'italic', fontSize:'0.9rem' }}>No applicants yet.</p>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </>
-                )}
-            </div>
         </div>
     );
 }

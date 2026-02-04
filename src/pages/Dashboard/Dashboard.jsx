@@ -1,42 +1,32 @@
+//--------------------------------31/01-------------------4.01-------------------------------
 
-//---------------6.51-----------------20/01--------------------------
-
-//-------------------------------UPDATED DASHBOARD--------------------------------
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect, useState } from "react";
-import { Users, MapPin, BookOpen, Briefcase, UserCheck, User } from "lucide-react";
+import { Users, MapPin, BookOpen, Briefcase, UserCheck, User, Building2 } from "lucide-react";
 import CustomCard from "../../components/UI/CustomCard";
 import DonutOverviewChart from "../../components/UI/DonutOverviewChart";
 import StatusTextView from "../../components/UI/StatusTextView";
 import styles from "./Dashboard.module.scss";
 import { useData } from "../../context/DataContext";
-// 👇 1. Import Auth Context
-import { useAuth } from "../../context/AuthContext"; 
+import { useAuth } from "../../context/AuthContext";
+import CandidateDashboard from '../CandidateDashboard/CandidateDashboard';
 
 function MemberDashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // 👇 2. Get current user info
+  const { user } = useAuth();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { memberContext } = useData(); 
+  const { memberContext } = useData();
 
-  // 👇 3. Add this Redirect Logic
   useEffect(() => {
-    if (user?.role === "Member") {
-      // If the user is a simple Member, send them directly to their profile
-      // We use { replace: true } so they can't press "Back" to return here
-      navigate(`/member/${user.memberId}`, { replace: true });
+    if (memberContext) {
+      setMembers(memberContext);
     }
-  }, [user, navigate]);
-
-  // 👇 4. Prevent the Dashboard from rendering/flashing while redirecting
-  if (user?.role === "Member") {
-    return null; 
-  }
-
-  useEffect(() => {
-    setMembers(memberContext);
   }, [memberContext]);
+
+  if (["Candidate", "Member", "Mentor", "Job"].includes(user?.role)) {
+    return <CandidateDashboard />;
+  }
 
   if (loading)
     return (
@@ -49,7 +39,7 @@ function MemberDashboard() {
   const totalMembers = members.length;
 
   const seekers = members.filter((m) => {
-    const type = m.memberType || ""; 
+    const type = m.memberType || "";
     return type.trim() === "" || type.includes("Job Seeker");
   }).length;
 
@@ -57,12 +47,19 @@ function MemberDashboard() {
   const referees = members.filter((m) => m.memberType?.includes("Referee")).length;
   const upskillers = members.filter((m) => m.memberType?.includes("In need of Upskilling")).length;
   const mentors = members.filter((m) => m.memberType?.includes("Mentor")).length;
+  
+  // ✅ FIX: Enhanced Counting Logic
+  // This converts the memberType to lowercase first. 
+  // It ensures that "Recruiter", "recruiter", and "Job Recruiter" are ALL counted.
+  const recruiters = members.filter((m) => {
+    const type = (m.memberType || "").toLowerCase();
+    return type.includes("recruiter"); 
+  }).length;
 
   const genderStats = countBy(members, "gender");
   const districtStats = countBy(members, "district");
   const educationStats = countBy(members, "highest_education");
 
-  // === Utility function ===
   function countBy(array, key) {
     const counts = {};
     array.forEach((item) => {
@@ -94,8 +91,12 @@ function MemberDashboard() {
 
   const stats = [
     { title: "Total Members", count: totalMembers, icon: Users, color: "#4ECDC4", path: "/members" },
-    { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#45B7D1", path: "/members" }, 
+    { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#45B7D1", path: "/members" },
     { title: "Opportunity Providers", count: providers, icon: UserCheck, color: "#FFEAA7", path: "/members" },
+    
+    // ✅ FIX: Updated path to redirect to the correct module
+    { title: "Job Recruiters", count: recruiters, icon: Building2, color: "#6366f1", path: "/recruiters" },
+    
     { title: "Job Referee", count: referees, icon: User, color: "#DDA0DD", path: "/referees" },
     { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#FFA500", path: "/members" },
     { title: "Mentors", count: mentors, icon: MapPin, color: "#FF6B6B", path: "/mentors" },
@@ -103,15 +104,14 @@ function MemberDashboard() {
 
   return (
     <div className={styles.dashboard}>
-      {/* === Stat Overview === */}
       <div className={styles.statsGrid}>
         {stats.map((stat, i) => (
-          <CustomCard 
-            key={i} 
-            className={styles.statCard} 
+          <CustomCard
+            key={i}
+            className={styles.statCard}
             hover
             onClick={() => navigate(stat.path)}
-            style={{ cursor: "pointer" }} 
+            style={{ cursor: "pointer" }}
           >
             <div className={styles.statIcon} style={{ backgroundColor: stat.color }}>
               <stat.icon size={24} />
@@ -124,31 +124,24 @@ function MemberDashboard() {
         ))}
       </div>
 
-      {/* === Donut Charts Section === */}
       <div className={styles.statsGrid}>
         <div>
           <DonutOverviewChart title="Member Types" data={memberTypeData} />
           <StatusTextView data={memberTypeData} />
         </div>
-
         <div>
           <DonutOverviewChart title="Gender Distribution" data={genderData} />
           <StatusTextView data={genderData} />
         </div>
       </div>
 
-      {/* === Top Districts & Education === */}
       <div className={styles.dashboardGrid}>
         <CustomCard>
-          <div className={styles.cardHeader}>
-            <h3>Top Districts</h3>
-          </div>
+          <div className={styles.cardHeader}><h3>Top Districts</h3></div>
           <ul className={styles.deadlineList}>
             {topDistricts.map((item, i) => (
               <li key={i} className={styles.deadlineItem}>
-                <div className={styles.deadlineInfo}>
-                  <h4>{item.name}</h4>
-                </div>
+                <div className={styles.deadlineInfo}><h4>{item.name}</h4></div>
                 <span className={styles.date}>{item.value} members</span>
               </li>
             ))}
@@ -156,15 +149,11 @@ function MemberDashboard() {
         </CustomCard>
 
         <CustomCard>
-          <div className={styles.cardHeader}>
-            <h3>Top Education Levels</h3>
-          </div>
+          <div className={styles.cardHeader}><h3>Top Education Levels</h3></div>
           <ul className={styles.deadlineList}>
             {topEducations.map((item, i) => (
               <li key={i} className={styles.deadlineItem}>
-                <div className={styles.deadlineInfo}>
-                  <h4>{item.name}</h4>
-                </div>
+                <div className={styles.deadlineInfo}><h4>{item.name}</h4></div>
                 <span className={styles.date}>{item.value} members</span>
               </li>
             ))}

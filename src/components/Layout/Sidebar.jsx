@@ -1,20 +1,20 @@
 
-
 //--------------------------------19/01--------------------5.21-----------------
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  Home, 
-  Users, 
-  FolderOpen, 
-  UserCheck, 
-  User, 
-  BriefcaseBusiness, 
-  GraduationCap, 
-  X, 
-  ChevronLeft, 
-  ChevronRight 
+import {
+  Home,
+  Users,
+  FolderOpen,
+  UserCheck,
+  User,
+  BriefcaseBusiness,
+  GraduationCap,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Building
 } from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
@@ -33,22 +33,30 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members' },
       { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
+      { path: '/recruiters', icon: Building, label: 'Job Recruiter' },
       { path: '/referees', icon: UserCheck, label: 'Job Referee' },
       { path: '/createUser', icon: User, label: 'Create new user' },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
     ];
-  } else if (user.role === "Member") {
+  } else if (["Member", "Mentor", "Job", "Candidate"].includes(user.role)) {
+    // Ensure memberId is valid before using it in the path
+    const profilePath = (user.memberId && user.memberId !== 'null' && user.memberId !== 'undefined')
+      ? `/member/${user.memberId}`
+      : '/member/me';
+
     menuItems = [
-      { path: `/member/${user.memberId}`, icon: FolderOpen, label: 'Profile' },
+      { path: '/', icon: Home, label: 'Dashboard' },
+      { path: profilePath, icon: FolderOpen, label: 'Profile' },
       { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' }
     ];
-  } else if (user.role === "IT_Member") {
+  }
+  else if (user.role === "IT_Member") {
     // Optional: Add logic for IT_Member if they have a different view
     menuItems = [
-        { path: '/', icon: Home, label: 'Dashboard' },
-        { path: '/members', icon: Users, label: 'Members' },
-        { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
+      { path: '/', icon: Home, label: 'Dashboard' },
+      { path: '/members', icon: Users, label: 'Members' },
+      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
     ];
   }
 

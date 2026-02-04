@@ -1,179 +1,189 @@
-
-
-//-------------19/01----------------1.50------------------
-
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import API from "../../axios"; 
-import "./CandidateDashboard.css";
-
-// ✅ Define Backend URL
-const BACKEND_URL = "http://localhost:5000";
+import { useNavigate } from "react-router-dom";
+import API from "../../axios";
+import { useAuth } from "../../context/AuthContext";
+import { Briefcase, Users, FileText, ChevronRight, Clock, MapPin, Building, GraduationCap } from "lucide-react";
+import styles from "./CandidateDashboard.module.scss";
 
 const CandidateDashboard = () => {
-  const [candidateData, setCandidateData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [error, setError] = useState("");
-
-  // ✅ Helper: Cloudinary or Local file
-  const getFileUrl = (url) => {
-    if (!url) return "#";
-    if (url.startsWith("http")) return url;
-
-    const cleanPath = url.replace(/\\/g, "/");
-    const finalPath = cleanPath.startsWith("uploads/")
-      ? cleanPath
-      : `uploads/${cleanPath}`;
-    return `${BACKEND_URL}/${finalPath}`;
-  };
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    recentApplications: [],
+    newMentors: [],
+    recentJobs: []
+  });
 
   useEffect(() => {
-    if (location.state?.candidateData) {
-      setCandidateData(location.state.candidateData);
-      setLoading(false);
-      return;
-    }
-    fetchCandidateData();
-  }, [location.state]);
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        // Fetch All data in parallel
+        const [jobsRes, membersRes] = await Promise.all([
+          API.get("/service"),
+          API.get("/member")
+        ]);
 
-  const fetchCandidateData = async () => {
-    try {
-      const candidateEmail = localStorage.getItem("candidateEmail");
-      if (!candidateEmail) {
-        setError("No profile data found. Please login.");
-        return;
+        const allJobs = jobsRes.data.data || [];
+        const allMembers = Array.isArray(membersRes.data) ? membersRes.data : [];
+
+        // 1. Recent Applications (Jobs this user applied to)
+        const myApps = allJobs.filter(job =>
+          job.appliedMembers?.some(app =>
+            String(app.memberId?._id || app.memberId) === String(user?.memberId)
+          )
+        ).map(job => {
+          const myApp = job.appliedMembers.find(app =>
+            String(app.memberId?._id || app.memberId) === String(user?.memberId)
+          );
+          return {
+            ...job,
+            applicationStatus: myApp?.status || 'Applied',
+            appliedAt: myApp?.appliedAt
+          };
+        }).slice(0, 5);
+
+        // 2. New Mentors (Latest joined mentors)
+        const mentors = allMembers
+          .filter(m => m.memberType?.toLowerCase() === 'mentor')
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
+
+        // 3. Recent Job Posts
+        const latestJobs = allJobs
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
+
+        setData({
+          recentApplications: myApps,
+          newMentors: mentors,
+          recentJobs: latestJobs
+        });
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const response = await API.get(
-        `/candidate/profile?email=${encodeURIComponent(candidateEmail)}`
-      );
-
-      const data = response.data?.data || response.data;
-      setCandidateData(data);
-      localStorage.setItem("candidateData", JSON.stringify(data));
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load profile.");
-    } finally {
+    if (user?.memberId) {
+      fetchDashboardData();
+    } else {
       setLoading(false);
     }
-  };
-
-  const handleEditProfile = () => {
-    alert("Edit functionality coming soon!");
-  };
-
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.removeItem("googleAuthFlow");
-    navigate("/google-login");
-  };
+  }, [user]);
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
+      <div className={styles.loading}>
         <div className="loader"></div>
+        <p>Loading your dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="candidate-dashboard">
-      <div className="dashboard-header">
-        <h1>Candidate Dashboard</h1>
-        <p>Welcome back</p>
-      </div>
-
-      <div className="dashboard-content">
-        {candidateData ? (
-          <div className="profile-card">
-            {/* ===== HEADER ===== */}
-            <div className="profile-header">
-              <div className="avatar">
-                {candidateData.photo ? (
-                  <img
-                    src={getFileUrl(candidateData.photo)}
-                    alt="Profile"
-                    onError={(e) => (e.target.src = "https://via.placeholder.com/150")}
-                  />
-                ) : (
-                  <span className="avatar-text">
-                    {candidateData.firstName?.charAt(0)}
-                    {candidateData.lastName?.charAt(0)}
-                  </span>
-                )}
-              </div>
-
-              <div className="profile-info">
-                <h2>
-                  {candidateData.firstName} {candidateData.lastName}
-                </h2>
-                <p>{candidateData.email}</p>
-                <p>{candidateData.mobileNumber || candidateData.phone}</p>
-              </div>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <div className={styles.welcome}>
+          <h1>Welcome back, {user?.username?.split('@')[0]}!</h1>
+          <p>Track your progress and discover new opportunities.</p>
+        </div>
+        {user?.profileCompleted < 100 && (
+          <div className={styles.profileAlert} onClick={() => navigate('/member/me')}>
+            <div className={styles.progressCircle} style={{ '--progress': `${user?.profileCompleted}%` }}>
+              <span>{user?.profileCompleted}%</span>
             </div>
-
-            {/* ===== DETAILS ===== */}
-            <div className="profile-details">
-              <div className="detail-item">
-                <span className="detail-label">Email:</span>
-                <span>{candidateData.email}</span>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label">Phone:</span>
-                <span>{candidateData.mobileNumber || candidateData.phone}</span>
-              </div>
-
-              {/* ===== RESUME ===== */}
-              {candidateData.resume && (
-                <div className="detail-item">
-                  <span className="detail-label">Resume:</span>
-
-                  <iframe
-                    src={getFileUrl(candidateData.resume)}
-                    width="100%"
-                    height="400px"
-                    style={{
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                      marginTop: "10px",
-                    }}
-                    title="Resume Preview"
-                  />
-
-                  <div style={{ marginTop: "10px" }}>
-                    <a
-                      href={getFileUrl(candidateData.resume)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="download-btn"
-                    >
-                      ⬇ Download Resume
-                    </a>
-                  </div>
-                </div>
-              )}
+            <div className={styles.alertText}>
+              <h3>Complete Your Profile</h3>
+              <p>Boost your chances of getting noticed by mentors.</p>
             </div>
-
-            {/* ===== ACTIONS ===== */}
-            <div className="dashboard-actions">
-              <button className="action-button primary" onClick={handleEditProfile}>
-                Edit Profile
-              </button>
-              <button className="action-button logout" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="no-data">
-            <p>{error || "No profile data found."}</p>
+            <ChevronRight size={20} />
           </div>
         )}
+      </header>
+
+      <div className={styles.grid}>
+        {/* 1. Recent Applications */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.titleIcon}><Clock size={20} /></div>
+            <h2>Your Applications</h2>
+            <button onClick={() => navigate('/jobs')}>View All</button>
+          </div>
+          <div className={styles.cardList}>
+            {data.recentApplications.length > 0 ? data.recentApplications.map(job => (
+              <div key={job._id} className={styles.miniCard} onClick={() => navigate(`/jobs/${job._id}`)}>
+                <div className={styles.cardInfo}>
+                  <h4>{job.title}</h4>
+                  <p>{job.companyName}</p>
+                </div>
+                <span className={`${styles.statusBadge} ${styles[job.applicationStatus?.toLowerCase()]}`}>
+                  {job.applicationStatus}
+                </span>
+              </div>
+            )) : (
+              <div className={styles.empty}>
+                <Briefcase size={40} />
+                <p>No applications yet</p>
+                <button onClick={() => navigate('/jobs')}>Browse Jobs</button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 2. New Mentors */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.titleIcon}><Users size={20} /></div>
+            <h2>Recommended Mentors</h2>
+            <button onClick={() => navigate('/mentors')}>View All</button>
+          </div>
+          <div className={styles.mentorGrid}>
+            {data.newMentors.length > 0 ? data.newMentors.map(mentor => (
+              <div key={mentor._id} className={styles.mentorMiniCard} onClick={() => navigate(`/member/${mentor._id}`)}>
+                <img src={mentor.photoUrl || "/default-avatar.png"} alt={mentor.name} onError={(e) => e.target.src = "/members/AnonymousImage.jpg"} />
+                <h4>{mentor.name}</h4>
+                <p>{mentor.designation || 'Mentor'}</p>
+              </div>
+            )) : (
+              <div className={styles.empty}>
+                <Users size={40} />
+                <p>Stay tuned for new mentors</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 3. Recent Job Posts */}
+        <section className={`${styles.section} ${styles.fullWidth}`}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.titleIcon}><FileText size={20} /></div>
+            <h2>Latest Job Opportunities</h2>
+            <button onClick={() => navigate('/jobs')}>View All Jobs</button>
+          </div>
+          <div className={styles.jobTable}>
+            {data.recentJobs.length > 0 ? data.recentJobs.map(job => (
+              <div key={job._id} className={styles.jobRow} onClick={() => navigate(`/jobs/${job._id}`)}>
+                <div className={styles.jobMain}>
+                  <div className={styles.jobIcon}><Building size={16} /></div>
+                  <div className={styles.jobInfo}>
+                    <h4>{job.title}</h4>
+                    <p>{job.companyName} • {job.location}</p>
+                  </div>
+                </div>
+                <div className={styles.jobMeta}>
+                  <span><GraduationCap size={14} /> {job.education}</span>
+                  <span><MapPin size={14} /> {job.employmentType}</span>
+                </div>
+                <ChevronRight size={18} className={styles.arrow} />
+              </div>
+            )) : (
+              <p className={styles.emptyText}>No jobs posted recently.</p>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
