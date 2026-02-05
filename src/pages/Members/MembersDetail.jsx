@@ -425,8 +425,8 @@ import { useData } from '../../context/DataContext';
 import { parseDOB } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import {
-    Users, FileText, Briefcase, Building, Award, 
-    Target, User, Languages, Home, Smartphone, 
+    Users, FileText, Briefcase, Building, Award,
+    Target, User, Languages, Home, Smartphone,
     Mail, Calendar, MapPin, Camera, ExternalLink,
     GraduationCap, DollarSign, Globe, Heart,
     Award as CertificateIcon, BookOpen, Clock,
@@ -451,7 +451,7 @@ function MembersDetail() {
     const [initialTab, setInitialTab] = useState("basic");
     const { user } = useAuth();
 
-    const BACKEND_URL = "http://localhost:5000";
+    const BACKEND_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         fetchMember();
@@ -568,9 +568,9 @@ function MembersDetail() {
         let fileId = null;
         let match = url.match(/[?&]id=([^&]+)/);
         if (match) fileId = match[1];
-        if (!fileId) { 
-            match = url.match(/\/d\/([^/]+)/); 
-            if (match) fileId = match[1]; 
+        if (!fileId) {
+            match = url.match(/\/d\/([^/]+)/);
+            if (match) fileId = match[1];
         }
         if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
         if (url.startsWith("http")) return url;
@@ -650,7 +650,7 @@ function MembersDetail() {
                     <div className={styles.mainInfo}>
                         <div className={styles.nameRow}>
                             <h1>{member.name}</h1>
-                            <span 
+                            <span
                                 className={styles.memberTypeBadge}
                                 style={{ backgroundColor: getMemberTypeColor(member.memberType) }}
                             >
@@ -715,7 +715,7 @@ function MembersDetail() {
                                 <strong>Address:</strong> {member.address || "Not provided"}
                             </div>
                         </div>
-                        <button 
+                        <button
                             className={styles.closeContact}
                             onClick={() => setShowContactInfo(false)}
                         >
@@ -727,25 +727,25 @@ function MembersDetail() {
 
             {/* Navigation Tabs */}
             <div className={styles.tabNavigation}>
-                <button 
+                <button
                     className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
                     onClick={() => setActiveTab('overview')}
                 >
                     Overview
                 </button>
-                <button 
+                <button
                     className={`${styles.tab} ${activeTab === 'experience' ? styles.active : ''}`}
                     onClick={() => setActiveTab('experience')}
                 >
                     Experience
                 </button>
-                <button 
+                <button
                     className={`${styles.tab} ${activeTab === 'education' ? styles.active : ''}`}
                     onClick={() => setActiveTab('education')}
                 >
                     Education
                 </button>
-                <button 
+                <button
                     className={`${styles.tab} ${activeTab === 'skills' ? styles.active : ''}`}
                     onClick={() => setActiveTab('skills')}
                 >
@@ -980,9 +980,9 @@ function MembersDetail() {
                                         </p>
                                     </div>
                                     {cert.link && (
-                                        <a 
-                                            href={cert.link} 
-                                            target="_blank" 
+                                        <a
+                                            href={cert.link}
+                                            target="_blank"
                                             rel="noopener noreferrer"
                                             className={styles.certLink}
                                         >
@@ -1007,16 +1007,16 @@ function MembersDetail() {
                         </div>
                         {member.resumeLink || member.resume ? (
                             <div className={styles.resumeActions}>
-                                <a 
-                                    href={getFileUrl(member.resumeLink || member.resume)} 
-                                    target="_blank" 
+                                <a
+                                    href={getFileUrl(member.resumeLink || member.resume)}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className={styles.resumeBtn}
                                 >
                                     <FileText size={18} /> View Resume
                                 </a>
-                                <a 
-                                    href={getFileUrl(member.resumeLink || member.resume)} 
+                                <a
+                                    href={getFileUrl(member.resumeLink || member.resume)}
                                     download
                                     className={styles.downloadBtn}
                                 >
@@ -1028,7 +1028,7 @@ function MembersDetail() {
                                 <FileText size={32} />
                                 <p>No resume uploaded</p>
                                 {(user?.role === 'Admin' || String(user?.memberId) === String(member._id) || id === 'me') && (
-                                    <button 
+                                    <button
                                         className={styles.uploadResume}
                                         onClick={() => handleEdit(member, 'documents')}
                                     >

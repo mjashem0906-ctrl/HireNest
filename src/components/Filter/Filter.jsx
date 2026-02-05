@@ -92,7 +92,6 @@ function Filter({ fields = [], onApplyFilters, initialValues = {} }) {
       />
     </span>
   )}
-  
 
   {field.type === "finalNumber" && (
     <span>

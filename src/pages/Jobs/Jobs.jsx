@@ -32,7 +32,7 @@
 //       email: 'user@gmail.com',
 //       picture: 'https://via.placeholder.com/40'
 //     };
-    
+
 //     if (onLoginSuccess) {
 //       onLoginSuccess(mockUser);
 //     }
@@ -75,15 +75,15 @@
 
 //   const handleClick = (e) => {
 //     e.stopPropagation();
-    
+
 //     if (!user) {
 //       // Show login prompt
 //       setShowLoginPrompt(true);
 //       return;
 //     }
-    
+
 //     if (isApplied) return;
-    
+
 //     onApplyClick(e, job);
 //   };
 
@@ -119,7 +119,7 @@
 //       >
 //         {loadingState.applying ? "Applying..." : "Apply"}
 //       </button>
-      
+
 //       {showLoginPrompt && (
 //         <div style={{
 //           position: 'absolute',
@@ -144,11 +144,11 @@
 //               <X size={16} />
 //             </button>
 //           </div>
-          
+
 //           <p style={{ marginBottom: '20px', fontSize: '14px', color: '#4b5563' }}>
 //             Please login to apply for this position.
 //           </p>
-          
+
 //           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 //             <GoogleLoginButton 
 //               onLoginSuccess={() => {
@@ -156,7 +156,7 @@
 //                 onApplyClick({ stopPropagation: () => {} }, job);
 //               }}
 //             />
-            
+
 //             <button
 //               style={{
 //                 padding: '10px 20px',
@@ -812,12 +812,12 @@
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
-    
+
 //     if (!user) {
 //       setShowGoogleLogin(true);
 //       return;
 //     }
-    
+
 //     if (!resumeFile) {
 //       alert('Please select a resume file');
 //       return;
@@ -1121,15 +1121,15 @@
 //         picture: 'https://via.placeholder.com/40',
 //         provider: 'google'
 //       };
-      
+
 //       setGoogleUser(mockGoogleUser);
-      
+
 //       // Here you would typically:
 //       // 1. Send Google token to backend for verification
 //       // 2. Get JWT token from your backend
 //       // 3. Store the token
 //       // 4. Update user context
-      
+
 //       if (callback) callback();
 //     } catch (error) {
 //       console.error('Google login failed:', error);
@@ -1200,7 +1200,7 @@
 //     } else {
 //       document.body.classList.remove('date-picker-open');
 //     }
-    
+
 //     return () => {
 //       document.body.classList.remove('date-picker-open');
 //     };
@@ -1211,13 +1211,13 @@
 //       if (datePickerOpen.startDate || datePickerOpen.endDate) {
 //         const datePickerElements = document.querySelectorAll(`.${styles.datePickerPopup}, .${styles.dateInput}`);
 //         let isClickInside = false;
-        
+
 //         datePickerElements.forEach(element => {
 //           if (element && element.contains(event.target)) {
 //             isClickInside = true;
 //           }
 //         });
-        
+
 //         if (!isClickInside) {
 //           setDatePickerOpen({ startDate: false, endDate: false });
 //         }
@@ -2605,7 +2605,7 @@
 //                       }
 //                       <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.startDate ? styles.open : ''}`} />
 //                     </div>
-                    
+
 //                     {datePickerOpen.startDate && (
 //                       <>
 //                         <div 
@@ -2657,7 +2657,7 @@
 //                         </div>
 //                       </>
 //                     )}
-                    
+
 //                     {pendingFilters.startDate !== undefined && pendingFilters.startDate !== filters.startDate && (
 //                       <button 
 //                         className={styles.resetFilterButton}
@@ -2699,7 +2699,7 @@
 //                       }
 //                       <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.endDate ? styles.open : ''}`} />
 //                     </div>
-                    
+
 //                     {datePickerOpen.endDate && (
 //                       <>
 //                         <div 
@@ -2751,7 +2751,7 @@
 //                         </div>
 //                       </>
 //                     )}
-                    
+
 //                     {pendingFilters.endDate !== undefined && pendingFilters.endDate !== filters.endDate && (
 //                       <button 
 //                         className={styles.resetFilterButton}
@@ -3206,11 +3206,11 @@
 //                 <X size={24} />
 //               </button>
 //             </div>
-            
+
 //             <p style={{ marginBottom: '30px', textAlign: 'center', color: '#4b5563' }}>
 //               Please login to apply for this position
 //             </p>
-            
+
 //             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
 //               <GoogleLoginButton 
 //                 onLoginSuccess={() => {
@@ -3220,7 +3220,7 @@
 //                   }
 //                 }}
 //               />
-              
+
 //               <button
 //                 style={{
 //                   padding: '12px 20px',
@@ -3266,9 +3266,9 @@ import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import axios from 'axios';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import styles from './Jobs.module.scss';
-import { 
-  BriefcaseBusiness, NotebookPen, Plus, Search, CheckCircle, XCircle, Clock, 
-  Loader, Trash2, Pencil, X, FileText, User, Edit, Check, ChevronLeft, 
+import {
+  BriefcaseBusiness, NotebookPen, Plus, Search, CheckCircle, XCircle, Clock,
+  Loader, Trash2, Pencil, X, FileText, User, Edit, Check, ChevronLeft,
   ChevronRight, Eye, EyeOff, ChevronDown, ChevronUp, LogIn, MapPin, DollarSign,
   GraduationCap, Calendar, Users, Filter, Award, Target, Building,
   Sparkles, TrendingUp, BookOpen, Zap, Star, ExternalLink
@@ -3294,22 +3294,22 @@ const GoogleLoginButton = ({ onLoginSuccess, onLoginError }) => {
       email: 'user@gmail.com',
       picture: 'https://via.placeholder.com/40'
     };
-    
+
     if (onLoginSuccess) {
       onLoginSuccess(mockUser);
     }
   };
 
   return (
-    <button 
+    <button
       onClick={handleGoogleLogin}
       className={styles.googleLoginButton}
     >
       <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+        <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
       </svg>
       Sign in with Google
     </button>
@@ -3322,14 +3322,14 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
 
   const handleClick = (e) => {
     e.stopPropagation();
-    
+
     if (!user) {
       setShowLoginPrompt(true);
       return;
     }
-    
+
     if (isApplied) return;
-    
+
     onApplyClick(e, job);
   };
 
@@ -3337,7 +3337,7 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
     if (onGoogleLogin) {
       onGoogleLogin(() => {
         setShowLoginPrompt(false);
-        onApplyClick({ stopPropagation: () => {} }, job);
+        onApplyClick({ stopPropagation: () => { } }, job);
       });
     }
   };
@@ -3365,12 +3365,12 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
       >
         <Zap size={16} /> {loadingState.applying ? "Applying..." : "Apply Now"}
       </button>
-      
+
       {showLoginPrompt && (
         <div className={styles.loginPrompt}>
           <div className={styles.loginPromptHeader}>
             <h4>Login Required</h4>
-            <button 
+            <button
               onClick={() => setShowLoginPrompt(false)}
               className={styles.closeLoginPrompt}
               aria-label="Close"
@@ -3378,17 +3378,17 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
               <X size={16} />
             </button>
           </div>
-          
+
           <p>Please login to apply for this position</p>
-          
+
           <div className={styles.loginOptions}>
-            <GoogleLoginButton 
+            <GoogleLoginButton
               onLoginSuccess={() => {
                 setShowLoginPrompt(false);
-                onApplyClick({ stopPropagation: () => {} }, job);
+                onApplyClick({ stopPropagation: () => { } }, job);
               }}
             />
-            
+
             <button
               className={styles.cancelLogin}
               onClick={() => setShowLoginPrompt(false)}
@@ -3548,39 +3548,39 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                     <tr>
                       <td>{startIndex + index + 1}</td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.title} 
+                        {isEditing ?
+                          <input
+                            value={job.title}
                             onChange={(e) => handleFieldChange(index, 'title', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.title
                         }
                       </td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.companyName} 
+                        {isEditing ?
+                          <input
+                            value={job.companyName}
                             onChange={(e) => handleFieldChange(index, 'companyName', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.companyName
                         }
                       </td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.role || ''} 
+                        {isEditing ?
+                          <input
+                            value={job.role || ''}
                             onChange={(e) => handleFieldChange(index, 'role', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.role || 'N/A'
                         }
                       </td>
                       <td>
                         {isEditing ? (
-                          <select 
-                            value={job.employmentType} 
+                          <select
+                            value={job.employmentType}
                             onChange={(e) => handleFieldChange(index, 'employmentType', e.target.value)}
                             className={styles.bulkSelect}
                           >
@@ -3589,32 +3589,32 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         ) : job.employmentType}
                       </td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.location} 
+                        {isEditing ?
+                          <input
+                            value={job.location}
                             onChange={(e) => handleFieldChange(index, 'location', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.location
                         }
                       </td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.experience} 
+                        {isEditing ?
+                          <input
+                            value={job.experience}
                             onChange={(e) => handleFieldChange(index, 'experience', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.experience
                         }
                       </td>
                       <td>
-                        {isEditing ? 
-                          <input 
-                            value={job.salary} 
+                        {isEditing ?
+                          <input
+                            value={job.salary}
                             onChange={(e) => handleFieldChange(index, 'salary', e.target.value)}
                             className={styles.bulkInput}
-                          /> : 
+                          /> :
                           job.salary
                         }
                       </td>
@@ -3642,7 +3642,7 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                             )}
                           </div>
                           <button onClick={() => toggleRowExpansion(index)} className={styles.bulkExpandBtn}>
-                            {isExpanded ? <EyeOff size={12} /> : <Eye size={12} />} 
+                            {isExpanded ? <EyeOff size={12} /> : <Eye size={12} />}
                             {isExpanded ? 'Show Less' : 'Show More'}
                           </button>
                         </div>
@@ -3654,42 +3654,42 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                           <div className={styles.bulkExpandedContent}>
                             <div className={styles.bulkFieldGroup}>
                               <label>Education</label>
-                              {isEditing ? 
-                                <input 
-                                  value={job.education || ''} 
+                              {isEditing ?
+                                <input
+                                  value={job.education || ''}
                                   onChange={(e) => handleFieldChange(index, 'education', e.target.value)}
                                   className={styles.bulkInput}
-                                /> : 
+                                /> :
                                 <div>{job.education || 'N/A'}</div>
                               }
                             </div>
                             <div className={styles.bulkFieldGroup}>
                               <label>Passed Out Year</label>
-                              {isEditing ? 
-                                <input 
-                                  value={job.passedOutYear || ''} 
+                              {isEditing ?
+                                <input
+                                  value={job.passedOutYear || ''}
                                   onChange={(e) => handleFieldChange(index, 'passedOutYear', e.target.value)}
                                   className={styles.bulkInput}
-                                /> : 
+                                /> :
                                 <div>{job.passedOutYear || 'N/A'}</div>
                               }
                             </div>
                             <div className={styles.bulkFieldGroup}>
                               <label>Key Skills</label>
-                              {isEditing ? 
-                                <input 
-                                  value={job.keySkills || ''} 
+                              {isEditing ?
+                                <input
+                                  value={job.keySkills || ''}
                                   onChange={(e) => handleFieldChange(index, 'keySkills', e.target.value)}
                                   className={styles.bulkInput}
-                                /> : 
+                                /> :
                                 <div>{job.keySkills || 'N/A'}</div>
                               }
                             </div>
                             <div className={styles.bulkFieldGroup}>
                               <label>Refereed Person (ID)</label>
                               {isEditing ? (
-                                <select 
-                                  value={job.refereedBy || ''} 
+                                <select
+                                  value={job.refereedBy || ''}
                                   onChange={(e) => handleFieldChange(index, 'refereedBy', e.target.value)}
                                   className={styles.bulkSelect}
                                 >
@@ -3700,18 +3700,18 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                                     </option>
                                   ))}
                                 </select>
-                              ) : 
+                              ) :
                                 <div>{job.refereedBy ? (refereesList?.find(r => r._id === job.refereedBy)?.name || 'Referee Selected') : 'None'}</div>
                               }
                             </div>
                             <div className={styles.bulkFieldGroup}>
                               <label>Description</label>
-                              {isEditing ? 
-                                <textarea 
-                                  value={job.description || ''} 
+                              {isEditing ?
+                                <textarea
+                                  value={job.description || ''}
                                   onChange={(e) => handleFieldChange(index, 'description', e.target.value)}
                                   className={styles.bulkTextarea}
-                                /> : 
+                                /> :
                                 <div className={styles.bulkDescription}>{job.description || 'N/A'}</div>
                               }
                             </div>
@@ -3727,15 +3727,15 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
         </div>
 
         <div className={styles.bulkPagination}>
-          <button 
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))} 
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
             disabled={currentPage === 0}
             className={`${styles.bulkPageButton} ${currentPage === 0 ? styles.disabled : ''}`}
           >
             <ChevronLeft size={16} /> Previous
           </button>
-          <button 
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))} 
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
             disabled={currentPage === totalPages - 1}
             className={`${styles.bulkPageButton} ${currentPage === totalPages - 1 ? styles.disabled : ''}`}
           >
@@ -3970,24 +3970,24 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label>
                 <Building size={14} /> Company Name
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={companyName} 
-                onChange={(e) => setCompanyName(e.target.value)} 
-                placeholder="e.g. Google" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="e.g. Google"
               />
             </div>
             <div className={styles.formGroup}>
               <label>
                 <Target size={14} /> Job Role
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={role} 
-                onChange={(e) => setRole(e.target.value)} 
-                placeholder="e.g. System Admin" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                placeholder="e.g. System Admin"
               />
             </div>
           </div>
@@ -3997,9 +3997,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label>
                 <Calendar size={14} /> Employment Type
               </label>
-              <select 
-                className={styles.formSelect} 
-                value={employmentType} 
+              <select
+                className={styles.formSelect}
+                value={employmentType}
                 onChange={(e) => setEmploymentType(e.target.value)}
               >
                 {EMPLOYMENT_TYPES.map(type => (
@@ -4011,12 +4011,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label>
                 <MapPin size={14} /> Location
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={location} 
-                onChange={(e) => setLocation(e.target.value)} 
-                placeholder="e.g. Bangalore" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Bangalore"
               />
             </div>
           </div>
@@ -4026,24 +4026,24 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label>
                 <TrendingUp size={14} /> Experience
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={experience} 
-                onChange={(e) => setExperience(e.target.value)} 
-                placeholder="e.g. 2-5 Years" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                placeholder="e.g. 2-5 Years"
               />
             </div>
             <div className={styles.formGroup}>
               <label>
                 <DollarSign size={14} /> Salary
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={salary} 
-                onChange={(e) => setSalary(e.target.value)} 
-                placeholder="e.g. 4-6 LPA" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={salary}
+                onChange={(e) => setSalary(e.target.value)}
+                placeholder="e.g. 4-6 LPA"
               />
             </div>
           </div>
@@ -4053,24 +4053,24 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label>
                 <GraduationCap size={14} /> Education
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={education} 
-                onChange={(e) => setEducation(e.target.value)} 
-                placeholder="e.g. B.E / B.Tech" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={education}
+                onChange={(e) => setEducation(e.target.value)}
+                placeholder="e.g. B.E / B.Tech"
               />
             </div>
             <div className={styles.formGroup}>
               <label>
                 <Award size={14} /> Passout Year
               </label>
-              <input 
-                className={styles.formInput} 
-                type="text" 
-                value={passedOutYear} 
-                onChange={(e) => setPassedOutYear(e.target.value)} 
-                placeholder="e.g. 2023" 
+              <input
+                className={styles.formInput}
+                type="text"
+                value={passedOutYear}
+                onChange={(e) => setPassedOutYear(e.target.value)}
+                placeholder="e.g. 2023"
               />
             </div>
           </div>
@@ -4101,12 +4101,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             <label>
               <Sparkles size={14} /> Key Skills
             </label>
-            <input 
-              className={styles.formInput} 
-              type="text" 
-              value={keySkills} 
-              onChange={(e) => setKeySkills(e.target.value)} 
-              placeholder="e.g. React, Node.js, SQL" 
+            <input
+              className={styles.formInput}
+              type="text"
+              value={keySkills}
+              onChange={(e) => setKeySkills(e.target.value)}
+              placeholder="e.g. React, Node.js, SQL"
             />
           </div>
 
@@ -4114,12 +4114,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             <label>
               <FileText size={14} /> Description <span className={styles.required}>*</span>
             </label>
-            <textarea 
-              className={styles.formTextarea} 
-              value={description} 
-              onChange={(e) => setDescription(e.target.value)} 
-              placeholder="Describe the job role..." 
-              required 
+            <textarea
+              className={styles.formTextarea}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the job role..."
+              required
             />
           </div>
 
@@ -4199,12 +4199,12 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!user) {
       setShowGoogleLogin(true);
       return;
     }
-    
+
     if (!resumeFile) {
       alert('Please select a resume file');
       return;
@@ -4253,7 +4253,7 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
           <div className={styles.resumeLoginSection}>
             <p>Please login to apply for this position</p>
             <div className={styles.resumeLoginOptions}>
-              <GoogleLoginButton 
+              <GoogleLoginButton
                 onLoginSuccess={() => {
                   setShowGoogleLogin(false);
                 }}
@@ -4340,12 +4340,11 @@ const EnhancedStatusPipeline = ({ status }) => {
   return (
     <div className={styles.statusPipeline}>
       {steps.map((step, index) => (
-        <div 
-          key={step.key} 
-          className={`${styles.statusStep} ${
-            index < currentIndex ? styles.completed :
-            index === currentIndex ? styles.active : ''
-          }`}
+        <div
+          key={step.key}
+          className={`${styles.statusStep} ${index < currentIndex ? styles.completed :
+              index === currentIndex ? styles.active : ''
+            }`}
         >
           <div className={styles.stepIcon}>
             <span>{step.icon}</span>
@@ -4428,13 +4427,13 @@ function Jobs() {
   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
 
   // Backend URL for Local file serving
-  const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   // Constants
   const JOBS_PER_PAGE = 10;
 
   // Calculate active filter count
-  const activeFilterCount = Object.keys(filters).filter(key => 
+  const activeFilterCount = Object.keys(filters).filter(key =>
     filters[key] && filters[key] !== "" && filters[key] !== null
   ).length;
 
@@ -4448,9 +4447,9 @@ function Jobs() {
         picture: 'https://via.placeholder.com/40',
         provider: 'google'
       };
-      
+
       setGoogleUser(mockGoogleUser);
-      
+
       if (callback) callback();
     } catch (error) {
       console.error('Google login failed:', error);
@@ -4521,7 +4520,7 @@ function Jobs() {
     } else {
       document.body.classList.remove('date-picker-open');
     }
-    
+
     return () => {
       document.body.classList.remove('date-picker-open');
     };
@@ -5250,9 +5249,9 @@ function Jobs() {
   };
 
   const hasActiveFilter = (fieldName) => {
-    return filters[fieldName] !== undefined && 
-           filters[fieldName] !== "" && 
-           filters[fieldName] !== null;
+    return filters[fieldName] !== undefined &&
+      filters[fieldName] !== "" &&
+      filters[fieldName] !== null;
   };
 
   const customSelectStyles = {
@@ -5351,9 +5350,9 @@ function Jobs() {
         className={classNames(styles.headerWrapper, {
           [styles.sidebarCollapsed]: sidebarCollapsed
         })}
-        style={{ 
+        style={{
           left: sidebarWidth + 'px',
-          width: `calc(100% - ${sidebarWidth}px)` 
+          width: `calc(100% - ${sidebarWidth}px)`
         }}
       >
         <div className={styles.headerContent}>
@@ -5429,7 +5428,7 @@ function Jobs() {
               <h3 className={styles.filterTitle}>
                 <Filter size={18} /> Advanced Filters
               </h3>
-              <button 
+              <button
                 onClick={() => setFiltersExpanded(!filtersExpanded)}
                 className={styles.filterToggleButton}
                 aria-label={filtersExpanded ? "Minimize filters" : "Maximize filters"}
@@ -5439,14 +5438,14 @@ function Jobs() {
                 {filtersExpanded ? 'Minimize' : 'Expand'}
               </button>
             </div>
-            
+
             {!filtersExpanded && activeFilterCount > 0 && (
               <div className={styles.filterSummary}>
                 <span>Active Filters:</span>
                 <span className={styles.activeFilterCount}>{activeFilterCount} active</span>
               </div>
             )}
-            
+
             {filtersExpanded && (
               <>
                 <div className={styles.filterScrollContainer}>
@@ -5465,9 +5464,9 @@ function Jobs() {
                               label: title
                             }))
                           ]}
-                          value={getDisplayValue('title') ? { 
-                            value: getDisplayValue('title'), 
-                            label: getDisplayValue('title') 
+                          value={getDisplayValue('title') ? {
+                            value: getDisplayValue('title'),
+                            label: getDisplayValue('title')
                           } : { value: '', label: 'All Titles' }}
                           onChange={(selected) => handleFilterChange('title', selected?.value || "")}
                           isSearchable
@@ -5479,7 +5478,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.title !== undefined && pendingFilters.title !== filters.title && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('title')}
                             title="Reset to previous value"
@@ -5505,9 +5504,9 @@ function Jobs() {
                               label: company
                             }))
                           ]}
-                          value={getDisplayValue('companyName') ? { 
-                            value: getDisplayValue('companyName'), 
-                            label: getDisplayValue('companyName') 
+                          value={getDisplayValue('companyName') ? {
+                            value: getDisplayValue('companyName'),
+                            label: getDisplayValue('companyName')
                           } : { value: '', label: 'All Companies' }}
                           onChange={(selected) => handleFilterChange('companyName', selected?.value || "")}
                           isSearchable
@@ -5519,7 +5518,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.companyName !== undefined && pendingFilters.companyName !== filters.companyName && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('companyName')}
                             title="Reset to previous value"
@@ -5545,9 +5544,9 @@ function Jobs() {
                               label: role
                             }))
                           ]}
-                          value={getDisplayValue('role') ? { 
-                            value: getDisplayValue('role'), 
-                            label: getDisplayValue('role') 
+                          value={getDisplayValue('role') ? {
+                            value: getDisplayValue('role'),
+                            label: getDisplayValue('role')
                           } : { value: '', label: 'All Roles' }}
                           onChange={(selected) => handleFilterChange('role', selected?.value || "")}
                           isSearchable
@@ -5559,7 +5558,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.role !== undefined && pendingFilters.role !== filters.role && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('role')}
                             title="Reset to previous value"
@@ -5585,9 +5584,9 @@ function Jobs() {
                               label: type
                             }))
                           ]}
-                          value={getDisplayValue('employmentType') ? { 
-                            value: getDisplayValue('employmentType'), 
-                            label: getDisplayValue('employmentType') 
+                          value={getDisplayValue('employmentType') ? {
+                            value: getDisplayValue('employmentType'),
+                            label: getDisplayValue('employmentType')
                           } : { value: '', label: 'All Types' }}
                           onChange={(selected) => handleFilterChange('employmentType', selected?.value || "")}
                           isSearchable
@@ -5599,7 +5598,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.employmentType !== undefined && pendingFilters.employmentType !== filters.employmentType && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('employmentType')}
                             title="Reset to previous value"
@@ -5625,9 +5624,9 @@ function Jobs() {
                               label: location
                             }))
                           ]}
-                          value={getDisplayValue('location') ? { 
-                            value: getDisplayValue('location'), 
-                            label: getDisplayValue('location') 
+                          value={getDisplayValue('location') ? {
+                            value: getDisplayValue('location'),
+                            label: getDisplayValue('location')
                           } : { value: '', label: 'All Locations' }}
                           onChange={(selected) => handleFilterChange('location', selected?.value || "")}
                           isSearchable
@@ -5639,7 +5638,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.location !== undefined && pendingFilters.location !== filters.location && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('location')}
                             title="Reset to previous value"
@@ -5665,9 +5664,9 @@ function Jobs() {
                               label: exp
                             }))
                           ]}
-                          value={getDisplayValue('experience') ? { 
-                            value: getDisplayValue('experience'), 
-                            label: getDisplayValue('experience') 
+                          value={getDisplayValue('experience') ? {
+                            value: getDisplayValue('experience'),
+                            label: getDisplayValue('experience')
                           } : { value: '', label: 'All Experience' }}
                           onChange={(selected) => handleFilterChange('experience', selected?.value || "")}
                           isSearchable
@@ -5679,7 +5678,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.experience !== undefined && pendingFilters.experience !== filters.experience && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('experience')}
                             title="Reset to previous value"
@@ -5705,9 +5704,9 @@ function Jobs() {
                               label: salary
                             }))
                           ]}
-                          value={getDisplayValue('salary') ? { 
-                            value: getDisplayValue('salary'), 
-                            label: getDisplayValue('salary') 
+                          value={getDisplayValue('salary') ? {
+                            value: getDisplayValue('salary'),
+                            label: getDisplayValue('salary')
                           } : { value: '', label: 'All Salaries' }}
                           onChange={(selected) => handleFilterChange('salary', selected?.value || "")}
                           isSearchable
@@ -5719,7 +5718,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.salary !== undefined && pendingFilters.salary !== filters.salary && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('salary')}
                             title="Reset to previous value"
@@ -5745,9 +5744,9 @@ function Jobs() {
                               label: edu
                             }))
                           ]}
-                          value={getDisplayValue('education') ? { 
-                            value: getDisplayValue('education'), 
-                            label: getDisplayValue('education') 
+                          value={getDisplayValue('education') ? {
+                            value: getDisplayValue('education'),
+                            label: getDisplayValue('education')
                           } : { value: '', label: 'All Education' }}
                           onChange={(selected) => handleFilterChange('education', selected?.value || "")}
                           isSearchable
@@ -5759,7 +5758,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.education !== undefined && pendingFilters.education !== filters.education && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('education')}
                             title="Reset to previous value"
@@ -5785,9 +5784,9 @@ function Jobs() {
                               label: year
                             }))
                           ]}
-                          value={getDisplayValue('passedOutYear') ? { 
-                            value: getDisplayValue('passedOutYear'), 
-                            label: getDisplayValue('passedOutYear') 
+                          value={getDisplayValue('passedOutYear') ? {
+                            value: getDisplayValue('passedOutYear'),
+                            label: getDisplayValue('passedOutYear')
                           } : { value: '', label: 'All Years' }}
                           onChange={(selected) => handleFilterChange('passedOutYear', selected?.value || "")}
                           isSearchable
@@ -5799,7 +5798,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.passedOutYear !== undefined && pendingFilters.passedOutYear !== filters.passedOutYear && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('passedOutYear')}
                             title="Reset to previous value"
@@ -5825,9 +5824,9 @@ function Jobs() {
                               label: skill
                             }))
                           ]}
-                          value={getDisplayValue('keySkills') ? { 
-                            value: getDisplayValue('keySkills'), 
-                            label: getDisplayValue('keySkills') 
+                          value={getDisplayValue('keySkills') ? {
+                            value: getDisplayValue('keySkills'),
+                            label: getDisplayValue('keySkills')
                           } : { value: '', label: 'All Skills' }}
                           onChange={(selected) => handleFilterChange('keySkills', selected?.value || "")}
                           isSearchable
@@ -5839,7 +5838,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.keySkills !== undefined && pendingFilters.keySkills !== filters.keySkills && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('keySkills')}
                             title="Reset to previous value"
@@ -5865,9 +5864,9 @@ function Jobs() {
                               label: referee.name || referee.email || "Unknown"
                             }))
                           ]}
-                          value={getDisplayValue('refereedBy') ? { 
-                            value: getDisplayValue('refereedBy'), 
-                            label: getDisplayValue('refereedBy') 
+                          value={getDisplayValue('refereedBy') ? {
+                            value: getDisplayValue('refereedBy'),
+                            label: getDisplayValue('refereedBy')
                           } : { value: '', label: 'All Referees' }}
                           onChange={(selected) => handleFilterChange('refereedBy', selected?.value || "")}
                           isSearchable
@@ -5879,7 +5878,7 @@ function Jobs() {
                           menuPosition="fixed"
                         />
                         {pendingFilters.refereedBy !== undefined && pendingFilters.refereedBy !== filters.refereedBy && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('refereedBy')}
                             title="Reset to previous value"
@@ -5905,7 +5904,7 @@ function Jobs() {
                           onChange={(e) => handleFilterChange('description', e.target.value)}
                         />
                         {pendingFilters.description !== undefined && pendingFilters.description !== filters.description && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('description')}
                             title="Reset to previous value"
@@ -5923,12 +5922,12 @@ function Jobs() {
                         📅 POSTED FROM
                       </label>
                       <div className={styles.dateInputContainer}>
-                        <div 
+                        <div
                           className={`${styles.dateInput} ${getDisplayValue('startDate') ? styles.hasValue : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDatePickerOpen(prev => ({ 
-                              ...prev, 
+                            setDatePickerOpen(prev => ({
+                              ...prev,
                               startDate: !prev.startDate,
                               endDate: false
                             }));
@@ -5936,16 +5935,16 @@ function Jobs() {
                           role="button"
                           tabIndex={0}
                         >
-                          {getDisplayValue('startDate') ? 
-                            formatDateForDisplay(getDisplayValue('startDate')) : 
+                          {getDisplayValue('startDate') ?
+                            formatDateForDisplay(getDisplayValue('startDate')) :
                             'Select date...'
                           }
                           <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.startDate ? styles.open : ''}`} />
                         </div>
-                        
+
                         {datePickerOpen.startDate && (
                           <>
-                            <div 
+                            <div
                               className={styles.datePickerBackdrop}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -5956,8 +5955,8 @@ function Jobs() {
                               <input
                                 type="date"
                                 className={styles.datePickerInput}
-                                value={getDisplayValue('startDate') ? 
-                                  new Date(getDisplayValue('startDate')).toISOString().split('T')[0] : 
+                                value={getDisplayValue('startDate') ?
+                                  new Date(getDisplayValue('startDate')).toISOString().split('T')[0] :
                                   ''
                                 }
                                 onChange={(e) => {
@@ -5969,7 +5968,7 @@ function Jobs() {
                                 autoFocus
                               />
                               <div className={styles.datePickerActions}>
-                                <button 
+                                <button
                                   className={styles.datePickerButton}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -5979,7 +5978,7 @@ function Jobs() {
                                 >
                                   Clear
                                 </button>
-                                <button 
+                                <button
                                   className={styles.datePickerButton}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -5993,9 +5992,9 @@ function Jobs() {
                             </div>
                           </>
                         )}
-                        
+
                         {pendingFilters.startDate !== undefined && pendingFilters.startDate !== filters.startDate && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('startDate')}
                             title="Reset to previous value"
@@ -6013,12 +6012,12 @@ function Jobs() {
                         📅 POSTED TO
                       </label>
                       <div className={styles.dateInputContainer}>
-                        <div 
+                        <div
                           className={`${styles.dateInput} ${getDisplayValue('endDate') ? styles.hasValue : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDatePickerOpen(prev => ({ 
-                              ...prev, 
+                            setDatePickerOpen(prev => ({
+                              ...prev,
                               endDate: !prev.endDate,
                               startDate: false
                             }));
@@ -6026,16 +6025,16 @@ function Jobs() {
                           role="button"
                           tabIndex={0}
                         >
-                          {getDisplayValue('endDate') ? 
-                            formatDateForDisplay(getDisplayValue('endDate')) : 
+                          {getDisplayValue('endDate') ?
+                            formatDateForDisplay(getDisplayValue('endDate')) :
                             'Select date...'
                           }
                           <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.endDate ? styles.open : ''}`} />
                         </div>
-                        
+
                         {datePickerOpen.endDate && (
                           <>
-                            <div 
+                            <div
                               className={styles.datePickerBackdrop}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -6046,8 +6045,8 @@ function Jobs() {
                               <input
                                 type="date"
                                 className={styles.datePickerInput}
-                                value={getDisplayValue('endDate') ? 
-                                  new Date(getDisplayValue('endDate')).toISOString().split('T')[0] : 
+                                value={getDisplayValue('endDate') ?
+                                  new Date(getDisplayValue('endDate')).toISOString().split('T')[0] :
                                   ''
                                 }
                                 onChange={(e) => {
@@ -6059,7 +6058,7 @@ function Jobs() {
                                 autoFocus
                               />
                               <div className={styles.datePickerActions}>
-                                <button 
+                                <button
                                   className={styles.datePickerButton}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -6069,7 +6068,7 @@ function Jobs() {
                                 >
                                   Clear
                                 </button>
-                                <button 
+                                <button
                                   className={styles.datePickerButton}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -6083,9 +6082,9 @@ function Jobs() {
                             </div>
                           </>
                         )}
-                        
+
                         {pendingFilters.endDate !== undefined && pendingFilters.endDate !== filters.endDate && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('endDate')}
                             title="Reset to previous value"
@@ -6112,7 +6111,7 @@ function Jobs() {
                           onChange={(e) => handleFilterChange('initialNumber', e.target.value || '')}
                         />
                         {pendingFilters.initialNumber !== undefined && pendingFilters.initialNumber !== filters.initialNumber && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('initialNumber')}
                             title="Reset to previous value"
@@ -6139,7 +6138,7 @@ function Jobs() {
                           onChange={(e) => handleFilterChange('finalNumber', e.target.value || '')}
                         />
                         {pendingFilters.finalNumber !== undefined && pendingFilters.finalNumber !== filters.finalNumber && (
-                          <button 
+                          <button
                             className={styles.resetFilterButton}
                             onClick={() => resetFilter('finalNumber')}
                             title="Reset to previous value"
@@ -6156,14 +6155,14 @@ function Jobs() {
                 {/* Apply/Cancel Buttons for pending filters */}
                 {hasPendingChanges && (
                   <div className={styles.pendingActions}>
-                    <button 
+                    <button
                       className={styles.applyFiltersButton}
                       onClick={applyPendingFilters}
                       type="button"
                     >
                       Apply Filters
                     </button>
-                    <button 
+                    <button
                       className={styles.cancelFiltersButton}
                       onClick={cancelPendingFilters}
                       type="button"
@@ -6179,8 +6178,8 @@ function Jobs() {
                 {/* Clear All Filters Button */}
                 {(Object.keys(filters).some(key => filters[key] && filters[key] !== "") || hasPendingChanges) && (
                   <div className={styles.clearAllContainer}>
-                    <button 
-                      className={styles.clearAllButton} 
+                    <button
+                      className={styles.clearAllButton}
                       onClick={clearAllFilters}
                       title="Clear all filters"
                       type="button"
@@ -6196,8 +6195,8 @@ function Jobs() {
       </div>
 
       {/* Spacer with DYNAMIC height */}
-      <div 
-        className={styles.headerSpacer} 
+      <div
+        className={styles.headerSpacer}
         style={{ height: `${headerHeight}px` }}
       ></div>
 
@@ -6275,7 +6274,7 @@ function Jobs() {
                 <div className={styles.noResultsIcon}>🔍</div>
                 <h3>No jobs found</h3>
                 <p>Try adjusting your filters or search terms</p>
-                <button 
+                <button
                   onClick={clearAllFilters}
                   className={styles.clearFiltersButton}
                 >
@@ -6285,8 +6284,8 @@ function Jobs() {
             ) : (
               <div className={styles.jobsGrid}>
                 {paginatedJobs.map((request) => (
-                  <div 
-                    key={request?._id} 
+                  <div
+                    key={request?._id}
                     className={styles.jobCard}
                     onClick={() => handleClick(request)}
                   >
@@ -6344,8 +6343,8 @@ function Jobs() {
 
                     {request?.description && (
                       <p className={styles.jobCardDescription}>
-                        {request.description.length > 150 
-                          ? `${request.description.substring(0, 150)}...` 
+                        {request.description.length > 150
+                          ? `${request.description.substring(0, 150)}...`
                           : request.description}
                       </p>
                     )}
@@ -6354,7 +6353,7 @@ function Jobs() {
                       <div className={styles.jobCardTime}>
                         <Calendar size={12} />
                         <span>
-                          {request?.createdAt && !isNaN(new Date(request?.createdAt)) 
+                          {request?.createdAt && !isNaN(new Date(request?.createdAt))
                             ? `${new Date(request?.createdAt).toLocaleDateString()} • ${formatDistanceToNow(new Date(request?.createdAt), { addSuffix: true })}`
                             : 'Just Now'}
                         </span>
@@ -6431,17 +6430,17 @@ function Jobs() {
                     {user?.role === 'Admin' ? '📭' : '📋'}
                   </div>
                   <h3>
-                    {user?.role === 'Admin' 
-                      ? "No jobs posted yet" 
+                    {user?.role === 'Admin'
+                      ? "No jobs posted yet"
                       : "You haven't applied to any jobs yet"}
                   </h3>
                   <p>
-                    {user?.role === 'Admin' 
-                      ? "Create your first job post to get started" 
+                    {user?.role === 'Admin'
+                      ? "Create your first job post to get started"
                       : "Browse available jobs and apply to get started"}
                   </p>
                   {user?.role === 'Admin' && (
-                    <button 
+                    <button
                       onClick={() => { setEditingJob(null); setShowProvidedModal(true); }}
                       className={styles.createJobButton}
                     >
@@ -6456,12 +6455,12 @@ function Jobs() {
                     const pipelineStatus = getPipelineStatus(myStatus);
 
                     return (
-                      <div 
-                        key={request._id} 
+                      <div
+                        key={request._id}
                         className={styles.myJobCard}
                       >
                         <div className={styles.myJobCardHeader}>
-                          <div 
+                          <div
                             className={styles.myJobCardContent}
                             onClick={() => handleClick(request)}
                           >
@@ -6564,9 +6563,9 @@ function Jobs() {
                                           {renderStatusBadge(app.status || 'Applied')}
                                         </td>
                                         <td className={styles.applicantActions}>
-                                          <select 
+                                          <select
                                             className={styles.statusSelect}
-                                            value={app.status || 'Applied'} 
+                                            value={app.status || 'Applied'}
                                             onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}
                                           >
                                             <option value="Applied">Applied</option>
@@ -6645,7 +6644,7 @@ function Jobs() {
           <div className={styles.googleLoginContent}>
             <div className={styles.googleLoginHeader}>
               <h3>Login Required</h3>
-              <button 
+              <button
                 onClick={() => setShowGoogleLoginModal(false)}
                 className={styles.closeGoogleLogin}
                 aria-label="Close"
@@ -6653,19 +6652,19 @@ function Jobs() {
                 <X size={24} />
               </button>
             </div>
-            
+
             <p>Please login to apply for this position</p>
-            
+
             <div className={styles.googleLoginOptions}>
-              <GoogleLoginButton 
+              <GoogleLoginButton
                 onLoginSuccess={() => {
                   setShowGoogleLoginModal(false);
                   if (selectedJob) {
-                    handleApplyClick({ stopPropagation: () => {} }, selectedJob);
+                    handleApplyClick({ stopPropagation: () => { } }, selectedJob);
                   }
                 }}
               />
-              
+
               <button
                 className={styles.googleLoginCancel}
                 onClick={() => setShowGoogleLoginModal(false)}

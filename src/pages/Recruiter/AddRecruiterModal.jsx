@@ -8,7 +8,7 @@ import styles from './AddRecruiterModal.module.scss';
 const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   const initialFormState = {
     fullName: '', email: '', phone: '', designation: '', department: '',
-    employeeId: '', companyName: 'JobBridge Karnataka', location: '', 
+    employeeId: '', companyName: 'JobBridge Karnataka', location: '',
     industries: '', hiringVolume: '', teamSize: 'Individual Contributor'
   };
 
@@ -17,25 +17,25 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
 
   // --- DROPDOWN OPTIONS ---
   const departmentOptions = [
-    "Human Resources", "IT / Engineering", "Sales", "Marketing", 
+    "Human Resources", "IT / Engineering", "Sales", "Marketing",
     "Finance", "Operations", "Legal", "Product Management"
   ];
 
   const regionOptions = [
-    "Bangalore, India", "Mumbai, India", "Delhi NCR, India", 
-    "Hyderabad, India", "Chennai, India", "Pune, India", 
+    "Bangalore, India", "Mumbai, India", "Delhi NCR, India",
+    "Hyderabad, India", "Chennai, India", "Pune, India",
     "Remote (Global)", "Remote (India)", "USA", "UK", "Dubai / UAE"
   ];
 
   const industryOptions = [
-    "Information Technology", "Healthcare", "FinTech", "E-commerce", 
-    "Manufacturing", "Education / EdTech", "Real Estate", 
+    "Information Technology", "Healthcare", "FinTech", "E-commerce",
+    "Manufacturing", "Education / EdTech", "Real Estate",
     "Consulting", "Media & Entertainment"
   ];
 
   const volumeOptions = [
-    "1-5 positions / month", "5-10 positions / month", 
-    "10-20 positions / month", "20-50 positions / month", 
+    "1-5 positions / month", "5-10 positions / month",
+    "10-20 positions / month", "20-50 positions / month",
     "50+ positions (High Volume)"
   ];
 
@@ -52,8 +52,8 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
           companyName: recruiterToEdit.companyName || '',
           location: recruiterToEdit.location || '',
           // Handle industries if it's an array or string
-          industries: Array.isArray(recruiterToEdit.industries) 
-            ? recruiterToEdit.industries.join(', ') 
+          industries: Array.isArray(recruiterToEdit.industries)
+            ? recruiterToEdit.industries.join(', ')
             : recruiterToEdit.industries || '',
           hiringVolume: recruiterToEdit.hiringVolume || '',
           teamSize: recruiterToEdit.teamSize || 'Individual Contributor',
@@ -74,20 +74,20 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
       const dataToSend = {
         ...formData,
         // Safe split: check if industries is a string first
-        industries: typeof formData.industries === 'string' 
-          ? formData.industries.split(',').map(item => item.trim()) 
-          : formData.industries, 
+        industries: typeof formData.industries === 'string'
+          ? formData.industries.split(',').map(item => item.trim())
+          : formData.industries,
       };
 
       if (isEditMode) {
-        await axios.put(`http://localhost:5000/api/recruiters/${recruiterToEdit._id}`, dataToSend);
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/recruiters/${recruiterToEdit._id}`, dataToSend);
         alert("Recruiter updated successfully!");
       } else {
-        await axios.post('http://localhost:5000/api/recruiters', dataToSend);
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/recruiters`, dataToSend);
         alert("Recruiter added successfully!");
       }
-      
-      if (onSuccess) onSuccess(); 
+
+      if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       console.error("Error saving recruiter:", error);
@@ -100,7 +100,7 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   return (
     <div className={styles.overlay}>
       <div className={styles.modalContainer}>
-        
+
         <div className={styles.header}>
           <h2>{isEditMode ? 'Edit Recruiter' : 'Add New Recruiter'}</h2>
           <button onClick={onClose} className={styles.closeBtn}>
@@ -110,10 +110,10 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGrid} style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-            
+
             {/* --- SECTION 1: Personal Info --- */}
             <h3 className="col-span-2 text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 border-b pb-1 mt-0">Personal Details</h3>
-            
+
             <div className={styles.inputGroup}>
               <label>Full Name *</label>
               <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required />
@@ -171,10 +171,10 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
               </datalist>
             </div>
 
-             <div className={styles.inputGroup}>
+            <div className={styles.inputGroup}>
               <label>Hiring Volume (Monthly)</label>
               <input list="volumeOptions" name="hiringVolume" value={formData.hiringVolume} onChange={handleChange} placeholder="Select or Type Volume" />
-               <datalist id="volumeOptions">
+              <datalist id="volumeOptions">
                 {volumeOptions.map((opt, i) => <option key={i} value={opt} />)}
               </datalist>
             </div>

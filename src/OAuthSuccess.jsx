@@ -21,26 +21,22 @@ function OAuthSuccess() {
           localStorage.setItem("token", urlToken);
         }
 
-        // The axios interceptor will now automatically pick up this token
-        // Combined with standard VITE_API_URL
         const res = await API.get("/auth/check");
-
 
         console.log("[OAuth] Auth check successful:", res.data);
         const userData = res.data;
 
-        // Important: Update AuthContext immediately
         login(userData);
 
-        // Redirect to home/dashboard directly as requested by user
         console.log("[OAuth] Login complete, directing home...");
+
+        // ✅ FIX: use router navigation (no origin confusion)
         navigate("/", { replace: true });
 
       } catch (err) {
         console.error("[OAuth] Auth check failed internally:", err);
         setErrorDetails(err.response?.data?.message || err.message);
 
-        // Wait a moment so user can see what happened if it fails
         setTimeout(() => {
           navigate("/login");
         }, 3000);
