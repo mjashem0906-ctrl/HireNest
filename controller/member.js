@@ -166,7 +166,7 @@
 //     "name", "fathersName", "mobileNumber", "email", "gender",
 //     "dateOfBirth", "memberType", "currentInstitutionOrCompany",
 //     "district", "address", 
-    
+
 //     // ✅ ADDED THESE to allow Cloudinary Links
 //     "photo", 
 //     "resume",

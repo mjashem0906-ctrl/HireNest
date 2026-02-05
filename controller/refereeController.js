@@ -1,4 +1,3 @@
-
 const Referee = require('../models/Referee');
 
 // Function to add a new referee

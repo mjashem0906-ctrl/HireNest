@@ -25,45 +25,43 @@ const router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
-// URL: http://localhost:5000/api/auth/google
-router.get("/google",
+// URL: /api/auth/google
+router.get(
+  "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// URL: http://localhost:5000/api/auth/google/callback
-router.get("/google/callback",
+// URL: /api/auth/google/callback
+router.get(
+  "/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    // Generate JWT token for the user with correct fields
     const token = jwt.sign(
       {
         userId: req.user._id,
         role: req.user.role,
-        memberId: req.user.memberId
+        memberId: req.user.memberId,
       },
       process.env.SECRET_KEY,
       { expiresIn: "7d" }
     );
 
-    // Set cookie with explicit Path=/ for global availability
+    // ✅ UPDATED: production-safe cookie options
     const cookieOptions = {
       httpOnly: true,
-      path: '/',
-      sameSite: 'Lax',
-      secure: false,
+      path: "/",
+      sameSite: "None",   // REQUIRED for Vercel ↔ backend
+      secure: true,       // REQUIRED for HTTPS
       maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
     res.cookie("token", token, cookieOptions);
 
-    // Redirect immediately
-    res.redirect(`${process.env.CLIENT_URL}/oauth-success?token=${token}`);
-
-
+    // ✅ DO NOT CHANGE LOGIC – env must be correct
+    res.redirect(
+      `${process.env.CLIENT_URL}/oauth-success?token=${token}`
+    );
   }
 );
-
-
-
 
 module.exports = router;

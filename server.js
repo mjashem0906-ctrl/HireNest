@@ -24,9 +24,13 @@ app.use(cookieParser());
 app.use(passport.initialize()); // Added for Google Auth
 
 app.use(cors({
-  origin: process.env.CLIENT_URL, // http://localhost:5173
+  origin: [
+    process.env.CLIENT_URL,              // https://jobkar-1wf4.vercel.app
+    "http://localhost:5173"               // keep for local dev
+  ],
   credentials: true
 }));
+
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
