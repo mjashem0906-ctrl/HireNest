@@ -1,0 +1,532 @@
+// .mentorsContainer {
+//   padding: 2rem;
+//   background-color: #f8fafc;
+//   min-height: 100vh;
+//   font-family: 'Inter', sans-serif;
+// }
+
+// /* 1. Integrated Header Section */
+// .topToolbar {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 2rem;
+//   gap: 20px;
+//   flex-wrap: wrap;
+
+//   .searchWrapper {
+//     position: relative;
+//     flex: 1;
+//     max-width: 400px;
+
+//     .searchIcon {
+//       position: absolute;
+//       left: 14px;
+//       top: 50%;
+//       transform: translateY(-50%);
+//       color: #94a3b8;
+//     }
+
+//     input {
+//       width: 100%;
+//       padding: 12px 12px 12px 42px;
+//       border-radius: 14px;
+//       border: 1px solid #e2e8f0;
+//       background: white;
+//       font-size: 0.95rem;
+//       transition: all 0.2s;
+//       outline: none;
+
+//       &:focus {
+//         border-color: #0084ff;
+//         box-shadow: 0 0 0 4px rgba(0, 132, 255, 0.1);
+//       }
+//     }
+//   }
+
+//   .actionGroup {
+//     display: flex;
+//     gap: 12px;
+//   }
+// }
+
+// /* 2. Professional Export/Action Buttons */
+// .btn {
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   padding: 10px 20px;
+//   border-radius: 12px;
+//   font-weight: 600;
+//   font-size: 0.9rem;
+//   cursor: pointer;
+//   transition: all 0.2s;
+//   border: 1px solid transparent;
+
+//   &.excel {
+//     background: #ecfdf5;
+//     color: #059669;
+//     &:hover { background: #d1fae5; }
+//   }
+
+//   &.csv {
+//     background: #f1f5f9;
+//     color: #475569;
+//     border-color: #e2e8f0;
+//     &:hover { background: #e2e8f0; }
+//   }
+// }
+
+// /* 3. The Mentor Grid */
+// .mentorGrid {
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+//   gap: 24px;
+// }
+
+// /* 4. The Professional Mentor Card */
+// .mentorCard {
+//   background: white;
+//   border-radius: 20px;
+//   padding: 24px;
+//   border: 1px solid #f1f5f9;
+//   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//   cursor: pointer;
+//   position: relative;
+//   overflow: hidden;
+
+//   &:hover {
+//     transform: translateY(-6px);
+//     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+//     border-color: #0084ff;
+//   }
+
+//   .cardHeader {
+//     display: flex;
+//     gap: 16px;
+//     align-items: center;
+//     margin-bottom: 20px;
+
+//     .avatar {
+//       width: 64px;
+//       height: 64px;
+//       border-radius: 16px; // Matches the Profile UI
+//       object-fit: cover;
+//       background: #f1f5f9;
+//     }
+
+//     .headerText {
+//       h3 {
+//         margin: 0;
+//         font-size: 1.15rem;
+//         font-weight: 700;
+//         color: #1e293b;
+//       }
+//       .location {
+//         font-size: 0.85rem;
+//         color: #64748b;
+//         display: flex;
+//         align-items: center;
+//         gap: 4px;
+//       }
+//     }
+//   }
+
+//   .expertiseTag {
+//     background: #eff6ff;
+//     color: #1d4ed8;
+//     padding: 4px 12px;
+//     border-radius: 8px;
+//     font-size: 0.75rem;
+//     font-weight: 700;
+//     text-transform: uppercase;
+//     display: inline-block;
+//     margin-bottom: 16px;
+//   }
+
+//   .statsInfo {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 10px;
+    
+//     .infoRow {
+//       display: flex;
+//       align-items: center;
+//       gap: 10px;
+//       font-size: 0.85rem;
+//       color: #475569;
+      
+//       svg { color: #94a3b8; }
+//     }
+//   }
+// }
+
+// .countText {
+//   margin-bottom: 20px;
+//   color: #64748b;
+//   font-size: 0.9rem;
+//   strong { color: #1e293b; }
+// }
+
+// /* Loader */
+// .loadingArea {
+//   display: flex;
+//   justify-content: center;
+//   padding: 100px;
+//   .loader {
+//     width: 40px; height: 40px;
+//     border: 4px solid #f3f3f3;
+//     border-top: 4px solid #0084ff;
+//     border-radius: 50%;
+//     animation: spin 1s linear infinite;
+//   }
+// }
+// @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+//-------------------5/2------------------------3.57------------------------------
+
+// .mentorsContainer {
+//   padding: 3rem 2rem;
+//   background: #fdfdfd;
+//   min-height: 100vh;
+//   font-family: 'Inter', sans-serif;
+// }
+
+// /* 1. Glassmorphism Search Bar */
+// .topToolbar {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 3rem;
+//   gap: 20px;
+
+//   .searchWrapper {
+//     position: relative;
+//     flex: 1;
+//     max-width: 450px;
+    
+//     input {
+//       width: 100%;
+//       padding: 14px 14px 14px 48px;
+//       border-radius: 16px;
+//       border: 1px solid #e2e8f0;
+//       background: rgba(255, 255, 255, 0.8);
+//       backdrop-filter: blur(10px);
+//       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+//       transition: all 0.3s ease;
+
+//       &:focus {
+//         border-color: #0084ff;
+//         box-shadow: 0 10px 20px rgba(0, 132, 255, 0.1);
+//         transform: translateY(-2px);
+//       }
+//     }
+
+//     .searchIcon {
+//       position: absolute;
+//       left: 18px;
+//       top: 50%;
+//       transform: translateY(-50%);
+//       color: #0084ff;
+//     }
+//   }
+// }
+
+// /* 2. Entrance Animation for Cards */
+// @keyframes fadeInUp {
+//   from {
+//     opacity: 0;
+//     transform: translateY(20px);
+//   }
+//   to {
+//     opacity: 1;
+//     transform: translateY(0);
+//   }
+// }
+
+// .mentorCard {
+//   background: white;
+//   border-radius: 24px;
+//   padding: 24px;
+//   border: 1px solid #f1f5f9;
+//   position: relative;
+//   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+//   animation: fadeInUp 0.5s ease forwards; // Staggered delay applied via JS
+//   opacity: 0; // Starts hidden for animation
+
+//   &:hover {
+//     transform: translateY(-10px) scale(1.02);
+//     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+//     border-color: transparent;
+
+//     &::after {
+//       opacity: 1;
+//     }
+
+//     .profileLink {
+//       background: #0084ff;
+//       color: white;
+//     }
+//   }
+
+//   /* Subtle background glow on hover */
+//   &::after {
+//     content: '';
+//     position: absolute;
+//     inset: 0;
+//     border-radius: 24px;
+//     background: radial-gradient(circle at top right, rgba(0, 132, 255, 0.05), transparent);
+//     opacity: 0;
+//     transition: opacity 0.4s;
+//     pointer-events: none;
+//   }
+// }
+
+// /* 3. Status Indicator (Pulsing Dot) */
+// .statusBadge {
+//   position: absolute;
+//   top: 20px;
+//   right: 20px;
+//   display: flex;
+//   align-items: center;
+//   gap: 6px;
+//   font-size: 11px;
+//   font-weight: 700;
+//   color: #22c55e;
+//   text-transform: uppercase;
+
+//   .pulseDot {
+//     width: 8px;
+//     height: 8px;
+//     background: #22c55e;
+//     border-radius: 50%;
+//     position: relative;
+
+//     &::after {
+//       content: '';
+//       position: absolute;
+//       inset: 0;
+//       border-radius: 50%;
+//       background: #22c55e;
+//       animation: pulse 2s infinite;
+//     }
+//   }
+// }
+
+// @keyframes pulse {
+//   0% { transform: scale(1); opacity: 0.8; }
+//   100% { transform: scale(3); opacity: 0; }
+// }
+
+// /* 4. Refined Tag Cloud */
+// .expertiseArea {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 8px;
+//   margin-bottom: 20px;
+
+//   .tag {
+//     font-size: 11px;
+//     font-weight: 700;
+//     padding: 6px 14px;
+//     border-radius: 10px;
+//     background: #f1f5f9;
+//     color: #475569;
+//     transition: 0.3s;
+
+//     &:hover {
+//       background: #0084ff;
+//       color: white;
+//     }
+//   }
+// }
+
+// /* 5. Modern Card Action */
+// .profileLink {
+//   margin-top: 15px;
+//   width: 100%;
+//   padding: 12px;
+//   border-radius: 14px;
+//   border: 1px solid #f1f5f9;
+//   background: #f8fafc;
+//   color: #1e293b;
+//   font-weight: 700;
+//   font-size: 13px;
+//   text-align: center;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   gap: 8px;
+//   transition: all 0.3s;
+// }
+
+// .loadingArea {
+//   display: flex;
+//   justify-content: center;
+//   padding: 100px;
+//   .dotLoader {
+//     width: 12px; height: 12px;
+//     background: #0084ff;
+//     border-radius: 50%;
+//     margin: 0 4px;
+//     animation: dotPulse 0.6s infinite alternate;
+//     &:nth-child(2) { animation-delay: 0.2s; }
+//     &:nth-child(3) { animation-delay: 0.4s; }
+//   }
+// }
+
+// @keyframes dotPulse {
+//   from { transform: scale(1); opacity: 1; }
+//   to { transform: scale(1.5); opacity: 0.3; }
+// }
+
+//-------------------5/2------------------------4.08------------------------------
+
+.mentorsContainer {
+  padding: 2rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Header & Search Section */
+.topToolbar {
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  .searchWrapper {
+    flex: 1;
+    max-width: 400px;
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.3s;
+      &:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+    }
+
+    .searchIcon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+    }
+  }
+}
+
+/* Add Mentor Button */
+.addBtn {
+  background: #4f46e5;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* The Grid */
+.mentorGrid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); // Two columns on desktop
+  gap: 20px;
+}
+
+/* THE FIX: Horizontal Mentor Card */
+.mentorCard {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+  display: flex; // This makes image and text sit side-by-side
+  gap: 20px;
+  position: relative;
+  transition: 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: #4f46e5;
+  }
+
+  /* IMAGE CONTAINER FIX */
+  .imageContainer {
+    width: 100px; // FIXED WIDTH
+    height: 100px; // FIXED HEIGHT
+    flex-shrink: 0; // Prevents the image from being squashed
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f5f9;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // This makes sure the person fits in the square
+    }
+  }
+
+  .infoContent {
+    flex: 1;
+    
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 4px 0;
+    }
+
+    .designation {
+      font-size: 0.9rem;
+      color: #4f46e5;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.85rem;
+      color: #64748b;
+
+      span { display: flex; align-items: center; gap: 6px; }
+    }
+  }
+
+  /* Status Indicator */
+  .statusBadge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+    }
+  }
+}

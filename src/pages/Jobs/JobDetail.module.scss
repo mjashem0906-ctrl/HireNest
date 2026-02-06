@@ -1,201 +1,742 @@
-// --- Variables ---
-$primary: #2563eb;
-$bg-light: #f8fafc;
-$border: #e2e8f0;
-$text-dark: #0f172a;
-$text-gray: #64748b;
-$success: #16a34a;
-$warning: #ca8a04;
+// // --- Variables ---
+// $primary: #2563eb;
+// $bg-light: #f8fafc;
+// $border: #e2e8f0;
+// $text-dark: #0f172a;
+// $text-gray: #64748b;
+// $success: #16a34a;
+// $warning: #ca8a04;
+
+// .container {
+//   max-width: 1200px;
+//   margin: 0 auto;
+//   padding: 30px 20px;
+//   font-family: 'Inter', sans-serif;
+//   color: $text-dark;
+// }
+
+// // --- Job Header Card ---
+// .jobCard {
+//   background: white;
+//   border-radius: 16px;
+//   border: 1px solid $border;
+//   padding: 30px;
+//   margin-bottom: 40px;
+//   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+//   .header {
+//     margin-bottom: 20px;
+//     h1 { margin: 0 0 5px 0; font-size: 1.8rem; letter-spacing: -0.5px; }
+//     .meta { color: $text-gray; font-size: 0.9rem; }
+//   }
+
+//   .gridInfo {
+//     display: grid;
+//     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+//     gap: 20px;
+//     padding: 20px 0;
+//     border-top: 1px solid $border;
+//     border-bottom: 1px solid $border;
+//     margin-bottom: 20px;
+
+//     .infoItem {
+//       label { display: block; font-size: 0.75rem; text-transform: uppercase; color: $text-gray; font-weight: 700; margin-bottom: 4px; }
+//       span { font-size: 1rem; font-weight: 500; }
+//     }
+//   }
+
+//   .skills {
+//     display: flex;
+//     flex-wrap: wrap;
+//     gap: 8px;
+//     margin-bottom: 20px;
+//     .tag {
+//       background: #eff6ff; color: $primary;
+//       padding: 6px 12px; border-radius: 20px;
+//       font-size: 0.85rem; font-weight: 600;
+//     }
+//   }
+
+//   .description {
+//     line-height: 1.6; color: #334155; white-space: pre-wrap;
+//   }
+// }
+
+// // --- Section Titles ---
+// .sectionTitle {
+//   font-size: 1.25rem;
+//   font-weight: 700;
+//   margin-bottom: 20px;
+//   display: flex;
+//   align-items: center;
+//   gap: 10px;
+  
+//   .badge {
+//     background: $text-dark; color: white;
+//     padding: 2px 8px; border-radius: 12px;
+//     font-size: 0.75rem;
+//   }
+// }
+
+// // --- AI Matches (Horizontal Scroll) ---
+// .matchesContainer {
+//   margin-bottom: 50px;
+  
+//   .scrollWrapper {
+//     display: flex;
+//     gap: 20px;
+//     overflow-x: auto;
+//     padding-bottom: 15px;
+    
+//     &::-webkit-scrollbar { height: 8px; }
+//     &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+//   }
+// }
+
+// // --- Candidate Card (Used for both lists) ---
+// .candidateCard {
+//   min-width: 300px;
+//   max-width: 300px;
+//   background: white;
+//   border: 1px solid $border;
+//   border-radius: 12px;
+//   overflow: hidden;
+//   position: relative;
+//   transition: transform 0.2s, box-shadow 0.2s;
+//   cursor: pointer;
+
+//   &:hover {
+//     transform: translateY(-4px);
+//     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+//     border-color: #93c5fd;
+//   }
+
+//   &.applicant {
+//     min-width: 100%; // Applicants take full width in grid
+//     max-width: none;
+//     display: flex;
+//     align-items: center;
+//     padding: 15px;
+    
+//     .cardHeader { border: none; padding: 0; width: 300px; }
+//     .cardBody { padding: 0 20px; flex: 1; border-top: none; }
+//     .cardFooter { border: none; background: none; padding: 0; width: auto; }
+//   }
+
+//   .cardHeader {
+//     padding: 20px;
+//     display: flex;
+//     align-items: center;
+//     gap: 15px;
+//     border-bottom: 1px dashed $border;
+//     position: relative;
+
+//     .avatar {
+//       width: 50px; height: 50px;
+//       border-radius: 50%; object-fit: cover;
+//       background: $bg-light;
+//     }
+
+//     .info {
+//       h4 { margin: 0; font-size: 1rem; color: $text-dark; }
+//       p { margin: 2px 0 0; font-size: 0.8rem; color: $text-gray; }
+//     }
+
+//     .scoreRing {
+//       position: absolute; top: 15px; right: 15px;
+//       width: 36px; height: 36px;
+//       border-radius: 50%;
+//       display: flex; align-items: center; justify-content: center;
+//       font-size: 0.75rem; font-weight: 800;
+//       background: white; border: 3px solid;
+//     }
+//   }
+
+//   .cardBody {
+//     padding: 15px;
+    
+//     .reasons {
+//       display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+//       span {
+//         font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+//         display: flex; align-items: center; gap: 4px;
+//       }
+//       .role { background: #dcfce7; color: $success; }
+//       .exp { background: #fef9c3; color: $warning; }
+//       .skill { background: #e0f2fe; color: #0369a1; }
+//     }
+
+//     .status {
+//       font-size: 0.8rem; font-weight: 600;
+//       padding: 4px 8px; border-radius: 4px;
+//       background: $bg-light; display: inline-block;
+//     }
+//   }
+
+//   .cardFooter {
+//     background: $bg-light;
+//     padding: 10px 15px;
+//     display: flex; gap: 15px;
+//     border-top: 1px solid $border;
+    
+//     a {
+//       color: $text-gray; font-size: 0.85rem; text-decoration: none;
+//       display: flex; align-items: center; gap: 5px;
+//       &:hover { color: $primary; }
+//     }
+//   }
+// }
+
+// // --- Applicants Section ---
+// .applicantsGrid {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 15px;
+// }
+
+// .emptyBox {
+//   padding: 40px; text-align: center;
+//   background: white; border: 1px dashed $border; border-radius: 12px;
+//   color: $text-gray; font-size: 0.9rem;
+// }
+
+//-----------------6/2----------------6.53--------------------
+
+$primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+
+.pageWrapper {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  padding: 40px 15px;
+  font-family: "Inter", sans-serif;
+}
 
 .container {
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 30px 20px;
-  font-family: 'Inter', sans-serif;
-  color: $text-dark;
 }
 
-// --- Job Header Card ---
-.jobCard {
-  background: white;
-  border-radius: 16px;
-  border: 1px solid $border;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-
-  .header {
-    margin-bottom: 20px;
-    h1 { margin: 0 0 5px 0; font-size: 1.8rem; letter-spacing: -0.5px; }
-    .meta { color: $text-gray; font-size: 0.9rem; }
-  }
-
-  .gridInfo {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
-    border-top: 1px solid $border;
-    border-bottom: 1px solid $border;
-    margin-bottom: 20px;
-
-    .infoItem {
-      label { display: block; font-size: 0.75rem; text-transform: uppercase; color: $text-gray; font-weight: 700; margin-bottom: 4px; }
-      span { font-size: 1rem; font-weight: 500; }
-    }
-  }
-
-  .skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    .tag {
-      background: #eff6ff; color: $primary;
-      padding: 6px 12px; border-radius: 20px;
-      font-size: 0.85rem; font-weight: 600;
-    }
-  }
-
-  .description {
-    line-height: 1.6; color: #334155; white-space: pre-wrap;
-  }
-}
-
-// --- Section Titles ---
-.sectionTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
+.headerCard {
+  background: var(--bg-secondary);
+  padding: 24px;
+  border-radius: 12px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  
-  .badge {
-    background: $text-dark; color: white;
-    padding: 2px 8px; border-radius: 12px;
-    font-size: 0.75rem;
-  }
-}
+  gap: 20px;
+  box-shadow: 0 1px 3px var(--shadow-medium);
+  border: 1px solid var(--border-light);
 
-// --- AI Matches (Horizontal Scroll) ---
-.matchesContainer {
-  margin-bottom: 50px;
-  
-  .scrollWrapper {
+  .backBtn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-secondary);
     display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding-bottom: 15px;
-    
-    &::-webkit-scrollbar { height: 8px; }
-    &::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    transition: var(--transition-fast);
+
+    &:hover {
+      filter: brightness(0.98);
+      color: var(--text-primary);
+    }
+  }
+
+  .headerTitle {
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    p {
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
   }
 }
 
-// --- Candidate Card (Used for both lists) ---
-.candidateCard {
-  min-width: 300px;
-  max-width: 300px;
-  background: white;
-  border: 1px solid $border;
+.card {
+  background: var(--bg-secondary);
+  padding: 24px;
   border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px var(--shadow-medium);
+  border: 1px solid var(--border-light);
+}
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    border-color: #93c5fd;
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+
+  .iconYellow {
+    color: #f59e0b;
   }
+}
 
-  &.applicant {
-    min-width: 100%; // Applicants take full width in grid
-    max-width: none;
+.skillList {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .skillBadge {
+    background: rgba(14, 165, 233, 0.12);
+    border: 1px solid rgba(14, 165, 233, 0.28);
+    color: var(--text-primary);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.tileGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infoTile {
+  background: var(--bg-secondary);
+  padding: 22px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px var(--shadow-medium);
+  border: 1px solid var(--border-light);
+
+  .tileIcon {
+    background: var(--bg-tertiary);
+    padding: 12px;
+    border-radius: 12px;
     display: flex;
-    align-items: center;
-    padding: 15px;
-    
-    .cardHeader { border: none; padding: 0; width: 300px; }
-    .cardBody { padding: 0 20px; flex: 1; border-top: none; }
-    .cardFooter { border: none; background: none; padding: 0; width: auto; }
+    color: var(--text-secondary);
   }
 
-  .cardHeader {
-    padding: 20px;
+  .tileContent {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    border-bottom: 1px dashed $border;
-    position: relative;
+    flex-direction: column;
 
-    .avatar {
-      width: 50px; height: 50px;
-      border-radius: 50%; object-fit: cover;
-      background: $bg-light;
+    label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
-
-    .info {
-      h4 { margin: 0; font-size: 1rem; color: $text-dark; }
-      p { margin: 2px 0 0; font-size: 0.8rem; color: $text-gray; }
-    }
-
-    .scoreRing {
-      position: absolute; top: 15px; right: 15px;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 800;
-      background: white; border: 3px solid;
-    }
-  }
-
-  .cardBody {
-    padding: 15px;
-    
-    .reasons {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
-      span {
-        font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: 600;
-        display: flex; align-items: center; gap: 4px;
-      }
-      .role { background: #dcfce7; color: $success; }
-      .exp { background: #fef9c3; color: $warning; }
-      .skill { background: #e0f2fe; color: #0369a1; }
-    }
-
-    .status {
-      font-size: 0.8rem; font-weight: 600;
-      padding: 4px 8px; border-radius: 4px;
-      background: $bg-light; display: inline-block;
-    }
-  }
-
-  .cardFooter {
-    background: $bg-light;
-    padding: 10px 15px;
-    display: flex; gap: 15px;
-    border-top: 1px solid $border;
-    
-    a {
-      color: $text-gray; font-size: 0.85rem; text-decoration: none;
-      display: flex; align-items: center; gap: 5px;
-      &:hover { color: $primary; }
+    span {
+      font-size: 15px;
+      color: var(--text-primary);
+      font-weight: 600;
     }
   }
 }
 
-// --- Applicants Section ---
-.applicantsGrid {
+.descText {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.actionContainer {
+  margin-top: 30px;
+
+  button {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 17px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btnApply {
+    background: $primary-gradient;
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+
+    &:hover {
+      transform: translateY(-1px);
+      opacity: 0.92;
+    }
+  }
+
+  .btnApplied {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    border: 1px solid var(--border-light);
+  }
+}
+
+/* Admin Area */
+.adminArea {
+  margin-top: 60px;
+
+  .divider {
+    border-top: 2px dashed var(--border-medium);
+    margin-bottom: 40px;
+  }
+}
+
+.adminSubSection {
+  margin-bottom: 40px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: var(--text-primary);
+
+    .badge {
+      background: var(--text-primary);
+      color: var(--bg-secondary);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+  }
+}
+
+.hScroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 15px;
+}
+
+.vList {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.emptyBox {
-  padding: 40px; text-align: center;
-  background: white; border: 1px dashed $border; border-radius: 12px;
-  color: $text-gray; font-size: 0.9rem;
+.candCard {
+  min-width: 280px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  &.wide {
+    min-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .candTop {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+
+    .avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border-light);
+    }
+
+    .candMeta {
+      h4 {
+        margin: 0;
+        font-size: 15px;
+        color: var(--text-primary);
+      }
+      p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+    }
+
+    .score {
+      position: absolute;
+      right: 0;
+      width: 38px;
+      height: 38px;
+      border: 3px solid;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+  }
+
+  .candBottom {
+    margin-top: 15px;
+
+    .reasons {
+      display: flex;
+      gap: 6px;
+
+      span {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+    }
+
+    .rRole {
+      background: rgba(16, 185, 129, 0.14);
+      color: #16a34a;
+    }
+    .rExp {
+      background: rgba(245, 158, 11, 0.16);
+      color: #ca8a04;
+    }
+    .rSkill {
+      background: rgba(14, 165, 233, 0.12);
+      color: #0284c7;
+    }
+
+    .status {
+      font-size: 12px;
+      margin-top: 10px;
+      color: var(--text-secondary);
+
+      span {
+        color: #6366f1;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+.loader,
+.error {
+  padding: 100px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* ===========================
+   RESUME MODAL STYLES
+=========================== */
+.resumeModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.resumeModal {
+  background: var(--bg-secondary);
+  width: 90%;
+  max-width: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+.resumeModalHeader {
+  padding: 24px 24px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-light);
+
+  h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .jobHighlight {
+    color: #4f46e5;
+    font-weight: 600;
+  }
+
+  .closeBtn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-secondary);
+    display: flex;
+    transition: background 0.2s;
+
+    &:hover {
+      filter: brightness(0.98);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.resumeModalBody {
+  padding: 24px;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.resumeUploadArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  border: 2px dashed var(--border-medium);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-tertiary);
+
+  &:hover {
+    border-color: #6366f1;
+    background: rgba(14, 165, 233, 0.08);
+  }
+
+  .uploadIcon {
+    background: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+
+  .uploadText {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .uploadHint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+}
+
+.selectedFile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  border-radius: 12px;
+
+  .fileInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .fileName {
+      display: flex;
+      flex-direction: column;
+
+      span {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      small {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  .removeFileBtn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px;
+
+    &:hover {
+      color: #dc2626;
+    }
+  }
+}
+
+.resumeSubmitButton {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

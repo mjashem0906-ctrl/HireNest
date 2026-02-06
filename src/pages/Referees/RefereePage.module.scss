@@ -1,289 +1,623 @@
-/* RefereePage.module.scss */
+// /* RefereePage.module.scss */
 
-.members {
-  padding: 20px;
-  background-color: #f8f9fa;
+// .members {
+//   padding: 20px;
+//   background-color: #f8f9fa;
+//   min-height: 100vh;
+// }
+
+// // --- Header Section (Search Bar) ---
+// .headerWrapper {
+//   position: fixed;
+//   top: 0;
+//   right: 0;
+//   height: 80px; // Adjust based on your actual header height
+//   background-color: white;
+//   border-bottom: 1px solid #e5e7eb;
+//   z-index: 99;
+//   display: flex;
+//   align-items: center;
+//   padding: 0 30px;
+//   transition: left 0.3s ease; // Smooth transition when sidebar collapses
+
+//   // Add this inside .headerContent or at root level if simpler
+
+// .addButton {
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   background-color: #2563eb;
+//   color: white;
+//   border: none;
+//   padding: 8px 16px;
+//   border-radius: 8px;
+//   cursor: pointer;
+//   font-weight: 500;
+//   transition: background 0.2s;
+
+//   &:hover {
+//     background-color: #1d4ed8;
+//   }
+// };
+
+//   .headerContent {
+//     width: 100%;
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+
+//     // Search Bar Container
+//     .cardSearch {
+//       display: flex;
+//       align-items: center;
+//       background-color: #f3f4f6;
+//       padding: 8px 15px;
+//       border-radius: 8px;
+//       width: 300px;
+//       border: 1px solid transparent;
+
+//       &:focus-within {
+//         border-color: #4f46e5;
+//         background-color: white;
+//       }
+
+//       svg {
+//         color: #9ca3af;
+//         margin-right: 10px;
+//       }
+
+//       input {
+//         border: none;
+//         background: transparent;
+//         outline: none;
+//         width: 100%;
+//         font-size: 14px;
+//         color: #374151;
+
+//         &::placeholder {
+//           color: #9ca3af;
+//         }
+//       }
+//     }
+//   }
+// }
+
+// // --- Card Grid Layout ---
+// .cardView {
+//   margin-top: 20px;
+
+//   .membersList {
+//     display: grid;
+//     // Auto-fill grid: cards will be at least 300px wide
+//     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+//     gap: 20px;
+//   }
+// }
+
+// // --- Individual Card Styling ---
+// .memberCard {
+//   background: white;
+//   border-radius: 12px;
+//   padding: 20px;
+//   border: 1px solid #e5e7eb;
+//   transition: transform 0.2s, box-shadow 0.2s;
+//   cursor: pointer;
+
+//   &:hover {
+//     transform: translateY(-4px);
+//     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+//     border-color: #c7d2fe;
+//   }
+
+//   // Card Header: Avatar + Name
+//   .memberHeader {
+//     display: flex;
+//     align-items: center;
+//     gap: 15px;
+//     margin-bottom: 15px;
+//     padding-bottom: 15px;
+//     border-bottom: 1px solid #f3f4f6;
+
+//     .avatar {
+//       width: 50px;
+//       height: 50px;
+//       border-radius: 50%;
+//       object-fit: cover;
+//       background-color: #e5e7eb;
+//     }
+
+//     .memberInfo {
+//       h3 {
+//         margin: 0;
+//         font-size: 16px;
+//         font-weight: 600;
+//         color: #1f2937;
+//       }
+//     }
+//   }
+
+//   // Card Details: Icon + Text rows
+//   .memberDetails {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 8px;
+
+//     div {
+//       display: flex;
+//       align-items: center;
+//       gap: 10px;
+//       font-size: 13px;
+//       color: #6b7280;
+
+//       svg {
+//         color: #9ca3af;
+//         min-width: 16px;
+//       }
+//     }
+//   }
+
+
+// .accessDenied {
+//   height: 80vh;
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: center;
+//   text-align: center;
+//   gap: 20px;
+
+//   h2 {
+//     font-size: 24px;
+//     color: #374151;
+//     margin: 0;
+//   }
+
+//   p {
+//     color: #6b7280;
+//   }
+
+//   button {
+//     padding: 10px 20px;
+//     background-color: #2563eb;
+//     color: white;
+//     border: none;
+//     border-radius: 6px;
+//     cursor: pointer;
+//     font-weight: 500;
+    
+//     &:hover {
+//       background-color: #1d4ed8;
+//     }
+//   }
+// }
+// /* --- Add these to the bottom of RefereePage.module.scss --- */
+
+// .overlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   background-color: rgba(0, 0, 0, 0.5);
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   z-index: 1000;
+//   backdrop-filter: blur(2px);
+// }
+
+// .modal {
+//   background: #ffffff;
+//   width: 90%;
+//   max-width: 800px;
+//   max-height: 90vh;
+//   border-radius: 12px;
+//   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+//   display: flex;
+//   flex-direction: column;
+//   overflow: hidden;
+//   animation: fadeIn 0.3s ease-out;
+// }
+
+// @keyframes fadeIn {
+//   from { opacity: 0; transform: translateY(20px); }
+//   to { opacity: 1; transform: translateY(0); }
+// }
+
+// .header {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   padding: 16px 24px;
+//   border-bottom: 1px solid #e5e7eb;
+  
+//   h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
+  
+//   button {
+//     background: none;
+//     border: none;
+//     cursor: pointer;
+//     color: #6b7280;
+//   }
+// }
+
+// .form {
+//   padding: 24px;
+//   overflow-y: auto;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 24px;
+// }
+
+// .formGrid {
+//   display: grid;
+//   grid-template-columns: 1fr;
+//   gap: 20px;
+  
+//   @media (min-width: 640px) {
+//     grid-template-columns: 1fr 1fr;
+//   }
+// }
+
+// .actions {
+//   display: flex;
+//   justify-content: flex-end;
+//   gap: 12px;
+//   margin-top: 24px;
+//   padding-top: 20px;
+//   border-top: 1px solid #e5e7eb;
+// }
+
+// .cancelButton {
+//   padding: 10px 20px;
+//   border-radius: 6px;
+//   background-color: #ffffff;
+//   border: 1px solid #d1d5db;
+//   cursor: pointer;
+// }
+
+// .submitButton {
+//   padding: 10px 20px;
+//   border-radius: 6px;
+//   background-color: #2563eb;
+//   color: white;
+//   border: none;
+//   cursor: pointer;
+  
+//   &:disabled { background-color: #93c5fd; }
+// }
+// }
+//--------------------6/2--------------------------4.45--------------------
+
+// .container {
+//   padding: 2.5rem;
+//   background-color: #f8fafc;
+//   min-height: 100vh;
+//   font-family: 'Inter', sans-serif;
+// }
+
+// /* 1. Professional Toolbar */
+// .topToolbar {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 2.5rem;
+//   gap: 20px;
+//   flex-wrap: wrap;
+
+//   .searchWrapper {
+//     position: relative;
+//     flex: 1;
+//     max-width: 450px;
+
+//     .searchIcon {
+//       position: absolute;
+//       left: 16px;
+//       top: 50%;
+//       transform: translateY(-50%);
+//       color: #6366f1;
+//     }
+
+//     input {
+//       width: 100%;
+//       padding: 14px 14px 14px 50px;
+//       border-radius: 16px;
+//       border: 1px solid #e2e8f0;
+//       background: white;
+//       font-size: 0.95rem;
+//       transition: all 0.3s ease;
+//       outline: none;
+
+//       &:focus {
+//         border-color: #6366f1;
+//         box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+//         transform: translateY(-2px);
+//       }
+//     }
+//   }
+
+//   .actionGroup {
+//     display: flex;
+//     gap: 12px;
+//   }
+// }
+
+// /* 2. Refined Buttons */
+// .btn {
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   padding: 10px 22px;
+//   border-radius: 12px;
+//   font-weight: 700;
+//   font-size: 0.9rem;
+//   cursor: pointer;
+//   transition: 0.2s;
+//   border: 1px solid transparent;
+
+//   &.excel { background: #ecfdf5; color: #059669; &:hover { background: #d1fae5; } }
+//   &.csv { background: #f1f5f9; color: #475569; border-color: #e2e8f0; &:hover { background: #e2e8f0; } }
+// }
+
+// /* 3. The Referee Grid */
+// .refereeGrid {
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+//   gap: 24px;
+// }
+
+// /* 4. Horizontal Professional Card */
+// .refereeCard {
+//   background: white;
+//   border-radius: 24px;
+//   padding: 24px;
+//   border: 1px solid #f1f5f9;
+//   display: flex;
+//   gap: 20px;
+//   cursor: pointer;
+//   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+//   position: relative;
+//   animation: fadeInUp 0.6s ease forwards;
+//   opacity: 0;
+
+//   &:hover {
+//     transform: translateY(-8px);
+//     box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+//     border-color: #6366f1;
+//   }
+
+//   .avatarWrapper {
+//     width: 90px;
+//     height: 90px;
+//     flex-shrink: 0;
+//     border-radius: 18px; // Matching Mentor/Recruiter look
+//     overflow: hidden;
+//     background: #f8fafc;
+//     border: 1px solid #e2e8f0;
+
+//     img {
+//       width: 100%;
+//       height: 100%;
+//       object-fit: cover;
+//     }
+//   }
+
+//   .content {
+//     flex: 1;
+
+//     h3 {
+//       font-size: 1.15rem;
+//       font-weight: 800;
+//       color: #0f172a;
+//       margin: 0 0 6px 0;
+//       letter-spacing: -0.02em;
+//     }
+
+//     .statusBadge {
+//       display: inline-block;
+//       background: #eef2ff;
+//       color: #4f46e5;
+//       padding: 4px 12px;
+//       border-radius: 8px;
+//       font-size: 11px;
+//       font-weight: 800;
+//       text-transform: uppercase;
+//       margin-bottom: 15px;
+//     }
+
+//     .infoList {
+//       display: flex;
+//       flex-direction: column;
+//       gap: 8px;
+
+//       .infoItem {
+//         display: flex;
+//         align-items: center;
+//         gap: 10px;
+//         font-size: 0.85rem;
+//         color: #64748b;
+//         svg { color: #94a3b8; flex-shrink: 0; }
+//         strong { color: #1e293b; font-weight: 600; }
+//       }
+//     }
+//   }
+// }
+
+// @keyframes fadeInUp {
+//   from { opacity: 0; transform: translateY(20px); }
+//   to { opacity: 1; transform: translateY(0); }
+// }
+
+// .countText {
+//   margin-bottom: 20px;
+//   color: #64748b;
+//   font-size: 0.9rem;
+// }
+
+// @media (max-width: 900px) {
+//   .refereeGrid { grid-template-columns: 1fr; }
+//   .topToolbar { flex-direction: column; align-items: stretch; }
+//   .actionGroup { width: 100%; button { flex: 1; } }
+// }
+
+//---------------------6/2--------------------------4.54--------------------
+
+.container {
+  padding: 2.5rem;
+  background-color: #f8fafc;
   min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-// --- Header Section (Search Bar) ---
-.headerWrapper {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 80px; // Adjust based on your actual header height
-  background-color: white;
-  border-bottom: 1px solid #e5e7eb;
-  z-index: 99;
+/* Toolbar & Buttons */
+.topToolbar {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 0 30px;
-  transition: left 0.3s ease; // Smooth transition when sidebar collapses
+  margin-bottom: 2rem;
+  gap: 20px;
+  
+  .searchWrapper {
+    position: relative;
+    flex: 1;
+    max-width: 450px;
+    input {
+      width: 100%;
+      padding: 14px 14px 14px 50px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      outline: none;
+      transition: 0.3s;
+      &:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+    }
+    .searchIcon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #6366f1; }
+  }
 
-  // Add this inside .headerContent or at root level if simpler
+  .actionGroup { display: flex; gap: 12px; }
+}
 
-.addButton {
+.btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #2563eb;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  &.excel { background: #ecfdf5; color: #059669; }
+  &.csv { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+}
+
+/* Grid & Cards */
+.refereeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.refereeCard {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  gap: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    border-color: #6366f1;
+  }
+
+  .avatarWrapper {
+    width: 90px; height: 90px;
+    border-radius: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid #e2e8f0;
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  .content {
+    flex: 1;
+    h3 { margin: 0 0 5px 0; font-size: 1.2rem; color: #1e293b; font-weight: 800; }
+    .statusBadge {
+      display: inline-block;
+      background: #eef2ff;
+      color: #6366f1;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .infoList {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      .infoItem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #64748b;
+        svg { color: #94a3b8; }
+      }
+    }
+  }
+}
+
+/* Loading & Empty States */
+.loadingArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100px;
+  color: #64748b;
+  .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f1f5f9;
+    border-top: 4px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80px;
+  background: white;
+  border-radius: 24px;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  h3 { margin: 0; color: #1e293b; }
+  p { color: #64748b; margin: 0; }
+}
+
+.resetBtn {
+  background: #6366f1;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
-
-  &:hover {
-    background-color: #1d4ed8;
-  }
-};
-
-  .headerContent {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    // Search Bar Container
-    .cardSearch {
-      display: flex;
-      align-items: center;
-      background-color: #f3f4f6;
-      padding: 8px 15px;
-      border-radius: 8px;
-      width: 300px;
-      border: 1px solid transparent;
-
-      &:focus-within {
-        border-color: #4f46e5;
-        background-color: white;
-      }
-
-      svg {
-        color: #9ca3af;
-        margin-right: 10px;
-      }
-
-      input {
-        border: none;
-        background: transparent;
-        outline: none;
-        width: 100%;
-        font-size: 14px;
-        color: #374151;
-
-        &::placeholder {
-          color: #9ca3af;
-        }
-      }
-    }
-  }
 }
 
-// --- Card Grid Layout ---
-.cardView {
-  margin-top: 20px;
-
-  .membersList {
-    display: grid;
-    // Auto-fill grid: cards will be at least 300px wide
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-  }
-}
-
-// --- Individual Card Styling ---
-.memberCard {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #c7d2fe;
-  }
-
-  // Card Header: Avatar + Name
-  .memberHeader {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #f3f4f6;
-
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      background-color: #e5e7eb;
-    }
-
-    .memberInfo {
-      h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: #1f2937;
-      }
-    }
-  }
-
-  // Card Details: Icon + Text rows
-  .memberDetails {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    div {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: #6b7280;
-
-      svg {
-        color: #9ca3af;
-        min-width: 16px;
-      }
-    }
-  }
-
-
-.accessDenied {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 20px;
-
-  h2 {
-    font-size: 24px;
-    color: #374151;
-    margin: 0;
-  }
-
-  p {
-    color: #6b7280;
-  }
-
-  button {
-    padding: 10px 20px;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    
-    &:hover {
-      background-color: #1d4ed8;
-    }
-  }
-}
-/* --- Add these to the bottom of RefereePage.module.scss --- */
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(2px);
-}
-
-.modal {
-  background: #ffffff;
-  width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  
-  h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
-  
-  button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6b7280;
-  }
-}
-
-.form {
-  padding: 24px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.formGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  
-  @media (min-width: 640px) {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.cancelButton {
-  padding: 10px 20px;
-  border-radius: 6px;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  cursor: pointer;
-}
-
-.submitButton {
-  padding: 10px 20px;
-  border-radius: 6px;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  cursor: pointer;
-  
-  &:disabled { background-color: #93c5fd; }
-}
-}
+.countText { margin-bottom: 15px; color: #94a3b8; font-size: 0.85rem; }
