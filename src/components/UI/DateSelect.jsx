@@ -14,7 +14,7 @@ export default function DateSelect({
 }) {
   // Ensure value is never undefined - use null instead
   const dateValue = value === undefined ? null : value;
-   // ✅ Format selected date to Local Date (YYYY-MM-DD)
+  // ✅ Format selected date to Local Date (YYYY-MM-DD)
   const handleDateChange = (date) => {
     if (!date) {
       onChange(null);
@@ -26,7 +26,7 @@ export default function DateSelect({
     onChange(localDate);
   };
   return (
-    <div style={{ padding: "20px" }}>
+    <div className={styles.datePickerWrapper} style={{ padding: "20px" }}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB} >
         <DatePicker
           label={label || "Select Date"}
@@ -38,20 +38,33 @@ export default function DateSelect({
           error={error}
           slotProps={{
             textField: {
-              //  // ✅ same as before
-               error:false,
+              error: false,
               sx: {
+                width: "100%",
+                // Target the input element directly with high specificity
+                "& .MuiInputBase-input": {
+                  color: "var(--text-primary) !important",
+                  "-webkit-text-fill-color": "var(--text-primary) !important",
+                  fill: "var(--text-primary) !important",
+                },
                 "& .MuiInputBase-root": {
                   borderRadius: "10px",
-                  backgroundColor: "#ffffffff",
+                  backgroundColor: "var(--bg-secondary)",
+                  color: "var(--text-primary)",
+                },
+                "& .MuiInputLabel-root": {
+                  color: "var(--text-secondary)",
+                },
+                "& .MuiSvgIcon-root": {
+                  color: "var(--icon-color)",
                 },
                 "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#4f46e5",
+                  borderColor: "var(--border-medium)",
                 },
                 "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#4338ca",
+                  borderColor: "var(--text-muted)",
                 },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                "& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#2563eb",
                   borderWidth: "2px",
                 },

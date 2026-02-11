@@ -200,8 +200,11 @@
 //   color: $text-gray; font-size: 0.9rem;
 // }
 
-//-----------------6/2----------------6.53--------------------
+/* ============================================================
+   JobDetail.module.scss 
+============================================================ */
 
+/* Keep your gradient (same UI) */
 $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 
 .pageWrapper {
@@ -294,6 +297,7 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
+    text-transform: capitalize;
   }
 }
 
@@ -329,6 +333,7 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   .tileContent {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 
     label {
       font-size: 11px;
@@ -340,6 +345,9 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
       font-size: 15px;
       color: var(--text-primary);
       font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
@@ -420,6 +428,21 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   gap: 20px;
   overflow-x: auto;
   padding-bottom: 15px;
+
+  // nicer scroll
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.35) transparent;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 .vList {
@@ -428,6 +451,9 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   gap: 15px;
 }
 
+/* ===========================
+   CANDIDATE CARD (FIXED ALIGNMENT)
+=========================== */
 .candCard {
   min-width: 280px;
   background: var(--bg-secondary);
@@ -442,55 +468,69 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
   }
 
+  /* ✅ Applicants row (wide layout) */
   &.wide {
     min-width: 100%;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto; /* left grows, right stays */
     align-items: center;
-    justify-content: space-between;
+    gap: 18px;
   }
 
   .candTop {
     display: flex;
     align-items: center;
     gap: 12px;
-    position: relative;
+    min-width: 0; /* ✅ allows ellipsis */
+  }
 
-    .avatar {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border-light);
-    }
+  .avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+    flex-shrink: 0;
+  }
 
-    .candMeta {
-      h4 {
-        margin: 0;
-        font-size: 15px;
-        color: var(--text-primary);
-      }
-      p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--text-secondary);
-      }
-    }
+  .candMeta {
+    min-width: 0;
 
-    .score {
-      position: absolute;
-      right: 0;
-      width: 38px;
-      height: 38px;
-      border: 3px solid;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
+    h4 {
+      margin: 0;
+      font-size: 15px;
       color: var(--text-primary);
-      background: var(--bg-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* ✅ score aligned properly (no absolute) */
+  .score {
+    position: static;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+    border: 3px solid;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
   }
 
   .candBottom {
@@ -499,6 +539,7 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     .reasons {
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
 
       span {
         font-size: 10px;
@@ -508,6 +549,7 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         display: flex;
         align-items: center;
         gap: 3px;
+        white-space: nowrap;
       }
     }
 
@@ -534,6 +576,25 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         font-weight: 700;
       }
     }
+  }
+
+  /* ✅ For Applicants: keep Status perfectly aligned on right */
+  &.wide .candBottom {
+    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 160px;
+  }
+
+  /* ✅ For Applicants: hide reasons (matches your screenshot layout) */
+  &.wide .candBottom .reasons {
+    display: none;
+  }
+
+  &.wide .candBottom .status {
+    margin-top: 0;
+    white-space: nowrap;
   }
 }
 
@@ -675,15 +736,20 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
 
     .fileName {
       display: flex;
       flex-direction: column;
+      min-width: 0;
 
       span {
         font-size: 14px;
         font-weight: 600;
         color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       small {
@@ -699,6 +765,7 @@ $primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #ef4444;
     cursor: pointer;
     padding: 4px;
+    flex-shrink: 0;
 
     &:hover {
       color: #dc2626;

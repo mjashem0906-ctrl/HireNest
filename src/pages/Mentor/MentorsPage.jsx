@@ -230,16 +230,16 @@
 
 //-------------------------6/2----------------------11.26-----------------------------
 
-import React, { useEffect, useState } from 'react';
-import { Search, Mail, MapPin, Briefcase, Plus, Phone } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Search, Mail, MapPin, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import API from '../../axios';
-import styles from './Mentors.module.scss';
-import AddMentor from './AddMentor';
+import API from "../../axios";
+import styles from "./Mentors.module.scss";
+import AddMentor from "./AddMentor";
 
 const MentorsPage = () => {
   const [mentors, setMentors] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -250,14 +250,23 @@ const MentorsPage = () => {
   const fetchMentors = async () => {
     try {
       setLoading(true);
-      const res = await API.get('/member');
-      setMentors((res.data || []).filter(m => m.memberType?.toLowerCase() === 'mentor'));
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+      const res = await API.get("/member");
+      setMentors(
+        (res.data || []).filter(
+          (m) => m.memberType?.toLowerCase() === "mentor"
+        )
+      );
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filtered = mentors.filter(m => 
-    m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.designation?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = mentors.filter(
+    (m) =>
+      m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.designation?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -266,43 +275,66 @@ const MentorsPage = () => {
       <div className={styles.topToolbar}>
         <div className={styles.searchWrapper}>
           <Search className={styles.searchIcon} size={18} />
-          <input 
-            type="text" 
-            placeholder="Search by name, expertise or role..." 
+          <input
+            type="text"
+            value={searchTerm}
+            placeholder="Search by name, expertise or role..."
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <AddMentor onSuccess={fetchMentors} />
       </div>
 
-      {/* The List of Cards */}
-      <div className={styles.mentorGrid}>
-        {filtered.map((m) => (
-          <div key={m._id} className={styles.mentorCard} onClick={() => navigate(`/mentors/${m._id}`)}>
-            {/* 1. SMALL IMAGE */}
-            <div className={styles.imageContainer}>
-              <img 
-                src={m.photoUrl || "/members/AnonymousImage.jpg"} 
-                alt={m.name}
-                onError={(e) => e.target.src = "/members/AnonymousImage.jpg"}
-              />
-            </div>
+      {/* Loading */}
+      {loading && <div className={styles.loading}>Loading mentors...</div>}
 
-            {/* 2. TEXT CONTENT NEXT TO IMAGE */}
-            <div className={styles.infoContent}>
-              <div className={styles.statusBadge}>Available</div>
-              <h3>{m.name}</h3>
-              <div className={styles.designation}>{m.designation || 'Expert Mentor'}</div>
-              
-              <div className={styles.details}>
-                <span><MapPin size={14} /> {m.district || 'Remote'}</span>
-                <span><Mail size={14} /> {m.email}</span>
-                <span><Briefcase size={14} /> {m.workExp} Years Exp.</span>
+      {/* The List of Cards */}
+      {!loading && (
+        <div className={styles.mentorGrid}>
+          {filtered.map((m) => (
+            <div
+              key={m._id}
+              className={styles.mentorCard}
+              onClick={() => navigate(`/mentors/${m._id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") navigate(`/mentors/${m._id}`);
+              }}
+            >
+              {/* 1. SMALL IMAGE */}
+              <div className={styles.imageContainer}>
+                <img
+                  src={m.photoUrl || "/members/AnonymousImage.jpg"}
+                  alt={m.name}
+                  onError={(e) => (e.target.src = "/members/AnonymousImage.jpg")}
+                />
+              </div>
+
+              {/* 2. TEXT CONTENT NEXT TO IMAGE */}
+              <div className={styles.infoContent}>
+                <div className={styles.statusBadge}>Available</div>
+                <h3>{m.name}</h3>
+                <div className={styles.designation}>
+                  {m.designation || "Expert Mentor"}
+                </div>
+
+                <div className={styles.details}>
+                  <span>
+                    <MapPin size={14} /> {m.district || "Remote"}
+                  </span>
+                  <span>
+                    <Mail size={14} /> {m.email}
+                  </span>
+                  <span>
+                    <Briefcase size={14} /> {m.workExp} Years Exp.
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

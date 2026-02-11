@@ -173,8 +173,6 @@
 //   width: fit-content;
 // }
 
-//-------------------------6/2-----------------4.38-------------------
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 .container {
@@ -427,3 +425,99 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================================
+   DARK MODE — RecruiterDetail
+   Paste at END of RecruiterDetail.module.scss
+   ========================================================= */
+
+:global(html.dark) .container,
+:global(body.dark) .container,
+:global(#root.dark) .container,
+:global(.dark) .container,
+:global([data-theme="dark"]) .container {
+  background-color: #0b1220;
+  color: #e5e7eb;
+}
+
+/* Profile card + detail cards */
+:global(html.dark) .profileHeaderCard,
+:global(body.dark) .profileHeaderCard,
+:global(#root.dark) .profileHeaderCard,
+:global(.dark) .profileHeaderCard,
+:global([data-theme="dark"]) .profileHeaderCard,
+:global(html.dark) .detailCard,
+:global(body.dark) .detailCard,
+:global(#root.dark) .detailCard,
+:global(.dark) .detailCard,
+:global([data-theme="dark"]) .detailCard {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+}
+
+:global(html.dark) .heroText h1,
+:global(body.dark) .heroText h1,
+:global(#root.dark) .heroText h1,
+:global(.dark) .heroText h1,
+:global([data-theme="dark"]) .heroText h1 {
+  color: #e5e7eb;
+}
+
+:global(html.dark) .designationText,
+:global(body.dark) .designationText,
+:global(#root.dark) .designationText,
+:global(.dark) .designationText,
+:global([data-theme="dark"]) .designationText {
+  color: #a78bfa;
+}
+
+:global(html.dark) .infoBadge,
+:global(body.dark) .infoBadge,
+:global(#root.dark) .infoBadge,
+:global(.dark) .infoBadge,
+:global([data-theme="dark"]) .infoBadge {
+  background: rgba(148, 163, 184, 0.10);
+  color: rgba(226, 232, 240, 0.92);
+}
+
+:global(html.dark) .infoBadge svg,
+:global(body.dark) .infoBadge svg,
+:global(#root.dark) .infoBadge svg,
+:global(.dark) .infoBadge svg,
+:global([data-theme="dark"]) .infoBadge svg {
+  color: #a78bfa;
+}
+
+:global(html.dark) .detailCard .cardHeader,
+:global(body.dark) .detailCard .cardHeader,
+:global(#root.dark) .detailCard .cardHeader,
+:global(.dark) .detailCard .cardHeader,
+:global([data-theme="dark"]) .detailCard .cardHeader {
+  color: rgba(226, 232, 240, 0.92);
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.20);
+}
+
+:global(html.dark) .detailCard .cardHeader svg,
+:global(body.dark) .detailCard .cardHeader svg,
+:global(#root.dark) .detailCard .cardHeader svg,
+:global(.dark) .detailCard .cardHeader svg,
+:global([data-theme="dark"]) .detailCard .cardHeader svg {
+  color: #a78bfa;
+}
+
+:global(html.dark) .infoList .item label,
+:global(body.dark) .infoList .item label,
+:global(#root.dark) .infoList .item label,
+:global(.dark) .infoList .item label,
+:global([data-theme="dark"]) .infoList .item label {
+  color: rgba(203, 213, 225, 0.65);
+}
+
+:global(html.dark) .infoList .item .value,
+:global(body.dark) .infoList .item .value,
+:global(#root.dark) .infoList .item .value,
+:global(.dark) .infoList .item .value,
+:global([data-theme="dark"]) .infoList .item .value {
+  color: rgba(226, 232, 240, 0.92);
+}

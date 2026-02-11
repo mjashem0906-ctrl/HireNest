@@ -210,8 +210,8 @@ function AddMember({
 
           {activeTab === 'edu' && (
             <div>
-              <div style={{ background: '#f0f7ff', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3 style={{ marginTop: 0 }}>Resume</h3>
+              <div className={styles.resumeSection}>
+                <h3>Resume</h3>
                 <input type="file" accept=".pdf,.docx" onChange={(e) => setResumeFile(e.target.files[0])} />
                 {formData.resumeLink && <p><a href={formData.resumeLink} target="_blank" rel="noreferrer">View Current Resume</a></p>}
               </div>

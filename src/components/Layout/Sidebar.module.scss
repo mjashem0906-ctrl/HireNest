@@ -1,16 +1,251 @@
+// .sidebar {
+//   position: fixed;
+//   top: 0;
+//   left: -280px;
+//   width: 280px;
+//   height: 100vh;
+//   background-color: #f1f5f9; // light frosted panel look
+//   border-right: 1px solid #e2e8f0; // soft border
+//   box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+//   transition: transform var(--transition-slow);
+//   z-index: 50;
+//   display: flex;
+//   flex-direction: column;
+
+//   &.open {
+//     transform: translateX(280px);
+//   }
+
+//   @media (min-width: 769px) {
+//     left: 0;
+//     transform: none;
+//     box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+//   }
+// }
+
+// .header {
+//   display: flex;
+//   align-items: center;
+//   justify-content: space-between;
+//   padding: var(--spacing-lg);
+//   border-bottom: 1px solid #cbd5e1; // slightly darker
+//   flex-shrink: 0;
+
+//   .collapseToggle {
+//     display: flex;
+//     justify-content: flex-end;
+//     padding: var(--spacing-sm);
+//   }
+
+//   @media (max-width: 768px) {
+//     .collapseToggle {
+//       display: none;
+//     }
+//   }
+// }
+
+// .logo {
+//   display: flex;
+//   align-items: center;
+//   gap: var(--spacing-md);
+//   transition: opacity 0.3s ease;
+// }
+
+// .logoIcon {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   width: 40px;
+//   height: 40px;
+//   background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%); // deeper gradient
+//   color: white;
+//   font-weight: 700;
+//   font-size: 1rem;
+//   font-family: 'Poppins', serif;
+// }
+
+// .closeButton {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   width: 32px;
+//   height: 32px;
+//   border-radius: var(--radius-md);
+//   color: #64748b; // secondary text gray
+//   transition: var(--transition-slow);
+
+//   &:hover {
+//     background-color: #e2e8f0; // light hover
+//     color: #1e293b; // darker text on hover
+//   }
+
+//   @media (min-width: 769px) {
+//     display: none;
+//   }
+// }
+
+// .nav {
+//   padding: var(--spacing-md);
+//   flex: 1;
+//   overflow-y: auto;
+//   height: calc(100vh - 80px);
+// }
+
+// .navItem {
+//   display: flex;
+//   align-items: center;
+//   gap: var(--spacing-md);
+//   padding: var(--spacing-md) var(--spacing-lg);
+//   margin-bottom: var(--spacing-xs);
+//   border-radius: var(--radius-lg);
+//   color: #475569; // dark gray text
+//   text-decoration: none;
+//   font-weight: 500;
+//   transition: var(--transition-slow);
+
+//   &:hover {
+//     background-color: #e2e8f0; // soft hover background
+//     color: #1e293b; // dark hover text
+//   }
+
+//   &.active {
+//     background-color: #4f46e5; // primary purple
+//     color: white;
+
+//     &:hover {
+//       background-color: #6366f1; // darker hover for active
+//       color: white;
+//     }
+//   }
+// }
+
+// .label {
+//   transition: opacity 0.3s ease;
+// }
+
+// .sidebar.collapsed .label {
+//   opacity: 0;
+//   pointer-events: none;
+//   width: 0;
+//   overflow: hidden;
+// }
+
+// .sidebar.collapsed {
+//   width: 90px;
+// }
+
+// .sidebar.collapsed .navItem {
+//   justify-content: center;
+//   padding: var(--spacing-md);
+// }
+
+// .hideLogo {
+//   display: none;
+//   opacity: 0;
+//   transition: opacity 0.3s ease;
+//   pointer-events: none;
+//   height: 0;
+//   overflow: hidden;
+// }
+
+// .collapseIcon {
+//   background-color: #e4e4e4;
+//   color: #000;
+//   padding: 6px;
+//   border-radius: var(--radius-md);
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   transition: background-color var(--transition-slow);
+
+//   &:hover {
+//     background-color: #555;
+//     color: white;
+//     svg {
+//       color: #fff; 
+//       transition: color var(--transition-slow);
+//     }
+//   }
+
+//   svg {
+//     color: #1e293b; // dark text for icons
+//     transition: color var(--transition-slow);
+//   }
+// }
+
+@use "sass:color";
+
+/* ============================================================
+   Sidebar.module.scss (Jobs Page Style)
+   - Premium card look
+   - Gradient accents like Jobs header
+   - Rounded nav items + soft hover
+   - Same scrollbar style
+   - Dark theme support (data-theme="dark")
+============================================================ */
+
+/* --------------------------
+   ACCENT COLORS (same as Jobs)
+-------------------------- */
+$primary: #2563eb;
+$primary2: #8b5cf6;
+$cyan: #06b6d4;
+
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 6px 18px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 16px 40px rgba(37, 99, 235, 0.12);
+
+$radius: 16px;
+$radius-xl: 22px;
+
+/* --------------------------
+   THEME TOKENS (Jobs-style)
+-------------------------- */
 .sidebar {
+  /* Light defaults */
+  --sb-bg: #ffffff;
+  --sb-soft: #f8fafc;
+  --sb-text: #111827;
+  --sb-text2: #374151;
+  --sb-muted: #6b7280;
+  --sb-border: #e2e8f0;
+
+  /* hover/active fills */
+  --sb-hover: rgba(37, 99, 235, 0.06);
+  --sb-active: rgba(37, 99, 235, 0.12);
+
+  /* premium glows */
+  --sb-glow: rgba(37, 99, 235, 0.18);
+  --sb-glow2: rgba(139, 92, 246, 0.14);
+
+  /* layout */
   position: fixed;
   top: 0;
   left: -280px;
   width: 280px;
   height: 100vh;
-  background-color: #f1f5f9; // light frosted panel look
-  border-right: 1px solid #e2e8f0; // soft border
-  box-shadow: 2px 0 8px rgba(0,0,0,0.08);
-  transition: transform var(--transition-slow);
+
+  background: var(--sb-bg);
+  border-right: 1px solid var(--sb-border);
+  box-shadow: 2px 0 18px rgba(0, 0, 0, 0.08);
+
+  transition: transform 0.35s ease, width 0.25s ease;
   z-index: 50;
   display: flex;
   flex-direction: column;
+
+  /* ✅ premium top glow + subtle glass */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(900px 380px at 18% -10%, rgba(37, 99, 235, 0.14), transparent 60%),
+      radial-gradient(900px 380px at 85% 0%, rgba(139, 92, 246, 0.12), transparent 55%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0));
+    opacity: 0.9;
+  }
 
   &.open {
     transform: translateX(280px);
@@ -19,22 +254,72 @@
   @media (min-width: 769px) {
     left: 0;
     transform: none;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    box-shadow: 2px 0 22px rgba(0, 0, 0, 0.06);
   }
 }
 
+/* Dark theme overrides */
+:global([data-theme="dark"]) .sidebar {
+  --sb-bg: #0b1224;
+  --sb-soft: rgba(148, 163, 184, 0.08);
+  --sb-text: #e5e7eb;
+  --sb-text2: #cbd5e1;
+  --sb-muted: #94a3b8;
+  --sb-border: rgba(148, 163, 184, 0.16);
+
+  --sb-hover: rgba(99, 102, 241, 0.12);
+  --sb-active: rgba(99, 102, 241, 0.18);
+
+  --sb-glow: rgba(99, 102, 241, 0.26);
+  --sb-glow2: rgba(6, 182, 212, 0.16);
+
+  box-shadow: 2px 0 26px rgba(0, 0, 0, 0.42);
+
+  &::before {
+    background:
+      radial-gradient(900px 380px at 18% -10%, rgba(99, 102, 241, 0.22), transparent 60%),
+      radial-gradient(900px 380px at 85% 0%, rgba(6, 182, 212, 0.14), transparent 55%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+    opacity: 1;
+  }
+}
+
+/* --------------------------
+   Header (premium)
+-------------------------- */
 .header {
+  position: relative;
+  padding: 16px;
+  border-bottom: 1px solid var(--sb-border);
+  flex-shrink: 0;
+
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.10),
+    rgba(139, 92, 246, 0.10)
+  );
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid #cbd5e1; // slightly darker
-  flex-shrink: 0;
+  gap: 12px;
+
+  /* ✅ inner glow strip */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(37,99,235,0.35), rgba(139,92,246,0.28), transparent);
+    pointer-events: none;
+  }
 
   .collapseToggle {
     display: flex;
     justify-content: flex-end;
-    padding: var(--spacing-sm);
+    padding: 6px;
   }
 
   @media (max-width: 768px) {
@@ -45,38 +330,61 @@
 }
 
 .logo {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 12px;
+  min-width: 0;
   transition: opacity 0.3s ease;
+  z-index: 1;
 }
 
+.logoImg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Gradient icon like Jobs avatarCircle */
 .logoIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%); // deeper gradient
-  color: white;
-  font-weight: 700;
+  width: 44px;
+  height: 44px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, $cyan, $primary2);
+  color: #fff;
+  font-weight: 1100;
   font-size: 1rem;
-  font-family: 'Poppins', serif;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.20);
+  font-family: "Poppins", serif;
+
+  /* ✅ glow ring */
+  outline: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+:global([data-theme="dark"]) .logoIcon {
+  outline: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .closeButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  color: #64748b; // secondary text gray
-  transition: var(--transition-slow);
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--sb-muted);
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+  transition: 0.18s ease;
 
   &:hover {
-    background-color: #e2e8f0; // light hover
-    color: #1e293b; // darker text on hover
+    transform: translateY(-1px);
+    box-shadow: $shadow-sm;
+    color: var(--sb-text);
+    background: #fff;
   }
 
   @media (min-width: 769px) {
@@ -84,43 +392,225 @@
   }
 }
 
-.nav {
-  padding: var(--spacing-md);
-  flex: 1;
-  overflow-y: auto;
-  height: calc(100vh - 80px);
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  margin-bottom: var(--spacing-xs);
-  border-radius: var(--radius-lg);
-  color: #475569; // dark gray text
-  text-decoration: none;
-  font-weight: 500;
-  transition: var(--transition-slow);
+:global([data-theme="dark"]) .closeButton {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.88);
 
   &:hover {
-    background-color: #e2e8f0; // soft hover background
-    color: #1e293b; // dark hover text
+    background: rgba(15, 23, 42, 1);
+  }
+}
+
+/* Collapse icon button (match Jobs rounded buttons) */
+.collapseIcon {
+  background: var(--sb-soft);
+  color: var(--sb-text);
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  transition: 0.18s ease;
+  border: 1px solid var(--sb-border);
+
+  &:hover {
+    transform: translateY(-1px);
+    background: rgba(37, 99, 235, 0.12);
+    border-color: rgba(37, 99, 235, 0.28);
+    box-shadow: $shadow-sm;
+    filter: drop-shadow(0 10px 18px rgba(37, 99, 235, 0.18));
+
+    svg {
+      color: $primary;
+    }
   }
 
-  &.active {
-    background-color: #4f46e5; // primary purple
-    color: white;
+  svg {
+    transition: 0.18s ease;
+    color: var(--sb-text);
+  }
+}
 
-    &:hover {
-      background-color: #6366f1; // darker hover for active
-      color: white;
+/* --------------------------
+   Nav Area
+-------------------------- */
+.nav {
+  position: relative;
+  padding: 14px 12px 18px;
+  flex: 1;
+  overflow-y: auto;
+  height: calc(100vh - 78px);
+  z-index: 1;
+}
+
+/* Jobs-like scrollbar */
+.nav::-webkit-scrollbar {
+  width: 10px;
+}
+.nav::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 999px;
+  border: 2px solid var(--sb-bg);
+}
+:global([data-theme="dark"]) .nav::-webkit-scrollbar-thumb {
+  background: rgba(199, 210, 254, 0.35);
+  border: 2px solid var(--sb-bg);
+}
+
+/* Optional: group title if you add it later */
+.sectionTitle {
+  margin: 10px 10px 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sb-muted);
+  font-weight: 900;
+}
+
+/* Optional: subtle divider */
+.divider {
+  margin: 10px 10px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 163, 184, 0.28),
+    transparent
+  );
+}
+
+/* --------------------------
+   Nav Item (premium)
+-------------------------- */
+.navItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+
+  text-decoration: none;
+  font-weight: 950;
+  color: var(--sb-text2);
+
+  border: 1px solid transparent;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease,
+    box-shadow 0.18s ease, color 0.18s ease;
+
+  /* ✅ soft glass surface */
+  background: rgba(255, 255, 255, 0.44);
+  backdrop-filter: blur(8px);
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.10),
+      rgba(139, 92, 246, 0.08)
+    );
+    border-color: rgba(37, 99, 235, 0.16);
+    color: var(--sb-text);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+  }
+
+  /* ✅ hover glow ring */
+  &:hover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    pointer-events: none;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.10), 0 0 0 6px rgba(37, 99, 235, 0.06);
+  }
+
+  /* Active = premium pill + neon edge + left accent */
+  &.active {
+    background: linear-gradient(
+      135deg,
+      rgba(37, 99, 235, 0.22),
+      rgba(139, 92, 246, 0.18)
+    );
+    border-color: rgba(37, 99, 235, 0.26);
+    color: var(--sb-text);
+    box-shadow: 0 16px 34px rgba(37, 99, 235, 0.14);
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, $primary, $primary2);
+      box-shadow: 0 0 18px rgba(37, 99, 235, 0.35);
+    }
+
+    /* active neon edge */
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      pointer-events: none;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18),
+        0 0 0 7px rgba(37, 99, 235, 0.07);
+    }
+
+    .icon {
+      color: $primary;
+      filter: drop-shadow(0 10px 16px rgba(37, 99, 235, 0.25));
     }
   }
 }
 
+:global([data-theme="dark"]) .navItem {
+  background: rgba(15, 23, 42, 0.55);
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.18),
+      rgba(6, 182, 212, 0.10)
+    );
+    border-color: rgba(99, 102, 241, 0.22);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  &.active {
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.26),
+      rgba(6, 182, 212, 0.12)
+    );
+    border-color: rgba(99, 102, 241, 0.28);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.36);
+  }
+}
+
+/* icon inherits currentColor */
+.icon {
+  color: currentColor;
+  display: grid;
+  place-items: center;
+}
+
+/* Label */
 .label {
   transition: opacity 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------
+   Collapsed Sidebar
+-------------------------- */
+.sidebar.collapsed {
+  width: 92px;
 }
 
 .sidebar.collapsed .label {
@@ -130,13 +620,14 @@
   overflow: hidden;
 }
 
-.sidebar.collapsed {
-  width: 90px;
-}
-
 .sidebar.collapsed .navItem {
   justify-content: center;
-  padding: var(--spacing-md);
+  padding: 12px;
+}
+
+.sidebar.collapsed .navItem:hover {
+  /* ✅ nicer glow when only icons */
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.12);
 }
 
 .hideLogo {
@@ -146,29 +637,4 @@
   pointer-events: none;
   height: 0;
   overflow: hidden;
-}
-
-.collapseIcon {
-  background-color: #e4e4e4;
-  color: #000;
-  padding: 6px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color var(--transition-slow);
-
-  &:hover {
-    background-color: #555;
-    color: white;
-    svg {
-      color: #fff; 
-      transition: color var(--transition-slow);
-    }
-  }
-
-  svg {
-    color: #1e293b; // dark text for icons
-    transition: color var(--transition-slow);
-  }
 }

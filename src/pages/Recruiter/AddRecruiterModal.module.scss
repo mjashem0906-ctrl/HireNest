@@ -145,8 +145,6 @@
 //   }
 // }
 
-//--------------------------------6/2---------------3.13-----------------------------
-
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 .overlay {
@@ -326,4 +324,217 @@
 @keyframes slideUp { 
   from { opacity: 0; transform: translateY(40px) scale(0.95); } 
   to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
+/* =========================================================
+   DARK MODE — AddRecruiterModal
+   Paste at END of AddRecruiterModal.module.scss
+   ========================================================= */
+
+:global(html.dark) .overlay,
+:global(body.dark) .overlay,
+:global(#root.dark) .overlay,
+:global(.dark) .overlay,
+:global([data-theme="dark"]) .overlay {
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+:global(html.dark) .modalContainer,
+:global(body.dark) .modalContainer,
+:global(#root.dark) .modalContainer,
+:global(.dark) .modalContainer,
+:global([data-theme="dark"]) .modalContainer {
+  background: rgba(11, 18, 32, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+:global(html.dark) .header,
+:global(body.dark) .header,
+:global(#root.dark) .header,
+:global(.dark) .header,
+:global([data-theme="dark"]) .header {
+  background: rgba(11, 18, 32, 0.98);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+:global(html.dark) .header h2,
+:global(body.dark) .header h2,
+:global(#root.dark) .header h2,
+:global(.dark) .header h2,
+:global([data-theme="dark"]) .header h2 {
+  color: #e5e7eb;
+}
+
+:global(html.dark) .closeBtn,
+:global(body.dark) .closeBtn,
+:global(#root.dark) .closeBtn,
+:global(.dark) .closeBtn,
+:global([data-theme="dark"]) .closeBtn {
+  background: rgba(148, 163, 184, 0.10);
+  color: #cbd5e1;
+}
+
+:global(html.dark) .closeBtn:hover,
+:global(body.dark) .closeBtn:hover,
+:global(#root.dark) .closeBtn:hover,
+:global(.dark) .closeBtn:hover,
+:global([data-theme="dark"]) .closeBtn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+
+/* Section titles */
+:global(html.dark) .sectionTitle,
+:global(body.dark) .sectionTitle,
+:global(#root.dark) .sectionTitle,
+:global(.dark) .sectionTitle,
+:global([data-theme="dark"]) .sectionTitle {
+  color: #a78bfa;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.22);
+}
+
+:global(html.dark) .sectionTitle::after,
+:global(body.dark) .sectionTitle::after,
+:global(#root.dark) .sectionTitle::after,
+:global(.dark) .sectionTitle::after,
+:global([data-theme="dark"]) .sectionTitle::after {
+  background: rgba(148, 163, 184, 0.18);
+}
+
+/* Labels */
+:global(html.dark) .inputGroup label,
+:global(body.dark) .inputGroup label,
+:global(#root.dark) .inputGroup label,
+:global(.dark) .inputGroup label,
+:global([data-theme="dark"]) .inputGroup label {
+  color: rgba(226, 232, 240, 0.88);
+}
+
+/* Inputs/selects */
+:global(html.dark) .inputGroup input,
+:global(body.dark) .inputGroup input,
+:global(#root.dark) .inputGroup input,
+:global(.dark) .inputGroup input,
+:global([data-theme="dark"]) .inputGroup input,
+:global(html.dark) .inputGroup select,
+:global(body.dark) .inputGroup select,
+:global(#root.dark) .inputGroup select,
+:global(.dark) .inputGroup select,
+:global([data-theme="dark"]) .inputGroup select {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #e5e7eb;
+}
+
+:global(html.dark) .inputGroup input::placeholder,
+:global(body.dark) .inputGroup input::placeholder,
+:global(#root.dark) .inputGroup input::placeholder,
+:global(.dark) .inputGroup input::placeholder,
+:global([data-theme="dark"]) .inputGroup input::placeholder {
+  color: rgba(203, 213, 225, 0.55);
+}
+
+:global(html.dark) .inputGroup input:focus,
+:global(body.dark) .inputGroup input:focus,
+:global(#root.dark) .inputGroup input:focus,
+:global(.dark) .inputGroup input:focus,
+:global([data-theme="dark"]) .inputGroup input:focus,
+:global(html.dark) .inputGroup select:focus,
+:global(body.dark) .inputGroup select:focus,
+:global(#root.dark) .inputGroup select:focus,
+:global(.dark) .inputGroup select:focus,
+:global([data-theme="dark"]) .inputGroup select:focus {
+  border-color: rgba(99, 102, 241, 0.85);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+  outline: none;
+}
+
+/* Footer */
+:global(html.dark) .footer,
+:global(body.dark) .footer,
+:global(#root.dark) .footer,
+:global(.dark) .footer,
+:global([data-theme="dark"]) .footer {
+  background: rgba(148, 163, 184, 0.06);
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+:global(html.dark) .cancelBtn,
+:global(body.dark) .cancelBtn,
+:global(#root.dark) .cancelBtn,
+:global(.dark) .cancelBtn,
+:global([data-theme="dark"]) .cancelBtn {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+}
+
+:global(html.dark) .cancelBtn:hover,
+:global(body.dark) .cancelBtn:hover,
+:global(#root.dark) .cancelBtn:hover,
+:global(.dark) .cancelBtn:hover,
+:global([data-theme="dark"]) .cancelBtn:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.26);
+}
+
+:global(html.dark) .submitBtn,
+:global(body.dark) .submitBtn,
+:global(#root.dark) .submitBtn,
+:global(.dark) .submitBtn,
+:global([data-theme="dark"]) .submitBtn {
+  box-shadow: 0 14px 24px -10px rgba(99, 102, 241, 0.55);
+}
+/* =========================================================
+   FIX: Native <select> dropdown popup in DARK MODE
+   Paste at END of AddRecruiterModal.module.scss
+   ========================================================= */
+
+:global(html.dark) .inputGroup select,
+:global(body.dark) .inputGroup select,
+:global(#root.dark) .inputGroup select,
+:global(.dark) .inputGroup select,
+:global([data-theme="dark"]) .inputGroup select {
+  /* ✅ Forces OS/browser to render dropdown UI in dark where supported */
+  color-scheme: dark;
+
+  background: rgba(148, 163, 184, 0.08) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: #e5e7eb !important;
+
+  /* makes arrow + text centered nicely */
+  appearance: auto;
+}
+
+/* ✅ Options popup colors (works in most browsers) */
+:global(html.dark) .inputGroup select option,
+:global(body.dark) .inputGroup select option,
+:global(#root.dark) .inputGroup select option,
+:global(.dark) .inputGroup select option,
+:global([data-theme="dark"]) .inputGroup select option {
+  background: #0b1220 !important;
+  color: #e5e7eb !important;
+}
+
+/* ✅ Hover / selected state (some browsers allow) */
+:global(html.dark) .inputGroup select option:checked,
+:global(body.dark) .inputGroup select option:checked,
+:global(#root.dark) .inputGroup select option:checked,
+:global(.dark) .inputGroup select option:checked,
+:global([data-theme="dark"]) .inputGroup select option:checked {
+  background: rgba(99, 102, 241, 0.35) !important;
+  color: #ffffff !important;
+}
+
+/* ✅ Focus ring (keep consistent with your theme) */
+:global(html.dark) .inputGroup select:focus,
+:global(body.dark) .inputGroup select:focus,
+:global(#root.dark) .inputGroup select:focus,
+:global(.dark) .inputGroup select:focus,
+:global([data-theme="dark"]) .inputGroup select:focus {
+  outline: none !important;
+  border-color: rgba(99, 102, 241, 0.85) !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18) !important;
 }

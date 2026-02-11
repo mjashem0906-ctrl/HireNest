@@ -126,7 +126,7 @@
 
 // export default App;
 
-//-------------------6/2------------------3.28------------------
+// App.jsx (FULL UPDATED CODE)
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -160,8 +160,7 @@ import MentorDetails from './pages/Mentor/MentorDetails';
 
 // ✅ Recruiters
 import RecruitersPage from './pages/Recruiter/RecruitersPage';
-// 👇👇 1. ADDED THIS MISSING IMPORT 👇👇
-import RecruiterDetail from './pages/Recruiter/RecruiterDetail'; 
+import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
 
 function App() {
   return (
@@ -181,67 +180,65 @@ function App() {
             <Route index element={<Dashboard />} />
 
             {/* Admin & IT Member Routes */}
-            <Route 
-              path="members" 
+            <Route
+              path="members"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member']}>
                   <Members />
                 </PrivateRoute>
-              } 
+              }
             />
-            <Route 
-              path="member/:id" 
+            <Route
+              path="member/:id"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Mentor', 'Job', 'Candidate']}>
                   <MembersDetail />
                 </PrivateRoute>
-              } 
+              }
             />
-            <Route 
-              path="createUser" 
+            <Route
+              path="createUser"
               element={
                 <PrivateRoute roles={['Admin']}>
                   <UserList />
                 </PrivateRoute>
-              } 
+              }
             />
 
             {/* Mentors Routes */}
-            <Route 
-              path="mentors" 
+            <Route
+              path="mentors"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Candidate', 'Job', 'Mentor']}>
                   <MentorsPage />
                 </PrivateRoute>
-              } 
+              }
             />
-            <Route 
-              path="mentors/:id" 
+            <Route
+              path="mentors/:id"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Candidate', 'Job', 'Mentor']}>
                   <MentorDetails />
                 </PrivateRoute>
-              } 
+              }
             />
 
-            {/* 👇👇 RECRUITERS ROUTES (Updated) 👇👇 */}
-            <Route 
-              path="recruiters" 
+            {/* ✅ Recruiters Routes */}
+            <Route
+              path="recruiters"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate']}>
                   <RecruitersPage />
                 </PrivateRoute>
-              } 
+              }
             />
-            
-            {/* 👇👇 2. ADDED THIS MISSING ROUTE FOR DETAILS 👇👇 */}
-            <Route 
-              path="recruiters/:id" 
+            <Route
+              path="recruiters/:id"
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate']}>
                   <RecruiterDetail />
                 </PrivateRoute>
-              } 
+              }
             />
 
             {/* Referee Routes */}
@@ -258,6 +255,7 @@ function App() {
           </Route>
         </Routes>
       </Router>
+
       <InstallPopup />
     </>
   );

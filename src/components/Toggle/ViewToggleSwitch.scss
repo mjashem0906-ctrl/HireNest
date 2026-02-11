@@ -1,10 +1,9 @@
-
 .view-toggle-switch {
   display: flex;
   border: 1px solid var(--toggle-border);
   border-radius: 10px;
   overflow: hidden;
-  background-color: white;
+  background-color: var(--bg-secondary);
 
   button {
     padding: 10px;
@@ -23,15 +22,21 @@
     }
 
     &.active {
-      background-color: #4f46e5;
+      background-color: var(--active-bg);
 
       span.material-icons {
         color: var(--active-icon);
       }
+
       &:hover {
-      background-color: #6366f1;
-      color: white;
+        background-color: var(--active-bg);
+        opacity: 0.9;
+        color: white;
+      }
     }
+
+    &:hover:not(.active) {
+      background-color: var(--bg-tertiary);
     }
   }
 }

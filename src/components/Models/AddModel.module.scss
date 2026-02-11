@@ -60,8 +60,8 @@
 /* --- Tabs --- */
 .tabContainer {
   display: flex;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
   padding: 0 1rem;
 }
 
@@ -79,6 +79,24 @@
 .tabContainer button.activeTab {
   color: #4f46e5;
   border-bottom-color: #4f46e5;
+}
+
+:global([data-theme="dark"]) .tabContainer {
+  background: var(--bg-tertiary);
+  border-bottom-color: var(--border-light);
+
+  button {
+    color: var(--text-muted);
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  button.activeTab {
+    color: var(--active-bg);
+    border-bottom-color: var(--active-bg);
+  }
 }
 
 /* --- Form Layout --- */
@@ -148,8 +166,14 @@
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-weight: 500;
-  background: white;
+  background: var(--bg-secondary);
   cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
 }
 
 .fileUploadSection {
@@ -161,5 +185,30 @@
     font-size: 0.9rem;
     font-weight: 500;
     color: #555;
+  }
+}
+
+.resumeSection {
+  background: #f0f7ff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  h3 {
+    margin-top: 0;
+    color: var(--text-primary);
+  }
+}
+
+:global([data-theme="dark"]) .resumeSection {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+
+  h3 {
+    color: var(--text-primary);
+  }
+
+  label {
+    color: var(--text-secondary);
   }
 }

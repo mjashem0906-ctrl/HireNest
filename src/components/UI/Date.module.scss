@@ -1,8 +1,12 @@
-
 .datePicker {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+}
+
+.dateInput {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
 }
 
 .label {
@@ -39,15 +43,15 @@
   color: var(--text-primary);
   font-size: 0.875rem;
   transition: var(--transition-fast);
-  
+
   &:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
   }
-  
+
   &.error {
     border-color: var(--error);
-    
+
     &:focus {
       border-color: var(--error);
       box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.1);
@@ -58,4 +62,16 @@
 .errorText {
   color: var(--error);
   font-size: 0.75rem;
+}
+
+// Force override for MUI DatePicker input in dark mode
+:global([data-theme="dark"]) .datePickerWrapper {
+  :global(.MuiInputBase-input) {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+
+  :global(.MuiOutlinedInput-notchedOutline) {
+    border-color: rgba(255, 255, 255, 0.23) !important;
+  }
 }

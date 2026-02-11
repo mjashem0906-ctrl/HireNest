@@ -213,6 +213,7 @@ import API from "../../axios";
 import FormInput from "../../components/UI/FormInput"; 
 import DropdownSelect from "../../components/UI/DropdownSelect"; 
 import styles from "./AddModel.module.scss"; 
+import { useAuth } from "../../context/AuthContext";
 
 const initialState = {
   name: "",
@@ -232,6 +233,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState(initialState);
   const [btnLoading, setBtnLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (isEditing && editData) {
@@ -272,7 +274,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
 
   return (
     <>
-      {!isEditing && (
+      {user?.role === "Admin" && !isEditing && (
         <button 
           onClick={toggleModal} 
           style={{

@@ -485,3 +485,178 @@
     .actions { width: 100%; button { flex: 1; padding: 12px 10px; } }
   }
 }
+
+/* =========================================================
+   DARK MODE — RecruitersPage
+   Paste at END of RecruitersPage.module.scss
+   ========================================================= */
+
+:global(html.dark) .container,
+:global(body.dark) .container,
+:global(#root.dark) .container,
+:global(.dark) .container,
+:global([data-theme="dark"]) .container {
+  background-color: #0b1220; /* page bg */
+  color: #e5e7eb;
+}
+
+:global(html.dark) .header,
+:global(body.dark) .header,
+:global(#root.dark) .header,
+:global(.dark) .header,
+:global([data-theme="dark"]) .header {
+  color: #e5e7eb;
+}
+
+/* Search */
+:global(html.dark) .searchWrapper input,
+:global(body.dark) .searchWrapper input,
+:global(#root.dark) .searchWrapper input,
+:global(.dark) .searchWrapper input,
+:global([data-theme="dark"]) .searchWrapper input {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #e5e7eb;
+}
+
+:global(html.dark) .searchWrapper input::placeholder,
+:global(body.dark) .searchWrapper input::placeholder,
+:global(#root.dark) .searchWrapper input::placeholder,
+:global(.dark) .searchWrapper input::placeholder,
+:global([data-theme="dark"]) .searchWrapper input::placeholder {
+  color: rgba(203, 213, 225, 0.55);
+}
+
+:global(html.dark) .searchWrapper .searchIcon,
+:global(body.dark) .searchWrapper .searchIcon,
+:global(#root.dark) .searchWrapper .searchIcon,
+:global(.dark) .searchWrapper .searchIcon,
+:global([data-theme="dark"]) .searchWrapper .searchIcon {
+  color: #8b5cf6;
+}
+
+/* Action buttons */
+:global(html.dark) .actions .btnExcel,
+:global(body.dark) .actions .btnExcel,
+:global(#root.dark) .actions .btnExcel,
+:global(.dark) .actions .btnExcel,
+:global([data-theme="dark"]) .actions .btnExcel {
+  background: rgba(34, 197, 94, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+:global(html.dark) .actions .btnCsv,
+:global(body.dark) .actions .btnCsv,
+:global(#root.dark) .actions .btnCsv,
+:global(.dark) .actions .btnCsv,
+:global([data-theme="dark"]) .actions .btnCsv {
+  background: rgba(148, 163, 184, 0.10);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+:global(html.dark) .actions .btnAdd,
+:global(body.dark) .actions .btnAdd,
+:global(#root.dark) .actions .btnAdd,
+:global(.dark) .actions .btnAdd,
+:global([data-theme="dark"]) .actions .btnAdd {
+  box-shadow: 0 14px 24px -10px rgba(99, 102, 241, 0.55);
+}
+
+/* Cards */
+:global(html.dark) .card,
+:global(body.dark) .card,
+:global(#root.dark) .card,
+:global(.dark) .card,
+:global([data-theme="dark"]) .card {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+:global(html.dark) .card:hover,
+:global(body.dark) .card:hover,
+:global(#root.dark) .card:hover,
+:global(.dark) .card:hover,
+:global([data-theme="dark"]) .card:hover {
+  box-shadow: 0 25px 55px -20px rgba(0, 0, 0, 0.65);
+  border-color: rgba(99, 102, 241, 0.55);
+}
+
+/* Avatar ring */
+:global(html.dark) .avatarRing,
+:global(body.dark) .avatarRing,
+:global(#root.dark) .avatarRing,
+:global(.dark) .avatarRing,
+:global([data-theme="dark"]) .avatarRing {
+  background: rgba(148, 163, 184, 0.08);
+  border: 2px solid rgba(148, 163, 184, 0.18);
+  color: #a78bfa;
+}
+
+/* Text colors inside cards */
+:global(html.dark) .info .nameRow h3,
+:global(body.dark) .info .nameRow h3,
+:global(#root.dark) .info .nameRow h3,
+:global(.dark) .info .nameRow h3,
+:global([data-theme="dark"]) .info .nameRow h3 {
+  color: #e5e7eb;
+}
+
+:global(html.dark) .info .contact .row,
+:global(body.dark) .info .contact .row,
+:global(#root.dark) .info .contact .row,
+:global(.dark) .info .contact .row,
+:global([data-theme="dark"]) .info .contact .row {
+  color: rgba(203, 213, 225, 0.85);
+}
+
+:global(html.dark) .info .contact .row svg,
+:global(body.dark) .info .contact .row svg,
+:global(#root.dark) .info .contact .row svg,
+:global(.dark) .info .contact .row svg,
+:global([data-theme="dark"]) .info .contact .row svg {
+  color: rgba(203, 213, 225, 0.55);
+}
+
+:global(html.dark) .info .meta,
+:global(body.dark) .info .meta,
+:global(#root.dark) .info .meta,
+:global(.dark) .info .meta,
+:global([data-theme="dark"]) .info .meta {
+  border-top: 1px dashed rgba(148, 163, 184, 0.20);
+}
+
+:global(html.dark) .info .meta p,
+:global(body.dark) .info .meta p,
+:global(#root.dark) .info .meta p,
+:global(.dark) .info .meta p,
+:global([data-theme="dark"]) .info .meta p {
+  color: rgba(203, 213, 225, 0.75);
+}
+
+:global(html.dark) .info .meta p strong,
+:global(body.dark) .info .meta p strong,
+:global(#root.dark) .info .meta p strong,
+:global(.dark) .info .meta p strong,
+:global([data-theme="dark"]) .info .meta p strong {
+  color: rgba(226, 232, 240, 0.92);
+}
+
+/* Empty / Loading */
+:global(html.dark) .loadingState,
+:global(body.dark) .loadingState,
+:global(#root.dark) .loadingState,
+:global(.dark) .loadingState,
+:global([data-theme="dark"]) .loadingState {
+  color: rgba(226, 232, 240, 0.88);
+}
+
+:global(html.dark) .loadingState .spinner,
+:global(body.dark) .loadingState .spinner,
+:global(#root.dark) .loadingState .spinner,
+:global(.dark) .loadingState .spinner,
+:global([data-theme="dark"]) .loadingState .spinner {
+  border: 3px solid rgba(148, 163, 184, 0.18);
+  border-top: 3px solid rgba(99, 102, 241, 0.9);
+}
