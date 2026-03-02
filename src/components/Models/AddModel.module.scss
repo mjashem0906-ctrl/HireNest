@@ -3,16 +3,38 @@
 
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: var(--spacing-lg);
+
+  /* ✅ EditableDropdown tokens (LIGHT defaults) */
+  --am-text: var(--text-primary);
+  --am-muted: var(--text-secondary);
+  --am-border: rgba(148, 163, 184, 0.35);
+  --am-border-soft: rgba(148, 163, 184, 0.25);
+  --am-input-bg: var(--bg-secondary);
+  --am-list-bg: var(--bg-secondary);
+  --am-list-hover: rgba(79, 70, 229, 0.12); /* indigo hover */
+  --am-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  --am-soft: rgba(148, 163, 184, 0.07);
+  --am-danger: #ef4444;
+}
+
+:global([data-theme="dark"]) .overlay {
+  /* ✅ EditableDropdown tokens (DARK overrides) */
+  --am-text: var(--text-primary);
+  --am-muted: var(--text-secondary);
+  --am-border: rgba(148, 163, 184, 0.22);
+  --am-border-soft: rgba(148, 163, 184, 0.18);
+  --am-input-bg: var(--bg-tertiary);
+  --am-list-bg: var(--bg-tertiary);
+  --am-list-hover: rgba(99, 102, 241, 0.18);
+  --am-shadow: 0 18px 46px rgba(0, 0, 0, 0.55);
+  --am-soft: rgba(148, 163, 184, 0.10);
 }
 
 .modal {
@@ -24,6 +46,7 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  border: 1px solid var(--border-light);
 }
 
 .header {
@@ -120,17 +143,28 @@
 .certFormRow input {
   flex: 1;
   padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+:global([data-theme="dark"]) .certFormRow input {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
 }
 
 .miniBtn {
   background: #4f46e5;
   color: white;
   border: none;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
@@ -155,7 +189,7 @@
   background-color: var(--accent-primary);
   color: white;
   border-radius: var(--radius-md);
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
 }
@@ -165,7 +199,7 @@
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
   background: var(--bg-secondary);
   cursor: pointer;
   transition: var(--transition-fast);
@@ -183,16 +217,17 @@
 
   label {
     font-size: 0.9rem;
-    font-weight: 500;
-    color: #555;
+    font-weight: 600;
+    color: var(--text-secondary);
   }
 }
 
 .resumeSection {
   background: #f0f7ff;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 20px;
+  border: 1px solid var(--border-light);
 
   h3 {
     margin-top: 0;
@@ -211,4 +246,149 @@
   label {
     color: var(--text-secondary);
   }
+}
+
+/* ======================================================
+   ✅ Editable Dropdown (supports both themes via tokens)
+   ====================================================== */
+
+.edWrap {
+  width: 100%;
+}
+
+.edLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 800;
+  color: var(--am-text);
+}
+
+.edReq {
+  color: var(--am-danger);
+}
+
+.edControl {
+  position: relative;
+}
+
+.edField {
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--am-border);
+  background: var(--am-input-bg);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--am-text);
+}
+
+.edFieldError {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.edIcon {
+  opacity: 0.85;
+  color: var(--am-muted);
+  display: grid;
+  place-items: center;
+}
+
+.edInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 800;
+  background: transparent;
+  color: var(--am-text);
+
+  &::placeholder {
+    color: var(--am-muted);
+    font-weight: 700;
+  }
+}
+
+.edBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  display: grid;
+  place-items: center;
+  opacity: 0.85;
+  color: var(--am-muted);
+}
+
+.edMenu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 9999;
+  border-radius: 14px;
+  border: 1px solid var(--am-border);
+  background: var(--am-list-bg);
+  box-shadow: var(--am-shadow);
+  overflow: hidden;
+  max-height: 260px;
+}
+
+.edMenuList {
+  max-height: 220px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.edItem {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--am-text);
+
+  &:hover {
+    background: var(--am-list-hover);
+  }
+}
+
+.edItemActive {
+  background: var(--am-list-hover);
+}
+
+.edEmpty {
+  padding: 12px;
+  color: var(--am-muted);
+  font-weight: 800;
+
+  b {
+    color: var(--am-text);
+  }
+}
+
+.edTip {
+  border-top: 1px solid var(--am-border-soft);
+  padding: 10px;
+  background: rgba(148, 163, 184, 0.08);
+
+  span {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--am-muted);
+  }
+
+  b {
+    color: var(--am-text);
+  }
+}
+
+.edErrorText {
+  color: var(--am-danger);
+  margin-top: 8px;
+  font-weight: 800;
+  font-size: 13px;
 }

@@ -9829,6 +9829,10 @@ BulkCSVReviewModal.propTypes = {
   refereesList: PropTypes.array,
 };
 
+// ✅ ADD THIS near your constants (above ProvidedForm component)
+const CSV_TEMPLATE_HEADERS =
+  "title,companyName,role,employmentType,location,experience,salary,education,passedOutYear,keySkills,description\n";
+
 // =========================================================================================
 // ProvidedForm
 // =========================================================================================
@@ -9851,6 +9855,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   // ✅ UI: show selected file name
   const [csvFileName, setCsvFileName] = useState("");
+
+  // ✅ ADD: Download CSV template (fields only)
+  const downloadCSVTemplate = () => {
+    const blob = new Blob([CSV_TEMPLATE_HEADERS], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "jobs_template.csv");
+  };
 
   useEffect(() => {
     if (memberContext) {
@@ -10025,6 +10035,17 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         <div className={styles.modalBody}>
           {!initialData && (
             <div className={styles.csvUploadSection}>
+              {/* ✅ ADD: Download template button inside modal */}
+              <div className={styles.csvTemplateRow}>
+                <button
+                  type="button"
+                  onClick={downloadCSVTemplate}
+                  className={styles.downloadTemplateBtn}
+                >
+                  Download CSV Template
+                </button>
+              </div>
+
               <input
                 type="file"
                 accept=".csv"

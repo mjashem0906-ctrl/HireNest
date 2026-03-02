@@ -1079,7 +1079,661 @@
 
 // export default MembersDetail;
 
-//------------------------------6/2------------------------------11.23-------------------------
+// //------------------------------6/2------------------------------11.23-------------------------
+
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import styles from "./MembersDetail.module.scss";
+// import API from "../../axios";
+// import { useData } from "../../context/DataContext";
+// import { parseDOB } from "../../utils/dateUtils";
+// import { useAuth } from "../../context/AuthContext";
+// import {
+//   Users,
+//   Briefcase,
+//   Building,
+//   Target,
+//   User,
+//   Languages,
+//   Smartphone,
+//   Mail,
+//   Calendar,
+//   MapPin,
+//   ExternalLink,
+//   GraduationCap,
+//   DollarSign,
+//   Globe,
+//   Award as CertificateIcon,
+//   BookOpen,
+//   FileText,
+//   CheckCircle,
+//   Star,
+//   Phone,
+//   ClipboardList,
+//   Wrench,
+// } from "lucide-react";
+// import AddMember from "../../components/Models/AddMember";
+
+// function MembersDetail() {
+//   const { id } = useParams();
+//   const navigate = useNavigate();
+//   const { user } = useAuth();
+//   const { memberContext } = useData();
+
+//   const [member, setMember] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [activeTab, setActiveTab] = useState("overview");
+//   const [age, setAge] = useState(null);
+//   const [showModal, setShowModal] = useState(false);
+//   const [editingMember, setEditingMember] = useState(null);
+
+//   const BACKEND_URL = "http://localhost:5000";
+
+//   useEffect(() => {
+//     fetchMember();
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [memberContext, id]);
+
+//   const fetchMember = async () => {
+//     try {
+//       setLoading(true);
+//       let filtered = null;
+
+//       // 1. Check Context first
+//       if (memberContext && memberContext.length > 0) {
+//         filtered = memberContext.find((m) => String(m._id) === String(id));
+//       }
+
+//       // 2. Fallback to API if not in context or id is 'me'
+//       if (!filtered) {
+//         let targetId = id === "me" ? user?.memberId : id;
+//         if (targetId && targetId !== "undefined") {
+//           const response = await API.get(`/member/${targetId}`);
+//           filtered = response.data;
+//         }
+//       }
+
+//       setMember(filtered);
+//       if (filtered?.dateOfBirth) setAge(calculateAge(filtered.dateOfBirth));
+//     } catch (err) {
+//       console.error("Error fetching profile:", err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const calculateAge = (dob) => {
+//     const birthDate = parseDOB(dob);
+//     if (!birthDate) return null;
+//     const today = new Date();
+//     let a = today.getFullYear() - birthDate.getFullYear();
+//     return a;
+//   };
+
+//   const getProfileImageUrl = (url) => {
+//     if (!url) return null;
+//     if (url.startsWith("uploads"))
+//       return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
+//     return url;
+//   };
+
+//   const getInitials = (name) => {
+//     return (
+//       name
+//         ?.split(" ")
+//         .map((n) => n[0])
+//         .join("")
+//         .toUpperCase()
+//         .substring(0, 2) || "??"
+//     );
+//   };
+
+//   // =========================
+//   // Helpers for tab data
+//   // =========================
+//   const normalizeList = (value) => {
+//     if (!value) return [];
+//     if (Array.isArray(value)) return value.filter(Boolean);
+//     if (typeof value === "string") {
+//       return value
+//         .split(",")
+//         .map((s) => s.trim())
+//         .filter(Boolean);
+//     }
+//     return [];
+//   };
+
+//   const expList =
+//     member?.experience ||
+//     member?.experiences ||
+//     member?.workExperience ||
+//     member?.employmentHistory ||
+//     [];
+
+//   const educationList =
+//     member?.education ||
+//     member?.educations ||
+//     member?.educationHistory ||
+//     [];
+
+//   const skillsList =
+//     normalizeList(member?.skills) ||
+//     normalizeList(member?.skillSet) ||
+//     normalizeList(member?.technicalSkills);
+
+//   if (loading)
+//     return (
+//       <div className={styles.loadingContainer}>
+//         <div className={styles.loader}></div>
+//         <p>Loading Profile...</p>
+//       </div>
+//     );
+
+//   if (!member)
+//     return (
+//       <div className={styles.loadingContainer}>
+//         <h2>Profile Not Found</h2>
+//         <button onClick={() => navigate(-1)}>Go Back</button>
+//       </div>
+//     );
+
+//   return (
+//     <div className={styles.container}>
+//       {/* Top Design Banner */}
+//       <div className={styles.banner}></div>
+
+//       {/* Overlapping Profile Header */}
+//       <div className={styles.headerCard}>
+//         <div className={styles.profileSection}>
+//           <div className={styles.avatarWrapper}>
+//             {member.photoUrl || member.photo ? (
+//               <img
+//                 src={getProfileImageUrl(member.photoUrl || member.photo)}
+//                 alt={member.name}
+//                 className={styles.avatar}
+//               />
+//             ) : (
+//               <div className={styles.avatar}>{getInitials(member.name)}</div>
+//             )}
+//             {member.symMemberStatus === "Active" && (
+//               <div className={styles.statusBadge}></div>
+//             )}
+//           </div>
+
+//           <div className={styles.mainInfo}>
+//             <div className={styles.nameRow}>
+//               <h1>{member.name}</h1>
+//               <span className={`${styles.badge} ${styles.typeBadge}`}>
+//                 {member.memberType}
+//               </span>
+//               {member.symMemberStatus === "Active" && (
+//                 <span className={`${styles.badge} ${styles.activeBadge}`}>
+//                   <CheckCircle size={14} /> Active
+//                 </span>
+//               )}
+//             </div>
+
+//             <p className={styles.designation}>
+//               {member.designation || member.profession || "Professional"}
+//             </p>
+
+//             <div className={styles.quickStats}>
+//               <div className={styles.statItem}>
+//                 <MapPin size={16} /> {member.district || "Location N/A"}
+//               </div>
+//               <div className={styles.statItem}>
+//                 <Calendar size={16} /> Member since{" "}
+//                 {member.createdAt
+//                   ? new Date(member.createdAt).getFullYear()
+//                   : "N/A"}
+//               </div>
+//               <div className={styles.statItem}>
+//                 <Star size={16} /> {member.workExp || 0} Years Experience
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Share button removed */}
+//         <div className={styles.actionButtons}>
+//           {(user?.role === "Admin" ||
+//             String(user?.memberId) === String(member._id) ||
+//             id === "me") && (
+//             <button
+//               className={styles.editBtn}
+//               onClick={() => {
+//                 setEditingMember(member);
+//                 setShowModal(true);
+//               }}
+//             >
+//               <ExternalLink size={18} /> Edit Profile
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Navigation Tabs */}
+//       <div className={styles.tabNavigation}>
+//         {["overview", "experience", "education", "skills"].map((tab) => (
+//           <button
+//             key={tab}
+//             className={`${styles.tab} ${activeTab === tab ? styles.active : ""}`}
+//             onClick={() => setActiveTab(tab)}
+//           >
+//             {tab.charAt(0).toUpperCase() + tab.slice(1)}
+//           </button>
+//         ))}
+//       </div>
+
+//       {/* =========================
+//           TAB CONTENT
+//          ========================= */}
+//       {activeTab === "overview" && (
+//         <div className={styles.profileContent}>
+//           {/* Left Column - Main Details */}
+//           <div className={styles.mainColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <Target size={22} className={styles.icon} /> Career Profile
+//               </div>
+//               <div className={styles.detailsGrid}>
+//                 <div className={styles.item}>
+//                   <label>Desired Role</label>
+//                   <div className={styles.value}>
+//                     {member.careerProfile?.role ||
+//                       member.preferredJobRole_Sector ||
+//                       "Not specified"}
+//                   </div>
+//                 </div>
+//                 <div className={styles.item}>
+//                   <label>Industry</label>
+//                   <div className={styles.value}>
+//                     {member.careerProfile?.industry || "Not specified"}
+//                   </div>
+//                 </div>
+//                 <div className={styles.item}>
+//                   <label>Location Preference</label>
+//                   <div className={styles.value}>
+//                     {member.preferredJobLocation || "Flexible"}
+//                   </div>
+//                 </div>
+//                 <div className={styles.item}>
+//                   <label>Expected Salary</label>
+//                   <div className={styles.value}>
+//                     {member.careerProfile?.expectedSalary ||
+//                       member.expectedSalary ||
+//                       "Negotiable"}
+//                   </div>
+//                 </div>
+//               </div>
+//             </section>
+
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <GraduationCap size={22} className={styles.icon} /> Education
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+//                 <div style={{ paddingLeft: "5px" }}>
+//                   <h4
+//                     style={{
+//                       margin: "0 0 5px 0",
+//                       fontSize: "18px",
+//                       color: "var(--p-text)",
+//                     }}
+//                   >
+//                     {member.highest_education || "Not provided"}
+//                   </h4>
+
+//                   <p
+//                     style={{
+//                       color: "var(--p-muted)",
+//                       margin: "0 0 10px 0",
+//                       display: "flex",
+//                       alignItems: "center",
+//                       gap: "6px",
+//                     }}
+//                   >
+//                     <Building size={16} />{" "}
+//                     {member.educationInstitution ||
+//                       "Institution details not provided"}
+//                   </p>
+
+//                   <div
+//                     className={`${styles.badge} ${styles.typeBadge}`}
+//                     style={{ display: "inline-block" }}
+//                   >
+//                     Class of {member.highestEducationPassedOutYear || "N/A"}
+//                   </div>
+//                 </div>
+//               </div>
+//             </section>
+//           </div>
+
+//           {/* Right Column - Sidebar */}
+//           <div className={styles.sideColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <Phone size={22} className={styles.icon} /> Contact Info
+//               </div>
+
+//               <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+//                 <div style={{ display: "flex", gap: "15px" }}>
+//                   <Smartphone size={20} />
+//                   <div>
+//                     <label
+//                       style={{
+//                         fontSize: "12px",
+//                         color: "var(--p-muted2)",
+//                         fontWeight: 700,
+//                       }}
+//                     >
+//                       MOBILE
+//                     </label>
+//                     <div style={{ fontWeight: 600, color: "var(--p-text2)" }}>
+//                       {member.mobileNumber || "N/A"}
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 <div style={{ display: "flex", gap: "15px" }}>
+//                   <Mail size={20} />
+//                   <div>
+//                     <label
+//                       style={{
+//                         fontSize: "12px",
+//                         color: "var(--p-muted2)",
+//                         fontWeight: 700,
+//                       }}
+//                     >
+//                       EMAIL
+//                     </label>
+//                     <div
+//                       style={{
+//                         fontWeight: 600,
+//                         color: "var(--p-text2)",
+//                         wordBreak: "break-all",
+//                       }}
+//                     >
+//                       {member.email || "N/A"}
+//                     </div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </section>
+
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <Languages size={22} className={styles.icon} /> Languages
+//               </div>
+
+//               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+//                 {member.languages?.length > 0 ? (
+//                   member.languages.map((lang) => (
+//                     <span
+//                       key={lang}
+//                       style={{
+//                         background: "rgba(148,163,184,0.10)",
+//                         border: "1px solid var(--p-border-soft)",
+//                         color: "var(--p-text2)",
+//                         padding: "8px 16px",
+//                         borderRadius: "10px",
+//                         fontSize: "14px",
+//                         fontWeight: 600,
+//                       }}
+//                     >
+//                       {lang}
+//                     </span>
+//                   ))
+//                 ) : (
+//                   <p style={{ color: "var(--p-muted)", fontSize: "14px" }}>
+//                     No languages listed
+//                   </p>
+//                 )}
+//               </div>
+//             </section>
+
+//             {/* Resume Card */}
+//             {(member.resume || member.resumeLink) && (
+//               <section
+//                 className={styles.card}
+//                 style={{ background: "var(--p-blue)", border: "none" }}
+//               >
+//                 <div
+//                   style={{
+//                     display: "flex",
+//                     alignItems: "center",
+//                     gap: "12px",
+//                     color: "white",
+//                     marginBottom: "20px",
+//                   }}
+//                 >
+//                   <FileText size={22} />
+//                   <h3 style={{ margin: 0, fontSize: "18px" }}>Resume</h3>
+//                 </div>
+
+//                 <a
+//                   href={member.resumeLink || `${BACKEND_URL}/${member.resume}`}
+//                   target="_blank"
+//                   rel="noreferrer"
+//                   style={{
+//                     display: "block",
+//                     textAlign: "center",
+//                     background: "white",
+//                     color: "var(--p-blue)",
+//                     padding: "12px",
+//                     borderRadius: "12px",
+//                     fontWeight: 700,
+//                     textDecoration: "none",
+//                   }}
+//                 >
+//                   View CV
+//                 </a>
+//               </section>
+//             )}
+//           </div>
+//         </div>
+//       )}
+
+//       {activeTab === "experience" && (
+//         <div className={styles.profileContent}>
+//           <div className={styles.mainColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <Briefcase size={22} className={styles.icon} /> Experience
+//               </div>
+
+//               {Array.isArray(expList) && expList.length > 0 ? (
+//                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+//                   {expList.map((exp, idx) => (
+//                     <div
+//                       key={exp?._id || idx}
+//                       style={{
+//                         padding: "16px",
+//                         borderRadius: "14px",
+//                         border: "1px solid var(--p-border-soft)",
+//                         background: "rgba(148,163,184,0.06)",
+//                       }}
+//                     >
+//                       <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
+//                         {exp?.role || exp?.title || exp?.designation || "Role not specified"}
+//                       </div>
+//                       <div style={{ color: "var(--p-muted)", marginTop: 6 }}>
+//                         {exp?.company || exp?.organization || exp?.companyName || "Company not specified"}
+//                       </div>
+//                       <div style={{ color: "var(--p-muted2)", fontSize: 13, marginTop: 8 }}>
+//                         {exp?.startDate || exp?.from || "Start"}{" "}
+//                         {" - "}
+//                         {exp?.endDate || exp?.to || "Present"}
+//                       </div>
+//                       {exp?.description && (
+//                         <div style={{ marginTop: 10, color: "var(--p-text2)", lineHeight: 1.6 }}>
+//                           {exp.description}
+//                         </div>
+//                       )}
+//                     </div>
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <p style={{ color: "var(--p-muted)" }}>No experience details added.</p>
+//               )}
+//             </section>
+//           </div>
+
+//           <div className={styles.sideColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <ClipboardList size={22} className={styles.icon} /> Summary
+//               </div>
+//               <div style={{ color: "var(--p-text2)", lineHeight: 1.7 }}>
+//                 <div>
+//                   <span style={{ color: "var(--p-muted2)", fontWeight: 700 }}>
+//                     Total Experience:
+//                   </span>{" "}
+//                   {member.workExp || 0} Years
+//                 </div>
+//                 {member.designation && (
+//                   <div style={{ marginTop: 8 }}>
+//                     <span style={{ color: "var(--p-muted2)", fontWeight: 700 }}>
+//                       Current Role:
+//                     </span>{" "}
+//                     {member.designation}
+//                   </div>
+//                 )}
+//               </div>
+//             </section>
+//           </div>
+//         </div>
+//       )}
+
+//       {activeTab === "education" && (
+//         <div className={styles.profileContent}>
+//           <div className={styles.mainColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <GraduationCap size={22} className={styles.icon} /> Education Details
+//               </div>
+
+//               {Array.isArray(educationList) && educationList.length > 0 ? (
+//                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+//                   {educationList.map((edu, idx) => (
+//                     <div
+//                       key={edu?._id || idx}
+//                       style={{
+//                         padding: "16px",
+//                         borderRadius: "14px",
+//                         border: "1px solid var(--p-border-soft)",
+//                         background: "rgba(148,163,184,0.06)",
+//                       }}
+//                     >
+//                       <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
+//                         {edu?.degree || edu?.qualification || edu?.course || "Degree not specified"}
+//                       </div>
+//                       <div style={{ color: "var(--p-muted)", marginTop: 6 }}>
+//                         <Building size={16} style={{ marginRight: 6 }} />
+//                         {edu?.institution || edu?.college || edu?.school || "Institution not specified"}
+//                       </div>
+//                       <div style={{ color: "var(--p-muted2)", fontSize: 13, marginTop: 8 }}>
+//                         {edu?.year || edu?.passedOutYear || edu?.fromYear || "Year not specified"}
+//                       </div>
+//                       {edu?.description && (
+//                         <div style={{ marginTop: 10, color: "var(--p-text2)", lineHeight: 1.6 }}>
+//                           {edu.description}
+//                         </div>
+//                       )}
+//                     </div>
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <>
+//                   <div style={{ color: "var(--p-text)", fontWeight: 800 }}>
+//                     {member.highest_education || "Not provided"}
+//                   </div>
+//                   <div style={{ color: "var(--p-muted)", marginTop: 8 }}>
+//                     {member.educationInstitution || "Institution details not provided"}
+//                   </div>
+//                   <div style={{ color: "var(--p-muted2)", marginTop: 6 }}>
+//                     Class of {member.highestEducationPassedOutYear || "N/A"}
+//                   </div>
+//                 </>
+//               )}
+//             </section>
+//           </div>
+
+//           <div className={styles.sideColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <BookOpen size={22} className={styles.icon} /> Highlights
+//               </div>
+//               <p style={{ color: "var(--p-muted)" }}>
+//                 Add multiple education entries to show them here.
+//               </p>
+//             </section>
+//           </div>
+//         </div>
+//       )}
+
+//       {activeTab === "skills" && (
+//         <div className={styles.profileContent}>
+//           <div className={styles.mainColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <Wrench size={22} className={styles.icon} /> Skills
+//               </div>
+
+//               {skillsList.length > 0 ? (
+//                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+//                   {skillsList.map((s, idx) => (
+//                     <span
+//                       key={`${s}-${idx}`}
+//                       style={{
+//                         padding: "10px 14px",
+//                         borderRadius: "999px",
+//                         border: "1px solid rgba(59,130,246,0.35)",
+//                         background: "rgba(59,130,246,0.12)",
+//                         color: "var(--p-text)",
+//                         fontWeight: 700,
+//                         fontSize: 14,
+//                       }}
+//                     >
+//                       {s}
+//                     </span>
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <p style={{ color: "var(--p-muted)" }}>No skills added.</p>
+//               )}
+//             </section>
+//           </div>
+
+//           <div className={styles.sideColumn}>
+//             <section className={styles.card}>
+//               <div className={styles.cardHeader}>
+//                 <CertificateIcon size={22} className={styles.icon} /> Certifications
+//               </div>
+//               <p style={{ color: "var(--p-muted)" }}>
+//                 If you store certificates in profile, show them here (optional).
+//               </p>
+//             </section>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Reuse your existing Modal */}
+//       <AddMember
+//         isOpen={showModal}
+//         onClose={() => setShowModal(false)}
+//         editMember={editingMember}
+//         onSuccess={(updated) => {
+//           setMember(updated);
+//           setShowModal(false);
+//         }}
+//       />
+//     </div>
+//   );
+// }
+
+// export default MembersDetail;
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -1384,11 +2038,26 @@ function MembersDetail() {
                   >
                     {member.highest_education || "Not provided"}
                   </h4>
+                  
+                  {/* Branch Display */}
+                  {member.branch && (
+                    <p
+                      style={{
+                        color: "var(--p-muted)",
+                        margin: "5px 0",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <BookOpen size={16} />{member.branch}
+                    </p>
+                  )}
 
-                  <p
+                  {/* <p
                     style={{
                       color: "var(--p-muted)",
-                      margin: "0 0 10px 0",
+                      margin: "5px 0 10px 0",
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
@@ -1397,7 +2066,7 @@ function MembersDetail() {
                     <Building size={16} />{" "}
                     {member.educationInstitution ||
                       "Institution details not provided"}
-                  </p>
+                  </p> */}
 
                   <div
                     className={`${styles.badge} ${styles.typeBadge}`}
@@ -1629,6 +2298,20 @@ function MembersDetail() {
                       <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
                         {edu?.degree || edu?.qualification || edu?.course || "Degree not specified"}
                       </div>
+                      
+                      {/* Branch for each education entry */}
+                      {edu?.branch && (
+                        <div style={{ 
+                          color: "var(--p-muted)", 
+                          marginTop: 4, 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "6px" 
+                        }}>
+                          <BookOpen size={14} /> {edu.branch}
+                        </div>
+                      )}
+                      
                       <div style={{ color: "var(--p-muted)", marginTop: 6 }}>
                         <Building size={16} style={{ marginRight: 6 }} />
                         {edu?.institution || edu?.college || edu?.school || "Institution not specified"}
@@ -1649,9 +2332,23 @@ function MembersDetail() {
                   <div style={{ color: "var(--p-text)", fontWeight: 800 }}>
                     {member.highest_education || "Not provided"}
                   </div>
-                  <div style={{ color: "var(--p-muted)", marginTop: 8 }}>
+                  
+                  {/* Branch for single education entry */}
+                  {member.branch && (
+                    <div style={{ 
+                      color: "var(--p-muted)", 
+                      marginTop: 4, 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px" 
+                    }}>
+                      <BookOpen size={14} /> Branch: {member.branch}
+                    </div>
+                  )}
+                  
+                  {/* <div style={{ color: "var(--p-muted)", marginTop: 8 }}>
                     {member.educationInstitution || "Institution details not provided"}
-                  </div>
+                  </div> */}
                   <div style={{ color: "var(--p-muted2)", marginTop: 6 }}>
                     Class of {member.highestEducationPassedOutYear || "N/A"}
                   </div>
