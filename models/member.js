@@ -42,6 +42,7 @@ const memberSchema = new mongoose.Schema(
     // Job Seeker specific
     seekerNeed: [String],
     highest_education: String,
+    branch: String,
     highestEducationSpecialization: String,
     highestEducationPassedOutYear: String,
     fieldofStudy_Interest: String,

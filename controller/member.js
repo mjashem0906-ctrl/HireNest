@@ -385,7 +385,7 @@ function cleanPayload(data) {
     "designation",
 
     // Job Seeker
-    "seekerNeed", "highest_education", "highestEducationSpecialization",
+    "seekerNeed", "highest_education","branch", "highestEducationSpecialization",
     "highestEducationPassedOutYear", "fieldofStudy_Interest",
     "preferredJobRole_Sector", "workExp", "relocationStatus",
     "preferredJobLocation",
