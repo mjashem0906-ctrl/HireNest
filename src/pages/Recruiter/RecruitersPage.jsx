@@ -133,7 +133,7 @@ const RecruitersPage = () => {
   const fetchRecruiters = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/recruiters');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
       setRecruiters(response.data);
     } catch (error) {
       console.error("Error fetching recruiters:", error);
