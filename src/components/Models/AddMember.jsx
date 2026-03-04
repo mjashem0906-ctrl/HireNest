@@ -257,8 +257,6 @@
 // export default AddMember;
 
 
-//---------------------30/01----------12.48--------------------------
-
 import React, { useEffect, useRef, useState } from "react";
 import {
   X,
@@ -395,6 +393,41 @@ const BRANCH_OPTIONS = [
   "Medical Lab Technology",
 ];
 
+// ✅ Karnataka Districts
+const KARNATAKA_DISTRICTS = [
+  "Bagalkote",
+  "Ballari (Bellary)",
+  "Belagavi (Belgaum)",
+  "Bengaluru Rural",
+  "Bengaluru Urban",
+  "Bidar",
+  "Chamarajanagar",
+  "Chikballapur",
+  "Chikkamagaluru",
+  "Chitradurga",
+  "Dakshina Kannada",
+  "Davanagere",
+  "Dharwad",
+  "Gadag",
+  "Hassan",
+  "Haveri",
+  "Kalaburagi (Gulbarga)",
+  "Kodagu",
+  "Kolar",
+  "Koppal",
+  "Mandya",
+  "Mysuru (Mysore)",
+  "Raichur",
+  "Ramanagara",
+  "Shivamogga (Shimoga)",
+  "Tumakuru (Tumkur)",
+  "Udupi",
+  "Uttara Kannada (Karwar)",
+  "Vijayanagara",
+  "Vijayapura (Bijapur)",
+  "Yadgir",
+];
+
 /**
  * ✅ Editable dropdown (search + type custom + press Enter)
  * ✅ Supports Dark Mode using SCSS classes from AddModel.module.scss
@@ -500,8 +533,9 @@ function EditableDropdown({
                   <button
                     key={opt}
                     type="button"
-                    className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""
-                      }`}
+                    className={`${styles.edItem} ${
+                      norm(opt) === norm(value) ? styles.edItemActive : ""
+                    }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
@@ -747,9 +781,12 @@ function AddMember({
                 onChange={(v) => setFormData({ ...formData, gender: v })}
               />
 
-              <FormInput
+              {/* ✅ UPDATED: Karnataka District Dropdown */}
+              <EditableDropdown
                 label="District"
                 value={formData.district}
+                options={KARNATAKA_DISTRICTS}
+                placeholder="Select your district..."
                 onChange={(v) => setFormData({ ...formData, district: v })}
               />
             </div>
@@ -784,8 +821,6 @@ function AddMember({
           {/* EDU TAB */}
           {activeTab === "edu" && (
             <div>
-              {/* You can keep your resume UI as-is. It already works in both themes.
-                  If you want, I can convert that also into CSS classes later. */}
               <div style={{ marginTop: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <h3 style={{ margin: 0 }}>
