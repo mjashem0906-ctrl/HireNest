@@ -1,3263 +1,3 @@
-// // // //----------------------------------31/01------------------------1.39----------------------------
-
-// // // import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-// // // import axios from 'axios';
-// // // import { useNavigate, useOutletContext } from "react-router-dom";
-// // // import styles from './Jobs.module.scss';
-// // // import { 
-// // //   BriefcaseBusiness, NotebookPen, Plus, Search, CheckCircle, XCircle, Clock, 
-// // //   Loader, Trash2, Pencil, X, FileText, User, Edit, Check, ChevronLeft, 
-// // //   ChevronRight, Eye, EyeOff, ChevronDown, LogIn
-// // // } from 'lucide-react';
-// // // import { formatDistanceToNow } from 'date-fns';
-// // // import classNames from "classnames";
-// // // import { useAuth } from '../../context/AuthContext';
-// // // import API from '../../axios';
-// // // import { useData } from '../../context/DataContext';
-// // // import * as XLSX from 'xlsx';
-// // // import { saveAs } from 'file-saver';
-// // // import StatusPipeline from './StatusPipeline';
-// // // import debounce from 'lodash/debounce';
-// // // import PropTypes from 'prop-types';
-// // // import Select from 'react-select';
-
-// // // // Google Login Component
-// // // const GoogleLoginButton = ({ onLoginSuccess, onLoginError }) => {
-// // //   const handleGoogleLogin = () => {
-// // //     // For development, you can use this mock login
-// // //     // In production, integrate with actual Google OAuth
-// // //     const mockUser = {
-// // //       id: 'google-user-123',
-// // //       name: 'Google User',
-// // //       email: 'user@gmail.com',
-// // //       picture: 'https://via.placeholder.com/40'
-// // //     };
-
-// // //     if (onLoginSuccess) {
-// // //       onLoginSuccess(mockUser);
-// // //     }
-// // //   };
-
-// // //   return (
-// // //     <button 
-// // //       onClick={handleGoogleLogin}
-// // //       style={{
-// // //         display: 'flex',
-// // //         alignItems: 'center',
-// // //         gap: '10px',
-// // //         padding: '10px 20px',
-// // //         backgroundColor: '#4285f4',
-// // //         color: 'white',
-// // //         border: 'none',
-// // //         borderRadius: '6px',
-// // //         cursor: 'pointer',
-// // //         fontWeight: '600',
-// // //         fontSize: '14px',
-// // //         transition: 'background-color 0.2s'
-// // //       }}
-// // //       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#357ae8'}
-// // //       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4285f4'}
-// // //     >
-// // //       <svg width="18" height="18" viewBox="0 0 24 24">
-// // //         <path fill="white" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-// // //         <path fill="white" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-// // //         <path fill="white" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-// // //         <path fill="white" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-// // //       </svg>
-// // //       Sign in with Google
-// // //     </button>
-// // //   );
-// // // };
-
-// // // // Apply Button Component with Google Login
-// // // const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogleLogin }) => {
-// // //   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-// // //   const handleClick = (e) => {
-// // //     e.stopPropagation();
-
-// // //     if (!user) {
-// // //       // Show login prompt
-// // //       setShowLoginPrompt(true);
-// // //       return;
-// // //     }
-
-// // //     if (isApplied) return;
-
-// // //     onApplyClick(e, job);
-// // //   };
-
-// // //   const handleGoogleLogin = () => {
-// // //     if (onGoogleLogin) {
-// // //       onGoogleLogin(() => {
-// // //         setShowLoginPrompt(false);
-// // //         onApplyClick({ stopPropagation: () => {} }, job);
-// // //       });
-// // //     }
-// // //   };
-
-// // //   if (isApplied) {
-// // //     return (
-// // //       <button
-// // //         className={styles.appliedButton}
-// // //         disabled={true}
-// // //         onClick={(e) => e.stopPropagation()}
-// // //         type="button"
-// // //       >
-// // //         Applied
-// // //       </button>
-// // //     );
-// // //   }
-
-// // //   return (
-// // //     <div style={{ position: 'relative' }}>
-// // //       <button
-// // //         className={styles.applyButton}
-// // //         disabled={loadingState.applying}
-// // //         onClick={handleClick}
-// // //         type="button"
-// // //       >
-// // //         {loadingState.applying ? "Applying..." : "Apply"}
-// // //       </button>
-
-// // //       {showLoginPrompt && (
-// // //         <div style={{
-// // //           position: 'absolute',
-// // //           top: '100%',
-// // //           right: 0,
-// // //           marginTop: '10px',
-// // //           backgroundColor: 'white',
-// // //           border: '1px solid #e5e7eb',
-// // //           borderRadius: '8px',
-// // //           padding: '20px',
-// // //           boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-// // //           zIndex: 100,
-// // //           minWidth: '280px'
-// // //         }}>
-// // //           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-// // //             <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Login Required</h4>
-// // //             <button 
-// // //               onClick={() => setShowLoginPrompt(false)}
-// // //               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}
-// // //               aria-label="Close"
-// // //             >
-// // //               <X size={16} />
-// // //             </button>
-// // //           </div>
-
-// // //           <p style={{ marginBottom: '20px', fontSize: '14px', color: '#4b5563' }}>
-// // //             Please login to apply for this position.
-// // //           </p>
-
-// // //           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-// // //             <GoogleLoginButton 
-// // //               onLoginSuccess={() => {
-// // //                 setShowLoginPrompt(false);
-// // //                 onApplyClick({ stopPropagation: () => {} }, job);
-// // //               }}
-// // //             />
-
-// // //             <button
-// // //               style={{
-// // //                 padding: '10px 20px',
-// // //                 backgroundColor: '#f3f4f6',
-// // //                 color: '#374151',
-// // //                 border: 'none',
-// // //                 borderRadius: '6px',
-// // //                 cursor: 'pointer',
-// // //                 fontWeight: '500',
-// // //                 fontSize: '14px'
-// // //               }}
-// // //               onClick={() => setShowLoginPrompt(false)}
-// // //             >
-// // //               Cancel
-// // //             </button>
-// // //           </div>
-// // //         </div>
-// // //       )}
-// // //     </div>
-// // //   );
-// // // };
-
-// // // const EMPLOYMENT_TYPES = [
-// // //   "Full-time",
-// // //   "Part-time",
-// // //   "Internship",
-// // //   "Remote",
-// // //   "Contract",
-// // //   "Freelance"
-// // // ];
-
-// // // const JOB_TITLE_OPTIONS = [
-// // //   "Frontend Developer",
-// // //   "Backend Developer",
-// // //   "Full Stack Developer",
-// // //   "MERN Stack Developer",
-// // //   "Java Developer",
-// // //   "Python Developer",
-// // //   "Data Scientist",
-// // //   "UI/UX Designer",
-// // //   "DevOps Engineer",
-// // //   "QA / Tester",
-// // //   "Product Manager",
-// // //   "HR Recruiter",
-// // //   "Business Analyst",
-// // //   "System Administrator",
-// // //   "Network Engineer",
-// // //   "Mobile App Developer"
-// // // ];
-
-// // // // =========================================================================================
-// // // // COMPONENT 1: BulkCSVReviewModal
-// // // // =========================================================================================
-// // // const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, refereesList }) => {
-// // //   const [editingIndex, setEditingIndex] = useState(null);
-// // //   const [editedJobs, setEditedJobs] = useState([]);
-// // //   const [currentPage, setCurrentPage] = useState(0);
-// // //   const [expandedRows, setExpandedRows] = useState({});
-// // //   const jobsPerPage = 5;
-
-// // //   useEffect(() => {
-// // //     if (isOpen && jobsData) {
-// // //       setEditedJobs([...jobsData]);
-// // //       setExpandedRows({});
-// // //     }
-// // //   }, [isOpen, jobsData]);
-
-// // //   if (!isOpen || !jobsData) return null;
-
-// // //   const totalPages = Math.ceil(editedJobs.length / jobsPerPage);
-// // //   const startIndex = currentPage * jobsPerPage;
-// // //   const endIndex = startIndex + jobsPerPage;
-// // //   const currentJobs = editedJobs.slice(startIndex, endIndex);
-
-// // //   const handleEdit = (index) => {
-// // //     setEditingIndex(startIndex + index);
-// // //   };
-
-// // //   const handleSaveEdit = (index) => {
-// // //     setEditingIndex(null);
-// // //   };
-
-// // //   const handleCancelEdit = () => {
-// // //     setEditingIndex(null);
-// // //     if (jobsData) {
-// // //       setEditedJobs([...jobsData]);
-// // //     }
-// // //   };
-
-// // //   const handleFieldChange = (pageIndex, field, value) => {
-// // //     const actualIndex = startIndex + pageIndex;
-// // //     const updatedJobs = [...editedJobs];
-// // //     updatedJobs[actualIndex] = {
-// // //       ...updatedJobs[actualIndex],
-// // //       [field]: value
-// // //     };
-// // //     setEditedJobs(updatedJobs);
-// // //   };
-
-// // //   const handleSaveAll = () => {
-// // //     onSave(editedJobs);
-// // //   };
-
-// // //   const handleSubmitAll = () => {
-// // //     onBulkSubmit(editedJobs);
-// // //   };
-
-// // //   const handleRemoveJob = (pageIndex) => {
-// // //     const actualIndex = startIndex + pageIndex;
-// // //     const updatedJobs = [...editedJobs];
-// // //     updatedJobs.splice(actualIndex, 1);
-// // //     setEditedJobs(updatedJobs);
-
-// // //     if (currentJobs.length === 1 && currentPage > 0) {
-// // //       setCurrentPage(currentPage - 1);
-// // //     }
-// // //   };
-
-// // //   const toggleRowExpansion = (pageIndex) => {
-// // //     const actualIndex = startIndex + pageIndex;
-// // //     setExpandedRows(prev => ({
-// // //       ...prev,
-// // //       [actualIndex]: !prev[actualIndex]
-// // //     }));
-// // //   };
-
-// // //   const modalStyles = {
-// // //     overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 },
-// // //     modal: { backgroundColor: 'white', borderRadius: '12px', padding: '30px', width: '1100px', maxWidth: '95%', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)' },
-// // //     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #e5e7eb' },
-// // //     title: { fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: 0 },
-// // //     stats: { backgroundColor: '#f3f4f6', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' },
-// // //     tableContainer: { flex: 1, overflowY: 'auto', marginBottom: '20px' },
-// // //     table: { width: '100%', borderCollapse: 'collapse' },
-// // //     th: { backgroundColor: '#f9fafb', padding: '12px', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#374151', fontWeight: '600', fontSize: '0.875rem', position: 'sticky', top: 0 },
-// // //     td: { padding: '12px', borderBottom: '1px solid #e5e7eb', verticalAlign: 'top' },
-// // //     input: { width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box' },
-// // //     select: { width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', backgroundColor: 'white', cursor: 'pointer' },
-// // //     textarea: { width: '100%', padding: '8px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '0.875rem', minHeight: '60px', resize: 'vertical', boxSizing: 'border-box' },
-// // //     actionButton: { padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', fontWeight: '500' },
-// // //     expandButton: { padding: '4px 8px', borderRadius: '4px', border: '1px solid #d1d5db', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#6b7280', marginTop: '8px' },
-// // //     expandedRow: { backgroundColor: '#f8fafc', borderTop: '1px solid #e5e7eb' },
-// // //     expandedContent: { padding: '16px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' },
-// // //     fieldGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
-// // //     fieldLabel: { fontSize: '0.75rem', fontWeight: '600', color: '#4b5563' },
-// // //     pagination: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0', borderTop: '1px solid #e5e7eb' },
-// // //     pageButton: { padding: '8px 16px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' },
-// // //     disabledButton: { backgroundColor: '#9ca3af', cursor: 'not-allowed' },
-// // //     footerButtons: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
-// // //     saveButton: { padding: '12px 24px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' },
-// // //     submitButton: { padding: '12px 24px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' },
-// // //     cancelButton: { padding: '12px 24px', backgroundColor: '#6b7280', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }
-// // //   };
-
-// // //   return (
-// // //     <div style={modalStyles.overlay}>
-// // //       <div style={modalStyles.modal}>
-// // //         <div style={modalStyles.header}>
-// // //           <h2 style={modalStyles.title}>Review & Edit CSV Jobs</h2>
-// // //           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
-// // //             <X size={24} />
-// // //           </button>
-// // //         </div>
-
-// // //         <div style={modalStyles.stats}>
-// // //           <span>Total Jobs: <strong>{editedJobs.length}</strong></span>
-// // //           <span>Page: <strong>{currentPage + 1}</strong> of <strong>{totalPages}</strong></span>
-// // //           <span>Editing: <strong>{editingIndex !== null ? 'Yes' : 'No'}</strong></span>
-// // //         </div>
-
-// // //         <div style={modalStyles.tableContainer}>
-// // //           <table style={modalStyles.table}>
-// // //             <thead>
-// // //               <tr>
-// // //                 <th style={{ ...modalStyles.th, width: '20px' }}>#</th>
-// // //                 <th style={{ ...modalStyles.th, width: '160px' }}>Job Title</th>
-// // //                 <th style={{ ...modalStyles.th, width: '120px' }}>Company</th>
-// // //                 <th style={{ ...modalStyles.th, width: '80px' }}>Job Role</th>
-// // //                 <th style={{ ...modalStyles.th, width: '80px' }}>Type</th>
-// // //                 <th style={{ ...modalStyles.th, width: '100px' }}>Location</th>
-// // //                 <th style={{ ...modalStyles.th, width: '90px' }}>Experience</th>
-// // //                 <th style={{ ...modalStyles.th, width: '90px' }}>Salary</th>
-// // //                 <th style={{ ...modalStyles.th, width: '60px' }}>Actions</th>
-// // //               </tr>
-// // //             </thead>
-// // //             <tbody>
-// // //               {currentJobs.map((job, index) => {
-// // //                 const actualIndex = startIndex + index;
-// // //                 const isEditing = editingIndex === actualIndex;
-// // //                 const isExpanded = expandedRows[actualIndex];
-
-// // //                 return (
-// // //                   <React.Fragment key={actualIndex}>
-// // //                     <tr>
-// // //                       <td style={modalStyles.td}>{startIndex + index + 1}</td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.title} onChange={(e) => handleFieldChange(index, 'title', e.target.value)} /> : job.title}</td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.companyName} onChange={(e) => handleFieldChange(index, 'companyName', e.target.value)} /> : job.companyName}</td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.role || ''} onChange={(e) => handleFieldChange(index, 'role', e.target.value)} /> : job.role || 'N/A'}</td>
-// // //                       <td style={modalStyles.td}>
-// // //                         {isEditing ? (
-// // //                           <select style={modalStyles.select} value={job.employmentType} onChange={(e) => handleFieldChange(index, 'employmentType', e.target.value)}>
-// // //                             {EMPLOYMENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-// // //                           </select>
-// // //                         ) : job.employmentType}
-// // //                       </td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.location} onChange={(e) => handleFieldChange(index, 'location', e.target.value)} /> : job.location}</td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.experience} onChange={(e) => handleFieldChange(index, 'experience', e.target.value)} /> : job.experience}</td>
-// // //                       <td style={modalStyles.td}>{isEditing ? <input style={modalStyles.input} value={job.salary} onChange={(e) => handleFieldChange(index, 'salary', e.target.value)} /> : job.salary}</td>
-// // //                       <td style={modalStyles.td}>
-// // //                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-// // //                           <div style={{ display: 'flex', gap: '8px' }}>
-// // //                             {isEditing ? (
-// // //                               <>
-// // //                                 <button onClick={() => handleSaveEdit(index)} style={{ ...modalStyles.actionButton, backgroundColor: '#10b981', color: 'white' }}><Check size={16} /></button>
-// // //                                 <button onClick={handleCancelEdit} style={{ ...modalStyles.actionButton, backgroundColor: '#ef4444', color: 'white' }}><X size={16} /></button>
-// // //                               </>
-// // //                             ) : (
-// // //                               <>
-// // //                                 <button onClick={() => handleEdit(index)} style={{ ...modalStyles.actionButton, backgroundColor: '#3b82f6', color: 'white' }}><Edit size={16} /></button>
-// // //                                 <button onClick={() => handleRemoveJob(index)} style={{ ...modalStyles.actionButton, backgroundColor: '#f3f4f6', color: '#ef4444' }}><Trash2 size={16} /></button>
-// // //                               </>
-// // //                             )}
-// // //                           </div>
-// // //                           <button onClick={() => toggleRowExpansion(index)} style={modalStyles.expandButton}>
-// // //                             {isExpanded ? <EyeOff size={12} /> : <Eye size={12} />} {isExpanded ? 'Show Less' : 'Show More'}
-// // //                           </button>
-// // //                         </div>
-// // //                       </td>
-// // //                     </tr>
-// // //                     {isExpanded && (
-// // //                       <tr style={modalStyles.expandedRow}>
-// // //                         <td colSpan="9" style={modalStyles.td}>
-// // //                           <div style={modalStyles.expandedContent}>
-// // //                             <div style={modalStyles.fieldGroup}>
-// // //                               <label style={modalStyles.fieldLabel}>Education</label>
-// // //                               {isEditing ? <input style={modalStyles.input} value={job.education || ''} onChange={(e) => handleFieldChange(index, 'education', e.target.value)} /> : <div>{job.education || 'N/A'}</div>}
-// // //                             </div>
-// // //                             <div style={modalStyles.fieldGroup}>
-// // //                               <label style={modalStyles.fieldLabel}>Passed Out Year</label>
-// // //                               {isEditing ? <input style={modalStyles.input} value={job.passedOutYear || ''} onChange={(e) => handleFieldChange(index, 'passedOutYear', e.target.value)} /> : <div>{job.passedOutYear || 'N/A'}</div>}
-// // //                             </div>
-// // //                             <div style={modalStyles.fieldGroup}>
-// // //                               <label style={modalStyles.fieldLabel}>Key Skills</label>
-// // //                               {isEditing ? <input style={modalStyles.input} value={job.keySkills || ''} onChange={(e) => handleFieldChange(index, 'keySkills', e.target.value)} /> : <div>{job.keySkills || 'N/A'}</div>}
-// // //                             </div>
-// // //                             <div style={modalStyles.fieldGroup}>
-// // //                               <label style={modalStyles.fieldLabel}>Refereed Person (ID)</label>
-// // //                               {isEditing ? (
-// // //                                 <select style={modalStyles.select} value={job.refereedBy || ''} onChange={(e) => handleFieldChange(index, 'refereedBy', e.target.value)}>
-// // //                                   <option value="">Select a Referee (Optional)</option>
-// // //                                   {refereesList && refereesList.map((referee) => (
-// // //                                     <option key={referee._id} value={referee._id}>{referee.name || referee.email || "Unknown Name"}</option>
-// // //                                   ))}
-// // //                                 </select>
-// // //                               ) : <div>{job.refereedBy ? (refereesList?.find(r => r._id === job.refereedBy)?.name || 'Referee Selected') : 'None'}</div>}
-// // //                             </div>
-// // //                             <div style={modalStyles.fieldGroup}>
-// // //                               <label style={modalStyles.fieldLabel}>Description</label>
-// // //                               {isEditing ? <textarea style={modalStyles.textarea} value={job.description || ''} onChange={(e) => handleFieldChange(index, 'description', e.target.value)} /> : <div style={{ maxHeight: '120px', overflowY: 'auto' }}>{job.description || 'N/A'}</div>}
-// // //                             </div>
-// // //                           </div>
-// // //                         </td>
-// // //                       </tr>
-// // //                     )}
-// // //                   </React.Fragment>
-// // //                 );
-// // //               })}
-// // //             </tbody>
-// // //           </table>
-// // //         </div>
-
-// // //         <div style={modalStyles.pagination}>
-// // //           <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))} disabled={currentPage === 0} style={{ ...modalStyles.pageButton, ...(currentPage === 0 && modalStyles.disabledButton) }}>
-// // //             <ChevronLeft size={16} /> Previous
-// // //           </button>
-// // //           <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))} disabled={currentPage === totalPages - 1} style={{ ...modalStyles.pageButton, ...(currentPage === totalPages - 1 && modalStyles.disabledButton) }}>
-// // //             Next <ChevronRight size={16} />
-// // //           </button>
-// // //         </div>
-
-// // //         <div style={modalStyles.footerButtons}>
-// // //           <button onClick={handleSaveAll} style={modalStyles.saveButton}>Save Changes</button>
-// // //           <button onClick={handleSubmitAll} style={modalStyles.submitButton}>Submit All Jobs</button>
-// // //           <button onClick={onClose} style={modalStyles.cancelButton}>Cancel</button>
-// // //         </div>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // };
-
-// // // BulkCSVReviewModal.propTypes = {
-// // //   isOpen: PropTypes.bool.isRequired,
-// // //   onClose: PropTypes.func.isRequired,
-// // //   jobsData: PropTypes.array,
-// // //   onSave: PropTypes.func.isRequired,
-// // //   onBulkSubmit: PropTypes.func.isRequired,
-// // //   refereesList: PropTypes.array
-// // // };
-
-// // // // =========================================================================================
-// // // // COMPONENT 2: ProvidedForm (with Job Title dropdown)
-// // // // =========================================================================================
-// // // const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
-// // //   const [title, setTitle] = useState('');
-// // //   const [companyName, setCompanyName] = useState('');
-// // //   const [employmentType, setEmploymentType] = useState(EMPLOYMENT_TYPES[0]);
-// // //   const [location, setLocation] = useState('');
-// // //   const [description, setDescription] = useState('');
-// // //   const [education, setEducation] = useState('');
-// // //   const [passedOutYear, setPassedOutYear] = useState('');
-// // //   const [experience, setExperience] = useState('');
-// // //   const [salary, setSalary] = useState('');
-// // //   const [role, setRole] = useState('');
-// // //   const [keySkills, setKeySkills] = useState('');
-
-// // //   const { memberContext } = useData();
-// // //   const [refereedBy, setRefereedBy] = useState('');
-// // //   const [refereesList, setRefereesList] = useState([]);
-
-// // //   useEffect(() => {
-// // //     if (memberContext) {
-// // //       const filtered = memberContext.filter(m => m.memberType === 'Referee');
-// // //       setRefereesList(filtered);
-// // //     }
-// // //   }, [memberContext]);
-
-// // //   useEffect(() => {
-// // //     if (isOpen) {
-// // //       if (initialData) {
-// // //         setTitle(initialData.title || '');
-// // //         setCompanyName(initialData.companyName || '');
-// // //         setEmploymentType(initialData.employmentType || EMPLOYMENT_TYPES[0]);
-// // //         setLocation(initialData.location || '');
-// // //         setDescription(initialData.description || '');
-// // //         setEducation(initialData.education || '');
-// // //         setPassedOutYear(initialData.passedOutYear || '');
-// // //         setExperience(initialData.experience || '');
-// // //         setSalary(initialData.salary || '');
-// // //         setRole(initialData.role || '');
-// // //         setKeySkills(initialData.keySkills || '');
-
-// // //         const refId = initialData.refereedBy && typeof initialData.refereedBy === 'object'
-// // //           ? initialData.refereedBy._id
-// // //           : (initialData.refereedBy || '');
-
-// // //         setRefereedBy(refId);
-// // //       } else {
-// // //         setTitle('');
-// // //         setCompanyName('');
-// // //         setEmploymentType(EMPLOYMENT_TYPES[0]);
-// // //         setLocation('');
-// // //         setDescription('');
-// // //         setEducation('');
-// // //         setPassedOutYear('');
-// // //         setExperience('');
-// // //         setSalary('');
-// // //         setRole('');
-// // //         setKeySkills('');
-// // //         setRefereedBy('');
-// // //       }
-// // //     }
-// // //   }, [isOpen, initialData]);
-
-// // //   const handleFileChange = (e) => {
-// // //     const file = e.target.files[0];
-// // //     if (!file) return;
-
-// // //     // Enhanced file validation
-// // //     const allowedTypes = ['text/csv', 'application/vnd.ms-excel'];
-// // //     if (!allowedTypes.includes(file.type) && !file.name.endsWith('.csv')) {
-// // //       alert('Please upload a valid CSV file');
-// // //       e.target.value = '';
-// // //       return;
-// // //     }
-
-// // //     if (file.size > 5 * 1024 * 1024) {
-// // //       alert('File size should be less than 5MB');
-// // //       e.target.value = '';
-// // //       return;
-// // //     }
-
-// // //     const reader = new FileReader();
-// // //     reader.onload = (event) => {
-// // //       try {
-// // //         const text = event.target.result;
-// // //         const rows = text.split('\n').filter(row => row.trim() !== '');
-// // //         if (rows.length < 2) {
-// // //           alert("CSV is empty or invalid format");
-// // //           return;
-// // //         }
-
-// // //         const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-// // //         const bulkData = [];
-
-// // //         for (let i = 1; i < rows.length; i++) {
-// // //           const values = rows[i].split(',').map(v => v.trim());
-// // //           const entry = {};
-// // //           headers.forEach((header, index) => {
-// // //             entry[header] = values[index] || "";
-// // //           });
-
-// // //           bulkData.push({
-// // //             title: entry.title,
-// // //             companyName: entry.companyname || entry.companyName || "",
-// // //             role: entry.role || "",
-// // //             employmentType: entry.employmenttype || entry.employmentType || "Full-time",
-// // //             location: entry.location || "",
-// // //             experience: entry.experience || "",
-// // //             salary: entry.salary || "",
-// // //             education: entry.education || "",
-// // //             passedOutYear: entry.passedoutyear || entry.passedOutYear || "",
-// // //             keySkills: entry.keyskills || entry.keySkills || "",
-// // //             description: entry.description || "",
-// // //             refereedBy: ""
-// // //           });
-// // //         }
-
-// // //         if (bulkData.length === 1) {
-// // //           const job = bulkData[0];
-// // //           setTitle(job.title);
-// // //           setCompanyName(job.companyName);
-// // //           setRole(job.role);
-// // //           setEmploymentType(job.employmentType);
-// // //           setLocation(job.location);
-// // //           setExperience(job.experience);
-// // //           setSalary(job.salary);
-// // //           setEducation(job.education);
-// // //           setPassedOutYear(job.passedOutYear);
-// // //           setKeySkills(job.keySkills);
-// // //           setDescription(job.description);
-// // //           setRefereedBy('');
-// // //           alert("Data loaded into form. Review and click Post.");
-// // //         } else {
-// // //           onSubmit(bulkData, true);
-// // //         }
-// // //       } catch (error) {
-// // //         console.error("CSV parsing error:", error);
-// // //         alert("Error parsing CSV file. Please check the format.");
-// // //       }
-// // //     };
-
-// // //     reader.onerror = () => {
-// // //       alert("Error reading file. Please try again.");
-// // //     };
-
-// // //     reader.readAsText(file);
-// // //   };
-
-// // //   const handleSubmit = (e) => {
-// // //     e.preventDefault();
-// // //     onSubmit({
-// // //       title, companyName, employmentType, location, description,
-// // //       education, passedOutYear, experience, salary, role, keySkills,
-// // //       refereedBy: refereedBy || null
-// // //     }, false);
-// // //   };
-
-// // //   if (!isOpen) return null;
-
-// // //   const modalStyles = {
-// // //     overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-// // //     modal: { backgroundColor: 'white', borderRadius: '8px', padding: '24px', width: '600px', maxWidth: '90%', position: 'relative', boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)', maxHeight: '90vh', overflowY: 'auto' },
-// // //     label: { display: 'block', marginBottom: '5px', fontWeight: '600', fontSize: '14px', color: '#374151' },
-// // //     input: { width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', marginBottom: '15px', boxSizing: 'border-box' },
-// // //     select: { width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', marginBottom: '15px', backgroundColor: 'white', cursor: 'pointer', boxSizing: 'border-box' },
-// // //     textarea: { width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', minHeight: '80px', resize: 'vertical', marginBottom: '15px', boxSizing: 'border-box' },
-// // //     button: { width: '100%', padding: '12px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px', fontWeight: '600', marginTop: '10px' },
-// // //     csvButton: { width: '100%', padding: '10px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' },
-// // //     row: { display: 'flex', gap: '15px' },
-// // //     required: { color: 'red' }
-// // //   };
-
-// // //   return (
-// // //     <div style={modalStyles.overlay}>
-// // //       <div style={modalStyles.modal}>
-// // //         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
-// // //           <h2 style={{ margin: 0, color: '#111827' }}>{initialData ? 'Edit Job Post' : 'Create Job Post'}</h2>
-// // //           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
-// // //             <X size={24} />
-// // //           </button>
-// // //         </div>
-
-// // //         {!initialData && (
-// // //           <div style={{ borderBottom: '1px solid #e5e7eb', marginBottom: '20px', paddingBottom: '10px' }}>
-// // //             <input type="file" accept=".csv" id="csv-upload" style={{ display: 'none' }} onChange={handleFileChange} />
-// // //             <label htmlFor="csv-upload" style={modalStyles.csvButton}>
-// // //               <FileText size={18} /> Upload CSV Format
-// // //             </label>
-// // //           </div>
-// // //         )}
-
-// // //         <form onSubmit={handleSubmit}>
-// // //           {/* Job Title Field with Dropdown + Typing */}
-// // //           <label style={modalStyles.label}>Job Title <span style={modalStyles.required}>*</span></label>
-// // //           <input
-// // //             list="jobTitleOptions"
-// // //             style={modalStyles.input}
-// // //             type="text"
-// // //             value={title}
-// // //             onChange={(e) => setTitle(e.target.value)}
-// // //             placeholder="Select or Type Job Title"
-// // //             required
-// // //           />
-// // //           <datalist id="jobTitleOptions">
-// // //             {JOB_TITLE_OPTIONS.map((opt, i) => <option key={i} value={opt} />)}
-// // //           </datalist>
-
-// // //           <div style={modalStyles.row}>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Company Name</label>
-// // //               <input style={modalStyles.input} type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Google" />
-// // //             </div>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Job Role</label>
-// // //               <input style={modalStyles.input} type="text" value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. System Admin" />
-// // //             </div>
-// // //           </div>
-
-// // //           <div style={modalStyles.row}>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Employment Type</label>
-// // //               <select style={modalStyles.select} value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
-// // //                 {EMPLOYMENT_TYPES.map(type => (
-// // //                   <option key={type} value={type}>{type}</option>
-// // //                 ))}
-// // //               </select>
-// // //             </div>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Location</label>
-// // //               <input style={modalStyles.input} type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Bangalore" />
-// // //             </div>
-// // //           </div>
-
-// // //           <div style={modalStyles.row}>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Experience</label>
-// // //               <input style={modalStyles.input} type="text" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 2-5 Years" />
-// // //             </div>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Salary</label>
-// // //               <input style={modalStyles.input} type="text" value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="e.g. 4-6 LPA" />
-// // //             </div>
-// // //           </div>
-
-// // //           <div style={modalStyles.row}>
-// // //             <div style={{ flex: 2 }}>
-// // //               <label style={modalStyles.label}>Education</label>
-// // //               <input style={modalStyles.input} type="text" value={education} onChange={(e) => setEducation(e.target.value)} placeholder="e.g. B.E / B.Tech" />
-// // //             </div>
-// // //             <div style={{ flex: 1 }}>
-// // //               <label style={modalStyles.label}>Passout Year</label>
-// // //               <input style={modalStyles.input} type="text" value={passedOutYear} onChange={(e) => setPassedOutYear(e.target.value)} placeholder="e.g. 2023" />
-// // //             </div>
-// // //           </div>
-
-// // //           <label style={modalStyles.label}>Refereed Person (Optional)</label>
-// // //           <select
-// // //             style={modalStyles.select}
-// // //             value={refereedBy}
-// // //             onChange={(e) => setRefereedBy(e.target.value)}
-// // //           >
-// // //             <option value="">Select a Referee (Optional)</option>
-// // //             {refereesList.length > 0 ? (
-// // //               refereesList.map((referee) => (
-// // //                 <option key={referee._id} value={referee._id}>
-// // //                   {referee.name || referee.email || "Unknown Name"}
-// // //                 </option>
-// // //               ))
-// // //             ) : (
-// // //               <option disabled>No referees found</option>
-// // //             )}
-// // //           </select>
-
-// // //           <label style={modalStyles.label}>Key Skills</label>
-// // //           <input style={modalStyles.input} type="text" value={keySkills} onChange={(e) => setKeySkills(e.target.value)} placeholder="e.g. React, Node.js, SQL" />
-
-// // //           <label style={modalStyles.label}>Description</label>
-// // //           <textarea style={modalStyles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the job role..." required />
-
-// // //           <button type="submit" style={modalStyles.button}>
-// // //             {initialData ? 'Update Job' : 'Post Job'}
-// // //           </button>
-// // //         </form>
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // };
-
-// // // ProvidedForm.propTypes = {
-// // //   isOpen: PropTypes.bool.isRequired,
-// // //   onClose: PropTypes.func.isRequired,
-// // //   onSubmit: PropTypes.func.isRequired,
-// // //   initialData: PropTypes.shape({
-// // //     title: PropTypes.string,
-// // //     companyName: PropTypes.string,
-// // //     employmentType: PropTypes.string,
-// // //     location: PropTypes.string,
-// // //     description: PropTypes.string,
-// // //     education: PropTypes.string,
-// // //     passedOutYear: PropTypes.string,
-// // //     experience: PropTypes.string,
-// // //     salary: PropTypes.string,
-// // //     role: PropTypes.string,
-// // //     keySkills: PropTypes.string,
-// // //     refereedBy: PropTypes.oneOfType([
-// // //       PropTypes.string,
-// // //       PropTypes.shape({
-// // //         _id: PropTypes.string,
-// // //         name: PropTypes.string
-// // //       })
-// // //     ])
-// // //   })
-// // // };
-
-// // // // =========================================================================================
-// // // // COMPONENT 3: ResumeUploadModal with Google Login Option
-// // // // =========================================================================================
-// // // const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogleLogin }) => {
-// // //   const [resumeFile, setResumeFile] = useState(null);
-// // //   const [fileName, setFileName] = useState('');
-// // //   const [isUploading, setIsUploading] = useState(false);
-// // //   const [showGoogleLogin, setShowGoogleLogin] = useState(false);
-
-// // //   useEffect(() => {
-// // //     if (isOpen) {
-// // //       setResumeFile(null);
-// // //       setFileName('');
-// // //       setIsUploading(false);
-// // //       setShowGoogleLogin(!user);
-// // //     }
-// // //   }, [isOpen, user]);
-
-// // //   if (!isOpen) return null;
-
-// // //   const handleFileChange = (e) => {
-// // //     const file = e.target.files[0];
-// // //     if (file) {
-// // //       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-// // //       if (!allowedTypes.includes(file.type)) {
-// // //         alert('Please upload a PDF or Word document only');
-// // //         return;
-// // //       }
-
-// // //       if (file.size > 5 * 1024 * 1024) {
-// // //         alert('File size should be less than 5MB');
-// // //         return;
-// // //       }
-
-// // //       setResumeFile(file);
-// // //       setFileName(file.name);
-// // //     }
-// // //   };
-
-// // //   const handleSubmit = async (e) => {
-// // //     e.preventDefault();
-
-// // //     if (!user) {
-// // //       setShowGoogleLogin(true);
-// // //       return;
-// // //     }
-
-// // //     if (!resumeFile) {
-// // //       alert('Please select a resume file');
-// // //       return;
-// // //     }
-
-// // //     setIsUploading(true);
-// // //     try {
-// // //       await onUpload(resumeFile);
-// // //       setResumeFile(null);
-// // //       setFileName('');
-// // //       onClose();
-// // //     } catch (error) {
-// // //       alert('Failed to upload resume');
-// // //     } finally {
-// // //       setIsUploading(false);
-// // //     }
-// // //   };
-
-// // //   const handleGoogleLogin = () => {
-// // //     if (onGoogleLogin) {
-// // //       onGoogleLogin(() => {
-// // //         setShowGoogleLogin(false);
-// // //       });
-// // //     }
-// // //   };
-
-// // //   const handleClose = () => {
-// // //     setResumeFile(null);
-// // //     setFileName('');
-// // //     setIsUploading(false);
-// // //     setShowGoogleLogin(false);
-// // //     onClose();
-// // //   };
-
-// // //   const modalStyles = {
-// // //     overlay: {
-// // //       position: 'fixed',
-// // //       top: 0,
-// // //       left: 0,
-// // //       right: 0,
-// // //       bottom: 0,
-// // //       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-// // //       display: 'flex',
-// // //       justifyContent: 'center',
-// // //       alignItems: 'center',
-// // //       zIndex: 1000
-// // //     },
-// // //     modal: {
-// // //       backgroundColor: 'white',
-// // //       borderRadius: '8px',
-// // //       padding: '24px',
-// // //       width: '500px',
-// // //       maxWidth: '90%',
-// // //       position: 'relative'
-// // //     },
-// // //     title: {
-// // //       margin: '0 0 20px 0',
-// // //       color: '#111827',
-// // //       fontSize: '1.25rem'
-// // //     },
-// // //     fileInput: {
-// // //       width: '100%',
-// // //       padding: '12px',
-// // //       border: '2px dashed #d1d5db',
-// // //       borderRadius: '6px',
-// // //       textAlign: 'center',
-// // //       cursor: 'pointer',
-// // //       marginBottom: '15px',
-// // //       display: 'flex',
-// // //       flexDirection: 'column',
-// // //       alignItems: 'center',
-// // //       gap: '8px',
-// // //       transition: 'border-color 0.2s'
-// // //     },
-// // //     selectedFile: {
-// // //       backgroundColor: '#f3f4f6',
-// // //       padding: '10px',
-// // //       borderRadius: '6px',
-// // //       width: '100%',
-// // //       textAlign: 'center',
-// // //       fontSize: '0.9rem',
-// // //       fontWeight: '500',
-// // //       marginTop: '8px',
-// // //       display: 'flex',
-// // //       alignItems: 'center',
-// // //       justifyContent: 'center',
-// // //       gap: '8px'
-// // //     },
-// // //     button: {
-// // //       padding: '12px 24px',
-// // //       backgroundColor: '#2563eb',
-// // //       color: 'white',
-// // //       border: 'none',
-// // //       borderRadius: '6px',
-// // //       cursor: 'pointer',
-// // //       fontSize: '16px',
-// // //       fontWeight: '600',
-// // //       width: '100%',
-// // //       transition: 'background-color 0.2s'
-// // //     },
-// // //     disabledButton: {
-// // //       backgroundColor: '#9ca3af',
-// // //       cursor: 'not-allowed'
-// // //     }
-// // //   };
-
-// // //   return (
-// // //     <div style={modalStyles.overlay}>
-// // //       <div style={modalStyles.modal}>
-// // //         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-// // //           <h3 style={modalStyles.title}>Upload Resume for {jobTitle}</h3>
-// // //           <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }} aria-label="Close modal">
-// // //             <X size={24} />
-// // //           </button>
-// // //         </div>
-
-// // //         {showGoogleLogin ? (
-// // //           <div>
-// // //             <p style={{ marginBottom: '20px', textAlign: 'center', color: '#4b5563' }}>
-// // //               Please login to apply for this position
-// // //             </p>
-// // //             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-// // //               <GoogleLoginButton 
-// // //                 onLoginSuccess={() => {
-// // //                   setShowGoogleLogin(false);
-// // //                 }}
-// // //               />
-// // //               <button
-// // //                 style={{
-// // //                   padding: '10px 20px',
-// // //                   backgroundColor: '#f3f4f6',
-// // //                   color: '#374151',
-// // //                   border: 'none',
-// // //                   borderRadius: '6px',
-// // //                   cursor: 'pointer',
-// // //                   fontWeight: '500',
-// // //                   fontSize: '14px'
-// // //                 }}
-// // //                 onClick={handleClose}
-// // //               >
-// // //                 Cancel
-// // //               </button>
-// // //             </div>
-// // //           </div>
-// // //         ) : (
-// // //           <form onSubmit={handleSubmit}>
-// // //             <input
-// // //               type="file"
-// // //               id="resume-upload"
-// // //               accept=".pdf,.doc,.docx"
-// // //               onChange={handleFileChange}
-// // //               style={{ display: 'none' }}
-// // //             />
-
-// // //             <label
-// // //               htmlFor="resume-upload"
-// // //               style={modalStyles.fileInput}
-// // //               onMouseEnter={(e) => e.currentTarget.style.borderColor = '#3b82f6'}
-// // //               onMouseLeave={(e) => e.currentTarget.style.borderColor = '#d1d5db'}
-// // //             >
-// // //               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-// // //                 <FileText size={20} />
-// // //                 <span>Click to select resume</span>
-// // //               </div>
-// // //               <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-// // //                 (PDF/DOC/DOCX, max 5MB)
-// // //               </div>
-
-// // //               {fileName ? (
-// // //                 <div style={modalStyles.selectedFile}>
-// // //                   <FileText size={16} />
-// // //                   <span><strong>Selected:</strong> {fileName}</span>
-// // //                 </div>
-// // //               ) : (
-// // //                 <div style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '8px' }}>
-// // //                   No file selected
-// // //                 </div>
-// // //               )}
-// // //             </label>
-
-// // //             <button
-// // //               type="submit"
-// // //               disabled={!resumeFile || isUploading}
-// // //               style={{
-// // //                 ...modalStyles.button,
-// // //                 ...((!resumeFile || isUploading) && modalStyles.disabledButton)
-// // //               }}
-// // //               onMouseEnter={(e) => {
-// // //                 if (resumeFile && !isUploading) {
-// // //                   e.currentTarget.style.backgroundColor = '#1d4ed8';
-// // //                 }
-// // //               }}
-// // //               onMouseLeave={(e) => {
-// // //                 if (resumeFile && !isUploading) {
-// // //                   e.currentTarget.style.backgroundColor = '#2563eb';
-// // //                 }
-// // //               }}
-// // //             >
-// // //               {isUploading ? 'Uploading...' : 'Upload & Apply'}
-// // //             </button>
-// // //           </form>
-// // //         )}
-// // //       </div>
-// // //     </div>
-// // //   );
-// // // };
-
-// // // ResumeUploadModal.propTypes = {
-// // //   isOpen: PropTypes.bool.isRequired,
-// // //   onClose: PropTypes.func.isRequired,
-// // //   onUpload: PropTypes.func.isRequired,
-// // //   jobTitle: PropTypes.string,
-// // //   user: PropTypes.object,
-// // //   onGoogleLogin: PropTypes.func
-// // // };
-
-// // // // =========================================================================================
-// // // // MAIN COMPONENT: Jobs
-// // // // =========================================================================================
-// // // function Jobs() {
-// // //   const [globalFilter, setGlobalFilter] = useState('');
-// // //   const [jobPosts, setJobPosts] = useState([]);
-// // //   const [myPost, setMyPost] = useState([]);
-// // //   const [view, setView] = useState('request');
-// // //   const [page, setPage] = useState(1);
-// // //   const [totalPages, setTotalPages] = useState(1);
-// // //   const [showProvidedModal, setShowProvidedModal] = useState(false);
-
-// // //   const { sidebarCollapsed } = useOutletContext();
-// // //   const sidebarWidth = sidebarCollapsed ? 90 : 280;
-
-// // //   const [filters, setFilters] = useState({
-// // //     title: "",
-// // //     companyName: "",
-// // //     role: "",
-// // //     employmentType: "",
-// // //     location: "",
-// // //     experience: "",
-// // //     salary: "",
-// // //     education: "",
-// // //     passedOutYear: "",
-// // //     keySkills: "",
-// // //     refereedBy: "",
-// // //     description: "",
-// // //     startDate: null,
-// // //     endDate: null,
-// // //     initialNumber: "",
-// // //     finalNumber: ""
-// // //   });
-
-// // //   const [pendingFilters, setPendingFilters] = useState({});
-// // //   const [hasPendingChanges, setHasPendingChanges] = useState(false);
-// // //   const [datePickerOpen, setDatePickerOpen] = useState({
-// // //     startDate: false,
-// // //     endDate: false
-// // //   });
-
-// // //   const [showBulkReviewModal, setShowBulkReviewModal] = useState(false);
-// // //   const [bulkReviewJobs, setBulkReviewJobs] = useState([]);
-// // //   const [showResumeModal, setShowResumeModal] = useState(false);
-// // //   const [selectedJob, setSelectedJob] = useState(null);
-// // //   const [editingJob, setEditingJob] = useState(null);
-// // //   const [isSubmitting, setIsSubmitting] = useState(false);
-
-// // //   const [loadingState, setLoadingState] = useState({
-// // //     fetching: false,
-// // //     applying: false,
-// // //     uploading: false,
-// // //     deleting: false,
-// // //     filtering: false
-// // //   });
-// // //   const [error, setError] = useState(null);
-
-// // //   const { user } = useAuth();
-// // //   const { jobContext, memberContext } = useData();
-// // //   const navigate = useNavigate();
-// // //   const headerRef = useRef(null);
-// // //   const [headerHeight, setHeaderHeight] = useState(280);
-
-// // //   const [refereesList, setRefereesList] = useState([]);
-
-// // //   // Google OAuth State
-// // //   const [googleUser, setGoogleUser] = useState(null);
-// // //   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
-
-// // //   // Backend URL for Local file serving
-// // //   const BACKEND_URL = "http://localhost:5000";
-
-// // //   // Constants
-// // //   const JOBS_PER_PAGE = 10;
-
-// // //   // Google Login Handler
-// // //   const handleGoogleLogin = async (callback) => {
-// // //     try {
-// // //       // For development: Mock Google login
-// // //       // In production, integrate with actual Google OAuth
-// // //       const mockGoogleUser = {
-// // //         id: 'google-123',
-// // //         name: 'Google User',
-// // //         email: 'user@gmail.com',
-// // //         picture: 'https://via.placeholder.com/40',
-// // //         provider: 'google'
-// // //       };
-
-// // //       setGoogleUser(mockGoogleUser);
-
-// // //       // Here you would typically:
-// // //       // 1. Send Google token to backend for verification
-// // //       // 2. Get JWT token from your backend
-// // //       // 3. Store the token
-// // //       // 4. Update user context
-
-// // //       if (callback) callback();
-// // //     } catch (error) {
-// // //       console.error('Google login failed:', error);
-// // //       alert('Google login failed. Please try again.');
-// // //     }
-// // //   };
-
-// // //   // FIXED: Move checkIsApplied function BEFORE it's used
-// // //   const checkIsApplied = (job, userId) => {
-// // //     if (!job.appliedMembers || !userId || job.appliedMembers.length === 0) {
-// // //       return false;
-// // //     }
-
-// // //     const userIdStr = String(userId).trim();
-
-// // //     return job.appliedMembers.some(app => {
-// // //       const possibleIds = [
-// // //         app.memberId?._id,
-// // //         app.memberId,
-// // //         app.member?._id,
-// // //         app.member,
-// // //         app.userId?._id,
-// // //         app.userId,
-// // //         app.applicantId?._id,
-// // //         app.applicantId,
-// // //         app._id
-// // //       ].filter(id => id != null);
-
-// // //       const found = possibleIds.some(id => String(id).trim() === userIdStr);
-// // //       return found;
-// // //     });
-// // //   };
-
-// // //   // FIXED: Enhanced getMyApplicationStatus function
-// // //   const getMyApplicationStatus = (job) => {
-// // //     if (!job.appliedMembers || !user?.memberId) return null;
-
-// // //     const userIdStr = String(user.memberId).trim();
-// // //     const application = job.appliedMembers.find(app => {
-// // //       const possibleIds = [
-// // //         app.memberId?._id,
-// // //         app.memberId,
-// // //         app.member?._id,
-// // //         app.member,
-// // //         app.userId?._id,
-// // //         app.userId,
-// // //         app.applicantId?._id,
-// // //         app.applicantId,
-// // //         app._id
-// // //       ].filter(id => id != null);
-
-// // //       return possibleIds.some(id => String(id).trim() === userIdStr);
-// // //     });
-
-// // //     return application ? application.status || "Applied" : null;
-// // //   };
-
-// // //   useEffect(() => {
-// // //     if (memberContext) {
-// // //       const filtered = memberContext.filter(m => m.memberType === 'Referee');
-// // //       setRefereesList(filtered);
-// // //     }
-// // //   }, [memberContext]);
-
-// // //   useEffect(() => {
-// // //     if (datePickerOpen.startDate || datePickerOpen.endDate) {
-// // //       document.body.classList.add('date-picker-open');
-// // //     } else {
-// // //       document.body.classList.remove('date-picker-open');
-// // //     }
-
-// // //     return () => {
-// // //       document.body.classList.remove('date-picker-open');
-// // //     };
-// // //   }, [datePickerOpen.startDate, datePickerOpen.endDate]);
-
-// // //   useEffect(() => {
-// // //     const handleClickOutside = (event) => {
-// // //       if (datePickerOpen.startDate || datePickerOpen.endDate) {
-// // //         const datePickerElements = document.querySelectorAll(`.${styles.datePickerPopup}, .${styles.dateInput}`);
-// // //         let isClickInside = false;
-
-// // //         datePickerElements.forEach(element => {
-// // //           if (element && element.contains(event.target)) {
-// // //             isClickInside = true;
-// // //           }
-// // //         });
-
-// // //         if (!isClickInside) {
-// // //           setDatePickerOpen({ startDate: false, endDate: false });
-// // //         }
-// // //       }
-// // //     };
-
-// // //     document.addEventListener('mousedown', handleClickOutside);
-// // //     return () => {
-// // //       document.removeEventListener('mousedown', handleClickOutside);
-// // //     };
-// // //   }, [datePickerOpen, styles]);
-
-// // //   // Effect to calculate header height
-// // //   useEffect(() => {
-// // //     const updateHeaderHeight = () => {
-// // //       if (headerRef.current) {
-// // //         const height = headerRef.current.offsetHeight;
-// // //         setHeaderHeight(height + 20);
-// // //       }
-// // //     };
-
-// // //     updateHeaderHeight();
-// // //     const timer = setTimeout(updateHeaderHeight, 100);
-// // //     return () => clearTimeout(timer);
-// // //   }, [filters, pendingFilters, view, sidebarWidth]);
-
-// // //   // Names for "Refereed Person" select
-// // //   const refereeNameOptions = React.useMemo(
-// // //     () => refereesList.map(r => r.name || r.email || "Unknown"),
-// // //     [refereesList]
-// // //   );
-
-// // //   // Check if user is logged in (either through your app or Google)
-// // //   const isUserLoggedIn = useMemo(() => {
-// // //     return !!(user || googleUser);
-// // //   }, [user, googleUser]);
-
-// // //   // Apply filters to a given job array
-// // //   const applyFilters = useCallback((jobs) => {
-// // //     const search = globalFilter.trim().toLowerCase();
-
-// // //     const {
-// // //       title,
-// // //       companyName,
-// // //       role,
-// // //       employmentType,
-// // //       location,
-// // //       experience,
-// // //       salary,
-// // //       education,
-// // //       passedOutYear,
-// // //       keySkills,
-// // //       refereedBy,
-// // //       description,
-// // //       startDate,
-// // //       endDate,
-// // //       initialNumber,
-// // //       finalNumber
-// // //     } = filters;
-
-// // //     const titleFilter = title?.trim().toLowerCase() || "";
-// // //     const companyFilter = companyName?.trim().toLowerCase() || "";
-// // //     const roleFilter = role?.trim().toLowerCase() || "";
-// // //     const locationFilter = location?.trim().toLowerCase() || "";
-// // //     const experienceFilter = experience?.trim().toLowerCase() || "";
-// // //     const salaryFilter = salary?.trim().toLowerCase() || "";
-// // //     const educationFilter = education?.trim().toLowerCase() || "";
-// // //     const passoutFilter = passedOutYear?.trim().toLowerCase() || "";
-// // //     const keySkillsFilter = keySkills?.trim().toLowerCase() || "";
-// // //     const descriptionFilter = description?.trim().toLowerCase() || "";
-// // //     const refereedByFilter = refereedBy?.trim().toLowerCase() || "";
-
-// // //     const toDate = (val) => {
-// // //       if (!val) return null;
-// // //       if (val instanceof Date) return val;
-// // //       return new Date(val);
-// // //     };
-
-// // //     const start = toDate(startDate);
-// // //     const end = toDate(endDate);
-
-// // //     return jobs.filter((job) => {
-// // //       if (search) {
-// // //         const haystack = [
-// // //           job.title,
-// // //           job.companyName,
-// // //           job.location,
-// // //           job.role,
-// // //           job.description,
-// // //           job.keySkills
-// // //         ]
-// // //           .filter(Boolean)
-// // //           .join(" ")
-// // //           .toLowerCase();
-
-// // //         if (!haystack.includes(search)) return false;
-// // //       }
-
-// // //       if (titleFilter) {
-// // //         if (!(job.title || "").toLowerCase().includes(titleFilter)) return false;
-// // //       }
-
-// // //       if (companyFilter) {
-// // //         if (!(job.companyName || "").toLowerCase().includes(companyFilter)) return false;
-// // //       }
-
-// // //       if (roleFilter) {
-// // //         if (!(job.role || "").toLowerCase().includes(roleFilter)) return false;
-// // //       }
-
-// // //       if (locationFilter) {
-// // //         if (!(job.location || "").toLowerCase().includes(locationFilter)) return false;
-// // //       }
-
-// // //       if (experienceFilter) {
-// // //         if (!(job.experience || "").toLowerCase().includes(experienceFilter)) return false;
-// // //       }
-
-// // //       if (salaryFilter) {
-// // //         if (!(job.salary || "").toLowerCase().includes(salaryFilter)) return false;
-// // //       }
-
-// // //       if (educationFilter) {
-// // //         if (!(job.education || "").toLowerCase().includes(educationFilter)) return false;
-// // //       }
-
-// // //       if (passoutFilter) {
-// // //         if (!(String(job.passedOutYear || "")).toLowerCase().includes(passoutFilter)) return false;
-// // //       }
-
-// // //       if (keySkillsFilter) {
-// // //         const jobSkills = (job.keySkills || "").toLowerCase();
-// // //         if (!jobSkills.includes(keySkillsFilter)) return false;
-// // //       }
-
-// // //       if (descriptionFilter) {
-// // //         if (!(job.description || "").toLowerCase().includes(descriptionFilter)) return false;
-// // //       }
-
-// // //       if (employmentType && job.employmentType !== employmentType) {
-// // //         return false;
-// // //       }
-
-// // //       if (refereedByFilter) {
-// // //         const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
-// // //         if (!refName.includes(refereedByFilter)) return false;
-// // //       }
-
-// // //       if (start || end) {
-// // //         if (!job.createdAt) return false;
-// // //         const created = new Date(job.createdAt);
-// // //         if (start && created < start) return false;
-// // //         if (end && created > end) return false;
-// // //       }
-
-// // //       const applicantsCount = job.appliedMembers?.length || 0;
-
-// // //       if (initialNumber !== "" && initialNumber != null) {
-// // //         if (applicantsCount < Number(initialNumber)) return false;
-// // //       }
-
-// // //       if (finalNumber !== "" && finalNumber != null) {
-// // //         if (applicantsCount > Number(finalNumber)) return false;
-// // //       }
-
-// // //       return true;
-// // //     });
-// // //   }, [filters, globalFilter]);
-
-// // //   // Derived filtered lists (Memoized)
-// // //   const filteredJobPosts = useMemo(() => applyFilters(jobPosts), [jobPosts, applyFilters]);
-
-// // //   const filteredMyPost = useMemo(() => {
-// // //     if (view === "myPost") {
-// // //       if (user?.role === 'Admin') {
-// // //         return applyFilters(jobPosts);
-// // //       } else {
-// // //         if (!isUserLoggedIn) return [];
-
-// // //         const memberJobs = jobPosts.filter(job => {
-// // //           return checkIsApplied(job, user?.memberId);
-// // //         });
-
-// // //         return applyFilters(memberJobs);
-// // //       }
-// // //     }
-// // //     return [];
-// // //   }, [view, jobPosts, user, applyFilters, checkIsApplied, isUserLoggedIn]);
-
-// // //   // Paginated jobs based on view
-// // //   const paginatedJobs = useMemo(() => {
-// // //     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
-// // //     return source.slice(
-// // //       (page - 1) * JOBS_PER_PAGE,
-// // //       page * JOBS_PER_PAGE
-// // //     );
-// // //   }, [view, filteredMyPost, filteredJobPosts, page]);
-
-// // //   // Update total pages when filtered results change
-// // //   useEffect(() => {
-// // //     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
-// // //     const newTotalPages = Math.ceil(source.length / JOBS_PER_PAGE);
-// // //     setTotalPages(newTotalPages || 1);
-
-// // //     if (page > newTotalPages && newTotalPages > 0) {
-// // //       setPage(1);
-// // //     }
-// // //   }, [view, filteredMyPost, filteredJobPosts, page]);
-
-// // //   // Scroll to top when page changes
-// // //   useEffect(() => {
-// // //     const mainContent = document.querySelector(`.${styles.jobs}`) || window;
-// // //     if (mainContent.scrollIntoView) {
-// // //       mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
-// // //     } else {
-// // //       window.scrollTo({ top: 0, behavior: 'smooth' });
-// // //     }
-// // //   }, [page, view]);
-
-// // //   const handleClick = (job) => {
-// // //     navigate(`/jobs/${job._id}`);
-// // //   };
-
-// // //   // Unique lists for selects
-// // //   const locationOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.location && set.add(j.location));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const companyOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.companyName && set.add(j.companyName));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const titleOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.title && set.add(j.title));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const roleOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.role && set.add(j.role));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const experienceOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.experience && set.add(j.experience));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const salaryOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.salary && set.add(j.salary));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const educationOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.education && set.add(j.education));
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const passedOutYearOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => j.passedOutYear && set.add(j.passedOutYear));
-// // //     return Array.from(set).sort((a, b) => b - a);
-// // //   }, [jobPosts]);
-
-// // //   const keySkillsOptions = React.useMemo(() => {
-// // //     const set = new Set();
-// // //     jobPosts.forEach(j => {
-// // //       if (j.keySkills) {
-// // //         j.keySkills.split(",").forEach(skill => {
-// // //           const trimmed = skill.trim();
-// // //           if (trimmed) set.add(trimmed);
-// // //         });
-// // //       }
-// // //     });
-// // //     return Array.from(set);
-// // //   }, [jobPosts]);
-
-// // //   const formatDateForDisplay = (date) => {
-// // //     if (!date) return '';
-// // //     if (typeof date === 'string') {
-// // //       date = new Date(date);
-// // //     }
-// // //     return date.toLocaleDateString('en-US', {
-// // //       year: 'numeric',
-// // //       month: 'short',
-// // //       day: 'numeric'
-// // //     });
-// // //   };
-
-// // //   const handleDateChange = (field, date) => {
-// // //     handleFilterChange(field, date);
-// // //     setDatePickerOpen(prev => ({ ...prev, [field]: false }));
-// // //   };
-
-// // //   const getFileUrl = (url) => {
-// // //     if (!url) return "#";
-// // //     if (url.startsWith("uploads") || url.includes("\\")) {
-// // //       return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
-// // //     }
-// // //     return url;
-// // //   };
-
-// // //   const getPipelineStatus = (dbStatus) => {
-// // //     switch (dbStatus) {
-// // //       case 'Applied': return 'Submitted';
-// // //       case 'Review': return 'Review';
-// // //       case 'Shortlisted': return 'Interview';
-// // //       case 'Offer': return 'Offer';
-// // //       case 'Accepted': return 'Hired';
-// // //       case 'Rejected': return 'Rejected';
-// // //       default: return 'Submitted';
-// // //     }
-// // //   };
-
-// // //   const hasDefaultResume = () => {
-// // //     return user?.resumeLink ? true : false;
-// // //   };
-
-// // //   const fetchJobPosts = async () => {
-// // //     try {
-// // //       setLoadingState(prev => ({ ...prev, fetching: true }));
-// // //       setError(null);
-
-// // //       const res = await API.get('/service');
-// // //       const allJobs = res.data.data;
-// // //       setJobPosts(allJobs);
-
-// // //       if (isUserLoggedIn) {
-// // //         if (user?.role === 'Admin') {
-// // //           setMyPost(allJobs);
-// // //         } else {
-// // //           const myApplications = allJobs.filter(job =>
-// // //             checkIsApplied(job, user?.memberId)
-// // //           );
-// // //           setMyPost(myApplications);
-// // //         }
-// // //       }
-// // //     } catch (error) {
-// // //       console.error("Error fetching jobs:", error);
-// // //       setError("Unable to load jobs. Please try again later.");
-// // //       if (jobContext && jobContext.length > 0) setJobPosts(jobContext);
-// // //     } finally {
-// // //       setLoadingState(prev => ({ ...prev, fetching: false }));
-// // //     }
-// // //   };
-
-// // //   const handleDelete = async (jobId, e) => {
-// // //     e.stopPropagation();
-// // //     if (!window.confirm("Are you sure you want to delete this job post?")) return;
-
-// // //     try {
-// // //       setLoadingState(prev => ({ ...prev, deleting: true }));
-// // //       await API.delete(`/service/${jobId}`);
-// // //       setJobPosts(prev => prev.filter(job => job._id !== jobId));
-// // //       setMyPost(prev => prev.filter(job => job._id !== jobId));
-// // //       alert("Job deleted successfully");
-// // //     } catch (error) {
-// // //       console.error("Delete failed:", error);
-// // //       alert("Failed to delete job.");
-// // //     } finally {
-// // //       setLoadingState(prev => ({ ...prev, deleting: false }));
-// // //     }
-// // //   };
-
-// // //   const handleStatusChange = async (jobId, memberId, newStatus) => {
-// // //     try {
-// // //       await API.patch(`/service/status`, { jobId, memberId, status: newStatus });
-// // //       alert(`Status updated to ${newStatus}`);
-// // //       fetchJobPosts();
-// // //     } catch (error) {
-// // //       console.error("Failed to update status", error);
-// // //       alert("Failed to update status. Please try again.");
-// // //     }
-// // //   };
-
-// // //   const uploadToCloudinary = async (file) => {
-// // //     if (!file) return null;
-// // //     const cloudName = "dwelwaavj";
-// // //     const uploadPreset = "jobbridge_preset";
-// // //     const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
-
-// // //     const data = new FormData();
-// // //     data.append("file", file);
-// // //     data.append("upload_preset", uploadPreset);
-
-// // //     try {
-// // //       setLoadingState(prev => ({ ...prev, uploading: true }));
-// // //       const res = await axios.post(api, data);
-// // //       return res.data.secure_url;
-// // //     } catch (error) {
-// // //       console.error("Cloudinary Upload Error:", error);
-// // //       throw new Error("Failed to upload file to cloud.");
-// // //     } finally {
-// // //       setLoadingState(prev => ({ ...prev, uploading: false }));
-// // //     }
-// // //   };
-
-// // //   const handleApply = async (job, resumeFile = null) => {
-// // //     try {
-// // //       setLoadingState(prev => ({ ...prev, applying: true }));
-
-// // //       if (!isUserLoggedIn) {
-// // //         setSelectedJob(job);
-// // //         setShowGoogleLoginModal(true);
-// // //         return;
-// // //       }
-
-// // //       if (!resumeFile && user?.role === 'Member') {
-// // //         setSelectedJob(job);
-// // //         setShowResumeModal(true);
-// // //         return;
-// // //       }
-
-// // //       let finalResumeLink = null;
-// // //       if (resumeFile) {
-// // //         finalResumeLink = await uploadToCloudinary(resumeFile);
-// // //       }
-
-// // //       console.log("Applying for job with resumeLink:", finalResumeLink);
-// // //       const applyRes = await API.post(`/service/${job._id}/apply`, {
-// // //         resumeLink: finalResumeLink
-// // //       });
-// // //       console.log("Apply Response:", applyRes.data);
-
-// // //       alert("Applied successfully");
-// // //       fetchJobPosts();
-// // //       setShowResumeModal(false);
-// // //     } catch (error) {
-// // //       alert(error.response?.data?.message || "Failed to apply");
-// // //     } finally {
-// // //       setLoadingState(prev => ({ ...prev, applying: false }));
-// // //     }
-// // //   };
-
-// // //   const handleUploadAndApply = async (resumeFile) => {
-// // //     if (selectedJob) {
-// // //       await handleApply(selectedJob, resumeFile);
-// // //     }
-// // //   };
-
-// // //   const handleApplyClick = (e, job) => {
-// // //     e.stopPropagation();
-// // //     if (isApplied(job)) return;
-
-// // //     if (hasDefaultResume()) {
-// // //       const useDefault = window.confirm(
-// // //         "You have a default resume on file. Would you like to use it?\n\n" +
-// // //         "Click OK to use default resume\n" +
-// // //         "Click Cancel to upload a different resume"
-// // //       );
-
-// // //       if (useDefault) {
-// // //         handleApply(job);
-// // //       } else {
-// // //         setSelectedJob(job);
-// // //         setShowResumeModal(true);
-// // //       }
-// // //     } else {
-// // //       setSelectedJob(job);
-// // //       setShowResumeModal(true);
-// // //     }
-// // //   };
-
-// // //   const handleEditClick = (e, job) => {
-// // //     e.stopPropagation();
-// // //     setEditingJob(job);
-// // //     setShowProvidedModal(true);
-// // //   };
-
-// // //   const handleCloseModal = () => {
-// // //     setShowProvidedModal(false);
-// // //     setEditingJob(null);
-// // //   };
-
-// // //   const handleUpdateProvided = async (jobData) => {
-// // //     if (isSubmitting) return;
-// // //     setIsSubmitting(true);
-
-// // //     const dataToSend = {
-// // //       ...jobData,
-// // //       refereedBy: jobData.refereedBy || null
-// // //     };
-
-// // //     try {
-// // //       const response = await API.patch(`/service/${editingJob._id}`, dataToSend);
-// // //       const updatedJob = response.data.data || response.data;
-
-// // //       setJobPosts(prev => prev.map(job => (job._id === updatedJob._id ? updatedJob : job)));
-// // //       setMyPost(prev => prev.map(job => (job._id === updatedJob._id ? updatedJob : job)));
-
-// // //       alert("Job updated successfully!");
-// // //       handleCloseModal();
-// // //     } catch (error) {
-// // //       console.error("Error updating Job:", error);
-// // //       alert("Failed to update job.");
-// // //     } finally {
-// // //       setIsSubmitting(false);
-// // //     }
-// // //   };
-
-// // //   const handleAddProvided = async (jobData) => {
-// // //     if (isSubmitting) return;
-// // //     setIsSubmitting(true);
-
-// // //     const dataToSend = {
-// // //       ...jobData,
-// // //       refereedBy: jobData.refereedBy || null
-// // //     };
-
-// // //     try {
-// // //       const response = await API.post('/service', dataToSend);
-// // //       const newJob = response.data.data || response.data;
-
-// // //       setJobPosts(prev => [newJob, ...prev]);
-
-// // //       if (user?.role === 'Admin') {
-// // //         setMyPost(prev => [newJob, ...prev]);
-// // //       }
-
-// // //       handleCloseModal();
-// // //       alert("Job posted successfully!");
-// // //     } catch (error) {
-// // //       console.error("Error adding Job:", error);
-// // //       alert("Failed to save job.");
-// // //     } finally {
-// // //       setIsSubmitting(false);
-// // //     }
-// // //   };
-
-// // //   const handleBulkCSVUpload = (data) => {
-// // //     setBulkReviewJobs(data);
-// // //     setShowBulkReviewModal(true);
-// // //   };
-
-// // //   const handleSaveBulkJobs = (editedJobs) => {
-// // //     setBulkReviewJobs(editedJobs);
-// // //     alert(`Saved ${editedJobs.length} jobs. Ready to submit.`);
-// // //   };
-
-// // //   const handleSubmitBulkJobs = async (editedJobs) => {
-// // //     if (!editedJobs.length) return;
-
-// // //     setIsSubmitting(true);
-// // //     try {
-// // //       const jobsToSubmit = editedJobs.map(job => ({
-// // //         ...job,
-// // //         refereedBy: job.refereedBy || null
-// // //       }));
-
-// // //       const uploadPromises = jobsToSubmit.map(job => API.post('/service', job));
-// // //       await Promise.all(uploadPromises);
-
-// // //       alert(`${editedJobs.length} jobs uploaded successfully!`);
-// // //       fetchJobPosts();
-// // //       setShowBulkReviewModal(false);
-// // //     } catch (error) {
-// // //       alert("Error during bulk upload. Some jobs may not have posted.");
-// // //       console.error(error);
-// // //       fetchJobPosts();
-// // //     } finally {
-// // //       setIsSubmitting(false);
-// // //     }
-// // //   };
-
-// // //   const handleFormSubmit = async (data, isBulk = false) => {
-// // //     if (isBulk) {
-// // //       handleBulkCSVUpload(data);
-// // //     } else {
-// // //       if (editingJob) {
-// // //         handleUpdateProvided(data);
-// // //       } else {
-// // //         handleAddProvided(data);
-// // //       }
-// // //     }
-// // //   };
-
-// // //   const buildJobsExportRows = () => {
-// // //     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
-
-// // //     return source.map(j => ({
-// // //       JobTitle: j.title || "",
-// // //       CompanyName: j.companyName || "",
-// // //       EmploymentType: j.employmentType || "",
-// // //       Location: j.location || "",
-// // //       Role: j.role || "",
-// // //       Education: j.education || "",
-// // //       Experience: j.experience || "",
-// // //       Salary: j.salary || "",
-// // //       PassoutYear: j.passedOutYear || "",
-// // //       KeySkills: j.keySkills || "",
-// // //       RefereedBy: j.refereedBy?.name || "",
-// // //       Description: j.description || "",
-// // //       PostedDate: j.createdAt ? new Date(j.createdAt).toLocaleDateString() : "",
-// // //       Applicants: j.appliedMembers?.length || 0
-// // //     }));
-// // //   };
-
-// // //   const exportJobsToExcel = () => {
-// // //     const data = buildJobsExportRows();
-// // //     const ws = XLSX.utils.json_to_sheet(data);
-// // //     const wb = XLSX.utils.book_new();
-// // //     XLSX.utils.book_append_sheet(wb, ws, "Jobs");
-
-// // //     const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-// // //     saveAs(new Blob([buffer]), `Jobs_${new Date().toISOString().slice(0, 10)}.xlsx`);
-// // //   };
-
-// // //   const exportJobsToCSV = () => {
-// // //     const data = buildJobsExportRows();
-// // //     const ws = XLSX.utils.json_to_sheet(data);
-// // //     const csv = XLSX.utils.sheet_to_csv(ws);
-
-// // //     saveAs(
-// // //       new Blob([csv], { type: "text/csv;charset=utf-8;" }),
-// // //       `Jobs_${new Date().toISOString().slice(0, 10)}.csv`
-// // //     );
-// // //   };
-
-// // //   const isApplied = (job) => checkIsApplied(job, user?.memberId);
-
-// // //   const renderStatusBadge = (status) => {
-// // //     let styles = { bg: '#e0f2fe', color: '#0369a1', icon: <Clock size={16} />, text: 'Applied' };
-// // //     if (status === 'Review') styles = { bg: '#f3e8ff', color: '#7e22ce', icon: <NotebookPen size={16} />, text: 'Under Review' };
-// // //     else if (status === 'Shortlisted') styles = { bg: '#fef3c7', color: '#d97706', icon: <Loader size={16} />, text: 'Shortlisted' };
-// // //     else if (status === 'Offer') styles = { bg: '#ccfbf1', color: '#0f766e', icon: <BriefcaseBusiness size={16} />, text: 'Offer Sent' };
-// // //     else if (status === 'Accepted') styles = { bg: '#dcfce7', color: '#166534', icon: <CheckCircle size={16} />, text: 'Accepted' };
-// // //     else if (status === 'Rejected') styles = { bg: '#fee2e2', color: '#991b1b', icon: <XCircle size={16} />, text: 'Rejected' };
-
-// // //     return (
-// // //       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: styles.bg, color: styles.color, padding: '6px 12px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: '600' }}>
-// // //         {styles.icon} <span>{styles.text}</span>
-// // //       </div>
-// // //     );
-// // //   };
-
-// // //   const renderAdminActionButtons = (request) => (
-// // //     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-// // //       <button onClick={(e) => handleEditClick(e, request)} title="Edit Post" style={{ padding: '8px', color: '#2563eb', backgroundColor: '#dbeafe', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Edit job">
-// // //         <Pencil size={20} />
-// // //       </button>
-// // //       <button onClick={(e) => handleDelete(request._id, e)} title="Delete Post" style={{ padding: '8px', color: '#ef4444', backgroundColor: '#fee2e2', borderRadius: '50%', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Delete job">
-// // //         <Trash2 size={20} />
-// // //       </button>
-// // //     </div>
-// // //   );
-
-// // //   const handleResetFilters = () => {
-// // //     setGlobalFilter('');
-// // //     setFilters({
-// // //       title: "",
-// // //       companyName: "",
-// // //       role: "",
-// // //       employmentType: "",
-// // //       location: "",
-// // //       experience: "",
-// // //       salary: "",
-// // //       education: "",
-// // //       passedOutYear: "",
-// // //       keySkills: "",
-// // //       refereedBy: "",
-// // //       description: "",
-// // //       startDate: null,
-// // //       endDate: null,
-// // //       initialNumber: "",
-// // //       finalNumber: ""
-// // //     });
-// // //     setPendingFilters({});
-// // //     setHasPendingChanges(false);
-// // //     setPage(1);
-// // //   };
-
-// // //   const debouncedSearch = useCallback(
-// // //     debounce((value) => {
-// // //       setGlobalFilter(value);
-// // //       setPage(1);
-// // //     }, 300),
-// // //     []
-// // //   );
-
-// // //   const handleSearchChange = (e) => {
-// // //     debouncedSearch(e.target.value);
-// // //   };
-
-// // //   const handleFilterChange = (name, value) => {
-// // //     setPendingFilters(prev => ({ ...prev, [name]: value }));
-// // //     setHasPendingChanges(true);
-// // //   };
-
-// // //   const applyPendingFilters = () => {
-// // //     const newFilters = { ...filters, ...pendingFilters };
-// // //     setFilters(newFilters);
-// // //     setPendingFilters({});
-// // //     setHasPendingChanges(false);
-// // //     setPage(1);
-// // //   };
-
-// // //   const cancelPendingFilters = () => {
-// // //     setPendingFilters({});
-// // //     setHasPendingChanges(false);
-// // //   };
-
-// // //   const clearAllFilters = () => {
-// // //     setFilters({
-// // //       title: "",
-// // //       companyName: "",
-// // //       role: "",
-// // //       employmentType: "",
-// // //       location: "",
-// // //       experience: "",
-// // //       salary: "",
-// // //       education: "",
-// // //       passedOutYear: "",
-// // //       keySkills: "",
-// // //       refereedBy: "",
-// // //       description: "",
-// // //       startDate: null,
-// // //       endDate: null,
-// // //       initialNumber: "",
-// // //       finalNumber: ""
-// // //     });
-// // //     setPendingFilters({});
-// // //     setHasPendingChanges(false);
-// // //     setPage(1);
-// // //   };
-
-// // //   const resetFilter = (name) => {
-// // //     const newPendingFilters = { ...pendingFilters };
-// // //     delete newPendingFilters[name];
-// // //     setPendingFilters(newPendingFilters);
-// // //     setHasPendingChanges(Object.keys(newPendingFilters).length > 0);
-// // //   };
-
-// // //   const getDisplayValue = (fieldName) => {
-// // //     if (pendingFilters[fieldName] !== undefined) {
-// // //       return pendingFilters[fieldName];
-// // //     }
-// // //     return filters[fieldName] || "";
-// // //   };
-
-// // //   const hasActiveFilter = (fieldName) => {
-// // //     return filters[fieldName] !== undefined && 
-// // //            filters[fieldName] !== "" && 
-// // //            filters[fieldName] !== null;
-// // //   };
-
-// // //   const customSelectStyles = {
-// // //     control: (base, state) => ({
-// // //       ...base,
-// // //       minHeight: '36px',
-// // //       height: '36px',
-// // //       fontSize: '13px',
-// // //       borderColor: state.isFocused ? '#4f46e5' : '#d1d5db',
-// // //       borderRadius: '6px',
-// // //       boxShadow: state.isFocused ? '0 0 0 2px rgba(79, 70, 229, 0.1)' : 'none',
-// // //       '&:hover': {
-// // //         borderColor: state.isFocused ? '#4f46e5' : '#9ca3af',
-// // //       },
-// // //     }),
-// // //     valueContainer: (base) => ({
-// // //       ...base,
-// // //       height: '34px',
-// // //       padding: '0 8px',
-// // //       alignItems: 'center',
-// // //     }),
-// // //     singleValue: (base) => ({
-// // //       ...base,
-// // //       fontSize: '13px',
-// // //       margin: 0,
-// // //       lineHeight: '1',
-// // //     }),
-// // //     placeholder: (base) => ({
-// // //       ...base,
-// // //       fontSize: '13px',
-// // //       margin: 0,
-// // //       lineHeight: '1',
-// // //       color: '#9ca3af',
-// // //     }),
-// // //     input: (base) => ({
-// // //       ...base,
-// // //       margin: 0,
-// // //       padding: 0,
-// // //       fontSize: '13px',
-// // //     }),
-// // //     indicatorsContainer: (base) => ({
-// // //       ...base,
-// // //       height: '34px',
-// // //     }),
-// // //     indicatorSeparator: () => ({
-// // //       display: 'none',
-// // //     }),
-// // //     dropdownIndicator: (base) => ({
-// // //       ...base,
-// // //       padding: '6px',
-// // //     }),
-// // //     clearIndicator: (base) => ({
-// // //       ...base,
-// // //       padding: '6px',
-// // //     }),
-// // //     menu: (base) => ({
-// // //       ...base,
-// // //       fontSize: '13px',
-// // //       zIndex: 9999,
-// // //       minWidth: '180px',
-// // //       borderRadius: '6px',
-// // //       border: '1px solid #e5e7eb',
-// // //       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-// // //     }),
-// // //     menuPortal: (base) => ({
-// // //       ...base,
-// // //       zIndex: 9999,
-// // //     }),
-// // //     option: (base, state) => ({
-// // //       ...base,
-// // //       fontSize: '13px',
-// // //       padding: '8px 12px',
-// // //       minHeight: '36px',
-// // //       display: 'flex',
-// // //       alignItems: 'center',
-// // //       backgroundColor: state.isSelected ? '#4f46e5' : state.isFocused ? '#f3f4f6' : 'white',
-// // //       color: state.isSelected ? 'white' : '#374151',
-// // //       '&:hover': {
-// // //         backgroundColor: '#f3f4f6',
-// // //       },
-// // //     }),
-// // //   };
-
-// // //   useEffect(() => {
-// // //     fetchJobPosts();
-// // //   }, [user, jobContext, isUserLoggedIn]);
-
-// // //   const totalJobs = view === "myPost" ? filteredMyPost.length : filteredJobPosts.length;
-// // //   const totalAllJobs = view === "myPost" ? myPost.length : jobPosts.length;
-
-// // //   return (
-// // //     <div className={styles.jobs}>
-// // //       {/* HEADER */}
-// // //       <div
-// // //         ref={headerRef}
-// // //         className={styles.headerWrapper}
-// // //         style={{ 
-// // //           left: sidebarWidth + 'px',
-// // //           width: `calc(100% - ${sidebarWidth}px)` 
-// // //         }}
-// // //       >
-// // //         <div className={styles.headerContent}>
-// // //           {/* Top Row: Search, Tabs, Export Buttons */}
-// // //           <div className={styles.topRow}>
-// // //             {/* Quick search */}
-// // //             <div className={styles.cardSearch}>
-// // //               <Search size={20} />
-// // //               <input
-// // //                 type="text"
-// // //                 placeholder="Search jobs..."
-// // //                 value={globalFilter || ""}
-// // //                 onChange={handleSearchChange}
-// // //                 aria-label="Search jobs"
-// // //               />
-// // //             </div>
-
-// // //             {/* Tabs */}
-// // //             <div className={styles.center1}>
-// // //               <div
-// // //                 className={classNames(styles.center, {
-// // //                   [styles.active]: view === "request",
-// // //                 })}
-// // //                 onClick={() => setView("request")}
-// // //                 role="button"
-// // //                 tabIndex={0}
-// // //                 onKeyDown={(e) => e.key === "Enter" && setView("request")}
-// // //               >
-// // //                 <NotebookPen size={35} />
-// // //                 <button type="button" className={styles.label}>
-// // //                   Job Posts
-// // //                 </button>
-// // //               </div>
-
-// // //               <div
-// // //                 className={classNames(styles.center, {
-// // //                   [styles.active]: view === "myPost",
-// // //                 })}
-// // //                 onClick={() => setView("myPost")}
-// // //                 role="button"
-// // //                 tabIndex={0}
-// // //                 onKeyDown={(e) => e.key === "Enter" && setView("myPost")}
-// // //               >
-// // //                 <BriefcaseBusiness size={35} />
-// // //                 <button type="button" className={styles.label}>
-// // //                   {user?.role === "Admin" ? "Applicants" : "My Jobs"}
-// // //                 </button>
-// // //               </div>
-// // //             </div>
-
-// // //             {/* EXPORT BUTTONS */}
-// // //             {user?.role === "Admin" && (
-// // //               <div className={styles.exportButtons}>
-// // //                 <button onClick={exportJobsToExcel} className={styles.excel}>
-// // //                   Export Excel
-// // //                 </button>
-// // //                 <button onClick={exportJobsToCSV} className={styles.csv}>
-// // //                   Export CSV
-// // //                 </button>
-// // //               </div>
-// // //             )}
-// // //           </div>
-
-// // //           {/* Horizontal Filter Bar */}
-// // //           <div className={styles.horizontalFilterBar}>
-// // //             <div className={styles.filterScrollContainer}>
-// // //               <div className={styles.filterRow}>
-// // //                 {/* Job Title Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>JOB TITLE</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Titles' },
-// // //                         ...titleOptions.map(title => ({
-// // //                           value: title,
-// // //                           label: title
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('title') ? { 
-// // //                         value: getDisplayValue('title'), 
-// // //                         label: getDisplayValue('title') 
-// // //                       } : { value: '', label: 'All Titles' }}
-// // //                       onChange={(selected) => handleFilterChange('title', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search title..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.title !== undefined && pendingFilters.title !== filters.title && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('title')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Company Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>COMPANY</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Companies' },
-// // //                         ...companyOptions.map(company => ({
-// // //                           value: company,
-// // //                           label: company
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('companyName') ? { 
-// // //                         value: getDisplayValue('companyName'), 
-// // //                         label: getDisplayValue('companyName') 
-// // //                       } : { value: '', label: 'All Companies' }}
-// // //                       onChange={(selected) => handleFilterChange('companyName', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search company..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.companyName !== undefined && pendingFilters.companyName !== filters.companyName && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('companyName')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Job Role Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>JOB ROLE</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Roles' },
-// // //                         ...roleOptions.map(role => ({
-// // //                           value: role,
-// // //                           label: role
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('role') ? { 
-// // //                         value: getDisplayValue('role'), 
-// // //                         label: getDisplayValue('role') 
-// // //                       } : { value: '', label: 'All Roles' }}
-// // //                       onChange={(selected) => handleFilterChange('role', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search role..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.role !== undefined && pendingFilters.role !== filters.role && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('role')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Employment Type Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>EMPLOYMENT TYPE</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Types' },
-// // //                         ...EMPLOYMENT_TYPES.map(type => ({
-// // //                           value: type,
-// // //                           label: type
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('employmentType') ? { 
-// // //                         value: getDisplayValue('employmentType'), 
-// // //                         label: getDisplayValue('employmentType') 
-// // //                       } : { value: '', label: 'All Types' }}
-// // //                       onChange={(selected) => handleFilterChange('employmentType', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search type..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.employmentType !== undefined && pendingFilters.employmentType !== filters.employmentType && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('employmentType')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Location Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>LOCATION</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Locations' },
-// // //                         ...locationOptions.map(location => ({
-// // //                           value: location,
-// // //                           label: location
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('location') ? { 
-// // //                         value: getDisplayValue('location'), 
-// // //                         label: getDisplayValue('location') 
-// // //                       } : { value: '', label: 'All Locations' }}
-// // //                       onChange={(selected) => handleFilterChange('location', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search location..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.location !== undefined && pendingFilters.location !== filters.location && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('location')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Experience Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>EXPERIENCE</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Experience' },
-// // //                         ...experienceOptions.map(exp => ({
-// // //                           value: exp,
-// // //                           label: exp
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('experience') ? { 
-// // //                         value: getDisplayValue('experience'), 
-// // //                         label: getDisplayValue('experience') 
-// // //                       } : { value: '', label: 'All Experience' }}
-// // //                       onChange={(selected) => handleFilterChange('experience', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search experience..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.experience !== undefined && pendingFilters.experience !== filters.experience && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('experience')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Salary Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>SALARY</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Salaries' },
-// // //                         ...salaryOptions.map(salary => ({
-// // //                           value: salary,
-// // //                           label: salary
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('salary') ? { 
-// // //                         value: getDisplayValue('salary'), 
-// // //                         label: getDisplayValue('salary') 
-// // //                       } : { value: '', label: 'All Salaries' }}
-// // //                       onChange={(selected) => handleFilterChange('salary', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search salary..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.salary !== undefined && pendingFilters.salary !== filters.salary && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('salary')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Education Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>EDUCATION</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Education' },
-// // //                         ...educationOptions.map(edu => ({
-// // //                           value: edu,
-// // //                           label: edu
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('education') ? { 
-// // //                         value: getDisplayValue('education'), 
-// // //                         label: getDisplayValue('education') 
-// // //                       } : { value: '', label: 'All Education' }}
-// // //                       onChange={(selected) => handleFilterChange('education', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search education..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.education !== undefined && pendingFilters.education !== filters.education && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('education')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Passed Out Year Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>PASSOUT YEAR</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Years' },
-// // //                         ...passedOutYearOptions.map(year => ({
-// // //                           value: year,
-// // //                           label: year
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('passedOutYear') ? { 
-// // //                         value: getDisplayValue('passedOutYear'), 
-// // //                         label: getDisplayValue('passedOutYear') 
-// // //                       } : { value: '', label: 'All Years' }}
-// // //                       onChange={(selected) => handleFilterChange('passedOutYear', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Select year..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.passedOutYear !== undefined && pendingFilters.passedOutYear !== filters.passedOutYear && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('passedOutYear')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Key Skills Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>KEY SKILLS</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Skills' },
-// // //                         ...keySkillsOptions.map(skill => ({
-// // //                           value: skill,
-// // //                           label: skill
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('keySkills') ? { 
-// // //                         value: getDisplayValue('keySkills'), 
-// // //                         label: getDisplayValue('keySkills') 
-// // //                       } : { value: '', label: 'All Skills' }}
-// // //                       onChange={(selected) => handleFilterChange('keySkills', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search skills..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.keySkills !== undefined && pendingFilters.keySkills !== filters.keySkills && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('keySkills')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Refereed Person Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>REFEREED BY</label>
-// // //                   <div className={styles.selectContainer}>
-// // //                     <Select
-// // //                       options={[
-// // //                         { value: '', label: 'All Referees' },
-// // //                         ...refereeNameOptions.map(referee => ({
-// // //                           value: referee,
-// // //                           label: referee
-// // //                         }))
-// // //                       ]}
-// // //                       value={getDisplayValue('refereedBy') ? { 
-// // //                         value: getDisplayValue('refereedBy'), 
-// // //                         label: getDisplayValue('refereedBy') 
-// // //                       } : { value: '', label: 'All Referees' }}
-// // //                       onChange={(selected) => handleFilterChange('refereedBy', selected?.value || "")}
-// // //                       isSearchable
-// // //                       isClearable
-// // //                       placeholder="Search referee..."
-// // //                       styles={customSelectStyles}
-// // //                       className={styles.reactSelect}
-// // //                       menuPortalTarget={document.body}
-// // //                       menuPosition="fixed"
-// // //                     />
-// // //                     {pendingFilters.refereedBy !== undefined && pendingFilters.refereedBy !== filters.refereedBy && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('refereedBy')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Description Filter (Text Input) */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>DESCRIPTION</label>
-// // //                   <div className={styles.textInputContainer}>
-// // //                     <input
-// // //                       type="text"
-// // //                       className={styles.textInput}
-// // //                       placeholder="Contains text..."
-// // //                       value={getDisplayValue('description') || ''}
-// // //                       onChange={(e) => handleFilterChange('description', e.target.value)}
-// // //                     />
-// // //                     {pendingFilters.description !== undefined && pendingFilters.description !== filters.description && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('description')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Posted From Date Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>POSTED FROM</label>
-// // //                   <div className={styles.dateInputContainer}>
-// // //                     <div 
-// // //                       className={`${styles.dateInput} ${getDisplayValue('startDate') ? styles.hasValue : ''}`}
-// // //                       onClick={(e) => {
-// // //                         e.stopPropagation();
-// // //                         setDatePickerOpen(prev => ({ 
-// // //                           ...prev, 
-// // //                           startDate: !prev.startDate,
-// // //                           endDate: false
-// // //                         }));
-// // //                       }}
-// // //                       role="button"
-// // //                       tabIndex={0}
-// // //                       onKeyDown={(e) => e.key === 'Enter' && setDatePickerOpen(prev => ({ 
-// // //                         ...prev, 
-// // //                         startDate: !prev.startDate,
-// // //                         endDate: false 
-// // //                       }))}
-// // //                     >
-// // //                       {getDisplayValue('startDate') ? 
-// // //                         formatDateForDisplay(getDisplayValue('startDate')) : 
-// // //                         'Select date...'
-// // //                       }
-// // //                       <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.startDate ? styles.open : ''}`} />
-// // //                     </div>
-
-// // //                     {datePickerOpen.startDate && (
-// // //                       <>
-// // //                         <div 
-// // //                           className={styles.datePickerBackdrop}
-// // //                           onClick={(e) => {
-// // //                             e.stopPropagation();
-// // //                             setDatePickerOpen(prev => ({ ...prev, startDate: false }));
-// // //                           }}
-// // //                           role="presentation"
-// // //                         />
-// // //                         <div className={styles.datePickerPopup}>
-// // //                           <input
-// // //                             type="date"
-// // //                             className={styles.datePickerInput}
-// // //                             value={getDisplayValue('startDate') ? 
-// // //                               new Date(getDisplayValue('startDate')).toISOString().split('T')[0] : 
-// // //                               ''
-// // //                             }
-// // //                             onChange={(e) => {
-// // //                               e.stopPropagation();
-// // //                               handleDateChange('startDate', e.target.value);
-// // //                             }}
-// // //                             max={getDisplayValue('endDate') || undefined}
-// // //                             onClick={(e) => e.stopPropagation()}
-// // //                             autoFocus
-// // //                           />
-// // //                           <div className={styles.datePickerActions}>
-// // //                             <button 
-// // //                               className={styles.datePickerButton}
-// // //                               onClick={(e) => {
-// // //                                 e.stopPropagation();
-// // //                                 handleDateChange('startDate', '');
-// // //                               }}
-// // //                               type="button"
-// // //                             >
-// // //                               Clear
-// // //                             </button>
-// // //                             <button 
-// // //                               className={styles.datePickerButton}
-// // //                               onClick={(e) => {
-// // //                                 e.stopPropagation();
-// // //                                 setDatePickerOpen(prev => ({ ...prev, startDate: false }));
-// // //                               }}
-// // //                               type="button"
-// // //                             >
-// // //                               Close
-// // //                             </button>
-// // //                           </div>
-// // //                         </div>
-// // //                       </>
-// // //                     )}
-
-// // //                     {pendingFilters.startDate !== undefined && pendingFilters.startDate !== filters.startDate && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('startDate')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Posted To Date Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>POSTED TO</label>
-// // //                   <div className={styles.dateInputContainer}>
-// // //                     <div 
-// // //                       className={`${styles.dateInput} ${getDisplayValue('endDate') ? styles.hasValue : ''}`}
-// // //                       onClick={(e) => {
-// // //                         e.stopPropagation();
-// // //                         setDatePickerOpen(prev => ({ 
-// // //                           ...prev, 
-// // //                           endDate: !prev.endDate,
-// // //                           startDate: false
-// // //                         }));
-// // //                       }}
-// // //                       role="button"
-// // //                       tabIndex={0}
-// // //                       onKeyDown={(e) => e.key === 'Enter' && setDatePickerOpen(prev => ({ 
-// // //                         ...prev, 
-// // //                         endDate: !prev.endDate,
-// // //                         startDate: false 
-// // //                       }))}
-// // //                     >
-// // //                       {getDisplayValue('endDate') ? 
-// // //                         formatDateForDisplay(getDisplayValue('endDate')) : 
-// // //                         'Select date...'
-// // //                       }
-// // //                       <ChevronDown size={14} className={`${styles.dateDropdownIcon} ${datePickerOpen.endDate ? styles.open : ''}`} />
-// // //                     </div>
-
-// // //                     {datePickerOpen.endDate && (
-// // //                       <>
-// // //                         <div 
-// // //                           className={styles.datePickerBackdrop}
-// // //                           onClick={(e) => {
-// // //                             e.stopPropagation();
-// // //                             setDatePickerOpen(prev => ({ ...prev, endDate: false }));
-// // //                           }}
-// // //                           role="presentation"
-// // //                         />
-// // //                         <div className={styles.datePickerPopup}>
-// // //                           <input
-// // //                             type="date"
-// // //                             className={styles.datePickerInput}
-// // //                             value={getDisplayValue('endDate') ? 
-// // //                               new Date(getDisplayValue('endDate')).toISOString().split('T')[0] : 
-// // //                               ''
-// // //                             }
-// // //                             onChange={(e) => {
-// // //                               e.stopPropagation();
-// // //                               handleDateChange('endDate', e.target.value);
-// // //                             }}
-// // //                             min={getDisplayValue('startDate') || undefined}
-// // //                             onClick={(e) => e.stopPropagation()}
-// // //                             autoFocus
-// // //                           />
-// // //                           <div className={styles.datePickerActions}>
-// // //                             <button 
-// // //                               className={styles.datePickerButton}
-// // //                               onClick={(e) => {
-// // //                                 e.stopPropagation();
-// // //                                 handleDateChange('endDate', '');
-// // //                               }}
-// // //                               type="button"
-// // //                             >
-// // //                               Clear
-// // //                             </button>
-// // //                             <button 
-// // //                               className={styles.datePickerButton}
-// // //                               onClick={(e) => {
-// // //                                 e.stopPropagation();
-// // //                                 setDatePickerOpen(prev => ({ ...prev, endDate: false }));
-// // //                               }}
-// // //                               type="button"
-// // //                             >
-// // //                               Close
-// // //                             </button>
-// // //                           </div>
-// // //                         </div>
-// // //                       </>
-// // //                     )}
-
-// // //                     {pendingFilters.endDate !== undefined && pendingFilters.endDate !== filters.endDate && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('endDate')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Min Applicants Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>MIN APPLICANTS</label>
-// // //                   <div className={styles.numberInputContainer}>
-// // //                     <input
-// // //                       type="number"
-// // //                       className={styles.numberInput}
-// // //                       placeholder="0"
-// // //                       min="0"
-// // //                       value={getDisplayValue('initialNumber') || ''}
-// // //                       onChange={(e) => handleFilterChange('initialNumber', e.target.value || '')}
-// // //                     />
-// // //                     {pendingFilters.initialNumber !== undefined && pendingFilters.initialNumber !== filters.initialNumber && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('initialNumber')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-
-// // //                 {/* Max Applicants Filter */}
-// // //                 <div className={styles.filterField}>
-// // //                   <label className={styles.filterLabel}>MAX APPLICANTS</label>
-// // //                   <div className={styles.numberInputContainer}>
-// // //                     <input
-// // //                       type="number"
-// // //                       className={styles.numberInput}
-// // //                       placeholder="∞"
-// // //                       min="0"
-// // //                       value={getDisplayValue('finalNumber') || ''}
-// // //                       onChange={(e) => handleFilterChange('finalNumber', e.target.value || '')}
-// // //                     />
-// // //                     {pendingFilters.finalNumber !== undefined && pendingFilters.finalNumber !== filters.finalNumber && (
-// // //                       <button 
-// // //                         className={styles.resetFilterButton}
-// // //                         onClick={() => resetFilter('finalNumber')}
-// // //                         title="Reset to previous value"
-// // //                         type="button"
-// // //                       >
-// // //                         <X size={12} />
-// // //                       </button>
-// // //                     )}
-// // //                   </div>
-// // //                 </div>
-// // //               </div>
-// // //             </div>
-
-// // //             {/* Apply/Cancel Buttons for pending filters */}
-// // //             {hasPendingChanges && (
-// // //               <div className={styles.pendingActions}>
-// // //                 <button 
-// // //                   className={styles.applyButton}
-// // //                   onClick={applyPendingFilters}
-// // //                   type="button"
-// // //                 >
-// // //                   Apply Filters
-// // //                 </button>
-// // //                 <button 
-// // //                   className={styles.cancelButton}
-// // //                   onClick={cancelPendingFilters}
-// // //                   type="button"
-// // //                 >
-// // //                   Cancel
-// // //                 </button>
-// // //                 <span className={styles.pendingCount}>
-// // //                   {Object.keys(pendingFilters).length} pending change(s)
-// // //                 </span>
-// // //               </div>
-// // //             )}
-
-// // //             {/* Clear All Filters Button */}
-// // //             {(Object.keys(filters).some(key => filters[key] && filters[key] !== "") || hasPendingChanges) && (
-// // //               <div className={styles.clearAllContainer}>
-// // //                 <button 
-// // //                   className={styles.clearAllButton} 
-// // //                   onClick={clearAllFilters}
-// // //                   title="Clear all filters"
-// // //                   type="button"
-// // //                 >
-// // //                   Clear All
-// // //                 </button>
-// // //               </div>
-// // //             )}
-// // //           </div>
-// // //         </div>
-// // //       </div>
-
-// // //       {/* Spacer with DYNAMIC height */}
-// // //       <div 
-// // //         className={styles.headerSpacer} 
-// // //         style={{ height: `${headerHeight}px` }}
-// // //       ></div>
-
-// // //       {/* Job Count Display */}
-// // //       <div className={styles.jobCount}>
-// // //         Showing {totalJobs} of {totalAllJobs} jobs
-// // //         {totalJobs !== totalAllJobs && (
-// // //           <span className={styles.filteredNote}> (filtered)</span>
-// // //         )}
-// // //       </div>
-
-// // //       {/* Error Display */}
-// // //       {error && (
-// // //         <div className={styles.errorAlert}>
-// // //           {error}
-// // //           <button onClick={() => setError(null)} className={styles.closeError} type="button">
-// // //             <X size={16} />
-// // //           </button>
-// // //         </div>
-// // //       )}
-
-// // //       {/* VIEW 1: JOB REQUESTS (Public/All) */}
-// // //       {view === 'request' && <>
-// // //         <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 80 }}>
-// // //           <button
-// // //             onClick={() => page > 1 && setPage(page - 1)}
-// // //             disabled={page === 1 || loadingState.fetching}
-// // //             type="button"
-// // //           >
-// // //             Previous
-// // //           </button>
-// // //           <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-// // //           <button
-// // //             onClick={() => page < totalPages && setPage(page + 1)}
-// // //             disabled={page === totalPages || loadingState.fetching}
-// // //             type="button"
-// // //           >
-// // //             Next
-// // //           </button>
-// // //         </div>
-
-// // //         {loadingState.fetching ? (
-// // //           <div className={styles.loadingContainer}>
-// // //             <Loader className="animate-spin" size={32} />
-// // //             <p>Loading jobs...</p>
-// // //           </div>
-// // //         ) : (
-// // //           <div className={styles.container}>
-// // //             <h2 className={styles.heading}>Job Posts</h2>
-// // //             {paginatedJobs.length === 0 ? (
-// // //               <div className={styles.noResults}>
-// // //                 <p>No jobs found. Try adjusting your filters.</p>
-// // //               </div>
-// // //             ) : (
-// // //               <ul className={styles.activityList}>
-// // //                 {paginatedJobs.map((request) => (
-// // //                   <li key={request?._id} className={styles.activityItem} style={{ cursor: 'pointer' }} onClick={() => handleClick(request)}>
-// // //                     <div className={styles.details} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-// // //                       <h5 className={styles.title} style={{ marginBottom: '5px', fontSize: '1.2rem', fontWeight: 'bold' }}>{request?.title}</h5>
-
-// // //                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
-// // //                         {request?.companyName && (
-// // //                           <span style={{ fontWeight: '600', color: '#1f2937' }}>
-// // //                             {request.companyName}
-// // //                           </span>
-// // //                         )}
-// // //                         {request?.location && (
-// // //                           <span>
-// // //                             {request.location}
-// // //                           </span>
-// // //                         )}
-// // //                         {request?.employmentType && (
-// // //                           <span style={{
-// // //                             backgroundColor: '#e0e7ff', color: '#3730a3',
-// // //                             padding: '2px 8px', borderRadius: '4px',
-// // //                             fontSize: '0.8rem', fontWeight: '500'
-// // //                           }}>
-// // //                             {request.employmentType}
-// // //                           </span>
-// // //                         )}
-// // //                       </div>
-
-// // //                       {request?.refereedBy && (
-// // //                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px' }}>
-// // //                           <User size={14} />
-// // //                           <span>
-// // //                             Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
-// // //                           </span>
-// // //                         </div>
-// // //                       )}
-
-// // //                       {request?.description && <p className={styles.description} style={{ margin: 0, marginTop: '5px' }}>{request.description}</p>}
-// // //                     </div>
-// // //                     <div>
-// // //                       {/* Updated Apply Button with Google Login */}
-// // //                       {user?.role === "Member" || user?.role === "Candidate" || !user ? (
-// // //                         <ApplyButton
-// // //                           job={request}
-// // //                           user={user}
-// // //                           isApplied={isApplied(request)}
-// // //                           onApplyClick={handleApplyClick}
-// // //                           loadingState={loadingState}
-// // //                           onGoogleLogin={handleGoogleLogin}
-// // //                         />
-// // //                       ) : null}
-// // //                       {user?.role === "Admin" && renderAdminActionButtons(request)}
-// // //                     </div>
-// // //                     <div className={styles.timeInfo}>
-// // //                       {request?.createdAt && !isNaN(new Date(request?.createdAt)) ? (
-// // //                         <>{new Date(request?.createdAt).toLocaleDateString()}{' • '}{formatDistanceToNow(new Date(request?.createdAt), { addSuffix: true })}</>
-// // //                       ) : <span>Just Now</span>}
-// // //                     </div>
-// // //                   </li>
-// // //                 ))}
-// // //               </ul>
-// // //             )}
-// // //           </div>
-// // //         )}
-// // //       </>}
-
-// // //       {/* VIEW 2: APPLICANTS (Admin) or MY JOBS (Member) */}
-// // //       {view === "myPost" && (
-// // //         <>
-// // //           <div className={styles.pagination} style={{ marginBottom: 20, marginTop: 80 }}>
-// // //             <button
-// // //               onClick={() => page > 1 && setPage(page - 1)}
-// // //               disabled={page === 1 || loadingState.fetching}
-// // //               type="button"
-// // //             >
-// // //               Previous
-// // //             </button>
-// // //             <span className={styles.pageInfo}>Page {page} of {totalPages}</span>
-// // //             <button
-// // //               onClick={() => page < totalPages && setPage(page + 1)}
-// // //               disabled={page === totalPages || loadingState.fetching}
-// // //               type="button"
-// // //             >
-// // //               Next
-// // //             </button>
-// // //           </div>
-
-// // //           {loadingState.fetching ? (
-// // //             <div className={styles.loadingContainer}>
-// // //               <Loader className="animate-spin" size={32} />
-// // //               <p>Loading your jobs...</p>
-// // //             </div>
-// // //           ) : (
-// // //             <div className={styles.container}>
-// // //               <h2 className={styles.heading}>{user?.role === 'Admin' ? "Manage Applications" : "My Jobs"}</h2>
-// // //               {filteredMyPost.length === 0 ? (
-// // //                 <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
-// // //                   {user?.role === 'Admin' ? "No jobs posted yet." : "You haven't applied to any jobs yet."}
-// // //                 </p>
-// // //               ) : (
-// // //                 <ul className={styles.activityList}>
-// // //                   {paginatedJobs.map((request) => {
-// // //                     const myStatus = getMyApplicationStatus(request);
-// // //                     const pipelineStatus = getPipelineStatus(myStatus);
-
-// // //                     return (
-// // //                       <li key={request._id} className={styles.activityItem} style={{ cursor: 'default', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between', gap: '15px' }}>
-// // //                         <div className={styles.details} style={{ cursor: 'pointer', width: '100%' }}>
-// // //                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-
-// // //                             <div onClick={() => handleClick(request)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-// // //                               <h5 className={styles.title} style={{ fontSize: '1.2rem', margin: 0, marginBottom: '5px' }}>{request.title}</h5>
-
-// // //                               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.9rem', color: '#555', marginBottom: '8px' }}>
-// // //                                 {request?.companyName && <span style={{ fontWeight: '600', color: '#1f2937' }}>{request.companyName}</span>}
-// // //                                 {request?.location && <span>{request.location}</span>}
-// // //                                 {request?.employmentType && <span style={{ backgroundColor: '#e0e7ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '500' }}>{request.employmentType}</span>}
-// // //                               </div>
-
-// // //                               {request?.refereedBy && (
-// // //                                 <div style={{ fontSize: '0.85rem', color: '#4b5563' }}>
-// // //                                   Refereed by: <strong>{request.refereedBy.name || "Unknown"}</strong>
-// // //                                 </div>
-// // //                               )}
-
-// // //                               <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '4px' }}>Posted on: {new Date(request.createdAt).toLocaleDateString()}</p>
-// // //                             </div>
-// // //                             {user?.role === 'Admin' && renderAdminActionButtons(request)}
-// // //                           </div>
-// // //                         </div>
-
-// // //                         {/* MEMBER VIEW: Pipeline */}
-// // //                         {(user?.role === 'Member' || user?.role === 'Candidate') && (
-// // //                           <div style={{ width: '100%' , borderTop: '1px solid #eee', marginTop: '10px', paddingTop: '10px' }}>
-// // //                             {myStatus === 'Rejected' ? (
-// // //                               <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', textAlign: 'center' }}>
-// // //                                 Application Rejected
-// // //                               </div>
-// // //                             ) : (
-// // //                               <StatusPipeline status={pipelineStatus} />
-// // //                             )}
-// // //                           </div>
-// // //                         )}
-
-// // //                         {/* ADMIN VIEW: Applicants Table */}
-// // //                         {user?.role === 'Admin' && (
-// // //                           <div style={{ width: '100%', marginTop: '10px' }}>
-// // //                             <h6 style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '10px' }}>Applicants ({request.appliedMembers?.length || 0})</h6>
-// // //                             {request.appliedMembers?.length > 0 ? (
-// // //                               <div style={{ overflowX: 'auto', border: '1px solid #e5e7eb', borderRadius: '6px' }}>
-// // //                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-// // //                                   <thead style={{ backgroundColor: '#f9fafb' }}>
-// // //                                     <tr style={{ textAlign: 'left', color: '#4b5563' }}>
-// // //                                       <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Name</th>
-// // //                                       <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Resume</th>
-// // //                                       <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Status</th>
-// // //                                       <th style={{ padding: '10px', borderBottom: '1px solid #e5e7eb' }}>Action</th>
-// // //                                     </tr>
-// // //                                   </thead>
-// // //                                   <tbody>
-// // //                                     {request.appliedMembers.map((app, idx) => (
-// // //                                       <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-// // //                                         <td style={{ padding: '10px' }}>{app.memberId?.name}</td>
-// // //                                         <td style={{ padding: '10px' }}>
-// // //                                           {(app.resumeLink || app.memberId?.resumeLink) ? (
-// // //                                             <a
-// // //                                               href={getFileUrl(app.resumeLink || app.memberId.resumeLink)}
-// // //                                               target="_blank"
-// // //                                               rel="noopener noreferrer"
-// // //                                               style={{
-// // //                                                 display: 'inline-flex',
-// // //                                                 alignItems: 'center',
-// // //                                                 gap: '6px',
-// // //                                                 padding: '6px 14px',
-// // //                                                 backgroundColor: '#dbeafe',
-// // //                                                 color: '#1d4ed8',
-// // //                                                 borderRadius: '6px',
-// // //                                                 fontSize: '0.85rem',
-// // //                                                 fontWeight: '600',
-// // //                                                 textDecoration: 'none',
-// // //                                                 transition: 'all 0.2s',
-// // //                                                 boxShadow: '0 1px 2px rgba(37, 99, 235, 0.1)'
-// // //                                               }}
-// // //                                               onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#bfdbfe'}
-// // //                                               onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dbeafe'}
-// // //                                             >
-// // //                                               <FileText size={16} /> View Resume
-// // //                                             </a>
-// // //                                           ) : (
-// // //                                             <span style={{ color: '#9ca3af', fontStyle: 'italic', fontSize: '0.85rem' }}>No Resume</span>
-// // //                                           )}
-// // //                                         </td>
-// // //                                         <td style={{ padding: '10px' }}>{renderStatusBadge(app.status || 'Applied')}</td>
-// // //                                         <td style={{ padding: '10px' }}>
-// // //                                           <select style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }} value={app.status || 'Applied'} onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}>
-// // //                                             <option value="Applied">Applied</option>
-// // //                                             <option value="Review">Review</option>
-// // //                                             <option value="Shortlisted">Shortlisted</option>
-// // //                                             <option value="Offer">Offer</option>
-// // //                                             <option value="Accepted">Accepted</option>
-// // //                                             <option value="Rejected">Rejected</option>
-// // //                                           </select>
-// // //                                         </td>
-// // //                                       </tr>
-// // //                                     ))}
-// // //                                   </tbody>
-// // //                                 </table>
-// // //                               </div>
-// // //                             ) : <p style={{ fontStyle: 'italic', color: '#888' }}>No applicants yet.</p>}
-// // //                           </div>
-// // //                         )}
-// // //                       </li>
-// // //                     );
-// // //                   })}
-// // //                 </ul>
-// // //               )}
-// // //             </div>
-// // //           )}
-// // //         </>
-// // //       )}
-
-// // //       {/* ADD BUTTON (Admin Only) */}
-// // //       {user?.role === "Admin" &&
-// // //         <button
-// // //           className={styles.addButton1}
-// // //           onClick={() => { setEditingJob(null); setShowProvidedModal(true); }}
-// // //           disabled={loadingState.fetching}
-// // //           aria-label="Add new job"
-// // //           type="button"
-// // //         >
-// // //           <Plus size={20} />
-// // //         </button>
-// // //       }
-
-// // //       {/* MODALS */}
-// // //       <ProvidedForm
-// // //         isOpen={showProvidedModal}
-// // //         onClose={handleCloseModal}
-// // //         onSubmit={handleFormSubmit}
-// // //         initialData={editingJob}
-// // //       />
-
-// // //       <BulkCSVReviewModal
-// // //         isOpen={showBulkReviewModal}
-// // //         onClose={() => setShowBulkReviewModal(false)}
-// // //         jobsData={bulkReviewJobs}
-// // //         onSave={handleSaveBulkJobs}
-// // //         onBulkSubmit={handleSubmitBulkJobs}
-// // //         refereesList={refereesList}
-// // //       />
-
-// // //       <ResumeUploadModal
-// // //         isOpen={showResumeModal}
-// // //         onClose={() => setShowResumeModal(false)}
-// // //         onUpload={handleUploadAndApply}
-// // //         jobTitle={selectedJob?.title}
-// // //         user={user}
-// // //         onGoogleLogin={handleGoogleLogin}
-// // //       />
-
-// // //       {/* Google Login Modal */}
-// // //       {showGoogleLoginModal && (
-// // //         <div style={{
-// // //           position: 'fixed',
-// // //           top: 0,
-// // //           left: 0,
-// // //           right: 0,
-// // //           bottom: 0,
-// // //           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-// // //           display: 'flex',
-// // //           justifyContent: 'center',
-// // //           alignItems: 'center',
-// // //           zIndex: 2000
-// // //         }}>
-// // //           <div style={{
-// // //             backgroundColor: 'white',
-// // //             borderRadius: '12px',
-// // //             padding: '30px',
-// // //             width: '400px',
-// // //             maxWidth: '90%',
-// // //             position: 'relative'
-// // //           }}>
-// // //             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-// // //               <h3 style={{ margin: 0, color: '#111827' }}>Login Required</h3>
-// // //               <button 
-// // //                 onClick={() => setShowGoogleLoginModal(false)}
-// // //                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}
-// // //                 aria-label="Close"
-// // //               >
-// // //                 <X size={24} />
-// // //               </button>
-// // //             </div>
-
-// // //             <p style={{ marginBottom: '30px', textAlign: 'center', color: '#4b5563' }}>
-// // //               Please login to apply for this position
-// // //             </p>
-
-// // //             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-// // //               <GoogleLoginButton 
-// // //                 onLoginSuccess={() => {
-// // //                   setShowGoogleLoginModal(false);
-// // //                   if (selectedJob) {
-// // //                     handleApplyClick({ stopPropagation: () => {} }, selectedJob);
-// // //                   }
-// // //                 }}
-// // //               />
-
-// // //               <button
-// // //                 style={{
-// // //                   padding: '12px 20px',
-// // //                   backgroundColor: '#f3f4f6',
-// // //                   color: '#374151',
-// // //                   border: 'none',
-// // //                   borderRadius: '6px',
-// // //                   cursor: 'pointer',
-// // //                   fontWeight: '500',
-// // //                   fontSize: '14px'
-// // //                 }}
-// // //                 onClick={() => setShowGoogleLoginModal(false)}
-// // //               >
-// // //                 Cancel
-// // //               </button>
-// // //             </div>
-// // //           </div>
-// // //         </div>
-// // //       )}
-
-// // //       {/* LOADING OVERLAY */}
-// // //       {isSubmitting && (
-// // //         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-// // //           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-// // //             <Loader className="animate-spin" /> <span>Processing data, please wait...</span>
-// // //           </div>
-// // //         </div>
-// // //       )}
-// // //     </div>
-// // //   );
-// // // }
-
-// // // Jobs.propTypes = {
-// // //   // Add prop types if needed
-// // // };
-
-// // // export default Jobs;
 
 // // //----------------------------------31/01------------------------1.39----------------------------
 // // // UPDATED WITH ENHANCED UI DESIGN
@@ -9290,7 +6030,11 @@ const GoogleLoginButton = ({ onLoginSuccess, onLoginError }) => {
   };
 
   return (
-    <button onClick={handleGoogleLogin} className={styles.googleLoginButton} type="button">
+    <button
+      onClick={handleGoogleLogin}
+      className={styles.googleLoginButton}
+      type="button"
+    >
       <svg width="18" height="18" viewBox="0 0 24 24">
         <path
           fill="white"
@@ -9315,7 +6059,14 @@ const GoogleLoginButton = ({ onLoginSuccess, onLoginError }) => {
 };
 
 // Apply Button
-const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogleLogin }) => {
+const ApplyButton = ({
+  job,
+  user,
+  isApplied,
+  onApplyClick,
+  loadingState,
+  onGoogleLogin,
+}) => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const handleClick = (e) => {
@@ -9327,7 +6078,6 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
     }
 
     if (isApplied) return;
-
     onApplyClick(e, job);
   };
 
@@ -9345,7 +6095,10 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
   }
 
   return (
-    <div className={styles.applyButtonWrapper} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.applyButtonWrapper}
+      onClick={(e) => e.stopPropagation()}
+    >
       <button
         className={styles.applyButton}
         disabled={loadingState.applying}
@@ -9376,11 +6129,15 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
               onLoginSuccess={() => {
                 setShowLoginPrompt(false);
                 onGoogleLogin?.(() => {
-                  onApplyClick({ stopPropagation: () => { } }, job);
+                  onApplyClick({ stopPropagation: () => {} }, job);
                 });
               }}
             />
-            <button className={styles.cancelLogin} onClick={() => setShowLoginPrompt(false)} type="button">
+            <button
+              className={styles.cancelLogin}
+              onClick={() => setShowLoginPrompt(false)}
+              type="button"
+            >
               Cancel
             </button>
           </div>
@@ -9390,7 +6147,14 @@ const ApplyButton = ({ job, user, isApplied, onApplyClick, loadingState, onGoogl
   );
 };
 
-const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Internship", "Remote", "Contract", "Freelance"];
+const EMPLOYMENT_TYPES = [
+  "Full-time",
+  "Part-time",
+  "Internship",
+  "Remote",
+  "Contract",
+  "Freelance",
+];
 
 const JOB_TITLE_OPTIONS = [
   "Frontend Developer",
@@ -9411,10 +6175,185 @@ const JOB_TITLE_OPTIONS = [
   "Mobile App Developer",
 ];
 
+const KARNATAKA_DISTRICTS = [
+  "Bagalkote",
+  "Ballari (Bellary)",
+  "Belagavi (Belgaum)",
+  "Bengaluru Rural",
+  "Bengaluru Urban",
+  "Bidar",
+  "Chamarajanagar",
+  "Chikballapur",
+  "Chikkamagaluru",
+  "Chitradurga",
+  "Dakshina Kannada",
+  "Davanagere",
+  "Dharwad",
+  "Gadag",
+  "Hassan",
+  "Haveri",
+  "Kalaburagi (Gulbarga)",
+  "Kodagu",
+  "Kolar",
+  "Koppal",
+  "Mandya",
+  "Mysuru (Mysore)",
+  "Raichur",
+  "Ramanagara",
+  "Shivamogga (Shimoga)",
+  "Tumakuru (Tumkur)",
+  "Udupi",
+  "Uttara Kannada (Karwar)",
+  "Vijayanagara",
+  "Vijayapura (Bijapur)",
+  "Yadgir",
+];
+
+const EditableDropdown = ({
+  label,
+  value,
+  options,
+  placeholder = "Select or type...",
+  required = false,
+  error = "",
+  onChange,
+}) => {
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value || "");
+
+  useEffect(() => {
+    setQuery(value || "");
+  }, [value]);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target)) setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const norm = (s) => String(s || "").toLowerCase().trim();
+
+  const filtered = options
+    .filter(Boolean)
+    .filter((opt) => norm(opt).includes(norm(query)));
+
+  const commit = (val) => {
+    const v = String(val || "").trim();
+    onChange(v);
+    setQuery(v);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={wrapRef} className={styles.edWrap}>
+      <label className={styles.edLabel}>
+        {label} {required && <span className={styles.edReq}>*</span>}
+      </label>
+
+      <div className={styles.edControl}>
+        <div
+          className={`${styles.edField} ${
+            error ? styles.edFieldError : ""
+          }`}
+          onClick={() => {
+            setOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }}
+        >
+          <span className={styles.edIcon}>
+            <Search size={16} />
+          </span>
+
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+              onChange(e.target.value);
+            }}
+            placeholder={placeholder}
+            className={styles.edInput}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commit(query);
+              }
+              if (e.key === "Escape") setOpen(false);
+            }}
+          />
+
+          <button
+            type="button"
+            className={styles.edBtn}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen((p) => !p);
+              setTimeout(() => inputRef.current?.focus(), 0);
+            }}
+          >
+            <ChevronDown size={18} />
+          </button>
+        </div>
+
+        {open && (
+          <div className={styles.edMenu}>
+            {filtered.length === 0 ? (
+              <div className={styles.edEmpty}>
+                No matches. Press <b>Enter</b> to use: “{query}”
+              </div>
+            ) : (
+              <div className={styles.edMenuList}>
+                {filtered.slice(0, 200).map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`${styles.edItem} ${
+                      norm(opt) === norm(value)
+                        ? styles.edItemActive
+                        : ""
+                    }`}
+                    onClick={() => commit(opt)}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.edTip}>
+              <span>
+                Tip: Type to search. If custom, type it and press <b>Enter</b>.
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {error && <p className={styles.edErrorText}>{error}</p>}
+    </div>
+  );
+};
+
 // =========================================================================================
 // BulkCSVReviewModal
 // =========================================================================================
-const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, refereesList }) => {
+const BulkCSVReviewModal = ({
+  isOpen,
+  onClose,
+  jobsData,
+  onSave,
+  onBulkSubmit,
+  refereesList,
+}) => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editedJobs, setEditedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -9468,7 +6407,6 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
   return (
     <div className={styles.bulkModalOverlay}>
       <div className={styles.bulkModal}>
-        {/* Header */}
         <div className={styles.bulkModalHeader}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <h2 style={{ margin: 0 }}>Review & Edit CSV Jobs</h2>
@@ -9487,7 +6425,6 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
           </button>
         </div>
 
-        {/* Stats */}
         <div className={styles.bulkStats}>
           <span>
             Total Jobs: <strong>{editedJobs.length}</strong>
@@ -9500,7 +6437,6 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
           </span>
         </div>
 
-        {/* Table */}
         <div className={styles.bulkTableContainer}>
           <table className={styles.bulkTable}>
             <thead>
@@ -9525,19 +6461,29 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
 
                 return (
                   <React.Fragment key={actualIndex}>
-                    <tr style={{ background: isEditing ? "rgba(37,99,235,0.03)" : "transparent" }}>
+                    <tr
+                      style={{
+                        background: isEditing
+                          ? "rgba(37,99,235,0.03)"
+                          : "transparent",
+                      }}
+                    >
                       <td>{startIndex + index + 1}</td>
 
                       <td>
                         {isEditing ? (
                           <input
                             value={job.title || ""}
-                            onChange={(e) => handleFieldChange(index, "title", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "title", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="Job title"
                           />
                         ) : (
-                          <strong style={{ fontWeight: 1100 }}>{job.title || "—"}</strong>
+                          <strong style={{ fontWeight: 1100 }}>
+                            {job.title || "—"}
+                          </strong>
                         )}
                       </td>
 
@@ -9545,7 +6491,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <input
                             value={job.companyName || ""}
-                            onChange={(e) => handleFieldChange(index, "companyName", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "companyName", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="Company"
                           />
@@ -9558,7 +6506,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <input
                             value={job.role || ""}
-                            onChange={(e) => handleFieldChange(index, "role", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "role", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="Role"
                           />
@@ -9571,7 +6521,13 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <select
                             value={job.employmentType || "Full-time"}
-                            onChange={(e) => handleFieldChange(index, "employmentType", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                index,
+                                "employmentType",
+                                e.target.value
+                              )
+                            }
                             className={styles.bulkSelect}
                           >
                             {EMPLOYMENT_TYPES.map((type) => (
@@ -9589,7 +6545,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <input
                             value={job.location || ""}
-                            onChange={(e) => handleFieldChange(index, "location", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "location", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="Location"
                           />
@@ -9602,7 +6560,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <input
                             value={job.experience || ""}
-                            onChange={(e) => handleFieldChange(index, "experience", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "experience", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="0-2 years"
                           />
@@ -9615,7 +6575,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                         {isEditing ? (
                           <input
                             value={job.salary || ""}
-                            onChange={(e) => handleFieldChange(index, "salary", e.target.value)}
+                            onChange={(e) =>
+                              handleFieldChange(index, "salary", e.target.value)
+                            }
                             className={styles.bulkInput}
                             placeholder="₹..."
                           />
@@ -9687,7 +6649,6 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                       </td>
                     </tr>
 
-                    {/* Expanded details panel */}
                     {isExpanded && (
                       <tr className={styles.bulkExpandedRow}>
                         <td colSpan="9">
@@ -9697,7 +6658,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                               {isEditing ? (
                                 <input
                                   value={job.education || ""}
-                                  onChange={(e) => handleFieldChange(index, "education", e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "education", e.target.value)
+                                  }
                                   className={styles.bulkInput}
                                   placeholder="Education"
                                 />
@@ -9711,7 +6674,13 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                               {isEditing ? (
                                 <input
                                   value={job.passedOutYear || ""}
-                                  onChange={(e) => handleFieldChange(index, "passedOutYear", e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(
+                                      index,
+                                      "passedOutYear",
+                                      e.target.value
+                                    )
+                                  }
                                   className={styles.bulkInput}
                                   placeholder="2024"
                                 />
@@ -9725,7 +6694,9 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                               {isEditing ? (
                                 <input
                                   value={job.keySkills || ""}
-                                  onChange={(e) => handleFieldChange(index, "keySkills", e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "keySkills", e.target.value)
+                                  }
                                   className={styles.bulkInput}
                                   placeholder="React, Node, MongoDB"
                                 />
@@ -9739,36 +6710,54 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
                               {isEditing ? (
                                 <select
                                   value={job.refereedBy || ""}
-                                  onChange={(e) => handleFieldChange(index, "refereedBy", e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "refereedBy", e.target.value)
+                                  }
                                   className={styles.bulkSelect}
                                 >
-                                  <option value="">Select a Referee (Optional)</option>
+                                  <option value="">
+                                    Select a Referee (Optional)
+                                  </option>
                                   {refereesList?.map((referee) => (
-                                    <option key={referee._id} value={referee._id}>
-                                      {referee.name || referee.email || "Unknown Name"}
+                                    <option
+                                      key={referee._id}
+                                      value={referee._id}
+                                    >
+                                      {referee.name ||
+                                        referee.email ||
+                                        "Unknown Name"}
                                     </option>
                                   ))}
                                 </select>
                               ) : (
                                 <div>
                                   {job.refereedBy
-                                    ? refereesList?.find((r) => r._id === job.refereedBy)?.name || "Referee Selected"
+                                    ? refereesList?.find(
+                                        (r) => r._id === job.refereedBy
+                                      )?.name || "Referee Selected"
                                     : "None"}
                                 </div>
                               )}
                             </div>
 
-                            <div className={styles.bulkFieldGroup} style={{ gridColumn: "1 / -1" }}>
+                            <div
+                              className={styles.bulkFieldGroup}
+                              style={{ gridColumn: "1 / -1" }}
+                            >
                               <label>Description</label>
                               {isEditing ? (
                                 <textarea
                                   value={job.description || ""}
-                                  onChange={(e) => handleFieldChange(index, "description", e.target.value)}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "description", e.target.value)
+                                  }
                                   className={styles.bulkTextarea}
                                   placeholder="Job description..."
                                 />
                               ) : (
-                                <div className={styles.bulkDescription}>{job.description || "—"}</div>
+                                <div className={styles.bulkDescription}>
+                                  {job.description || "—"}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -9782,36 +6771,52 @@ const BulkCSVReviewModal = ({ isOpen, onClose, jobsData, onSave, onBulkSubmit, r
           </table>
         </div>
 
-        {/* Pagination */}
         <div className={styles.bulkPagination}>
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
             disabled={currentPage === 0}
-            className={`${styles.bulkPageButton} ${currentPage === 0 ? styles.disabled : ""}`}
+            className={`${styles.bulkPageButton} ${
+              currentPage === 0 ? styles.disabled : ""
+            }`}
             type="button"
           >
             <ChevronLeft size={16} /> Previous
           </button>
 
           <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
+            }
             disabled={currentPage === totalPages - 1}
-            className={`${styles.bulkPageButton} ${currentPage === totalPages - 1 ? styles.disabled : ""}`}
+            className={`${styles.bulkPageButton} ${
+              currentPage === totalPages - 1 ? styles.disabled : ""
+            }`}
             type="button"
           >
             Next <ChevronRight size={16} />
           </button>
         </div>
 
-        {/* Footer buttons */}
         <div className={styles.bulkFooterButtons}>
-          <button onClick={() => onSave(editedJobs)} className={styles.bulkSaveAllButton} type="button">
+          <button
+            onClick={() => onSave(editedJobs)}
+            className={styles.bulkSaveAllButton}
+            type="button"
+          >
             Save Changes
           </button>
-          <button onClick={() => onBulkSubmit(editedJobs)} className={styles.bulkSubmitAllButton} type="button">
+          <button
+            onClick={() => onBulkSubmit(editedJobs)}
+            className={styles.bulkSubmitAllButton}
+            type="button"
+          >
             Submit All Jobs
           </button>
-          <button onClick={onClose} className={styles.bulkCancelButton} type="button">
+          <button
+            onClick={onClose}
+            className={styles.bulkCancelButton}
+            type="button"
+          >
             Cancel
           </button>
         </div>
@@ -9829,7 +6834,6 @@ BulkCSVReviewModal.propTypes = {
   refereesList: PropTypes.array,
 };
 
-// ✅ ADD THIS near your constants (above ProvidedForm component)
 const CSV_TEMPLATE_HEADERS =
   "title,companyName,role,employmentType,location,experience,salary,education,passedOutYear,keySkills,description\n";
 
@@ -9853,12 +6857,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [refereedBy, setRefereedBy] = useState("");
   const [refereesList, setRefereesList] = useState([]);
 
-  // ✅ UI: show selected file name
   const [csvFileName, setCsvFileName] = useState("");
 
-  // ✅ ADD: Download CSV template (fields only)
   const downloadCSVTemplate = () => {
-    const blob = new Blob([CSV_TEMPLATE_HEADERS], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([CSV_TEMPLATE_HEADERS], {
+      type: "text/csv;charset=utf-8;",
+    });
     saveAs(blob, "jobs_template.csv");
   };
 
@@ -9957,12 +6961,14 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             title: entry.title || "",
             companyName: entry.companyname || entry.companyName || "",
             role: entry.role || "",
-            employmentType: entry.employmenttype || entry.employmentType || "Full-time",
+            employmentType:
+              entry.employmenttype || entry.employmentType || "Full-time",
             location: entry.location || "",
             experience: entry.experience || "",
             salary: entry.salary || "",
             education: entry.education || "",
-            passedOutYear: entry.passedoutyear || entry.passedOutYear || "",
+            passedOutYear:
+              entry.passedoutyear || entry.passedOutYear || "",
             keySkills: entry.keyskills || entry.keySkills || "",
             description: entry.description || "",
             refereedBy: "",
@@ -10023,19 +7029,25 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   return (
     <div className={styles.modalOverlay} onMouseDown={onClose}>
-      <div className={styles.modalContent} onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modalContent}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className={styles.modalHeader}>
           <h2>{initialData ? "Edit Job Post" : "Create Job Post"}</h2>
-          <button onClick={onClose} className={styles.closeModalBtn} aria-label="Close modal" type="button">
+          <button
+            onClick={onClose}
+            className={styles.closeModalBtn}
+            aria-label="Close modal"
+            type="button"
+          >
             <X size={22} />
           </button>
         </div>
 
-        {/* ✅ Scrollable body */}
         <div className={styles.modalBody}>
           {!initialData && (
             <div className={styles.csvUploadSection}>
-              {/* ✅ ADD: Download template button inside modal */}
               <div className={styles.csvTemplateRow}>
                 <button
                   type="button"
@@ -10055,22 +7067,36 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
 
               <label htmlFor="csv-upload" className={styles.csvUploadCard}>
-                <span className={styles.csvIcon}><FileText size={20} /></span>
+                <span className={styles.csvIcon}>
+                  <FileText size={20} />
+                </span>
                 <span className={styles.csvText}>
                   <h4>Upload CSV Format</h4>
                   <p>Drop your CSV here or click to browse (max 5MB)</p>
                 </span>
                 <span className={styles.csvAction}>Choose File</span>
               </label>
+
+              {csvFileName && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#64748b",
+                  }}
+                >
+                  Selected file: {csvFileName}
+                </div>
+              )}
             </div>
           )}
 
-          {/* ✅ Grid form */}
           <form onSubmit={handleSubmit} className={styles.createJobForm}>
-            {/* Job Title */}
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <BookOpen size={14} /> Job Title <span className={styles.required}>*</span>
+                <BookOpen size={14} /> Job Title{" "}
+                <span className={styles.required}>*</span>
               </label>
               <input
                 list="jobTitleOptions"
@@ -10088,7 +7114,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               </datalist>
             </div>
 
-            {/* Company Name */}
             <div className={styles.formGroup}>
               <label>
                 <Building size={14} /> Company Name
@@ -10101,20 +7126,27 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* Job Role */}
             <div className={styles.formGroup}>
               <label>
                 <Target size={14} /> Job Role
               </label>
-              <input className={styles.formInput} type="text" value={role} onChange={(e) => setRole(e.target.value)} />
+              <input
+                className={styles.formInput}
+                type="text"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
             </div>
 
-            {/* Employment Type */}
             <div className={styles.formGroup}>
               <label>
                 <Calendar size={14} /> Employment Type
               </label>
-              <select className={styles.formSelect} value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
+              <select
+                className={styles.formSelect}
+                value={employmentType}
+                onChange={(e) => setEmploymentType(e.target.value)}
+              >
                 {EMPLOYMENT_TYPES.map((type) => (
                   <option key={type} value={type}>
                     {type}
@@ -10123,15 +7155,16 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               </select>
             </div>
 
-            {/* Location */}
             <div className={styles.formGroup}>
-              <label>
-                <MapPin size={14} /> Location
-              </label>
-              <input className={styles.formInput} type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <EditableDropdown
+                label="Location"
+                value={location}
+                options={KARNATAKA_DISTRICTS}
+                placeholder="Select location..."
+                onChange={setLocation}
+              />
             </div>
 
-            {/* Experience */}
             <div className={styles.formGroup}>
               <label>
                 <TrendingUp size={14} /> Experience
@@ -10144,23 +7177,30 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* Salary */}
             <div className={styles.formGroup}>
               <label>
                 <DollarSign size={14} /> Salary
               </label>
-              <input className={styles.formInput} type="text" value={salary} onChange={(e) => setSalary(e.target.value)} />
+              <input
+                className={styles.formInput}
+                type="text"
+                value={salary}
+                onChange={(e) => setSalary(e.target.value)}
+              />
             </div>
 
-            {/* Education */}
             <div className={styles.formGroup}>
               <label>
                 <GraduationCap size={14} /> Education
               </label>
-              <input className={styles.formInput} type="text" value={education} onChange={(e) => setEducation(e.target.value)} />
+              <input
+                className={styles.formInput}
+                type="text"
+                value={education}
+                onChange={(e) => setEducation(e.target.value)}
+              />
             </div>
 
-            {/* Passout Year */}
             <div className={styles.formGroup}>
               <label>
                 <Award size={14} /> Passout Year
@@ -10173,12 +7213,15 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* Refereed */}
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
                 <Users size={14} /> Refereed Person (Optional)
               </label>
-              <select className={styles.formSelect} value={refereedBy} onChange={(e) => setRefereedBy(e.target.value)}>
+              <select
+                className={styles.formSelect}
+                value={refereedBy}
+                onChange={(e) => setRefereedBy(e.target.value)}
+              >
                 <option value="">Select a Referee (Optional)</option>
                 {refereesList.length > 0 ? (
                   refereesList.map((referee) => (
@@ -10192,7 +7235,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               </select>
             </div>
 
-            {/* Key Skills */}
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
                 <Sparkles size={14} /> Key Skills
@@ -10205,10 +7247,10 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* Description */}
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <FileText size={14} /> Description <span className={styles.required}>*</span>
+                <FileText size={14} /> Description{" "}
+                <span className={styles.required}>*</span>
               </label>
               <textarea
                 className={styles.formTextarea}
@@ -10218,7 +7260,6 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
 
-            {/* ✅ Sticky footer button */}
             <div className={`${styles.modalFooter} ${styles.fullRow}`}>
               <button type="submit" className={styles.submitButton}>
                 {initialData ? "Update Job" : "Post Job"}
@@ -10241,7 +7282,14 @@ ProvidedForm.propTypes = {
 // =========================================================================================
 // ResumeUploadModal
 // =========================================================================================
-const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogleLogin }) => {
+const ResumeUploadModal = ({
+  isOpen,
+  onClose,
+  onUpload,
+  jobTitle,
+  user,
+  onGoogleLogin,
+}) => {
   const [resumeFile, setResumeFile] = useState(null);
   const [fileName, setFileName] = useState("");
   const [fileSize, setFileSize] = useState("");
@@ -10326,7 +7374,10 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
 
   return (
     <div className={styles.resumeModalOverlay} onMouseDown={handleClose}>
-      <div className={styles.resumeModal} onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className={styles.resumeModal}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className={styles.resumeModalHeader}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <h3 style={{ margin: 0 }}>Upload Resume</h3>
@@ -10334,7 +7385,12 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
               Applying for: <strong style={{ color: "#2563eb" }}>{jobTitle}</strong>
             </div>
           </div>
-          <button onClick={handleClose} className={styles.closeResumeModal} aria-label="Close modal" type="button">
+          <button
+            onClick={handleClose}
+            className={styles.closeResumeModal}
+            aria-label="Close modal"
+            type="button"
+          >
             <X size={22} />
           </button>
         </div>
@@ -10350,14 +7406,17 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
                     setShowGoogleLogin(false);
                   }}
                 />
-                <button className={styles.resumeCancelButton} onClick={handleClose} type="button">
+                <button
+                  className={styles.resumeCancelButton}
+                  onClick={handleClose}
+                  type="button"
+                >
                   Cancel
                 </button>
               </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className={styles.resumeForm}>
-              {/* HIDDEN INPUT triggers selection */}
               <input
                 type="file"
                 id="resume-upload-input"
@@ -10367,25 +7426,69 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
               />
 
               {!resumeFile ? (
-                <label htmlFor="resume-upload-input" className={styles.resumeUploadArea}>
+                <label
+                  htmlFor="resume-upload-input"
+                  className={styles.resumeUploadArea}
+                >
                   <div className={styles.uploadIcon}>
                     <FileText size={32} />
                     <span>Click to upload resume</span>
                   </div>
-                  <div className={styles.uploadHint}>PDF, DOC, or DOCX (Max 5MB)</div>
+                  <div className={styles.uploadHint}>
+                    PDF, DOC, or DOCX (Max 5MB)
+                  </div>
                 </label>
               ) : (
                 <div className={styles.selectedFile}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      flex: 1,
+                    }}
+                  >
                     <FileText size={24} style={{ color: "#2563eb" }} />
-                    <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                      <span style={{ fontSize: 14, fontWeight: 1000, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        minWidth: 0,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 1000,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
                         {fileName}
                       </span>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>{fileSize}</span>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          color: "#64748b",
+                        }}
+                      >
+                        {fileSize}
+                      </span>
                     </div>
                   </div>
-                  <button onClick={removeFile} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: 8 }} title="Remove file">
+                  <button
+                    onClick={removeFile}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#ef4444",
+                      padding: 8,
+                    }}
+                    title="Remove file"
+                  >
                     <Trash2 size={18} />
                   </button>
                 </div>
@@ -10394,7 +7497,9 @@ const ResumeUploadModal = ({ isOpen, onClose, onUpload, jobTitle, user, onGoogle
               <button
                 type="submit"
                 disabled={!resumeFile || isUploading}
-                className={`${styles.resumeSubmitButton} ${!resumeFile || isUploading ? styles.disabled : ""}`}
+                className={`${styles.resumeSubmitButton} ${
+                  !resumeFile || isUploading ? styles.disabled : ""
+                }`}
               >
                 {isUploading ? "Uploading..." : "Upload & Apply Now"}
               </button>
@@ -10434,7 +7539,13 @@ const EnhancedStatusPipeline = ({ status }) => {
       {steps.map((step, index) => (
         <div
           key={step.key}
-          className={`${styles.statusStep} ${index < currentIndex ? styles.completed : index === currentIndex ? styles.active : ""}`}
+          className={`${styles.statusStep} ${
+            index < currentIndex
+              ? styles.completed
+              : index === currentIndex
+              ? styles.active
+              : ""
+          }`}
         >
           <div className={styles.stepIcon}>
             <span>{step.icon}</span>
@@ -10509,36 +7620,29 @@ function Jobs() {
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
   const [refereesList, setRefereesList] = useState([]);
-
-  // Theme detection for react-select
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-
-  // Google login modal
   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
 
   const BACKEND_URL = "http://localhost:5000";
   const JOBS_PER_PAGE = 10;
 
-  // --- Detect theme changes
   useEffect(() => {
     const checkTheme = () => {
-      const theme = document.documentElement.getAttribute('data-theme');
-      setIsDarkTheme(theme === 'dark');
+      const theme = document.documentElement.getAttribute("data-theme");
+      setIsDarkTheme(theme === "dark");
     };
-    
+
     checkTheme();
-    
-    // Observe theme changes
+
     const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['data-theme'] 
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
-  // --- refs list
   useEffect(() => {
     if (memberContext) {
       const filtered = memberContext.filter((m) => m.memberType === "Referee");
@@ -10546,7 +7650,6 @@ function Jobs() {
     }
   }, [memberContext]);
 
-  // --- header height
   useEffect(() => {
     const updateHeaderHeight = () => {
       if (headerRef.current) {
@@ -10558,10 +7661,8 @@ function Jobs() {
     return () => clearTimeout(t);
   }, [sidebarWidth, view, globalFilter, pendingFilters, filters]);
 
-  // --- google login handler
   const handleGoogleLogin = async (callback) => {
     try {
-      // replace with real OAuth later
       if (callback) callback();
     } catch (error) {
       console.error("Google login failed:", error);
@@ -10569,9 +7670,9 @@ function Jobs() {
     }
   };
 
-  // --- applied check
   const checkIsApplied = (job, userId) => {
-    if (!job?.appliedMembers || !userId || job.appliedMembers.length === 0) return false;
+    if (!job?.appliedMembers || !userId || job.appliedMembers.length === 0)
+      return false;
     const userIdStr = String(userId).trim();
 
     return job.appliedMembers.some((app) => {
@@ -10645,7 +7746,6 @@ function Jobs() {
 
   const hasDefaultResume = () => !!user?.resumeLink;
 
-  // --- Filters apply
   const applyFilters = useCallback(
     (jobs) => {
       const search = globalFilter.trim().toLowerCase();
@@ -10692,33 +7792,71 @@ function Jobs() {
 
       return jobs.filter((job) => {
         if (search) {
-          const haystack = [job.title, job.companyName, job.location, job.role, job.description, job.keySkills]
+          const haystack = [
+            job.title,
+            job.companyName,
+            job.location,
+            job.role,
+            job.description,
+            job.keySkills,
+          ]
             .filter(Boolean)
             .join(" ")
             .toLowerCase();
           if (!haystack.includes(search)) return false;
         }
 
-        if (titleFilter && !(job.title || "").toLowerCase().includes(titleFilter)) return false;
-        if (companyFilter && !(job.companyName || "").toLowerCase().includes(companyFilter)) return false;
-        if (roleFilter && !(job.role || "").toLowerCase().includes(roleFilter)) return false;
-        if (locationFilter && !(job.location || "").toLowerCase().includes(locationFilter)) return false;
-        if (experienceFilter && !(job.experience || "").toLowerCase().includes(experienceFilter)) return false;
-        if (salaryFilter && !(job.salary || "").toLowerCase().includes(salaryFilter)) return false;
-        if (educationFilter && !(job.education || "").toLowerCase().includes(educationFilter)) return false;
-        if (passoutFilter && !(String(job.passedOutYear || "")).toLowerCase().includes(passoutFilter)) return false;
+        if (titleFilter && !(job.title || "").toLowerCase().includes(titleFilter))
+          return false;
+        if (
+          companyFilter &&
+          !(job.companyName || "").toLowerCase().includes(companyFilter)
+        )
+          return false;
+        if (roleFilter && !(job.role || "").toLowerCase().includes(roleFilter))
+          return false;
+        if (
+          locationFilter &&
+          !(job.location || "").toLowerCase().includes(locationFilter)
+        )
+          return false;
+        if (
+          experienceFilter &&
+          !(job.experience || "").toLowerCase().includes(experienceFilter)
+        )
+          return false;
+        if (salaryFilter && !(job.salary || "").toLowerCase().includes(salaryFilter))
+          return false;
+        if (
+          educationFilter &&
+          !(job.education || "").toLowerCase().includes(educationFilter)
+        )
+          return false;
+        if (
+          passoutFilter &&
+          !(String(job.passedOutYear || "")).toLowerCase().includes(passoutFilter)
+        )
+          return false;
 
         if (keySkillsFilter) {
           const jobSkills = (job.keySkills || "").toLowerCase();
           if (!jobSkills.includes(keySkillsFilter)) return false;
         }
 
-        if (descriptionFilter && !(job.description || "").toLowerCase().includes(descriptionFilter)) return false;
+        if (
+          descriptionFilter &&
+          !(job.description || "").toLowerCase().includes(descriptionFilter)
+        )
+          return false;
 
         if (employmentType && job.employmentType !== employmentType) return false;
 
         if (refereedByFilter) {
-          const refName = (job.refereedBy?.name || job.refereedBy?.email || "").toLowerCase();
+          const refName = (
+            job.refereedBy?.name ||
+            job.refereedBy?.email ||
+            ""
+          ).toLowerCase();
           if (!refName.includes(refereedByFilter)) return false;
         }
 
@@ -10743,7 +7881,10 @@ function Jobs() {
     [filters, globalFilter]
   );
 
-  const filteredJobPosts = useMemo(() => applyFilters(jobPosts), [jobPosts, applyFilters]);
+  const filteredJobPosts = useMemo(
+    () => applyFilters(jobPosts),
+    [jobPosts, applyFilters]
+  );
 
   const filteredMyPost = useMemo(() => {
     if (view !== "myPost") return [];
@@ -10766,7 +7907,6 @@ function Jobs() {
     if (page > newTotalPages && newTotalPages > 0) setPage(1);
   }, [view, filteredMyPost, filteredJobPosts, page]);
 
-  // --- search debounce
   const debouncedSearch = useCallback(
     debounce((value) => {
       setGlobalFilter(value);
@@ -10819,14 +7959,27 @@ function Jobs() {
     return filters[fieldName] || "";
   };
 
-  // --- Options lists (for Select)
-  const locationOptions = useMemo(() => Array.from(new Set(jobPosts.map((j) => j.location).filter(Boolean))), [jobPosts]);
-  const titleOptions = useMemo(() => Array.from(new Set(jobPosts.map((j) => j.title).filter(Boolean))), [jobPosts]);
-  const roleOptions = useMemo(() => Array.from(new Set(jobPosts.map((j) => j.role).filter(Boolean))), [jobPosts]);
-  const companyOptions = useMemo(() => Array.from(new Set(jobPosts.map((j) => j.companyName).filter(Boolean))), [jobPosts]);
-  const experienceOptions = useMemo(() => Array.from(new Set(jobPosts.map((j) => j.experience).filter(Boolean))), [jobPosts]);
+  const locationOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.location).filter(Boolean))),
+    [jobPosts]
+  );
+  const titleOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.title).filter(Boolean))),
+    [jobPosts]
+  );
+  const roleOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.role).filter(Boolean))),
+    [jobPosts]
+  );
+  const companyOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.companyName).filter(Boolean))),
+    [jobPosts]
+  );
+  const experienceOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.experience).filter(Boolean))),
+    [jobPosts]
+  );
 
-  // --- Theme-aware react-select styles
   const customSelectStyles = {
     control: (base, state) => ({
       ...base,
@@ -10834,23 +7987,33 @@ function Jobs() {
       height: "40px",
       fontSize: "13px",
       backgroundColor: isDarkTheme ? "#1e293b" : "#ffffff",
-      borderColor: state.isFocused 
-        ? (isDarkTheme ? "#6366f1" : "#4f46e5") 
-        : (isDarkTheme ? "rgba(148, 163, 184, 0.25)" : "#d1d5db"),
+      borderColor: state.isFocused
+        ? isDarkTheme
+          ? "#6366f1"
+          : "#4f46e5"
+        : isDarkTheme
+        ? "rgba(148, 163, 184, 0.25)"
+        : "#d1d5db",
       borderRadius: "10px",
-      boxShadow: state.isFocused 
-        ? (isDarkTheme ? "0 0 0 2px rgba(99, 102, 241, 0.2)" : "0 0 0 2px rgba(79, 70, 229, 0.12)") 
+      boxShadow: state.isFocused
+        ? isDarkTheme
+          ? "0 0 0 2px rgba(99, 102, 241, 0.2)"
+          : "0 0 0 2px rgba(79, 70, 229, 0.12)"
         : "none",
-      "&:hover": { 
-        borderColor: state.isFocused 
-          ? (isDarkTheme ? "#6366f1" : "#4f46e5") 
-          : (isDarkTheme ? "rgba(148, 163, 184, 0.4)" : "#9ca3af") 
+      "&:hover": {
+        borderColor: state.isFocused
+          ? isDarkTheme
+            ? "#6366f1"
+            : "#4f46e5"
+          : isDarkTheme
+          ? "rgba(148, 163, 184, 0.4)"
+          : "#9ca3af",
       },
     }),
-    valueContainer: (base) => ({ 
-      ...base, 
-      height: "38px", 
-      padding: "0 10px" 
+    valueContainer: (base) => ({
+      ...base,
+      height: "38px",
+      padding: "0 10px",
     }),
     input: (base) => ({
       ...base,
@@ -10867,12 +8030,12 @@ function Jobs() {
       ...base,
       color: isDarkTheme ? "rgba(148, 163, 184, 0.7)" : "#9ca3af",
     }),
-    indicatorsContainer: (base) => ({ 
-      ...base, 
-      height: "38px" 
+    indicatorsContainer: (base) => ({
+      ...base,
+      height: "38px",
     }),
-    indicatorSeparator: () => ({ 
-      display: "none" 
+    indicatorSeparator: () => ({
+      display: "none",
     }),
     dropdownIndicator: (base) => ({
       ...base,
@@ -10890,18 +8053,20 @@ function Jobs() {
         color: isDarkTheme ? "#f87171" : "#ef4444",
       },
     }),
-    menuPortal: (base) => ({ 
-      ...base, 
-      zIndex: 9999 
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
     }),
     menu: (base) => ({
       ...base,
       zIndex: 9999,
       backgroundColor: isDarkTheme ? "#1e293b" : "#ffffff",
-      border: isDarkTheme ? "1px solid rgba(148, 163, 184, 0.2)" : "1px solid #e5e7eb",
+      border: isDarkTheme
+        ? "1px solid rgba(148, 163, 184, 0.2)"
+        : "1px solid #e5e7eb",
       borderRadius: "10px",
-      boxShadow: isDarkTheme 
-        ? "0 10px 25px rgba(0, 0, 0, 0.3)" 
+      boxShadow: isDarkTheme
+        ? "0 10px 25px rgba(0, 0, 0, 0.3)"
         : "0 10px 25px rgba(0,0,0,0.10)",
       marginTop: "4px",
     }),
@@ -10915,25 +8080,32 @@ function Jobs() {
       ...base,
       fontSize: "13px",
       fontWeight: 500,
-      backgroundColor: state.isSelected 
-        ? (isDarkTheme ? "rgba(99, 102, 241, 0.4)" : "#4f46e5") 
-        : state.isFocused 
-          ? (isDarkTheme ? "rgba(99, 102, 241, 0.2)" : "#f3f4f6") 
-          : (isDarkTheme ? "#1e293b" : "#ffffff"),
-      color: state.isSelected 
-        ? "white" 
-        : (isDarkTheme ? "#e5e7eb" : "#111827"),
+      backgroundColor: state.isSelected
+        ? isDarkTheme
+          ? "rgba(99, 102, 241, 0.4)"
+          : "#4f46e5"
+        : state.isFocused
+        ? isDarkTheme
+          ? "rgba(99, 102, 241, 0.2)"
+          : "#f3f4f6"
+        : isDarkTheme
+        ? "#1e293b"
+        : "#ffffff",
+      color: state.isSelected ? "white" : isDarkTheme ? "#e5e7eb" : "#111827",
       padding: "10px 12px",
       cursor: "pointer",
       "&:hover": {
-        backgroundColor: state.isSelected 
-          ? (isDarkTheme ? "rgba(99, 102, 241, 0.4)" : "#4f46e5") 
-          : (isDarkTheme ? "rgba(99, 102, 241, 0.2)" : "#f3f4f6"),
+        backgroundColor: state.isSelected
+          ? isDarkTheme
+            ? "rgba(99, 102, 241, 0.4)"
+            : "#4f46e5"
+          : isDarkTheme
+          ? "rgba(99, 102, 241, 0.2)"
+          : "#f3f4f6",
       },
     }),
   };
 
-  // --- fetch jobs
   const fetchJobPosts = async () => {
     try {
       setLoadingState((prev) => ({ ...prev, fetching: true }));
@@ -10960,10 +8132,8 @@ function Jobs() {
     fetchJobPosts();
   }, [user, jobContext]);
 
-  // --- navigation
   const handleClick = (job) => navigate(`/jobs/${job._id}`);
 
-  // --- export
   const buildJobsExportRows = () => {
     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
     return source.map((j) => ({
@@ -10997,10 +8167,12 @@ function Jobs() {
     const data = buildJobsExportRows();
     const ws = XLSX.utils.json_to_sheet(data);
     const csv = XLSX.utils.sheet_to_csv(ws);
-    saveAs(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `Jobs_${new Date().toISOString().slice(0, 10)}.csv`);
+    saveAs(
+      new Blob([csv], { type: "text/csv;charset=utf-8;" }),
+      `Jobs_${new Date().toISOString().slice(0, 10)}.csv`
+    );
   };
 
-  // --- admin actions
   const handleDelete = async (jobId, e) => {
     e.stopPropagation();
     if (!window.confirm("Are you sure you want to delete this job post?")) return;
@@ -11026,17 +8198,29 @@ function Jobs() {
   };
 
   const renderAdminActionButtons = (request) => (
-    <div className={styles.adminActions} onClick={(e) => e.stopPropagation()}>
-      <button onClick={(e) => handleEditClick(e, request)} title="Edit Post" className={styles.btnEdit} type="button">
+    <div
+      className={styles.adminActions}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={(e) => handleEditClick(e, request)}
+        title="Edit Post"
+        className={styles.btnEdit}
+        type="button"
+      >
         <Pencil size={18} />
       </button>
-      <button onClick={(e) => handleDelete(request._id, e)} title="Delete Post" className={styles.btnDelete} type="button">
+      <button
+        onClick={(e) => handleDelete(request._id, e)}
+        title="Delete Post"
+        className={styles.btnDelete}
+        type="button"
+      >
         <Trash2 size={18} />
       </button>
     </div>
   );
 
-  // --- apply + resume + cloudinary
   const uploadToCloudinary = async (file) => {
     if (!file) return null;
     const cloudName = "dwelwaavj";
@@ -11101,8 +8285,8 @@ function Jobs() {
     if (hasDefaultResume()) {
       const useDefault = window.confirm(
         "You have a default resume on file. Would you like to use it?\n\n" +
-        "Click OK to use default resume\n" +
-        "Click Cancel to upload a different resume"
+          "Click OK to use default resume\n" +
+          "Click Cancel to upload a different resume"
       );
 
       if (useDefault) handleApply(job);
@@ -11116,7 +8300,6 @@ function Jobs() {
     }
   };
 
-  // --- add/update job post
   const handleCloseModal = () => {
     setShowProvidedModal(false);
     setEditingJob(null);
@@ -11132,8 +8315,12 @@ function Jobs() {
       const response = await API.patch(`/service/${editingJob._id}`, dataToSend);
       const updatedJob = response.data.data || response.data;
 
-      setJobPosts((prev) => prev.map((job) => (job._id === updatedJob._id ? updatedJob : job)));
-      setMyPost((prev) => prev.map((job) => (job._id === updatedJob._id ? updatedJob : job)));
+      setJobPosts((prev) =>
+        prev.map((job) => (job._id === updatedJob._id ? updatedJob : job))
+      );
+      setMyPost((prev) =>
+        prev.map((job) => (job._id === updatedJob._id ? updatedJob : job))
+      );
 
       alert("Job updated successfully!");
       handleCloseModal();
@@ -11183,7 +8370,10 @@ function Jobs() {
 
     setIsSubmitting(true);
     try {
-      const jobsToSubmit = editedJobs.map((job) => ({ ...job, refereedBy: job.refereedBy || null }));
+      const jobsToSubmit = editedJobs.map((job) => ({
+        ...job,
+        refereedBy: job.refereedBy || null,
+      }));
       const uploadPromises = jobsToSubmit.map((job) => API.post("/service", job));
       await Promise.all(uploadPromises);
 
@@ -11207,17 +8397,54 @@ function Jobs() {
     }
   };
 
-  // --- status badge (admin table + member pipeline)
   const renderStatusBadge = (status) => {
-    let stylesObj = { bg: "#e0f2fe", color: "#0369a1", icon: "📝", text: "Applied" };
-    if (status === "Review") stylesObj = { bg: "#f3e8ff", color: "#7e22ce", icon: "🔍", text: "Under Review" };
-    else if (status === "Shortlisted") stylesObj = { bg: "#fef3c7", color: "#d97706", icon: "⭐", text: "Shortlisted" };
-    else if (status === "Offer") stylesObj = { bg: "#ccfbf1", color: "#0f766e", icon: "📄", text: "Offer Sent" };
-    else if (status === "Accepted") stylesObj = { bg: "#dcfce7", color: "#166534", icon: "✅", text: "Accepted" };
-    else if (status === "Rejected") stylesObj = { bg: "#fee2e2", color: "#991b1b", icon: "❌", text: "Rejected" };
+    let stylesObj = {
+      bg: "#e0f2fe",
+      color: "#0369a1",
+      icon: "📝",
+      text: "Applied",
+    };
+    if (status === "Review")
+      stylesObj = {
+        bg: "#f3e8ff",
+        color: "#7e22ce",
+        icon: "🔍",
+        text: "Under Review",
+      };
+    else if (status === "Shortlisted")
+      stylesObj = {
+        bg: "#fef3c7",
+        color: "#d97706",
+        icon: "⭐",
+        text: "Shortlisted",
+      };
+    else if (status === "Offer")
+      stylesObj = {
+        bg: "#ccfbf1",
+        color: "#0f766e",
+        icon: "📄",
+        text: "Offer Sent",
+      };
+    else if (status === "Accepted")
+      stylesObj = {
+        bg: "#dcfce7",
+        color: "#166534",
+        icon: "✅",
+        text: "Accepted",
+      };
+    else if (status === "Rejected")
+      stylesObj = {
+        bg: "#fee2e2",
+        color: "#991b1b",
+        icon: "❌",
+        text: "Rejected",
+      };
 
     return (
-      <div className={styles.statusBadge} style={{ backgroundColor: stylesObj.bg, color: stylesObj.color }}>
+      <div
+        className={styles.statusBadge}
+        style={{ backgroundColor: stylesObj.bg, color: stylesObj.color }}
+      >
         <span>{stylesObj.icon}</span> <span>{stylesObj.text}</span>
       </div>
     );
@@ -11234,17 +8461,20 @@ function Jobs() {
     }
   };
 
-  // totals
   const totalJobs = view === "myPost" ? filteredMyPost.length : filteredJobPosts.length;
   const totalAllJobs = view === "myPost" ? myPost.length : jobPosts.length;
 
   return (
     <div className={styles.jobs}>
-      {/* TOP BAR (target image style) */}
       <div
         ref={headerRef}
-        className={classNames(styles.headerWrapper, { [styles.sidebarCollapsed]: sidebarCollapsed })}
-        style={{ left: sidebarWidth + "px", width: `calc(100% - ${sidebarWidth}px)` }}
+        className={classNames(styles.headerWrapper, {
+          [styles.sidebarCollapsed]: sidebarCollapsed,
+        })}
+        style={{
+          left: sidebarWidth + "px",
+          width: `calc(100% - ${sidebarWidth}px)`,
+        }}
       >
         <div className={styles.topSearchBar}>
           <div className={styles.cardSearch}>
@@ -11260,7 +8490,6 @@ function Jobs() {
             />
           </div>
 
-          {/* Optional location dropdown + apply */}
           <div className={styles.searchActions}>
             <select
               className={styles.locationSelect}
@@ -11275,15 +8504,20 @@ function Jobs() {
               ))}
             </select>
 
-            <button type="button" className={styles.searchButton} onClick={applyPendingFilters}>
+            <button
+              type="button"
+              className={styles.searchButton}
+              onClick={applyPendingFilters}
+            >
               Search Jobs
             </button>
           </div>
 
-          {/* Tabs */}
           <div className={styles.tabsContainer}>
             <div
-              className={classNames(styles.tab, { [styles.active]: view === "request" })}
+              className={classNames(styles.tab, {
+                [styles.active]: view === "request",
+              })}
               onClick={() => setView("request")}
               role="button"
               tabIndex={0}
@@ -11298,7 +8532,9 @@ function Jobs() {
             </div>
 
             <div
-              className={classNames(styles.tab, { [styles.active]: view === "myPost" })}
+              className={classNames(styles.tab, {
+                [styles.active]: view === "myPost",
+              })}
               onClick={() => setView("myPost")}
               role="button"
               tabIndex={0}
@@ -11313,13 +8549,20 @@ function Jobs() {
             </div>
           </div>
 
-          {/* Export (Admin only) */}
           {user?.role === "Admin" && (
             <div className={styles.exportButtons}>
-              <button onClick={exportJobsToExcel} className={styles.excelButton} type="button">
+              <button
+                onClick={exportJobsToExcel}
+                className={styles.excelButton}
+                type="button"
+              >
                 Export Excel
               </button>
-              <button onClick={exportJobsToCSV} className={styles.csvButton} type="button">
+              <button
+                onClick={exportJobsToCSV}
+                className={styles.csvButton}
+                type="button"
+              >
                 Export CSV
               </button>
             </div>
@@ -11327,23 +8570,27 @@ function Jobs() {
         </div>
       </div>
 
-      {/* Spacer */}
-      <div className={styles.headerSpacer} style={{ height: `${headerHeight}px` }} />
+      <div
+        className={styles.headerSpacer}
+        style={{ height: `${headerHeight}px` }}
+      />
 
-      {/* ERROR */}
       {error && (
         <div className={styles.errorAlert}>
           <div className={styles.errorContent}>
             <XCircle size={20} />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className={styles.closeError} type="button">
+          <button
+            onClick={() => setError(null)}
+            className={styles.closeError}
+            type="button"
+          >
             <X size={16} />
           </button>
         </div>
       )}
 
-      {/* ADDED: FILTER TOGGLE ACTION ROW */}
       <div className={styles.filterActionRow}>
         <div className={styles.statsOverview}>
           <div className={styles.miniStat}>
@@ -11362,16 +8609,22 @@ function Jobs() {
           type="button"
         >
           {showFilters ? (
-            <><EyeOff size={18} /> Hide Filters</>
+            <>
+              <EyeOff size={18} /> Hide Filters
+            </>
           ) : (
-            <><Filter size={18} /> Show Filters</>
+            <>
+              <Filter size={18} /> Show Filters
+            </>
           )}
         </button>
       </div>
 
-      {/* 2-COLUMN BODY (target image) */}
-      <div className={classNames(styles.pageBody, { [styles.filtersCollapsed]: !showFilters })}>
-        {/* LEFT FILTER SIDEBAR */}
+      <div
+        className={classNames(styles.pageBody, {
+          [styles.filtersCollapsed]: !showFilters,
+        })}
+      >
         {showFilters && (
           <aside className={styles.filtersSidebar}>
             <div className={styles.filtersHeader}>
@@ -11379,18 +8632,33 @@ function Jobs() {
                 <Filter size={18} /> Filters
               </h3>
 
-              <button type="button" className={styles.clearAllSmall} onClick={clearAllFilters}>
+              <button
+                type="button"
+                className={styles.clearAllSmall}
+                onClick={clearAllFilters}
+              >
                 Clear all
               </button>
             </div>
 
-            {/* Title */}
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>JOB TITLE</label>
               <Select
-                options={[{ value: "", label: "All Titles" }, ...titleOptions.map((t) => ({ value: t, label: t }))]}
-                value={getDisplayValue("title") ? { value: getDisplayValue("title"), label: getDisplayValue("title") } : { value: "", label: "All Titles" }}
-                onChange={(selected) => handleFilterChange("title", selected?.value || "")}
+                options={[
+                  { value: "", label: "All Titles" },
+                  ...titleOptions.map((t) => ({ value: t, label: t })),
+                ]}
+                value={
+                  getDisplayValue("title")
+                    ? {
+                        value: getDisplayValue("title"),
+                        label: getDisplayValue("title"),
+                      }
+                    : { value: "", label: "All Titles" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("title", selected?.value || "")
+                }
                 isSearchable
                 isClearable
                 placeholder="All Titles"
@@ -11401,13 +8669,24 @@ function Jobs() {
               />
             </div>
 
-            {/* Company */}
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>COMPANY</label>
               <Select
-                options={[{ value: "", label: "All Companies" }, ...companyOptions.map((c) => ({ value: c, label: c }))]}
-                value={getDisplayValue("companyName") ? { value: getDisplayValue("companyName"), label: getDisplayValue("companyName") } : { value: "", label: "All Companies" }}
-                onChange={(selected) => handleFilterChange("companyName", selected?.value || "")}
+                options={[
+                  { value: "", label: "All Companies" },
+                  ...companyOptions.map((c) => ({ value: c, label: c })),
+                ]}
+                value={
+                  getDisplayValue("companyName")
+                    ? {
+                        value: getDisplayValue("companyName"),
+                        label: getDisplayValue("companyName"),
+                      }
+                    : { value: "", label: "All Companies" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("companyName", selected?.value || "")
+                }
                 isSearchable
                 isClearable
                 placeholder="All Companies"
@@ -11418,13 +8697,24 @@ function Jobs() {
               />
             </div>
 
-            {/* Role */}
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>JOB ROLE</label>
               <Select
-                options={[{ value: "", label: "All Roles" }, ...roleOptions.map((r) => ({ value: r, label: r }))]}
-                value={getDisplayValue("role") ? { value: getDisplayValue("role"), label: getDisplayValue("role") } : { value: "", label: "All Roles" }}
-                onChange={(selected) => handleFilterChange("role", selected?.value || "")}
+                options={[
+                  { value: "", label: "All Roles" },
+                  ...roleOptions.map((r) => ({ value: r, label: r })),
+                ]}
+                value={
+                  getDisplayValue("role")
+                    ? {
+                        value: getDisplayValue("role"),
+                        label: getDisplayValue("role"),
+                      }
+                    : { value: "", label: "All Roles" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("role", selected?.value || "")
+                }
                 isSearchable
                 isClearable
                 placeholder="All Roles"
@@ -11435,7 +8725,6 @@ function Jobs() {
               />
             </div>
 
-            {/* Employment Type (like target image) */}
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>EMPLOYMENT TYPE</label>
               <div className={styles.radioGroup}>
@@ -11462,13 +8751,24 @@ function Jobs() {
               </div>
             </div>
 
-            {/* Experience */}
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>EXPERIENCE</label>
               <Select
-                options={[{ value: "", label: "All Experience" }, ...experienceOptions.map((e) => ({ value: e, label: e }))]}
-                value={getDisplayValue("experience") ? { value: getDisplayValue("experience"), label: getDisplayValue("experience") } : { value: "", label: "All Experience" }}
-                onChange={(selected) => handleFilterChange("experience", selected?.value || "")}
+                options={[
+                  { value: "", label: "All Experience" },
+                  ...experienceOptions.map((e) => ({ value: e, label: e })),
+                ]}
+                value={
+                  getDisplayValue("experience")
+                    ? {
+                        value: getDisplayValue("experience"),
+                        label: getDisplayValue("experience"),
+                      }
+                    : { value: "", label: "All Experience" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("experience", selected?.value || "")
+                }
                 isSearchable
                 isClearable
                 placeholder="All Experience"
@@ -11480,16 +8780,19 @@ function Jobs() {
             </div>
 
             <div className={styles.sidebarActions}>
-              <button type="button" className={styles.applySidebarFilters} disabled={!hasPendingChanges} onClick={applyPendingFilters}>
+              <button
+                type="button"
+                className={styles.applySidebarFilters}
+                disabled={!hasPendingChanges}
+                onClick={applyPendingFilters}
+              >
                 Apply Filters
               </button>
             </div>
           </aside>
         )}
 
-        {/* RIGHT MAIN */}
         <main className={styles.mainContent}>
-          {/* Pagination */}
           <div className={styles.paginationTop}>
             <button
               onClick={() => page > 1 && setPage(page - 1)}
@@ -11500,7 +8803,8 @@ function Jobs() {
               <ChevronLeft size={16} /> Previous
             </button>
             <span className={styles.pageInfo}>
-              Page <span className={styles.currentPage}>{page}</span> of {totalPages}
+              Page <span className={styles.currentPage}>{page}</span> of{" "}
+              {totalPages}
             </span>
             <button
               onClick={() => page < totalPages && setPage(page + 1)}
@@ -11512,7 +8816,6 @@ function Jobs() {
             </button>
           </div>
 
-          {/* LOADING */}
           {loadingState.fetching ? (
             <div className={styles.loadingContainer}>
               <div className={styles.spinner}></div>
@@ -11520,7 +8823,6 @@ function Jobs() {
             </div>
           ) : (
             <>
-              {/* VIEW: REQUEST */}
               {view === "request" && (
                 <div className={styles.jobsList}>
                   <h2 className={styles.sectionTitle}>
@@ -11532,21 +8834,32 @@ function Jobs() {
                       <div className={styles.noResultsIcon}>🔍</div>
                       <h3>No jobs found</h3>
                       <p>Try adjusting your filters or search terms</p>
-                      <button onClick={clearAllFilters} className={styles.clearFiltersButton} type="button">
+                      <button
+                        onClick={clearAllFilters}
+                        className={styles.clearFiltersButton}
+                        type="button"
+                      >
                         Clear All Filters
                       </button>
                     </div>
                   ) : (
                     paginatedJobs.map((job) => (
-                      <div key={job._id} className={styles.jobRow} onClick={() => handleClick(job)}>
+                      <div
+                        key={job._id}
+                        className={styles.jobRow}
+                        onClick={() => handleClick(job)}
+                      >
                         <div className={styles.jobRowTop}>
                           <div className={styles.jobRowTitle}>
-                            <div className={styles.avatarCircle}>{(job.title || "J").slice(0, 1).toUpperCase()}</div>
+                            <div className={styles.avatarCircle}>
+                              {(job.title || "J").slice(0, 1).toUpperCase()}
+                            </div>
                             <div>
                               <h3>{job.title}</h3>
                               <div className={styles.jobRowSub}>
                                 <span>
-                                  <Building size={14} /> {job.companyName || "Company"}
+                                  <Building size={14} />{" "}
+                                  {job.companyName || "Company"}
                                 </span>
                                 {job.location && (
                                   <span>
@@ -11594,15 +8907,23 @@ function Jobs() {
                             <Calendar size={14} />
                             <span>
                               {job.createdAt && !isNaN(new Date(job.createdAt))
-                                ? `${new Date(job.createdAt).toLocaleDateString()} • ${formatDistanceToNow(new Date(job.createdAt), {
-                                  addSuffix: true,
-                                })}`
+                                ? `${new Date(job.createdAt).toLocaleDateString()} • ${formatDistanceToNow(
+                                    new Date(job.createdAt),
+                                    {
+                                      addSuffix: true,
+                                    }
+                                  )}`
                                 : "Just Now"}
                             </span>
                           </div>
 
-                          <div className={styles.jobRowActions} onClick={(e) => e.stopPropagation()}>
-                            {(user?.role === "Member" || user?.role === "Candidate" || !user) && (
+                          <div
+                            className={styles.jobRowActions}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {(user?.role === "Member" ||
+                              user?.role === "Candidate" ||
+                              !user) && (
                               <ApplyButton
                                 job={job}
                                 user={user}
@@ -11613,11 +8934,16 @@ function Jobs() {
                               />
                             )}
 
-                            <button className={styles.viewDetailsBtn} type="button" onClick={() => handleClick(job)}>
+                            <button
+                              className={styles.viewDetailsBtn}
+                              type="button"
+                              onClick={() => handleClick(job)}
+                            >
                               View Details
                             </button>
 
-                            {user?.role === "Admin" && renderAdminActionButtons(job)}
+                            {user?.role === "Admin" &&
+                              renderAdminActionButtons(job)}
                           </div>
                         </div>
                       </div>
@@ -11626,7 +8952,6 @@ function Jobs() {
                 </div>
               )}
 
-              {/* VIEW: MYPOST */}
               {view === "myPost" && (
                 <div className={styles.jobsContainer}>
                   <h2 className={styles.sectionTitle}>
@@ -11643,9 +8968,19 @@ function Jobs() {
 
                   {filteredMyPost.length === 0 ? (
                     <div className={styles.noResults}>
-                      <div className={styles.noResultsIcon}>{user?.role === "Admin" ? "📭" : "📋"}</div>
-                      <h3>{user?.role === "Admin" ? "No jobs posted yet" : "You haven't applied to any jobs yet"}</h3>
-                      <p>{user?.role === "Admin" ? "Create your first job post to get started" : "Browse jobs and apply to get started"}</p>
+                      <div className={styles.noResultsIcon}>
+                        {user?.role === "Admin" ? "📭" : "📋"}
+                      </div>
+                      <h3>
+                        {user?.role === "Admin"
+                          ? "No jobs posted yet"
+                          : "You haven't applied to any jobs yet"}
+                      </h3>
+                      <p>
+                        {user?.role === "Admin"
+                          ? "Create your first job post to get started"
+                          : "Browse jobs and apply to get started"}
+                      </p>
                       {user?.role === "Admin" && (
                         <button
                           onClick={() => {
@@ -11668,13 +9003,17 @@ function Jobs() {
                         return (
                           <div key={request._id} className={styles.myJobCard}>
                             <div className={styles.myJobCardHeader}>
-                              <div className={styles.myJobCardContent} onClick={() => handleClick(request)}>
+                              <div
+                                className={styles.myJobCardContent}
+                                onClick={() => handleClick(request)}
+                              >
                                 <div className={styles.myJobCardTitle}>
                                   <h3>{request.title}</h3>
                                   <div className={styles.myJobCardMeta}>
                                     {request?.companyName && (
                                       <span className={styles.companyName}>
-                                        <Building size={14} /> {request.companyName}
+                                        <Building size={14} />{" "}
+                                        {request.companyName}
                                       </span>
                                     )}
                                     {request?.location && (
@@ -11682,48 +9021,70 @@ function Jobs() {
                                         <MapPin size={14} /> {request.location}
                                       </span>
                                     )}
-                                    {request?.employmentType && <span className={styles.jobType}>{request.employmentType}</span>}
+                                    {request?.employmentType && (
+                                      <span className={styles.jobType}>
+                                        {request.employmentType}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
 
                                 <div className={styles.myJobCardDate}>
                                   <Calendar size={12} />
-                                  <span>Posted on: {new Date(request.createdAt).toLocaleDateString()}</span>
+                                  <span>
+                                    Posted on:{" "}
+                                    {new Date(request.createdAt).toLocaleDateString()}
+                                  </span>
                                 </div>
                               </div>
 
-                              {user?.role === "Admin" && renderAdminActionButtons(request)}
+                              {user?.role === "Admin" &&
+                                renderAdminActionButtons(request)}
                             </div>
 
-                            {(user?.role === "Member" || user?.role === "Candidate") && myStatus && (
-                              <div className={styles.applicationPipeline}>
-                                {myStatus === "Rejected" ? (
-                                  <div className={styles.rejectedStatus}>
-                                    <XCircle size={20} />
-                                    <div>
-                                      <h4>Application Rejected</h4>
-                                      <p>Unfortunately, your application was not selected for this position.</p>
+                            {(user?.role === "Member" ||
+                              user?.role === "Candidate") &&
+                              myStatus && (
+                                <div className={styles.applicationPipeline}>
+                                  {myStatus === "Rejected" ? (
+                                    <div className={styles.rejectedStatus}>
+                                      <XCircle size={20} />
+                                      <div>
+                                        <h4>Application Rejected</h4>
+                                        <p>
+                                          Unfortunately, your application was not
+                                          selected for this position.
+                                        </p>
+                                      </div>
                                     </div>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <div className={styles.pipelineHeader}>
-                                      <h4>Application Status</h4>
-                                      <div className={styles.currentStatusBadge}>{renderStatusBadge(myStatus)}</div>
-                                    </div>
-                                    <EnhancedStatusPipeline status={pipelineStatus} />
-                                  </>
-                                )}
-                              </div>
-                            )}
+                                  ) : (
+                                    <>
+                                      <div className={styles.pipelineHeader}>
+                                        <h4>Application Status</h4>
+                                        <div
+                                          className={styles.currentStatusBadge}
+                                        >
+                                          {renderStatusBadge(myStatus)}
+                                        </div>
+                                      </div>
+                                      <EnhancedStatusPipeline
+                                        status={pipelineStatus}
+                                      />
+                                    </>
+                                  )}
+                                </div>
+                              )}
 
                             {user?.role === "Admin" && (
                               <div className={styles.applicantsSection}>
                                 <div className={styles.applicantsHeader}>
                                   <h4>
-                                    <Users size={16} /> Applicants ({request.appliedMembers?.length || 0})
+                                    <Users size={16} /> Applicants (
+                                    {request.appliedMembers?.length || 0})
                                   </h4>
-                                  <span className={styles.applicantsCount}>{request.appliedMembers?.length || 0} total</span>
+                                  <span className={styles.applicantsCount}>
+                                    {request.appliedMembers?.length || 0} total
+                                  </span>
                                 </div>
 
                                 {request.appliedMembers?.length > 0 ? (
@@ -11740,11 +9101,18 @@ function Jobs() {
                                       <tbody>
                                         {request.appliedMembers.map((app, idx) => (
                                           <tr key={idx}>
-                                            <td className={styles.applicantName}>{app.memberId?.name || "Unknown Applicant"}</td>
+                                            <td className={styles.applicantName}>
+                                              {app.memberId?.name ||
+                                                "Unknown Applicant"}
+                                            </td>
                                             <td className={styles.applicantResume}>
-                                              {app.resumeLink || app.memberId?.resumeLink ? (
+                                              {app.resumeLink ||
+                                              app.memberId?.resumeLink ? (
                                                 <a
-                                                  href={getFileUrl(app.resumeLink || app.memberId.resumeLink)}
+                                                  href={getFileUrl(
+                                                    app.resumeLink ||
+                                                      app.memberId.resumeLink
+                                                  )}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
                                                   className={styles.resumeLink}
@@ -11752,22 +9120,44 @@ function Jobs() {
                                                   <FileText size={16} /> View Resume
                                                 </a>
                                               ) : (
-                                                <span className={styles.noResume}>No Resume</span>
+                                                <span className={styles.noResume}>
+                                                  No Resume
+                                                </span>
                                               )}
                                             </td>
-                                            <td className={styles.applicantStatus}>{renderStatusBadge(app.status || "Applied")}</td>
+                                            <td className={styles.applicantStatus}>
+                                              {renderStatusBadge(
+                                                app.status || "Applied"
+                                              )}
+                                            </td>
                                             <td className={styles.applicantActions}>
                                               <select
                                                 className={styles.statusSelect}
                                                 value={app.status || "Applied"}
-                                                onChange={(e) => handleStatusChange(request._id, app.memberId?._id, e.target.value)}
+                                                onChange={(e) =>
+                                                  handleStatusChange(
+                                                    request._id,
+                                                    app.memberId?._id,
+                                                    e.target.value
+                                                  )
+                                                }
                                               >
-                                                <option value="Applied">Applied</option>
-                                                <option value="Review">Review</option>
-                                                <option value="Shortlisted">Shortlisted</option>
+                                                <option value="Applied">
+                                                  Applied
+                                                </option>
+                                                <option value="Review">
+                                                  Review
+                                                </option>
+                                                <option value="Shortlisted">
+                                                  Shortlisted
+                                                </option>
                                                 <option value="Offer">Offer</option>
-                                                <option value="Accepted">Accepted</option>
-                                                <option value="Rejected">Rejected</option>
+                                                <option value="Accepted">
+                                                  Accepted
+                                                </option>
+                                                <option value="Rejected">
+                                                  Rejected
+                                                </option>
                                               </select>
                                             </td>
                                           </tr>
@@ -11778,7 +9168,10 @@ function Jobs() {
                                 ) : (
                                   <div className={styles.noApplicants}>
                                     <Users size={24} />
-                                    <p>No applicants yet. Share this job to get applications!</p>
+                                    <p>
+                                      No applicants yet. Share this job to get
+                                      applications!
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -11795,7 +9188,6 @@ function Jobs() {
         </main>
       </div>
 
-      {/* Floating Add (Admin only) */}
       {user?.role === "Admin" && (
         <button
           className={styles.floatingAddButton}
@@ -11811,8 +9203,12 @@ function Jobs() {
         </button>
       )}
 
-      {/* MODALS */}
-      <ProvidedForm isOpen={showProvidedModal} onClose={handleCloseModal} onSubmit={handleFormSubmit} initialData={editingJob} />
+      <ProvidedForm
+        isOpen={showProvidedModal}
+        onClose={handleCloseModal}
+        onSubmit={handleFormSubmit}
+        initialData={editingJob}
+      />
 
       <BulkCSVReviewModal
         isOpen={showBulkReviewModal}
@@ -11832,13 +9228,17 @@ function Jobs() {
         onGoogleLogin={handleGoogleLogin}
       />
 
-      {/* Google Login Modal */}
       {showGoogleLoginModal && (
         <div className={styles.googleLoginModal}>
           <div className={styles.googleLoginContent}>
             <div className={styles.googleLoginHeader}>
               <h3>Login Required</h3>
-              <button onClick={() => setShowGoogleLoginModal(false)} className={styles.closeGoogleLogin} aria-label="Close" type="button">
+              <button
+                onClick={() => setShowGoogleLoginModal(false)}
+                className={styles.closeGoogleLogin}
+                aria-label="Close"
+                type="button"
+              >
                 <X size={24} />
               </button>
             </div>
@@ -11849,11 +9249,16 @@ function Jobs() {
               <GoogleLoginButton
                 onLoginSuccess={() => {
                   setShowGoogleLoginModal(false);
-                  if (selectedJob) handleApplyClick({ stopPropagation: () => { } }, selectedJob);
+                  if (selectedJob)
+                    handleApplyClick({ stopPropagation: () => {} }, selectedJob);
                 }}
               />
 
-              <button className={styles.googleLoginCancel} onClick={() => setShowGoogleLoginModal(false)} type="button">
+              <button
+                className={styles.googleLoginCancel}
+                onClick={() => setShowGoogleLoginModal(false)}
+                type="button"
+              >
                 Cancel
               </button>
             </div>
@@ -11861,7 +9266,6 @@ function Jobs() {
         </div>
       )}
 
-      {/* LOADING OVERLAY */}
       {isSubmitting && (
         <div className={styles.submittingOverlay}>
           <div className={styles.submittingContent}>
@@ -11873,6 +9277,7 @@ function Jobs() {
     </div>
   );
 }
+
 Jobs.propTypes = {};
 
 export default Jobs;

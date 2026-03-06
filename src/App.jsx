@@ -157,6 +157,7 @@ import RefereeDetailsPage from './pages/Referees/RefereeDetailsPage';
 // ✅ Mentors
 import MentorsPage from './pages/Mentor/MentorsPage';
 import MentorDetails from './pages/Mentor/MentorDetails';
+import MentorConnectionsAdmin from './pages/Mentor/MentorConnectionsAdmin';
 
 // ✅ Recruiters
 import RecruitersPage from './pages/Recruiter/RecruitersPage';
@@ -219,6 +220,14 @@ function App() {
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Candidate', 'Job', 'Mentor']}>
                   <MentorDetails />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="mentor-connections"
+              element={
+                <PrivateRoute roles={['Admin']}>
+                  <MentorConnectionsAdmin />
                 </PrivateRoute>
               }
             />

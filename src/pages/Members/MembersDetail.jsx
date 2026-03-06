@@ -1743,11 +1743,8 @@ import { useData } from "../../context/DataContext";
 import { parseDOB } from "../../utils/dateUtils";
 import { useAuth } from "../../context/AuthContext";
 import {
-  Users,
   Briefcase,
-  Building,
   Target,
-  User,
   Languages,
   Smartphone,
   Mail,
@@ -1755,8 +1752,7 @@ import {
   MapPin,
   ExternalLink,
   GraduationCap,
-  DollarSign,
-  Globe,
+  Building,
   Award as CertificateIcon,
   BookOpen,
   FileText,
@@ -1793,14 +1789,12 @@ function MembersDetail() {
       setLoading(true);
       let filtered = null;
 
-      // 1. Check Context first
       if (memberContext && memberContext.length > 0) {
         filtered = memberContext.find((m) => String(m._id) === String(id));
       }
 
-      // 2. Fallback to API if not in context or id is 'me'
       if (!filtered) {
-        let targetId = id === "me" ? user?.memberId : id;
+        const targetId = id === "me" ? user?.memberId : id;
         if (targetId && targetId !== "undefined") {
           const response = await API.get(`/member/${targetId}`);
           filtered = response.data;
@@ -1820,19 +1814,17 @@ function MembersDetail() {
     const birthDate = parseDOB(dob);
     if (!birthDate) return null;
     const today = new Date();
-    let a = today.getFullYear() - birthDate.getFullYear();
-    return a;
+    return today.getFullYear() - birthDate.getFullYear();
   };
 
   const getProfileImageUrl = (url) => {
     if (!url) return null;
-    if (url.startsWith("uploads"))
-      return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
+    if (url.startsWith("uploads")) return `${BACKEND_URL}/${url.replace(/\\/g, "/")}`;
     return url;
   };
 
-  const getInitials = (name) => {
-    return (
+  const getInitials = (name) =>
+    (
       name
         ?.split(" ")
         .map((n) => n[0])
@@ -1840,11 +1832,7 @@ function MembersDetail() {
         .toUpperCase()
         .substring(0, 2) || "??"
     );
-  };
 
-  // =========================
-  // Helpers for tab data
-  // =========================
   const normalizeList = (value) => {
     if (!value) return [];
     if (Array.isArray(value)) return value.filter(Boolean);
@@ -1875,6 +1863,13 @@ function MembersDetail() {
     normalizeList(member?.skillSet) ||
     normalizeList(member?.technicalSkills);
 
+  const passOutYear =
+    member?.passOutYear || member?.highestEducationPassedOutYear || "N/A";
+
+  const certifications = Array.isArray(member?.certifications)
+    ? member.certifications
+    : [];
+
   if (loading)
     return (
       <div className={styles.loadingContainer}>
@@ -1893,10 +1888,8 @@ function MembersDetail() {
 
   return (
     <div className={styles.container}>
-      {/* Top Design Banner */}
       <div className={styles.banner}></div>
 
-      {/* Overlapping Profile Header */}
       <div className={styles.headerCard}>
         <div className={styles.profileSection}>
           <div className={styles.avatarWrapper}>
@@ -1937,9 +1930,7 @@ function MembersDetail() {
               </div>
               <div className={styles.statItem}>
                 <Calendar size={16} /> Member since{" "}
-                {member.createdAt
-                  ? new Date(member.createdAt).getFullYear()
-                  : "N/A"}
+                {member.createdAt ? new Date(member.createdAt).getFullYear() : "N/A"}
               </div>
               <div className={styles.statItem}>
                 <Star size={16} /> {member.workExp || 0} Years Experience
@@ -1948,7 +1939,6 @@ function MembersDetail() {
           </div>
         </div>
 
-        {/* Share button removed */}
         <div className={styles.actionButtons}>
           {(user?.role === "Admin" ||
             String(user?.memberId) === String(member._id) ||
@@ -1966,9 +1956,8 @@ function MembersDetail() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className={styles.tabNavigation}>
-        {["overview", "experience", "education", "skills"].map((tab) => (
+        {["overview", "experience", "education", "certificates", "skills"].map((tab) => (
           <button
             key={tab}
             className={`${styles.tab} ${activeTab === tab ? styles.active : ""}`}
@@ -1979,12 +1968,8 @@ function MembersDetail() {
         ))}
       </div>
 
-      {/* =========================
-          TAB CONTENT
-         ========================= */}
       {activeTab === "overview" && (
         <div className={styles.profileContent}>
-          {/* Left Column - Main Details */}
           <div className={styles.mainColumn}>
             <section className={styles.card}>
               <div className={styles.cardHeader}>
@@ -1999,18 +1984,23 @@ function MembersDetail() {
                       "Not specified"}
                   </div>
                 </div>
+
                 <div className={styles.item}>
                   <label>Industry</label>
                   <div className={styles.value}>
                     {member.careerProfile?.industry || "Not specified"}
                   </div>
                 </div>
+
                 <div className={styles.item}>
                   <label>Location Preference</label>
                   <div className={styles.value}>
-                    {member.preferredJobLocation || "Flexible"}
+                    {member.careerProfile?.location ||
+                      member.preferredJobLocation ||
+                      "Not specified"}
                   </div>
                 </div>
+
                 <div className={styles.item}>
                   <label>Expected Salary</label>
                   <div className={styles.value}>
@@ -2027,19 +2017,18 @@ function MembersDetail() {
                 <GraduationCap size={22} className={styles.icon} /> Education
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                <div style={{ paddingLeft: "5px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+                <div style={{ paddingLeft: 5 }}>
                   <h4
                     style={{
                       margin: "0 0 5px 0",
-                      fontSize: "18px",
+                      fontSize: 18,
                       color: "var(--p-text)",
                     }}
                   >
                     {member.highest_education || "Not provided"}
                   </h4>
-                  
-                  {/* Branch Display */}
+
                   {member.branch && (
                     <p
                       style={{
@@ -2047,52 +2036,38 @@ function MembersDetail() {
                         margin: "5px 0",
                         display: "flex",
                         alignItems: "center",
-                        gap: "6px",
+                        gap: 6,
                       }}
                     >
-                      <BookOpen size={16} />{member.branch}
+                      <BookOpen size={16} />
+                      {member.branch}
                     </p>
                   )}
-
-                  {/* <p
-                    style={{
-                      color: "var(--p-muted)",
-                      margin: "5px 0 10px 0",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}
-                  >
-                    <Building size={16} />{" "}
-                    {member.educationInstitution ||
-                      "Institution details not provided"}
-                  </p> */}
 
                   <div
                     className={`${styles.badge} ${styles.typeBadge}`}
                     style={{ display: "inline-block" }}
                   >
-                    Class of {member.highestEducationPassedOutYear || "N/A"}
+                    Class of {passOutYear}
                   </div>
                 </div>
               </div>
             </section>
           </div>
 
-          {/* Right Column - Sidebar */}
           <div className={styles.sideColumn}>
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <Phone size={22} className={styles.icon} /> Contact Info
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <div style={{ display: "flex", gap: "15px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div style={{ display: "flex", gap: 15 }}>
                   <Smartphone size={20} />
                   <div>
                     <label
                       style={{
-                        fontSize: "12px",
+                        fontSize: 12,
                         color: "var(--p-muted2)",
                         fontWeight: 700,
                       }}
@@ -2105,12 +2080,12 @@ function MembersDetail() {
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "15px" }}>
+                <div style={{ display: "flex", gap: 15 }}>
                   <Mail size={20} />
                   <div>
                     <label
                       style={{
-                        fontSize: "12px",
+                        fontSize: 12,
                         color: "var(--p-muted2)",
                         fontWeight: 700,
                       }}
@@ -2136,7 +2111,7 @@ function MembersDetail() {
                 <Languages size={22} className={styles.icon} /> Languages
               </div>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {member.languages?.length > 0 ? (
                   member.languages.map((lang) => (
                     <span
@@ -2146,8 +2121,8 @@ function MembersDetail() {
                         border: "1px solid var(--p-border-soft)",
                         color: "var(--p-text2)",
                         padding: "8px 16px",
-                        borderRadius: "10px",
-                        fontSize: "14px",
+                        borderRadius: 10,
+                        fontSize: 14,
                         fontWeight: 600,
                       }}
                     >
@@ -2155,14 +2130,76 @@ function MembersDetail() {
                     </span>
                   ))
                 ) : (
-                  <p style={{ color: "var(--p-muted)", fontSize: "14px" }}>
+                  <p style={{ color: "var(--p-muted)", fontSize: 14 }}>
                     No languages listed
                   </p>
                 )}
               </div>
             </section>
 
-            {/* Resume Card */}
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <CertificateIcon size={22} className={styles.icon} /> Certificates
+              </div>
+
+              {certifications.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {certifications.slice(0, 3).map((c, idx) => {
+                    const name = c?.name || c?.title || "Certificate";
+                    const desc = c?.description || c?.organization || "";
+                    const date = c?.certifiedDate || c?.year || "";
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: 14,
+                          borderRadius: 14,
+                          border: "1px solid var(--p-border-soft)",
+                          background: "rgba(148,163,184,0.06)",
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
+                          {name}
+                        </div>
+
+                        {desc && (
+                          <div
+                            style={{
+                              color: "var(--p-muted)",
+                              marginTop: 6,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {desc}
+                          </div>
+                        )}
+
+                        {date && (
+                          <div
+                            style={{
+                              marginTop: 10,
+                              fontSize: 13,
+                              color: "var(--p-muted2)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <Calendar size={14} /> {date}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p style={{ color: "var(--p-muted)", fontSize: 14 }}>
+                  No certificates added
+                </p>
+              )}
+            </section>
+
             {(member.resume || member.resumeLink) && (
               <section
                 className={styles.card}
@@ -2172,13 +2209,13 @@ function MembersDetail() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "12px",
+                    gap: 12,
                     color: "white",
-                    marginBottom: "20px",
+                    marginBottom: 20,
                   }}
                 >
                   <FileText size={22} />
-                  <h3 style={{ margin: 0, fontSize: "18px" }}>Resume</h3>
+                  <h3 style={{ margin: 0, fontSize: 18 }}>Resume</h3>
                 </div>
 
                 <a
@@ -2190,8 +2227,8 @@ function MembersDetail() {
                     textAlign: "center",
                     background: "white",
                     color: "var(--p-blue)",
-                    padding: "12px",
-                    borderRadius: "12px",
+                    padding: 12,
+                    borderRadius: 12,
                     fontWeight: 700,
                     textDecoration: "none",
                   }}
@@ -2213,13 +2250,13 @@ function MembersDetail() {
               </div>
 
               {Array.isArray(expList) && expList.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {expList.map((exp, idx) => (
                     <div
                       key={exp?._id || idx}
                       style={{
-                        padding: "16px",
-                        borderRadius: "14px",
+                        padding: 16,
+                        borderRadius: 14,
                         border: "1px solid var(--p-border-soft)",
                         background: "rgba(148,163,184,0.06)",
                       }}
@@ -2228,11 +2265,13 @@ function MembersDetail() {
                         {exp?.role || exp?.title || exp?.designation || "Role not specified"}
                       </div>
                       <div style={{ color: "var(--p-muted)", marginTop: 6 }}>
-                        {exp?.company || exp?.organization || exp?.companyName || "Company not specified"}
+                        {exp?.company ||
+                          exp?.organization ||
+                          exp?.companyName ||
+                          "Company not specified"}
                       </div>
                       <div style={{ color: "var(--p-muted2)", fontSize: 13, marginTop: 8 }}>
-                        {exp?.startDate || exp?.from || "Start"}{" "}
-                        {" - "}
+                        {exp?.startDate || exp?.from || "Start"} {" - "}
                         {exp?.endDate || exp?.to || "Present"}
                       </div>
                       {exp?.description && (
@@ -2284,13 +2323,13 @@ function MembersDetail() {
               </div>
 
               {Array.isArray(educationList) && educationList.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   {educationList.map((edu, idx) => (
                     <div
                       key={edu?._id || idx}
                       style={{
-                        padding: "16px",
-                        borderRadius: "14px",
+                        padding: 16,
+                        borderRadius: 14,
                         border: "1px solid var(--p-border-soft)",
                         background: "rgba(148,163,184,0.06)",
                       }}
@@ -2298,27 +2337,30 @@ function MembersDetail() {
                       <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
                         {edu?.degree || edu?.qualification || edu?.course || "Degree not specified"}
                       </div>
-                      
-                      {/* Branch for each education entry */}
+
                       {edu?.branch && (
-                        <div style={{ 
-                          color: "var(--p-muted)", 
-                          marginTop: 4, 
-                          display: "flex", 
-                          alignItems: "center", 
-                          gap: "6px" 
-                        }}>
+                        <div
+                          style={{
+                            color: "var(--p-muted)",
+                            marginTop: 4,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
                           <BookOpen size={14} /> {edu.branch}
                         </div>
                       )}
-                      
+
                       <div style={{ color: "var(--p-muted)", marginTop: 6 }}>
                         <Building size={16} style={{ marginRight: 6 }} />
                         {edu?.institution || edu?.college || edu?.school || "Institution not specified"}
                       </div>
+
                       <div style={{ color: "var(--p-muted2)", fontSize: 13, marginTop: 8 }}>
                         {edu?.year || edu?.passedOutYear || edu?.fromYear || "Year not specified"}
                       </div>
+
                       {edu?.description && (
                         <div style={{ marginTop: 10, color: "var(--p-text2)", lineHeight: 1.6 }}>
                           {edu.description}
@@ -2332,25 +2374,23 @@ function MembersDetail() {
                   <div style={{ color: "var(--p-text)", fontWeight: 800 }}>
                     {member.highest_education || "Not provided"}
                   </div>
-                  
-                  {/* Branch for single education entry */}
+
                   {member.branch && (
-                    <div style={{ 
-                      color: "var(--p-muted)", 
-                      marginTop: 4, 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "6px" 
-                    }}>
+                    <div
+                      style={{
+                        color: "var(--p-muted)",
+                        marginTop: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
                       <BookOpen size={14} /> Branch: {member.branch}
                     </div>
                   )}
-                  
-                  {/* <div style={{ color: "var(--p-muted)", marginTop: 8 }}>
-                    {member.educationInstitution || "Institution details not provided"}
-                  </div> */}
+
                   <div style={{ color: "var(--p-muted2)", marginTop: 6 }}>
-                    Class of {member.highestEducationPassedOutYear || "N/A"}
+                    Class of {passOutYear}
                   </div>
                 </>
               )}
@@ -2370,6 +2410,78 @@ function MembersDetail() {
         </div>
       )}
 
+      {activeTab === "certificates" && (
+        <div className={styles.profileContent}>
+          <div className={styles.mainColumn}>
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <CertificateIcon size={22} className={styles.icon} /> Certificates
+              </div>
+
+              {certifications.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {certifications.map((c, idx) => {
+                    const name = c?.name || c?.title || "Certificate";
+                    const desc = c?.description || c?.organization || "";
+                    const date = c?.certifiedDate || c?.year || "";
+
+                    return (
+                      <div
+                        key={idx}
+                        style={{
+                          padding: 16,
+                          borderRadius: 14,
+                          border: "1px solid var(--p-border-soft)",
+                          background: "rgba(148,163,184,0.06)",
+                        }}
+                      >
+                        <div style={{ fontWeight: 800, color: "var(--p-text)" }}>
+                          {name}
+                        </div>
+
+                        {desc && (
+                          <div style={{ color: "var(--p-muted)", marginTop: 6, lineHeight: 1.6 }}>
+                            {desc}
+                          </div>
+                        )}
+
+                        {date && (
+                          <div
+                            style={{
+                              color: "var(--p-muted2)",
+                              fontSize: 13,
+                              marginTop: 10,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <Calendar size={14} /> {date}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p style={{ color: "var(--p-muted)" }}>No certificates added.</p>
+              )}
+            </section>
+          </div>
+
+          <div className={styles.sideColumn}>
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <ClipboardList size={22} className={styles.icon} /> Tips
+              </div>
+              <p style={{ color: "var(--p-muted)" }}>
+                Add certificates in your profile to show them here.
+              </p>
+            </section>
+          </div>
+        </div>
+      )}
+
       {activeTab === "skills" && (
         <div className={styles.profileContent}>
           <div className={styles.mainColumn}>
@@ -2379,13 +2491,13 @@ function MembersDetail() {
               </div>
 
               {skillsList.length > 0 ? (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                   {skillsList.map((s, idx) => (
                     <span
                       key={`${s}-${idx}`}
                       style={{
                         padding: "10px 14px",
-                        borderRadius: "999px",
+                        borderRadius: 999,
                         border: "1px solid rgba(59,130,246,0.35)",
                         background: "rgba(59,130,246,0.12)",
                         color: "var(--p-text)",
@@ -2409,14 +2521,13 @@ function MembersDetail() {
                 <CertificateIcon size={22} className={styles.icon} /> Certifications
               </div>
               <p style={{ color: "var(--p-muted)" }}>
-                If you store certificates in profile, show them here (optional).
+                Your certificates are available in the Certificates tab.
               </p>
             </section>
           </div>
         </div>
       )}
 
-      {/* Reuse your existing Modal */}
       <AddMember
         isOpen={showModal}
         onClose={() => setShowModal(false)}

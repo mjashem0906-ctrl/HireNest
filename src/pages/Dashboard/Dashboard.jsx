@@ -338,7 +338,7 @@ import CandidateDashboard from "../CandidateDashboard/CandidateDashboard";
 
 function MemberDashboard() {
   const navigate = useNavigate();
-  const { user, token } = useAuth(); // ✅ token required (or user?.token based on your auth)
+  const { user, token } = useAuth();
   const { memberContext } = useData();
 
   const [members, setMembers] = useState([]);
@@ -350,7 +350,14 @@ function MemberDashboard() {
   function countBy(array, key) {
     const counts = {};
     (array || []).forEach((item) => {
-      const value = item?.[key] || "Unknown";
+      const raw = item?.[key];
+
+      // normalize
+      const value =
+        raw === null || raw === undefined || String(raw).trim() === ""
+          ? "Unknown"
+          : String(raw).trim();
+
       counts[value] = (counts[value] || 0) + 1;
     });
 
@@ -362,7 +369,7 @@ function MemberDashboard() {
   // ✅ Axios config with token
   const authHeaders = {
     headers: {
-      Authorization: `Bearer ${token}`, // ✅ must match verifyToken middleware
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -373,13 +380,11 @@ function MemberDashboard() {
         setErrorMsg("");
         setLoadingMembers(true);
 
-        // 1) use context if already loaded
         if (Array.isArray(memberContext) && memberContext.length > 0) {
           setMembers(memberContext);
           return;
         }
 
-        // 2) fallback API (protected)
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/member`,
           authHeaders
@@ -398,14 +403,13 @@ function MemberDashboard() {
       }
     };
 
-    // Only admin dashboard
     if (user && !["Candidate", "Member", "Mentor", "Job"].includes(user?.role)) {
       loadMembers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberContext, user, token]);
 
-  // ✅ Fetch Recruiters count (if protected, include token)
+  // ✅ Fetch Recruiters count
   useEffect(() => {
     const fetchRecruitersCount = async () => {
       try {
@@ -443,7 +447,7 @@ function MemberDashboard() {
     );
   }
 
-  // ✅ Error UI (shows why blank)
+  // ✅ Error UI
   if (errorMsg) {
     return (
       <div className={styles.page}>
@@ -478,15 +482,14 @@ function MemberDashboard() {
 
   const seekers = members.filter(
     (m) =>
-      (m.memberType || "").includes("Job Seeker") ||
-      (m.memberType || "") === ""
+      (m.memberType || "").includes("Job Seeker") || (m.memberType || "") === ""
   ).length;
 
   const providers = members.filter((m) =>
     (m.memberType || "").includes("Oppurtunity Provider")
   ).length;
 
-  const recruiters = recruitersCount; // ✅ from recruiters api
+  const recruiters = recruitersCount;
 
   const referees = members.filter((m) =>
     (m.memberType || "").includes("Referee")
@@ -503,13 +506,53 @@ function MemberDashboard() {
   const topDistricts = countBy(members, "district").slice(0, 5);
   const topEducations = countBy(members, "highest_education").slice(0, 5);
 
+  // ✅ NEW: Experience like Top Districts / Education
+  // Uses members[].workExp (string or number)
+  const topExperiences = countBy(members, "workExp").slice(0, 5);
+
   const stats = [
-    { title: "Total Members", count: totalMembers, icon: Users, color: "#6366f1", path: "/members" },
-    { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#10b981", path: "/members" },
-    { title: "Providers", count: providers, icon: UserCheck, color: "#f59e0b", path: "/members" },
-    { title: "Recruiters", count: recruiters, icon: Building2, color: "#8b5cf6", path: "/recruiters" },
-    { title: "Job Referee", count: referees, icon: User, color: "#ec4899", path: "/referees" },
-    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#f97316", path: "/members" },
+    {
+      title: "Total Members",
+      count: totalMembers,
+      icon: Users,
+      color: "#6366f1",
+      path: "/members",
+    },
+    {
+      title: "Job Seekers",
+      count: seekers,
+      icon: Briefcase,
+      color: "#10b981",
+      path: "/members",
+    },
+    {
+      title: "Providers",
+      count: providers,
+      icon: UserCheck,
+      color: "#f59e0b",
+      path: "/members",
+    },
+    {
+      title: "Recruiters",
+      count: recruiters,
+      icon: Building2,
+      color: "#8b5cf6",
+      path: "/recruiters",
+    },
+    {
+      title: "Job Referee",
+      count: referees,
+      icon: User,
+      color: "#ec4899",
+      path: "/referees",
+    },
+    {
+      title: "Upskillers",
+      count: upskillers,
+      icon: BookOpen,
+      color: "#f97316",
+      path: "/members",
+    },
   ];
 
   const memberTypeData = [
@@ -570,6 +613,27 @@ function MemberDashboard() {
                   <div key={i} className={styles.rankingItem}>
                     <span className={styles.rankInfo}>{item.name}</span>
                     <span className={styles.rankBadge}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ✅ NEW: Experience Breakdown (same UI style) */}
+            <div className={styles.glassCard}>
+              <div className={styles.cardHeader}>
+                <h3>Experience Breakdown</h3>
+              </div>
+
+              <div className={styles.rankingList}>
+                {topExperiences.map((item, i) => (
+                  <div key={i} className={styles.rankingItem}>
+                    <div className={styles.rankInfo}>
+                      <div style={{ fontSize: "0.8rem", opacity: 0.75 }}>
+                        Level {i + 1}
+                      </div>
+                      {item.name}
+                    </div>
+                    <span className={styles.rankBadge}>{item.value} Users</span>
                   </div>
                 ))}
               </div>
