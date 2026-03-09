@@ -30,8 +30,12 @@ function OAuthSuccess() {
 
         console.log("[OAuth] Login complete, directing home...");
 
-        // ✅ FIX: use router navigation (no origin confusion)
-        navigate("/", { replace: true });
+        // ✅ FIX: redirect new Google users to profile setup if profile is incomplete
+        if (!userData.memberId || userData.profileCompleted === 0) {
+          navigate("/profile-setup", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
 
       } catch (err) {
         console.error("[OAuth] Auth check failed internally:", err);

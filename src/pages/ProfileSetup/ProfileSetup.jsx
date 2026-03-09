@@ -177,9 +177,9 @@ import DateSelect from "../../components/UI/DateSelect";
 import styles from "./ProfileSetup.module.scss";
 
 const ProfileSetup = () => {
-    const { user, login } = useAuth();
+    const { user, login, fetchUser } = useAuth();
     const navigate = useNavigate();
-    const [role, setRole] = useState("");
+    const [role, setRole] = useState("Job"); // Default to Job Seeker — skip role selection for Google users
     const [formData, setFormData] = useState({
         name: "",
         mobileNumber: "",
@@ -213,10 +213,8 @@ const ProfileSetup = () => {
                 role,
                 profileData: formData
             });
-            login(res.data.user);
-            if (res.data.user.profileCompleted === 100) {
-                navigate("/");
-            }
+            await fetchUser(); // Re-fetch fresh user data from server (new memberId, profileCompleted)
+            navigate("/", { state: { isNew: true } });
         } catch (err) {
             console.error(err);
             alert("Failed to update profile");
@@ -251,7 +249,6 @@ const ProfileSetup = () => {
                     </div>
                 ) : (
                     <div className={styles.form}>
-                        <button className={styles.backBtn} onClick={() => setRole("")}>Change Role</button>
 
                         <div className={styles.formGrid}>
                             <FormInput

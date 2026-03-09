@@ -892,7 +892,7 @@
 
 /* ✅ CandidateDashboard.jsx (FULL UPDATED — ONLY About section enhanced with 3D + Parallax Float) */
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../axios";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -909,8 +909,10 @@ import styles from "./CandidateDashboard.module.scss";
 const CandidateDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [loading, setLoading] = useState(true);
+  const [memberName, setMemberName] = useState("");
   const [data, setData] = useState({
     recentApplications: [],
     newMentors: [],
@@ -1000,6 +1002,12 @@ const CandidateDashboard = () => {
           })
           .slice(0, 5);
 
+        // Find own member profile name
+        const ownMember = allMembers.find(
+          (m) => String(m._id) === String(user?.memberId)
+        );
+        if (ownMember?.name) setMemberName(ownMember.name);
+
         const mentors = allMembers
           .filter((m) => m.memberType?.toLowerCase() === "mentor")
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -1039,7 +1047,14 @@ const CandidateDashboard = () => {
       {/* Welcome Header */}
       <div className={styles.welcomeSection}>
         <div>
-          <h1>Welcome back, {user?.username?.split("@")[0]}</h1>
+          {/* Show member profile name if available, else fall back to email prefix */}
+          {(() => {
+            const name = memberName || user?.username?.split("@")[0] || "there";
+            const isNew = location.state?.isNew || (!user?.memberId || user?.profileCompleted === 0);
+            return (
+              <h1>{isNew ? "Welcome" : "Welcome back"}, {name}</h1>
+            );
+          })()}
           <p>Track your progress and discover new opportunities.</p>
         </div>
       </div>

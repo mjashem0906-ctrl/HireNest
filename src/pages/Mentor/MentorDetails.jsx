@@ -827,7 +827,9 @@ import {
   CheckCircle2,
   XCircle,
   Send,
+  Download,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import API from "../../axios";
 import { useAuth } from "../../context/AuthContext";
 import AddMentor from "./AddMentor";
@@ -1026,6 +1028,72 @@ const MentorDetails = () => {
     navigate("/mentors");
   };
 
+  const handleExportExcel = async () => {
+    if (!mentor) return;
+
+    // ── Sheet 1: Mentor Profile ──────────────────────────────────────
+    const profileData = [
+      ["Field", "Value"],
+      ["Name", mentor.name || ""],
+      ["Email", mentor.email || ""],
+      ["Phone", mentor.mobileNumber || ""],
+      ["Gender", mentor.gender || ""],
+      ["Date of Birth", mentor.dateOfBirth || ""],
+      ["District", mentor.district || ""],
+      ["Current Institution", mentor.currentInstitutionOrCompany || ""],
+      ["Designation", mentor.designation || ""],
+      ["Domain / Expertise", mentor.fieldofStudy_Interest || ""],
+      ["Experience (Years)", mentor.workExp || ""],
+      ["Member Type", mentor.memberType || ""],
+      ["Member Reference No.", mentor.memberReferenceNumber || ""],
+      ["Joined", mentor.createdAt ? new Date(mentor.createdAt).toLocaleDateString() : ""],
+    ];
+
+    const profileSheet = XLSX.utils.aoa_to_sheet(profileData);
+    profileSheet["!cols"] = [{ wch: 26 }, { wch: 40 }];
+
+    // ── Sheet 2: Connection Activity ─────────────────────────────────
+    let activityRows = [["#", "Requester Name", "Email", "Phone", "Role", "Status", "Message", "Date Sent"]];
+    try {
+      const res = await API.get(`/api/mentor-connections/mentor/${id}`);
+      const connections = res.data || [];
+      connections.forEach((conn, i) => {
+        activityRows.push([
+          i + 1,
+          conn.userDetails?.name || "",
+          conn.userDetails?.email || "",
+          conn.userDetails?.phone || "",
+          conn.userDetails?.memberType || conn.userDetails?.role || "",
+          (conn.status || "").charAt(0).toUpperCase() + (conn.status || "").slice(1),
+          conn.message || "",
+          conn.createdAt ? new Date(conn.createdAt).toLocaleDateString() : "",
+        ]);
+      });
+    } catch (_) {
+      activityRows.push(["-", "No activity data available", "", "", "", "", "", ""]);
+    }
+
+    const activitySheet = XLSX.utils.aoa_to_sheet(activityRows);
+    activitySheet["!cols"] = [
+      { wch: 5 }, { wch: 22 }, { wch: 28 }, { wch: 16 },
+      { wch: 14 }, { wch: 12 }, { wch: 40 }, { wch: 14 },
+    ];
+
+    // ── Build & save workbook ────────────────────────────────────────
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, profileSheet, "Profile");
+    XLSX.utils.book_append_sheet(wb, activitySheet, "Connections");
+
+    const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([buffer], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Mentor_${(mentor.name || "export").replace(/\s+/g, "_")}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (loading) {
     return (
       <div className={styles.pageContainer}>
@@ -1094,12 +1162,20 @@ const MentorDetails = () => {
           </div>
         </div>
 
-        {isAdmin && (
-          <button onClick={() => setIsEditing(true)} className={styles.editBtn}>
-            <Edit size={18} />
-            Edit Profile
-          </button>
-        )}
+        <div className={styles.cardBtns}>
+          {isAdmin && (
+            <button onClick={() => setIsEditing(true)} className={styles.editBtn}>
+              <Edit size={18} />
+              Edit Profile
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={handleExportExcel} className={styles.exportBtn}>
+              <Download size={18} />
+              Export Excel
+            </button>
+          )}
+        </div>
 
         {isCandidate && (() => {
           let btnClass = styles.connectBtn;
@@ -1212,7 +1288,7 @@ const MentorDetails = () => {
             </div>
 
             <div className={`${styles.item} ${styles.fullWidth}`}>
-              <label>Core Expertise</label>
+              <label>Domain</label>
               <div className={styles.expertiseTags}>
                 {mentor?.fieldofStudy_Interest ? (
                   mentor.fieldofStudy_Interest.split(",").map((tag, index) => (

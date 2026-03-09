@@ -139,6 +139,26 @@
   min-height: 100vh;
   background-color: #f3f4f6;
   padding: 2rem;
+
+  // Force light theme regardless of app dark mode
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --surface-elevated: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-medium: #d1d5db;
+  --border-light: #e5e7eb;
+  --accent-primary: #4f46e5;
+  --accent-hover: #4338ca;
+  --error: #ef4444;
+  --shadow-light: rgba(0, 0, 0, 0.08);
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --radius-md: 8px;
+  --transition-fast: all 0.15s ease;
 }
 
 .box {

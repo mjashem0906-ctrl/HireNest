@@ -6716,7 +6716,7 @@ const BulkCSVReviewModal = ({
                                   className={styles.bulkSelect}
                                 >
                                   <option value="">
-                                    Select a Referee (Optional)
+                                    Select a Referee
                                   </option>
                                   {refereesList?.map((referee) => (
                                     <option
@@ -6852,10 +6852,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [salary, setSalary] = useState("");
   const [role, setRole] = useState("");
   const [keySkills, setKeySkills] = useState("");
+  const [jobPosted, setJobPosted] = useState("");
 
   const { memberContext } = useData();
   const [refereedBy, setRefereedBy] = useState("");
   const [refereesList, setRefereesList] = useState([]);
+  const [recruitersList, setRecruitersList] = useState([]);
 
   const [csvFileName, setCsvFileName] = useState("");
 
@@ -6872,6 +6874,18 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
       setRefereesList(filtered);
     }
   }, [memberContext]);
+
+  useEffect(() => {
+    const fetchRecruiters = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
+        setRecruitersList(response.data);
+      } catch (error) {
+        console.error("Error fetching recruiters:", error);
+      }
+    };
+    fetchRecruiters();
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -6897,6 +6911,13 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
           : initialData.refereedBy || "";
 
       setRefereedBy(refId);
+
+      const recId =
+        initialData.jobPosted && typeof initialData.jobPosted === "object"
+          ? initialData.jobPosted._id
+          : initialData.jobPosted || "";
+
+      setJobPosted(recId);
     } else {
       setTitle("");
       setCompanyName("");
@@ -6910,6 +6931,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
       setRole("");
       setKeySkills("");
       setRefereedBy("");
+      setJobPosted("");
     }
   }, [isOpen, initialData]);
 
@@ -6972,6 +6994,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             keySkills: entry.keyskills || entry.keySkills || "",
             description: entry.description || "",
             refereedBy: "",
+            jobPosted: "",
           });
         }
 
@@ -6989,6 +7012,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
           setKeySkills(job.keySkills);
           setDescription(job.description);
           setRefereedBy("");
+          setJobPosted("");
           alert("Data loaded into form. Review and click Post.");
         } else {
           onSubmit(bulkData, true);
@@ -7006,6 +7030,11 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!refereedBy && !jobPosted) {
+      alert("Please select either a Refereed Person or a Job Posted By (Recruiter).");
+      return;
+    }
+
     onSubmit(
       {
         title,
@@ -7020,6 +7049,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         role,
         keySkills,
         refereedBy: refereedBy || null,
+        jobPosted: jobPosted || null,
       },
       false
     );
@@ -7215,14 +7245,16 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <Users size={14} /> Refereed Person (Optional)
+                <Users size={14} /> Refereed Person 
+                {!jobPosted && <span className={styles.required}> (Required if Recruiter is empty)</span>}
               </label>
               <select
                 className={styles.formSelect}
                 value={refereedBy}
                 onChange={(e) => setRefereedBy(e.target.value)}
+                required={!jobPosted}
               >
-                <option value="">Select a Referee (Optional)</option>
+                <option value="">Select a Referee </option>
                 {refereesList.length > 0 ? (
                   refereesList.map((referee) => (
                     <option key={referee._id} value={referee._id}>
@@ -7231,6 +7263,30 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                   ))
                 ) : (
                   <option disabled>No referees found</option>
+                )}
+              </select>
+            </div>
+
+            <div className={`${styles.formGroup} ${styles.fullRow}`}>
+              <label>
+                <Users size={14} /> Job Posted By (Recruiter) 
+                {!refereedBy && <span className={styles.required}> (Required if Referee is empty)</span>}
+              </label>
+              <select
+                className={styles.formSelect}
+                value={jobPosted}
+                onChange={(e) => setJobPosted(e.target.value)}
+                required={!refereedBy}
+              >
+                <option value="">Select a Recruiter</option>
+                {recruitersList.length > 0 ? (
+                  recruitersList.map((recruiter) => (
+                    <option key={recruiter._id} value={recruiter._id}>
+                      {recruiter.fullName || recruiter.email || "Unknown Recruiter"}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No recruiters found</option>
                 )}
               </select>
             </div>
@@ -7598,23 +7654,24 @@ function Jobs() {
   const [headerHeight, setHeaderHeight] = useState(90);
 
   const [filters, setFilters] = useState({
-    title: "",
-    companyName: "",
-    role: "",
-    employmentType: "",
-    location: "",
-    experience: "",
-    salary: "",
-    education: "",
-    passedOutYear: "",
-    keySkills: "",
-    refereedBy: "",
-    description: "",
-    startDate: null,
-    endDate: null,
-    initialNumber: "",
-    finalNumber: "",
-  });
+  jobId: "",
+  title: "",
+  companyName: "",
+  role: "",
+  employmentType: "",
+  location: "",
+  experience: "",
+  salary: "",
+  education: "",
+  passedOutYear: "",
+  keySkills: "",
+  refereedBy: "",
+  description: "",
+  startDate: null,
+  endDate: null,
+  initialNumber: "",
+  finalNumber: "",
+});
 
   const [pendingFilters, setPendingFilters] = useState({});
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
@@ -7751,23 +7808,24 @@ function Jobs() {
       const search = globalFilter.trim().toLowerCase();
 
       const {
-        title,
-        companyName,
-        role,
-        employmentType,
-        location,
-        experience,
-        salary,
-        education,
-        passedOutYear,
-        keySkills,
-        refereedBy,
-        description,
-        startDate,
-        endDate,
-        initialNumber,
-        finalNumber,
-      } = filters;
+  jobId,
+  title,
+  companyName,
+  role,
+  employmentType,
+  location,
+  experience,
+  salary,
+  education,
+  passedOutYear,
+  keySkills,
+  refereedBy,
+  description,
+  startDate,
+  endDate,
+  initialNumber,
+  finalNumber,
+} = filters;
 
       const titleFilter = title?.trim().toLowerCase() || "";
       const companyFilter = companyName?.trim().toLowerCase() || "";
@@ -7780,6 +7838,7 @@ function Jobs() {
       const keySkillsFilter = keySkills?.trim().toLowerCase() || "";
       const descriptionFilter = description?.trim().toLowerCase() || "";
       const refereedByFilter = refereedBy?.trim().toLowerCase() || "";
+      const jobIdFilter = jobId?.trim().toLowerCase() || "";
 
       const toDate = (val) => {
         if (!val) return null;
@@ -7793,18 +7852,22 @@ function Jobs() {
       return jobs.filter((job) => {
         if (search) {
           const haystack = [
-            job.title,
-            job.companyName,
-            job.location,
-            job.role,
-            job.description,
-            job.keySkills,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+  job.jobId,
+  job.title,
+  job.companyName,
+  job.location,
+  job.role,
+  job.description,
+  job.keySkills,
+]
+  .filter(Boolean)
+  .join(" ")
+  .toLowerCase();
           if (!haystack.includes(search)) return false;
         }
+
+        if (jobIdFilter && !(job.jobId || "").toLowerCase().includes(jobIdFilter))
+  return false;
 
         if (titleFilter && !(job.title || "").toLowerCase().includes(titleFilter))
           return false;
@@ -7895,6 +7958,11 @@ function Jobs() {
     return applyFilters(memberJobs);
   }, [view, jobPosts, user, applyFilters]);
 
+  const jobIdOptions = useMemo(
+  () => Array.from(new Set(jobPosts.map((j) => j.jobId).filter(Boolean))),
+  [jobPosts]
+);
+
   const paginatedJobs = useMemo(() => {
     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
     return source.slice((page - 1) * JOBS_PER_PAGE, page * JOBS_PER_PAGE);
@@ -7932,23 +8000,24 @@ function Jobs() {
 
   const clearAllFilters = () => {
     setFilters({
-      title: "",
-      companyName: "",
-      role: "",
-      employmentType: "",
-      location: "",
-      experience: "",
-      salary: "",
-      education: "",
-      passedOutYear: "",
-      keySkills: "",
-      refereedBy: "",
-      description: "",
-      startDate: null,
-      endDate: null,
-      initialNumber: "",
-      finalNumber: "",
-    });
+  jobId: "",
+  title: "",
+  companyName: "",
+  role: "",
+  employmentType: "",
+  location: "",
+  experience: "",
+  salary: "",
+  education: "",
+  passedOutYear: "",
+  keySkills: "",
+  refereedBy: "",
+  description: "",
+  startDate: null,
+  endDate: null,
+  initialNumber: "",
+  finalNumber: "",
+});
     setPendingFilters({});
     setHasPendingChanges(false);
     setPage(1);
@@ -8137,6 +8206,7 @@ function Jobs() {
   const buildJobsExportRows = () => {
     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
     return source.map((j) => ({
+      JobID: j.jobId || "",
       JobTitle: j.title || "",
       CompanyName: j.companyName || "",
       EmploymentType: j.employmentType || "",
@@ -8250,6 +8320,13 @@ function Jobs() {
       if (!user) {
         setSelectedJob(job);
         setShowGoogleLoginModal(true);
+        return;
+      }
+
+      // Guard: new users without a completed profile cannot apply
+      if (!user.memberId) {
+        alert("Please complete your profile first before applying for jobs.");
+        navigate("/profile-setup");
         return;
       }
 
@@ -8483,7 +8560,7 @@ function Jobs() {
             </div>
             <input
               type="text"
-              placeholder="Search jobs, companies, or skills..."
+              placeholder="Search job ID, jobs, companies, or skills..."
               defaultValue={globalFilter || ""}
               onChange={handleSearchChange}
               aria-label="Search jobs"
@@ -8640,6 +8717,34 @@ function Jobs() {
                 Clear all
               </button>
             </div>
+
+            <div className={styles.sidebarField}>
+  <label className={styles.sidebarLabel}>JOB ID</label>
+  <Select
+    options={[
+      { value: "", label: "All Job IDs" },
+      ...jobIdOptions.map((id) => ({ value: id, label: id })),
+    ]}
+    value={
+      getDisplayValue("jobId")
+        ? {
+            value: getDisplayValue("jobId"),
+            label: getDisplayValue("jobId"),
+          }
+        : { value: "", label: "All Job IDs" }
+    }
+    onChange={(selected) =>
+      handleFilterChange("jobId", selected?.value || "")
+    }
+    isSearchable
+    isClearable
+    placeholder="All Job IDs"
+    styles={customSelectStyles}
+    className={styles.reactSelect}
+    menuPortalTarget={document.body}
+    menuPosition="fixed"
+  />
+</div>
 
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>JOB TITLE</label>
@@ -8855,7 +8960,22 @@ function Jobs() {
                               {(job.title || "J").slice(0, 1).toUpperCase()}
                             </div>
                             <div>
-                              <h3>{job.title}</h3>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                                <h3 style={{ margin: 0 }}>{job.title}</h3>
+                                {job.jobId && (
+                                  <span style={{
+                                    fontSize: 11,
+                                    fontWeight: 900,
+                                    backgroundColor: "#e0f2fe",
+                                    color: "#0369a1",
+                                    padding: "3px 8px",
+                                    borderRadius: 4,
+                                    whiteSpace: "nowrap"
+                                  }}>
+                                    ID: {job.jobId}
+                                  </span>
+                                )}
+                              </div>
                               <div className={styles.jobRowSub}>
                                 <span>
                                   <Building size={14} />{" "}
@@ -8884,6 +9004,11 @@ function Jobs() {
                             {job?.refereedBy && (
                               <span className={styles.referredPill}>
                                 <User size={14} /> Referred
+                              </span>
+                            )}
+                            {job?.jobPosted && (
+                              <span className={styles.referredPill} style={{ backgroundColor: '#eef2ff', color: '#4f46e5', border: '1px solid #c7d2fe', fontWeight: '600' }}>
+                                <User size={14} /> Recruited By: {job.jobPosted?.fullName || "Recruiter"}
                               </span>
                             )}
                           </div>
@@ -9008,7 +9133,22 @@ function Jobs() {
                                 onClick={() => handleClick(request)}
                               >
                                 <div className={styles.myJobCardTitle}>
-                                  <h3>{request.title}</h3>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                                    <h3 style={{ margin: 0 }}>{request.title}</h3>
+                                    {request.jobId && (
+                                      <span style={{
+                                        fontSize: 11,
+                                        fontWeight: 900,
+                                        backgroundColor: "#e0f2fe",
+                                        color: "#0369a1",
+                                        padding: "3px 8px",
+                                        borderRadius: 4,
+                                        whiteSpace: "nowrap"
+                                      }}>
+                                        ID: {request.jobId}
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className={styles.myJobCardMeta}>
                                     {request?.companyName && (
                                       <span className={styles.companyName}>

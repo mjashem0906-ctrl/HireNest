@@ -723,6 +723,7 @@ import { useAuth } from "../../context/AuthContext";
 const MentorsPage = () => {
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState("");
   const [loading, setLoading] = useState(true);
   const [connectingId, setConnectingId] = useState(null);
   const [connectedMentors, setConnectedMentors] = useState(new Map()); // mentorId → status
@@ -776,6 +777,14 @@ const MentorsPage = () => {
 
   const handleConnectClick = (e, mentor) => {
     e.stopPropagation();
+
+    // Guard: new users without a completed profile cannot connect
+    if (!user?.memberId) {
+      alert("Please complete your profile first before connecting with a mentor.");
+      navigate("/profile-setup");
+      return;
+    }
+
     setSelectedMentor(mentor);
     setConnectMessage("");
     setShowConnectModal(true);
@@ -819,14 +828,36 @@ const MentorsPage = () => {
 
   const showMentorGuidance = isCandidate;
 
+  // Build unique sorted domain list from all mentors
+  const allDomains = React.useMemo(() => {
+    const domainSet = new Set();
+    mentors.forEach((m) => {
+      if (m.fieldofStudy_Interest) {
+        m.fieldofStudy_Interest.split(",").forEach((d) => {
+          const trimmed = d.trim();
+          if (trimmed) domainSet.add(trimmed);
+        });
+      }
+    });
+    return Array.from(domainSet).sort();
+  }, [mentors]);
+
   const filtered = mentors.filter((m) => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       m.name?.toLowerCase().includes(term) ||
       m.designation?.toLowerCase().includes(term) ||
       m.district?.toLowerCase().includes(term) ||
-      m.fieldofStudy_Interest?.toLowerCase().includes(term)
-    );
+      m.fieldofStudy_Interest?.toLowerCase().includes(term);
+
+    const matchesDomain =
+      !selectedDomain ||
+      m.fieldofStudy_Interest
+        ?.split(",")
+        .map((d) => d.trim().toLowerCase())
+        .includes(selectedDomain.toLowerCase());
+
+    return matchesSearch && matchesDomain;
   });
 
   return (
@@ -933,6 +964,23 @@ const MentorsPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+
+        {/* Domain filter dropdown */}
+        <div className={styles.domainFilterWrapper}>
+          <select
+            className={styles.domainSelect}
+            value={selectedDomain}
+            onChange={(e) => setSelectedDomain(e.target.value)}
+          >
+            <option value="">All Domains</option>
+            {allDomains.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <AddMentor onSuccess={fetchMentors} />
       </div>
 
@@ -967,9 +1015,18 @@ const MentorsPage = () => {
                   <div className={styles.statusBadge}>Available</div>
                 </div>
 
-                <div className={styles.designation}>
-                  {m.designation || "Expert Mentor"}
-                </div>
+                {/* Domain tags (highlighted) */}
+                {m.fieldofStudy_Interest ? (
+                  <div className={styles.domainTags}>
+                    {m.fieldofStudy_Interest.split(",").map((tag, i) => (
+                      <span key={i} className={styles.designation}>
+                        {tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className={styles.designation}>General</span>
+                )}
 
                 <div className={styles.details}>
                   <span>

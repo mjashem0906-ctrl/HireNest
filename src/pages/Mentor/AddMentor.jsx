@@ -367,9 +367,8 @@ function EditableDropdown({
                   <button
                     key={opt}
                     type="button"
-                    className={`${styles.edItem} ${
-                      norm(opt) === norm(value) ? styles.edItemActive : ""
-                    }`}
+                    className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""
+                      }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
@@ -543,7 +542,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                 />
 
                 <FormInput
-                  label="Domain Expertise"
+                  label="Domain"
                   value={formData.fieldofStudy_Interest}
                   onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })}
                 />
@@ -571,8 +570,8 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                   {btnLoading
                     ? "Processing..."
                     : isEditing
-                    ? "Update Profile"
-                    : "Create Mentor"}
+                      ? "Update Profile"
+                      : "Create Mentor"}
                 </button>
               </div>
             </form>

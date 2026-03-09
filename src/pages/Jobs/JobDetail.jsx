@@ -503,7 +503,14 @@ function JobDetail() {
           <button className={styles.backBtn} onClick={() => navigate(-1)}><ArrowLeft size={20} /></button>
           <div className={styles.headerTitle}>
             <h1>{job.title}</h1>
-            <p>Posted on {new Date(job.createdAt).toLocaleDateString()}</p>
+            <p>
+              Posted on {new Date(job.createdAt).toLocaleDateString()} 
+              {job.jobPosted && (
+                <span style={{ marginLeft: '8px', paddingLeft: '8px', borderLeft: '1px solid #cbd5e1', color: '#4f46e5', fontWeight: 'bold' }}>
+                  Recruited by {job.jobPosted.fullName}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
@@ -572,12 +579,12 @@ function JobDetail() {
   );
 }
 
-const InfoTile = ({ icon, label, value }) => (
-  <div className={styles.infoTile}>
+const InfoTile = ({ icon, label, value, highlighted }) => (
+  <div className={styles.infoTile} style={highlighted ? { border: '1px solid #818cf8', backgroundColor: '#eef2ff', boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.1)' } : {}}>
     <div className={styles.tileIcon}>{icon}</div>
     <div className={styles.tileContent}>
-      <label>{label}</label>
-      <span>{value || "Not specified"}</span>
+      <label style={highlighted ? { color: '#4f46e5', fontWeight: 'bold' } : {}}>{label}</label>
+      <span style={highlighted ? { color: '#3730a3', fontWeight: '800' } : {}}>{value || "Not specified"}</span>
     </div>
   </div>
 );
