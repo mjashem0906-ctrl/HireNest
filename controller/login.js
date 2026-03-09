@@ -116,10 +116,8 @@ const updateProfile = async (req, res) => {
     let user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 1. Update Role
-    if (role && ["Mentor", "Job"].includes(role)) {
-      user.role = role;
-    }
+    // 1. Determine member type from selected role (Login role is NOT changed — stays as "Candidate")
+    const selectedRole = (role && ["Mentor", "Job"].includes(role)) ? role : "Job";
 
 
     // 2. Create or Update Member details
@@ -131,7 +129,7 @@ const updateProfile = async (req, res) => {
     if (!member) {
       member = new Member({
         email: user.username,
-        memberType: user.role === 'Mentor' ? 'Mentor' : 'Job Seeker',
+        memberType: selectedRole === 'Mentor' ? 'Mentor' : 'Job Seeker',
         ...profileData
       });
       await member.save();
@@ -151,7 +149,7 @@ const updateProfile = async (req, res) => {
     const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp'];
     const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp'];
 
-    const fieldsToTrack = user.role === 'Mentor' ? mentorFields : jobFields;
+    const fieldsToTrack = selectedRole === 'Mentor' ? mentorFields : jobFields;
     const completedFields = fieldsToTrack.filter(field => member[field] && String(member[field]).length > 0);
 
     const percentage = Math.round((completedFields.length / fieldsToTrack.length) * 100);

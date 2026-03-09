@@ -62,6 +62,14 @@ const serviceSchema = new mongoose.Schema({
         trim: true
     },
 
+    // --- Job ID ---
+    jobId: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true
+    },
+
     // --- Referral System ---
     refereedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -74,6 +82,11 @@ const serviceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Member",
         required: false, // CHANGED: Made optional to fix validation error
+        default: null
+    },
+    jobPosted: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Recruiter",
         default: null
     },
 

@@ -6,7 +6,14 @@ exports.createMentorConnection = async (req, res) => {
   try {
     const { mentorId, message } = req.body;
     const userId = req.user?.userId;
-    const userMemberId = req.user?.memberId;
+
+    // JWT may not have memberId for new Google users — fall back to DB lookup
+    let userMemberId = req.user?.memberId;
+    if (!userMemberId && userId) {
+      const LoginUser = require("../models/login");
+      const loginDoc = await LoginUser.findById(userId).select("memberId");
+      userMemberId = loginDoc?.memberId;
+    }
 
     if (!userId || !mentorId || !userMemberId) {
       return res.status(400).json({

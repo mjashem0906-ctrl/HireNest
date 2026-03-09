@@ -574,13 +574,49 @@ const {
   sendAdminApplicationNotification
 } = require("../utils/emailService");
 
+// Helper function to generate Job ID in YYMMXXX format
+const generateJobId = async () => {
+  try {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Get month as 01-12
+    const yearMonth = year + month;
+
+    // Find the latest job created (regardless of month) to get global sequence
+    const lastJob = await Service.findOne({})
+      .sort({ createdAt: -1 })
+      .select("jobId");
+
+    let sequenceNumber = 1;
+    if (lastJob && lastJob.jobId) {
+      const lastNumber = parseInt(lastJob.jobId.slice(-4)); // Get last 4 digits
+      sequenceNumber = lastNumber + 1;
+    }
+
+    const jobId = yearMonth + String(sequenceNumber).padStart(4, '0');
+    return jobId;
+  } catch (error) {
+    console.error("Error generating job ID:", error);
+    throw error;
+  }
+};
+
 /* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
     const {
       title, description, companyName, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted
     } = req.body;
+
+    // Validate that at least one of refereedBy or jobPosted is provided
+    if (!refereedBy && !jobPosted) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: ["Either 'Refereed Person' or 'Job Posted By (Recruiter)' is required."]
+      });
+    }
 
     // --- DUPLICATE CHECK ---
     const existingPost = await Service.findOne({
@@ -600,6 +636,9 @@ const addServicePost = async (req, res) => {
     // Set memberId if user is logged in (admin)
     const memberId = req.user?.memberId || null;
 
+    // Generate unique job ID
+    const jobId = await generateJobId();
+
     const service = await Service.create({
       title,
       description,
@@ -613,13 +652,15 @@ const addServicePost = async (req, res) => {
       role,
       keySkills,
       refereedBy,
+      jobPosted,
       memberId,
+      jobId,
     });
 
-    // Populate the service object before returning
     const populatedService = await Service.findById(service._id)
       .populate("memberId", "name email photoUrl")
-      .populate("refereedBy", "name email");
+      .populate("refereedBy", "name email")
+      .populate("jobPosted", "fullName email");
 
     res.status(201).json({
       success: true,
@@ -677,7 +718,8 @@ const getServicePost = async (req, res) => {
         { description: { $regex: search, $options: 'i' } },
         { companyName: { $regex: search, $options: 'i' } },
         { role: { $regex: search, $options: 'i' } },
-        { keySkills: { $regex: search, $options: 'i' } }
+        { keySkills: { $regex: search, $options: 'i' } },
+        { jobId: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -694,6 +736,7 @@ const getServicePost = async (req, res) => {
     const services = await Service.find(query)
       .populate("memberId", "name email role photoUrl")
       .populate("refereedBy", "name email")
+      .populate("jobPosted", "fullName email")
       .populate({
         path: "appliedMembers.memberId",
         select: "name email role resumeLink photoUrl"
@@ -755,6 +798,7 @@ const getSingleServicePost = async (req, res) => {
     const service = await Service.findById(req.params.id)
       .populate("memberId", "name email photoUrl")
       .populate("refereedBy", "name email")
+      .populate("jobPosted", "fullName email")
       .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
 
     if (!service) {
@@ -787,13 +831,20 @@ const applyToService = async (req, res) => {
     console.log('Request Body:', req.body);
 
     const serviceId = req.params.id;
-    const applicantMemberId = req.user?.memberId; // This is the APPLICANT's memberId
+    let applicantMemberId = req.user?.memberId; // This is the APPLICANT's memberId
+
+    // JWT may be stale (issued before profile setup) — fall back to DB lookup
+    if (!applicantMemberId && req.user?.userId) {
+      const LoginUser = require("../models/login");
+      const loginDoc = await LoginUser.findById(req.user.userId).select("memberId");
+      applicantMemberId = loginDoc?.memberId;
+    }
 
     if (!applicantMemberId) {
-      console.log('No memberId found in token');
+      console.log('No memberId found in token or DB');
       return res.status(401).json({
         success: false,
-        message: "Authentication required. Please log in."
+        message: "Please complete your profile setup before applying."
       });
     }
 
@@ -1067,7 +1118,7 @@ const updateServicePost = async (req, res) => {
     const { id } = req.params;
     const {
       title, description, companyName, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted
     } = req.body;
 
     // Check if user is admin or the original poster
@@ -1092,13 +1143,14 @@ const updateServicePost = async (req, res) => {
       id,
       {
         title, description, companyName, employmentType, location,
-        education, passedOutYear, experience, salary, role, keySkills, refereedBy,
+        education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted,
         updatedAt: new Date()
       },
       { new: true, runValidators: true }
     )
       .populate("memberId", "name email photoUrl")
-      .populate("refereedBy", "name email");
+      .populate("refereedBy", "name email")
+      .populate("jobPosted", "fullName email");
 
     res.status(200).json({
       success: true,
