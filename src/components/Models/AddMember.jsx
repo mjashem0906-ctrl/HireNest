@@ -429,6 +429,29 @@ const KARNATAKA_DISTRICTS = [
   "Yadgir",
 ];
 
+const DESIRED_ROLES_OPTIONS = [
+  "Software Engineer",
+  "Senior Software Engineer",
+  "Tech Lead",
+  "Product Manager",
+  "Data Scientist",
+  "Data Analyst",
+  "DevOps Engineer",
+  "Cloud Architect",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Mobile Developer",
+  "QA Engineer",
+  "Business Analyst",
+  "Consultant",
+  "Manager",
+  "Director",
+  "Analyst",
+  "Intern",
+  "Graduate Trainee",
+];
+
 function EditableDropdown({
   label,
   value,
@@ -437,11 +460,13 @@ function EditableDropdown({
   required = false,
   error = "",
   onChange,
+  category = null, // e.g., "desiredRoles", "locationPreferences"
 }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(value || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => setQuery(value || ""), [value]);
 
@@ -460,17 +485,67 @@ function EditableDropdown({
     .filter(Boolean)
     .filter((opt) => norm(opt).includes(norm(query)));
 
+  // Auto-save custom value to backend
+  const saveCustomValueToBackend = async (val) => {
+    if (!category) return; // Only save if category is provided
+
+    const trimmedValue = String(val || "").trim();
+    if (!trimmedValue) return;
+
+    // Check if value already exists in options
+    const exists = options.some((opt) => norm(opt) === norm(trimmedValue));
+    if (exists) return; // Don't save if already exists in predefined list
+
+    setIsSaving(true);
+    try {
+      await API.post("/dropdown", {
+        category,
+        value: trimmedValue,
+      });
+      // Successfully saved (silently)
+    } catch (err) {
+      console.error("Failed to save custom dropdown value:", err);
+      // Continue anyway - value is saved in form state
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const commit = (val) => {
     const v = String(val || "").trim();
     onChange(v);
     setQuery(v);
     setOpen(false);
+
+    // Auto-save custom value to backend
+    saveCustomValueToBackend(v);
+  };
+
+  // Handle blur to auto-save without requiring Enter press
+  const handleBlur = () => {
+    const trimmedQuery = String(query || "").trim();
+    if (trimmedQuery && trimmedQuery !== value) {
+      // If the input has changed and there's text, automatically save it
+      commit(trimmedQuery);
+    }
   };
 
   return (
     <div ref={wrapRef} className={styles.edWrap}>
       <label className={styles.edLabel}>
         {label} {required && <span className={styles.edReq}>*</span>}
+        {isSaving && (
+          <span
+            style={{
+              marginLeft: 6,
+              fontSize: 11,
+              color: "#2563eb",
+              fontWeight: 600,
+            }}
+          >
+            saving...
+          </span>
+        )}
       </label>
 
       <div className={styles.edControl}>
@@ -496,6 +571,7 @@ function EditableDropdown({
             placeholder={placeholder}
             className={styles.edInput}
             onFocus={() => setOpen(true)}
+            onBlur={handleBlur}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
@@ -1376,6 +1452,7 @@ function AddMember({
                 value={formData.district}
                 options={KARNATAKA_DISTRICTS}
                 placeholder="Select your district..."
+                category="locationPreferences"
                 onChange={(v) => setFormData({ ...formData, district: v })}
               />
             </div>
@@ -1391,13 +1468,18 @@ function AddMember({
 
     <FormInput
       label="Experience (Years)"
+      type="number"
       value={formData.workExp}
       onChange={(v) => setFormData({ ...formData, workExp: v })}
+      placeholder="0"
     />
 
-    <FormInput
+    <EditableDropdown
       label="Desired Role"
       value={formData.careerProfile.role}
+      options={DESIRED_ROLES_OPTIONS}
+      placeholder="Select or type desired role..."
+      category="desiredRoles"
       onChange={(v) =>
         setFormData({
           ...formData,
@@ -1428,6 +1510,7 @@ function AddMember({
       value={formData.careerProfile.location}
       options={KARNATAKA_DISTRICTS}
       placeholder="Select your district..."
+      category="locationPreferences"
       onChange={(v) =>
         setFormData({
           ...formData,
@@ -1441,16 +1524,19 @@ function AddMember({
 
     <FormInput
       label="Expected Salary"
+      type="number"
       value={formData.careerProfile.expectedSalary}
-      onChange={(v) =>
+      onChange={(v) => {
+        const numValue = String(v).replace(/[^0-9]/g, '');
         setFormData({
           ...formData,
           careerProfile: {
             ...formData.careerProfile,
-            expectedSalary: v,
+            expectedSalary: numValue,
           },
-        })
-      }
+        });
+      }}
+      placeholder="0"
     />
   </div>
 )}

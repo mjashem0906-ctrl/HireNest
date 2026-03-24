@@ -523,13 +523,11 @@
 
 // export default RefereeDetailsPage;
 
-//------------------------------6/2-----------------------5.40--------------------
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Mail, Phone, Briefcase, Building2, User, 
-  FileText, Target, Award, Edit, Save, X, MapPin, Star, Users, Layers
+  FileText, Target, Award, Edit, Save, X, MapPin, Star, Users, Layers, ExternalLink, Briefcase as JobIcon
 } from 'lucide-react';
 import { useData } from "../../context/DataContext";
 import API from "../../axios";
@@ -542,14 +540,39 @@ const RefereeDetailsPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [referredJobs, setReferredJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   const referee = memberContext?.find(m => m._id === id);
 
   useEffect(() => {
     if (referee) {
       setFormData({ ...referee });
+      fetchReferredJobs();
     }
   }, [referee]);
+
+  const fetchReferredJobs = async () => {
+    if (!id) return;
+    setLoadingJobs(true);
+    try {
+      console.log("Fetching referred jobs for referee ID:", id);
+      const response = await API.get(`/referee/${id}/referred-jobs`);
+      console.log("Referred jobs response:", response.data);
+      if (response.data.success) {
+        setReferredJobs(response.data.data);
+        console.log("Set referred jobs:", response.data.data);
+      } else {
+        console.warn("Response not successful:", response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching referred jobs:", error);
+      console.error("Error response data:", error.response?.data);
+      setReferredJobs([]);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -603,19 +626,19 @@ const RefereeDetailsPage = () => {
              <img 
                src={referee.photoUrl || "/members/AnonymousImage.jpg"} 
                alt="" 
-               style={{width: 140, height: 140, borderRadius: 24, objectFit:'cover', border:'6px solid white', boxShadow: '0 10px 15px rgba(0,0,0,0.1)'}} 
+               style={{width: 140, height: 140, borderRadius: 24, objectFit:'cover', border:'6px solid rgba(255,255,255,0.85)', boxShadow: '0 10px 15px rgba(0,0,0,0.1)'}} 
              />
-             <div style={{position:'absolute', bottom: -5, right: -5, background:'#22c55e', color:'white', padding:'4px 12px', borderRadius: 12, fontSize: 10, fontWeight: 800, border: '3px solid white'}}>
+             <div style={{position:'absolute', bottom: -5, right: -5, background:'#22c55e', color:'white', padding:'4px 12px', borderRadius: 12, fontSize: 10, fontWeight: 800, border: '3px solid rgba(255,255,255,0.85)'}}>
                {formData.solidarityMemberStatus?.toUpperCase() || 'ACTIVE'}
              </div>
           </div>
 
           <div className={styles.heroText}>
             <h1 style={{margin:0, fontSize: 32, fontWeight: 800}}>{formData.name}</h1>
-            <p style={{margin: '5px 0', fontSize: 18, color: '#4f46e5', fontWeight: 600}}>{formData.occupation || 'Job Referee'}</p>
-            <div style={{display:'flex', gap: 15, marginTop: 15, color: '#64748b', fontSize: 14}}>
-               <span style={{display:'flex', alignItems:'center', gap: 5}}><MapPin size={16}/> {formData.district}</span>
-               <span style={{display:'flex', alignItems:'center', gap: 5}}><Star size={16}/> {formData.referrerStatus || 'Verified'}</span>
+            <p className={styles.occupation}>{formData.occupation || 'Job Referee'}</p>
+            <div className={styles.quickStats}>
+               <span><MapPin size={16}/> {formData.district}</span>
+               <span><Star size={16}/> {formData.referrerStatus || 'Verified'}</span>
             </div>
           </div>
         </div>
@@ -672,6 +695,86 @@ const RefereeDetailsPage = () => {
             </div>
           </section>
         </div>
+      </div>
+
+      {/* REFERRED JOBS SECTION */}
+      <div style={{ maxWidth: '1100px', margin: '32px auto', padding: '0 20px' }}>
+        <section className={styles.infoCard}>
+          <div className={styles.cardHeader}>
+            <JobIcon size={20}/> Referred Jobs
+          </div>
+          
+          {loadingJobs ? (
+            <div className={styles.jobEmptyState}>
+              <div className={styles.spinner}></div>
+              <p>Loading referred jobs...</p>
+            </div>
+          ) : referredJobs.length === 0 ? (
+            <div className={styles.jobEmptyState}>
+              <Briefcase size={40} style={{ opacity: 0.3, margin: '0 auto' }} />
+              <p>No jobs referred by this referee yet</p>
+            </div>
+          ) : (
+            <div className={styles.jobsGrid}>
+              {referredJobs.map((job) => (
+                <div key={job._id} className={styles.jobCard}>
+                  <div className={styles.jobCardTop}>
+                    <h3 className={styles.jobCardTitle}>{job.title}</h3>
+                    <span className={styles.jobTypeBadge}>
+                      {job.employmentType || 'Full-time'}
+                    </span>
+                  </div>
+
+                  <p className={styles.jobDescription}>
+                    {job.description?.substring(0, 100)}...
+                  </p>
+
+                  <div className={styles.jobMeta}>
+                    {job.jobId && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Job ID</label>
+                        <div className={styles.jobMetaValue}>{job.jobId}</div>
+                      </div>
+                    )}
+                    {job.companyName && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Company</label>
+                        <div className={styles.jobMetaValue}>{job.companyName}</div>
+                      </div>
+                    )}
+                    {job.location && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Location</label>
+                        <div className={styles.jobMetaValue}>
+                          <MapPin size={14} /> {job.location}
+                        </div>
+                      </div>
+                    )}
+                    {job.salary && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Salary</label>
+                        <div className={styles.jobMetaValueGreen}>{job.salary}</div>
+                      </div>
+                    )}
+                    {job.experience && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Experience</label>
+                        <div className={styles.jobMetaValue}>{job.experience}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    className={styles.viewDetailsBtn}
+                    onClick={() => navigate(`/jobs/${job._id}`)}
+                  >
+                    View Details <ExternalLink size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

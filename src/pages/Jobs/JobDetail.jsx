@@ -522,6 +522,7 @@ function JobDetail() {
         </div>
 
         <div className={styles.tileGrid}>
+          <InfoTile icon={<FileText color="#6366f1" size={20}/>} label="JOB ID" value={job.jobId} />
           <InfoTile icon={<Briefcase color="#10b981" size={20}/>} label="COMPANY" value={job.companyName} />
           <InfoTile icon={<Briefcase color="#3b82f6" size={20}/>} label="JOB ROLE" value={job.role} />
           <InfoTile icon={<Clock color="#8b5cf6" size={20}/>} label="EMPLOYMENT TYPE" value={job.employmentType} />

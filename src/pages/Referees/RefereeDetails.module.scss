@@ -614,20 +614,37 @@
 :global(body[data-theme="dark"]),
 :global(.dark) {
   --p-bg: #0b1220;
-  --p-card: rgba(15, 23, 42, 0.92);
-  --p-card2: rgba(2, 6, 23, 0.35);
+  --p-card: #131c30;
+  --p-card2: #1a2540;
 
   --p-text: #e5e7eb;
   --p-text2: #cbd5e1;
   --p-muted: #94a3b8;
 
-  --p-border: rgba(148, 163, 184, 0.16);
-  --p-border2: rgba(148, 163, 184, 0.10);
+  --p-border: rgba(148, 163, 184, 0.18);
+  --p-border2: rgba(148, 163, 184, 0.12);
 
-  --p-inputBg: rgba(2, 6, 23, 0.35);
+  --p-inputBg: #1a2540;
   --p-inputText: #e5e7eb;
-  --p-inputBorder: rgba(148, 163, 184, 0.18);
+  --p-inputBorder: rgba(148, 163, 184, 0.22);
   --p-focus: rgba(139, 92, 246, 0.22);
+}
+
+/* Explicit dark overrides for cards — ensures solid backgrounds */
+:global(html[data-theme="dark"]) .infoCard,
+:global(body[data-theme="dark"]) .infoCard {
+  background: #131c30;
+}
+
+:global(html[data-theme="dark"]) .jobCard,
+:global(body[data-theme="dark"]) .jobCard {
+  background: #1a2540;
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+:global(html[data-theme="dark"]) .profileHeaderCard,
+:global(body[data-theme="dark"]) .profileHeaderCard {
+  background: #131c30;
 }
 
 .pageContainer {
@@ -895,6 +912,123 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
+}
+
+/* ── Referred Jobs ── */
+.jobsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.jobCard {
+  background: var(--p-card2);
+  border: 1px solid var(--p-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    border-color: var(--p-indigo);
+    transform: translateY(-2px);
+  }
+}
+
+.jobCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.jobCardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--p-text);
+  flex: 1;
+  padding-right: 12px;
+}
+
+.jobTypeBadge {
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--p-indigo);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.jobDescription {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--p-muted);
+  line-height: 1.5;
+}
+
+.jobMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.jobMetaLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(148, 163, 184, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.jobMetaValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--p-text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jobMetaValueGreen {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--p-green);
+}
+
+.viewDetailsBtn {
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--p-indigo);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+
+  &:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+  }
+}
+
+.jobEmptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--p-muted);
+
+  p { margin-top: 16px; }
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
