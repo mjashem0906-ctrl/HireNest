@@ -1265,6 +1265,83 @@ const bulkCreateServices = async (req, res) => {
   }
 };
 
+/* -------------------- GET UNLINKED JOBS (No refereedBy set) -------------------- */
+const getUnlinkedJobs = async (req, res) => {
+  try {
+    // Find all services that don't have a refereedBy
+    const unlinkedJobs = await Service.find({
+      $or: [
+        { refereedBy: null },
+        { refereedBy: { $exists: false } }
+      ]
+    })
+    .populate('memberId', 'name email')
+    .populate('jobPosted', 'fullName email')
+    .sort({ createdAt: -1 })
+    .limit(100);
+
+    res.status(200).json({
+      success: true,
+      count: unlinkedJobs.length,
+      message: `Found ${unlinkedJobs.length} jobs without a referee link`,
+      data: unlinkedJobs
+    });
+
+  } catch (error) {
+    console.error("getUnlinkedJobs error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch unlinked jobs",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
+/* -------------------- LINK/ASSIGN A REFEREE TO A JOB -------------------- */
+const linkJobToReferee = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const { refereeId } = req.body;
+
+    if (!refereeId) {
+      return res.status(400).json({
+        success: false,
+        message: "Referee ID is required"
+      });
+    }
+
+    // Update the service with the refereeId
+    const updatedService = await Service.findByIdAndUpdate(
+      serviceId,
+      { refereedBy: refereeId },
+      { new: true }
+    ).populate('refereedBy', 'name email')
+     .populate('memberId', 'name email')
+     .populate('jobPosted', 'fullName email');
+
+    if (!updatedService) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Job successfully linked to referee",
+      data: updatedService
+    });
+
+  } catch (error) {
+    console.error("linkJobToReferee error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to link job to referee",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
   addServicePost,
   getServicePost,
@@ -1274,5 +1351,7 @@ module.exports = {
   updateStatus,
   updateServicePost,
   getServiceApplications,
-  bulkCreateServices
+  bulkCreateServices,
+  linkJobToReferee,
+  getUnlinkedJobs
 };

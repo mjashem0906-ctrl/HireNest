@@ -1,15 +1,15 @@
 // routes/refereeRoutes.js
 const express = require('express');
 const router = express.Router();
-const { addReferee } = require('../controller/refereeController');
+const { 
+  addReferee,
+  getRefereeReferredJobs 
+} = require('../controller/refereeController');
 
 // POST request to add a referee
 router.post('/add', addReferee);
 
-// In your App.js or routing file
-import RefereeDetailsPage from './pages/RefereeDetailsPage';
-
-// Add this route
-<Route path="/referee/:id" element={<RefereeDetailsPage />} />
+// GET referred jobs for a specific referee
+router.get('/:refereeId/referred-jobs', getRefereeReferredJobs);
 
 module.exports = router;

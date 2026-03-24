@@ -1,4 +1,6 @@
 const Referee = require('../models/Referee');
+const Service = require('../models/service');
+const mongoose = require('mongoose');
 
 // Function to add a new referee
 const addReferee = async (req, res) => {
@@ -272,6 +274,56 @@ const searchReferees = async (req, res) => {
   }
 };
 
+// Get all jobs/services referred by a specific referee
+const getRefereeReferredJobs = async (req, res) => {
+  try {
+    const { refereeId } = req.params;
+    
+    console.log("=== getRefereeReferredJobs ===");
+    console.log("Referee ID received:", refereeId);
+    
+    if (!refereeId) {
+      return res.status(400).json({
+        success: false,
+        message: "Referee ID is required"
+      });
+    }
+    
+    // Convert string ID to ObjectId for mongo query
+    let objectId;
+    try {
+      objectId = new mongoose.Types.ObjectId(refereeId);
+    } catch (e) {
+      console.error("Invalid ObjectId format:", refereeId);
+      objectId = refereeId; // Fallback to string
+    }
+    
+    // Fetch all services where this referee is the referredBy
+    // The refereeId is a Member ID, not a Referee model ID
+    const referredJobs = await Service.find({ refereedBy: objectId })
+      .populate('refereedBy', 'name email occupation')
+      .populate('memberId', 'name email')
+      .populate('jobPosted', 'fullName email')
+      .sort({ createdAt: -1 });
+    
+    console.log("Found jobs:", referredJobs.length);
+    console.log("Query used - refereedBy:", objectId);
+    
+    res.status(200).json({
+      success: true,
+      count: referredJobs.length,
+      data: referredJobs
+    });
+  } catch (error) {
+    console.error("Error fetching referred jobs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
 // Export all functions
 module.exports = { 
   addReferee,
@@ -279,5 +331,6 @@ module.exports = {
   getRefereeById,
   updateReferee,
   deleteReferee,
-  searchReferees
+  searchReferees,
+  getRefereeReferredJobs
 };

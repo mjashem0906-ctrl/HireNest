@@ -13,7 +13,9 @@ const {
   updateStatus,
   updateServicePost,
   getServiceApplications,
-  bulkCreateServices
+  bulkCreateServices,
+  linkJobToReferee,
+  getUnlinkedJobs
 } = require("../controller/service");
 
 // --- ROUTES ---
@@ -30,6 +32,9 @@ router.get("/:id", verifyToken, getSingleServicePost);
 // Get All Jobs
 router.get('/', verifyToken, getServicePost);
 
+// Get unlinked jobs (jobs without a referee assigned)
+router.get('/unlinked/list', verifyToken, getUnlinkedJobs);
+
 // Delete a Job
 router.delete('/:id', verifyToken, deleteServicePost);
 
@@ -44,5 +49,8 @@ router.get('/:id/applications', verifyToken, getServiceApplications);
 
 // Bulk create services (Admin only)
 router.post('/bulk', verifyToken, bulkCreateServices);
+
+// Link/Assign a referee to a job
+router.patch('/:serviceId/link-referee', verifyToken, linkJobToReferee);
 
 module.exports = router;

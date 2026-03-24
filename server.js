@@ -55,6 +55,7 @@ app.use("/service", require("./routes/service"));
 // Add this line to server.js
 app.use("/api/recruiters", require("./routes/recruiterRoutes"));
 app.use("/api/mentor-connections", require("./routes/mentorConnection"));
+app.use("/referee", require("./routes/refereeRoutes"));
 
 // Health check
 app.get('/health', (req, res) => {
