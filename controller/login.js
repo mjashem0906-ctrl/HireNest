@@ -146,8 +146,8 @@ const updateProfile = async (req, res) => {
 
     // 3. Calculate Profile Completion Percentage
     // Define required fields for 100% completion based on role
-    const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp'];
-    const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp'];
+    const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
+    const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp', 'photoUrl', 'resumeLink'];
 
     const fieldsToTrack = selectedRole === 'Mentor' ? mentorFields : jobFields;
     const completedFields = fieldsToTrack.filter(field => member[field] && String(member[field]).length > 0);
