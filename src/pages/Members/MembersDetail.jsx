@@ -75,7 +75,7 @@ function MembersDetail() {
       if (filtered?.dateOfBirth) setAge(calculateAge(filtered.dateOfBirth));
     } catch (err) {
       console.error("Error fetching profile:", err);
-      
+
       // ✅ FIX 2: If the backend says 404 Not Found for their own profile, redirect to setup
       if (err.response?.status === 404 && (id === "me" || String(id) === String(user?.memberId))) {
         navigate("/profile-setup"); // Change this route if needed!
@@ -100,14 +100,14 @@ function MembersDetail() {
   };
 
   const getInitials = (name) =>
-    (
-      name
-        ?.split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .substring(0, 2) || "??"
-    );
+  (
+    name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) || "??"
+  );
 
   const normalizeList = (value) => {
     if (!value) return [];
@@ -122,6 +122,7 @@ function MembersDetail() {
   };
 
   const expList =
+    member?.experienceDetails ||
     member?.experience ||
     member?.experiences ||
     member?.workExperience ||
@@ -219,16 +220,16 @@ function MembersDetail() {
           {(user?.role === "Admin" ||
             String(user?.memberId) === String(member._id) ||
             id === "me") && (
-            <button
-              className={styles.editBtn}
-              onClick={() => {
-                setEditingMember(member);
-                setShowModal(true);
-              }}
-            >
-              <ExternalLink size={18} /> Edit Profile
-            </button>
-          )}
+              <button
+                className={styles.editBtn}
+                onClick={() => {
+                  setEditingMember(member);
+                  setShowModal(true);
+                }}
+              >
+                <ExternalLink size={18} /> Edit Profile
+              </button>
+            )}
         </div>
       </div>
 
@@ -548,7 +549,7 @@ function MembersDetail() {
                       </div>
                       <div style={{ color: "var(--p-muted2)", fontSize: 13, marginTop: 8 }}>
                         {exp?.startDate || exp?.from || "Start"} {" - "}
-                        {exp?.endDate || exp?.to || "Present"}
+                        {exp?.currentlyWorking ? "Present" : (exp?.endDate || exp?.to || "Present")}
                       </div>
                       {exp?.description && (
                         <div style={{ marginTop: 10, color: "var(--p-text2)", lineHeight: 1.6 }}>
@@ -673,16 +674,7 @@ function MembersDetail() {
             </section>
           </div>
 
-          <div className={styles.sideColumn}>
-            <section className={styles.card}>
-              <div className={styles.cardHeader}>
-                <BookOpen size={22} className={styles.icon} /> Highlights
-              </div>
-              <p style={{ color: "var(--p-muted)" }}>
-                Add multiple education entries to show them here.
-              </p>
-            </section>
-          </div>
+
         </div>
       )}
 
@@ -791,7 +783,7 @@ function MembersDetail() {
             </section>
           </div>
 
-          <div className={styles.sideColumn}>
+          {/* <div className={styles.sideColumn}>
             <section className={styles.card}>
               <div className={styles.cardHeader}>
                 <CertificateIcon size={22} className={styles.icon} /> Certifications
@@ -800,7 +792,7 @@ function MembersDetail() {
                 Your certificates are available in the Certificates tab.
               </p>
             </section>
-          </div>
+          </div> */}
         </div>
       )}
 

@@ -21,13 +21,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md);
+  padding: 0 16px;
+  min-height: 52px;
   border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  background-color: var(--surface-elevated);
   cursor: pointer;
   transition: var(--transition-fast);
-  min-height: 44px;
   
   &:hover {
     border-color: var(--text-muted);

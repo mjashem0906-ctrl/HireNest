@@ -150,7 +150,8 @@ const CandidateDashboard = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={styles.page}>
+      <div className={styles.dashboard}>
       {/* Welcome Header */}
       <div className={styles.welcomeSection}>
         <div>
@@ -410,7 +411,12 @@ const CandidateDashboard = () => {
             <div className={styles.mentorsList}>
               {data.newMentors.length > 0 ? (
                 data.newMentors.map((mentor) => (
-                  <div key={mentor._id} className={styles.mentorCardLarge}>
+                  <div 
+                    key={mentor._id} 
+                    className={styles.mentorCardLarge}
+                    onClick={() => navigate(`/mentors/${mentor._id}`)} // Updated to go to premium details
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className={styles.mentorAvatarContainer}>
                       <img
                         src={mentor.photoUrl || "/default-avatar.png"}
@@ -430,7 +436,10 @@ const CandidateDashboard = () => {
 
                     <button
                       className={styles.connectBtn}
-                      onClick={() => navigate(`/member/${mentor._id}`)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents card navigation from firing twice
+                        navigate(`/mentors/${mentor._id}`); // Updated to navigate to mentor-specific route
+                      }}
                     >
                       Connect
                     </button>
@@ -445,6 +454,7 @@ const CandidateDashboard = () => {
             </div>
           </div>
         </section>
+      </div>
       </div>
     </div>
   );

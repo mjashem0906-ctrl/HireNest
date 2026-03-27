@@ -47,11 +47,10 @@ function MemberDashboard() {
       .sort((a, b) => b.value - a.value);
   }
 
-  // ✅ NEW: Helper specifically for arrays/comma-separated strings (Skills)
+  // ✅ Helper specifically for arrays/comma-separated strings (Skills)
   function getTopSkills(membersList) {
     const counts = {};
     membersList.forEach(m => {
-      // Change 'm.skills' if your backend uses a different name like 'm.skillSet'
       let userSkills = m.skills || []; 
       
       if (typeof userSkills === 'string') {
@@ -73,8 +72,31 @@ function MemberDashboard() {
     return Object.entries(counts)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 5); // Top 5 skills
+      .slice(0, 5);
   }
+
+  // ✅ Handle Member Type card clicks
+  const handleMemberTypeClick = (type) => {
+    switch(type) {
+      case 'Seeker':
+        navigate('/members', { state: { exactMemberType: 'Job Seeker' } });
+        break;
+      case 'Provider':
+        navigate('/members', { state: { exactMemberType: 'Oppurtunity Provider' } });
+        break;
+      case 'Recruiter':
+        navigate('/recruiters');
+        break;
+      case 'Referee':
+        navigate('/referees');
+        break;
+      case 'Mentor':
+        navigate('/mentors');
+        break;
+      default:
+        break;
+    }
+  };
 
   // ✅ Load Members
   useEffect(() => {
@@ -113,12 +135,16 @@ function MemberDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberContext, user, authLoading]);
 
-  // ✅ Fetch Recruiters count
   useEffect(() => {
     const fetchRecruitersCount = async () => {
       try {
-        const res = await API.get("/recruiters");
-        setRecruitersCount(Array.isArray(res.data) ? res.data.length : 0);
+        const res = await API.get("/api/recruiters");
+        
+        if (res.data && Array.isArray(res.data)) {
+          setRecruitersCount(res.data.length);
+        } else if (res.data && typeof res.data.total === 'number') {
+          setRecruitersCount(res.data.total);
+        }
       } catch (e) {
         console.error("Failed to fetch recruiters", e);
         setRecruitersCount(0);
@@ -130,7 +156,6 @@ function MemberDashboard() {
     if (user && !["Candidate", "Member", "Mentor", "Job"].includes(user?.role)) {
       fetchRecruitersCount();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
   if (authLoading) {
@@ -217,7 +242,7 @@ function MemberDashboard() {
   const topDistricts = countBy(members, "district").slice(0, 5);
   const topEducations = countBy(members, "highest_education").slice(0, 5);
   const topExperiences = countBy(members, "workExp").slice(0, 5);
-  const topSkills = getTopSkills(members); // ✅ Get top skills
+  const topSkills = getTopSkills(members);
 
   const stats = [
     { title: "Total Members", count: totalMembers, icon: Users, color: "#6366f1", path: "/members" },
@@ -270,8 +295,14 @@ function MemberDashboard() {
               <div className={styles.cardHeader}>
                 <h3>Member Types</h3>
               </div>
-              <DonutOverviewChart data={memberTypeData} />
-              <StatusTextView data={memberTypeData} />
+              <DonutOverviewChart 
+                data={memberTypeData} 
+                onSliceClick={handleMemberTypeClick}
+              />
+              <StatusTextView 
+                data={memberTypeData} 
+                onClick={handleMemberTypeClick}
+              />
             </div>
 
             <div className={styles.glassCard}>
@@ -280,7 +311,14 @@ function MemberDashboard() {
               </div>
               <div className={styles.rankingList}>
                 {topDistricts.map((item, i) => (
-                  <div key={i} className={styles.rankingItem}>
+                  <div
+                    key={i}
+                    className={styles.rankingItem}
+                    style={{ cursor: "pointer", transition: "background 0.2s", borderRadius: "8px" }}
+                    onClick={() => navigate("/members", { state: { exactDistrict: item.name } })}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = "var(--soft-bg, #f8fafc)"}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
                     <span className={styles.rankInfo}>{item.name}</span>
                     <span className={styles.rankBadge}>{item.value}</span>
                   </div>
@@ -337,7 +375,6 @@ function MemberDashboard() {
             </div>
           </div>
 
-          {/* ✅ NEW: Top Skills Breakdown */}
           <div className={styles.glassCard}>
             <div className={styles.cardHeader}>
               <h3>Top Skills Breakdown</h3>
@@ -366,7 +403,6 @@ function MemberDashboard() {
               <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>Data updated just now</span>
             </div>
           </div>
-
         </div>
       </div>
     </div>

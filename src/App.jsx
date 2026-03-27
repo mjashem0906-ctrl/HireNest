@@ -128,7 +128,7 @@
 
 // App.jsx (FULL UPDATED CODE)
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -164,6 +164,12 @@ import RecruitersPage from './pages/Recruiter/RecruitersPage';
 import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
 
 function App() {
+
+  // ✅ THIS IS THE FIX (DARK THEME ACTIVATION)
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }, []);
+
   return (
     <>
       <Router>
@@ -176,11 +182,10 @@ function App() {
           <Route path="/candidate-form" element={<CandidateForm />} />
           <Route path="/candidate-dashboard" element={<CandidateDashboard />} />
 
-          {/* Protected Routes (Wrapped in Layout) */}
+          {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<Dashboard />} />
 
-            {/* Admin & IT Member Routes */}
             <Route
               path="members"
               element={
@@ -206,7 +211,7 @@ function App() {
               }
             />
 
-            {/* Mentors Routes */}
+            {/* Mentors */}
             <Route
               path="mentors"
               element={
@@ -232,7 +237,7 @@ function App() {
               }
             />
 
-            {/* ✅ Recruiters Routes */}
+            {/* Recruiters */}
             <Route
               path="recruiters"
               element={
@@ -250,15 +255,15 @@ function App() {
               }
             />
 
-            {/* Referee Routes */}
+            {/* Referee */}
             <Route path="referees" element={<RefereePage />} />
             <Route path="referee/:id" element={<RefereeDetailsPage />} />
 
-            {/* Jobs Routes */}
+            {/* Jobs */}
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/:id" element={<JobDetail />} />
 
-            {/* Error Pages */}
+            {/* Errors */}
             <Route path="unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
           </Route>

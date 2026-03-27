@@ -26,17 +26,49 @@ export default function DateSelect({
     onChange(localDate);
   };
   return (
-    <div className={styles.datePickerWrapper} style={{ padding: "20px" }}>
+    <div className={styles.datePickerWrapper}>
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB} >
         <DatePicker
-          label={label || "Select Date"}
+          label={label === undefined ? "Select Date" : label}
           value={dateValue}
           onChange={handleDateChange}
           minDate={min}
           maxDate={max}
           required={required}
           error={error}
+          format="dd/MM/yyyy"
           slotProps={{
+            popper: {
+              sx: {
+                "& .MuiPaper-root": {
+                  backgroundColor: "var(--surface-elevated)",
+                  color: "var(--text-primary)",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border-medium)",
+                  backgroundImage: "none",
+                },
+                "& .MuiPickersCalendarHeader-root": {
+                  color: "var(--text-primary)",
+                },
+                "& .MuiPickersDay-root": {
+                  color: "var(--text-primary)",
+                  backgroundColor: "transparent",
+                },
+                "& .MuiPickersDay-root:hover": {
+                  backgroundColor: "var(--bg-secondary)",
+                },
+                "& .MuiPickersDay-root.Mui-selected": {
+                  backgroundColor: "#2563eb",
+                  color: "#fff",
+                },
+                "& .MuiDayCalendar-weekDayLabel": {
+                  color: "var(--text-muted)",
+                },
+                "& .MuiIconButton-root": {
+                  color: "var(--text-primary)",
+                },
+              }
+            },
             textField: {
               error: false,
               sx: {
@@ -44,12 +76,13 @@ export default function DateSelect({
                 // Target the input element directly with high specificity
                 "& .MuiInputBase-input": {
                   color: "var(--text-primary) !important",
-                  "-webkit-text-fill-color": "var(--text-primary) !important",
+                  WebkitTextFillColor: "var(--text-primary) !important",
                   fill: "var(--text-primary) !important",
                 },
                 "& .MuiInputBase-root": {
-                  borderRadius: "10px",
-                  backgroundColor: "var(--bg-secondary)",
+                  borderRadius: "12px",
+                  minHeight: "52px",
+                  backgroundColor: "var(--surface-elevated)",
                   color: "var(--text-primary)",
                 },
                 "& .MuiInputLabel-root": {

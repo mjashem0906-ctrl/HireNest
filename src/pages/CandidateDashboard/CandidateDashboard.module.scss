@@ -1527,12 +1527,18 @@
 
 /* ✅ CandidateDashboard.module.scss (FULL UPDATED — ONLY About section got premium float/parallax) */
 
-.container {
+/* Full screen background wrapper */
+.page {
+  min-height: 100vh;
+  background: var(--dashboard-bg, #f8fafc);
+}
+
+/* Main dashboard container */
+.dashboard {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
   font-family: "Inter", sans-serif;
-  background: var(--bg-primary);
   min-height: 100vh;
 }
 
@@ -2386,7 +2392,7 @@
 
 /* Mobile */
 @media (max-width: 768px) {
-  .container { padding: 1rem; }
+  .dashboard { padding: 1rem; }
 
   .aboutHeaderRow { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
   .aboutTitle { font-size: 1.6rem; }

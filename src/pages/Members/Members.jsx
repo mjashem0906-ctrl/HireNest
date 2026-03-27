@@ -93,6 +93,18 @@ function Members() {
           return edu === location.state.exactEdu;
         });
       }
+
+      else if (location.state.exactDistrict) {
+  initialDisplayData = initialDisplayData.filter((m) => {
+    const district = String(m.district || "").trim();
+
+    if (location.state.exactDistrict === "Unknown") {
+      return district === "" || district.toLowerCase() === "unknown" || district === "null";
+    }
+
+    return district === location.state.exactDistrict;
+  });
+}
       // ✅ Catch Skill clicks from the dashboard
       else if (location.state.exactSkill) {
         initialDisplayData = initialDisplayData.filter((m) => {

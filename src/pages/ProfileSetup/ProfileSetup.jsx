@@ -169,6 +169,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import API from "../../axios";
 import { useAuth } from "../../context/AuthContext";
 import FormInput from "../../components/UI/FormInput";
@@ -193,25 +194,86 @@ const ProfileSetup = () => {
         preferredJobRole_Sector: ""
     });
     const [loading, setLoading] = useState(false);
+    const [photoFile, setPhotoFile] = useState(null);
+    const [resumeFile, setResumeFile] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    const uploadToCloudinary = async (file) => {
+        if (!file) return null;
+        const cloudName = "dwelwaavj";
+        const uploadPreset = "jobbridge_preset";
+        const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+
+        const data = new FormData();
+        data.append("file", file);
+        data.append("upload_preset", uploadPreset);
+
+        const res = await axios.post(api, data, {
+            onUploadProgress: (progressEvent) => {
+                const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(progress);
+            }
+        });
+        return res.data.secure_url;
+    };
+
+    const handleFileChange = (e, type) => {
+        const file = e.target.files[0];
+        if (!file) {
+            if (type === 'photo') setPhotoFile(null);
+            if (type === 'resume') setResumeFile(null);
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File size must be less than 5MB");
+            e.target.value = null;
+            if (type === 'photo') setPhotoFile(null);
+            if (type === 'resume') setResumeFile(null);
+            return;
+        }
+
+        if (type === 'photo') setPhotoFile(file);
+        else if (type === 'resume') setResumeFile(file);
+    };
 
     const calculateCompletion = () => {
         if (!role) return 0;
-        const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp'];
-        const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp'];
+        const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
+        const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp', 'photoUrl', 'resumeLink'];
 
         const fieldsToTrack = role === 'Mentor' ? mentorFields : jobFields;
-        const completedFields = fieldsToTrack.filter(field => formData[field] && String(formData[field]).length > 0);
+        const completedFields = fieldsToTrack.filter(field => {
+            if (field === 'photoUrl') return !!photoFile;
+            if (field === 'resumeLink') return !!resumeFile;
+            return formData[field] && String(formData[field]).length > 0;
+        });
         return Math.round((completedFields.length / fieldsToTrack.length) * 100);
     };
 
     const completion = calculateCompletion();
 
     const handleSave = async () => {
+        if (!photoFile || !resumeFile) {
+            alert("Profile Photo and Resume are mandatory. Please upload them.");
+            return;
+        }
+
         setLoading(true);
         try {
+            let photoUrl = "";
+            let resumeLink = "";
+            
+            if (photoFile) photoUrl = await uploadToCloudinary(photoFile);
+            if (resumeFile) resumeLink = await uploadToCloudinary(resumeFile);
+
             const res = await API.post("/auth/update-profile", {
                 role,
-                profileData: formData
+                profileData: {
+                    ...formData,
+                    photoUrl,
+                    resumeLink
+                }
             });
             await fetchUser(); // Re-fetch fresh user data from server (new memberId, profileCompleted)
             navigate("/", { state: { isNew: true } });
@@ -220,6 +282,7 @@ const ProfileSetup = () => {
             alert("Failed to update profile");
         } finally {
             setLoading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -315,7 +378,27 @@ const ProfileSetup = () => {
                                 value={formData.workExp}
                                 onChange={(v) => setFormData({ ...formData, workExp: v })}
                             />
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <label style={{ fontSize: "14px", fontWeight: "600", color: "#333" }}>Profile Photo *</label>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={(e) => handleFileChange(e, 'photo')} 
+                                    style={{ padding: "8px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#fff" }}
+                                />
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <label style={{ fontSize: "14px", fontWeight: "600", color: "#333" }}>Resume (PDF/DOC) *</label>
+                                <input 
+                                    type="file" 
+                                    accept=".pdf,.doc,.docx" 
+                                    onChange={(e) => handleFileChange(e, 'resume')} 
+                                    style={{ padding: "8px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#fff" }}
+                                />
+                            </div>
                         </div>
+
+                        {uploadProgress > 0 && <p style={{ textAlign: "center", color: "#555", marginTop: "10px", fontWeight: "bold" }}>Uploading: {uploadProgress}%</p>}
 
                         <button
                             className={styles.saveBtn}

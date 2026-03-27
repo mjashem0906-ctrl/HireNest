@@ -64,14 +64,10 @@
   font-size: 0.75rem;
 }
 
-// Force override for MUI DatePicker input in dark mode
-:global([data-theme="dark"]) .datePickerWrapper {
-  :global(.MuiInputBase-input) {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-  }
-
-  :global(.MuiOutlinedInput-notchedOutline) {
-    border-color: rgba(255, 255, 255, 0.23) !important;
+.datePickerWrapper {
+  :global(.MuiInputBase-root) :global(.MuiInputBase-input) {
+    color: var(--text-primary) !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
   }
 }
+

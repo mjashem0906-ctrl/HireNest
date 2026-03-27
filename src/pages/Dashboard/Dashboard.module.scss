@@ -752,8 +752,8 @@
   --radius: 16px;
 }
 
-:global([data-theme="dark"]),
-:global(.dark) {
+/* ✅ FIXED DARK THEME */
+:global(:root[data-theme="dark"]) {
   --dashboard-bg: #0b1220;
   --card-bg: #0f172a;
 
