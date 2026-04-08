@@ -6175,6 +6175,17 @@ const JOB_TITLE_OPTIONS = [
   "Mobile App Developer",
 ];
 
+const DEGREE_OPTIONS = [
+  "SSLC / 10th", "PUC / 12th", "ITI", "Diploma (Polytechnic)", "B.A", "B.Com", "B.Sc",
+  "B.B.A", "B.C.A", "B.S.W", "B.Voc", "B.E", "B.Tech", "B.Arch", "LLB", "BBA LLB",
+  "BA LLB", "B.Pharm", "D.Pharm", "BPT", "BDS", "MBBS", "BAMS", "BHMS", "M.A",
+  "M.Com", "M.Sc", "M.S.W", "M.B.A", "M.C.A", "M.Tech", "M.E", "LLM", "M.Pharm",
+  "MPT", "MD", "MS", "PhD", "Post Graduate Diploma (PGD)", "Certification Course"
+];
+
+const PASSOUT_YEAR_OPTIONS = Array.from({ length: 40 }, (_, i) => String(new Date().getFullYear() + 3 - i));
+
+
 const KARNATAKA_DISTRICTS = [
   "Bagalkote",
   "Ballari (Bellary)",
@@ -6656,14 +6667,22 @@ const BulkCSVReviewModal = ({
                             <div className={styles.bulkFieldGroup}>
                               <label>Education</label>
                               {isEditing ? (
-                                <input
-                                  value={job.education || ""}
-                                  onChange={(e) =>
-                                    handleFieldChange(index, "education", e.target.value)
-                                  }
-                                  className={styles.bulkInput}
-                                  placeholder="Education"
-                                />
+                                <>
+                                  <input
+                                    list="bulkDegreeOptions"
+                                    value={job.education || ""}
+                                    onChange={(e) =>
+                                      handleFieldChange(index, "education", e.target.value)
+                                    }
+                                    className={styles.bulkInput}
+                                    placeholder="Education"
+                                  />
+                                  <datalist id="bulkDegreeOptions">
+                                    {DEGREE_OPTIONS.map((opt, i) => (
+                                      <option key={i} value={opt} />
+                                    ))}
+                                  </datalist>
+                                </>
                               ) : (
                                 <div>{job.education || "—"}</div>
                               )}
@@ -6672,18 +6691,26 @@ const BulkCSVReviewModal = ({
                             <div className={styles.bulkFieldGroup}>
                               <label>Passed Out Year</label>
                               {isEditing ? (
-                                <input
-                                  value={job.passedOutYear || ""}
-                                  onChange={(e) =>
-                                    handleFieldChange(
-                                      index,
-                                      "passedOutYear",
-                                      e.target.value
-                                    )
-                                  }
-                                  className={styles.bulkInput}
-                                  placeholder="2024"
-                                />
+                                <>
+                                  <input
+                                    list="bulkPassoutYearOptions"
+                                    value={job.passedOutYear || ""}
+                                    onChange={(e) =>
+                                      handleFieldChange(
+                                        index,
+                                        "passedOutYear",
+                                        e.target.value
+                                      )
+                                    }
+                                    className={styles.bulkInput}
+                                    placeholder="2024"
+                                  />
+                                  <datalist id="bulkPassoutYearOptions">
+                                    {PASSOUT_YEAR_OPTIONS.map((year, i) => (
+                                      <option key={i} value={year} />
+                                    ))}
+                                  </datalist>
+                                </>
                               ) : (
                                 <div>{job.passedOutYear || "—"}</div>
                               )}
@@ -7124,24 +7151,18 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
           <form onSubmit={handleSubmit} className={styles.createJobForm}>
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
-              <label>
-                <BookOpen size={14} /> Job Title{" "}
-                <span className={styles.required}>*</span>
-              </label>
-              <input
-                list="jobTitleOptions"
-                className={styles.formInput}
-                type="text"
+              <EditableDropdown
+                label={
+                  <>
+                    <BookOpen size={14} /> Job Title
+                  </>
+                }
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                options={JOB_TITLE_OPTIONS}
                 placeholder="Select or Type Job Title"
-                required
+                required={true}
+                onChange={setTitle}
               />
-              <datalist id="jobTitleOptions">
-                {JOB_TITLE_OPTIONS.map((opt, i) => (
-                  <option key={i} value={opt} />
-                ))}
-              </datalist>
             </div>
 
             <div className={styles.formGroup}>
@@ -7220,26 +7241,30 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label>
-                <GraduationCap size={14} /> Education
-              </label>
-              <input
-                className={styles.formInput}
-                type="text"
+              <EditableDropdown
+                label={
+                  <>
+                    <GraduationCap size={14} /> Education
+                  </>
+                }
                 value={education}
-                onChange={(e) => setEducation(e.target.value)}
+                options={DEGREE_OPTIONS}
+                placeholder="Select or Type Education"
+                onChange={setEducation}
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label>
-                <Award size={14} /> Passout Year
-              </label>
-              <input
-                className={styles.formInput}
-                type="text"
+              <EditableDropdown
+                label={
+                  <>
+                    <Award size={14} /> Passout Year
+                  </>
+                }
                 value={passedOutYear}
-                onChange={(e) => setPassedOutYear(e.target.value)}
+                options={PASSOUT_YEAR_OPTIONS}
+                placeholder="Select or Type Year"
+                onChange={setPassedOutYear}
               />
             </div>
 
@@ -7333,6 +7358,197 @@ ProvidedForm.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   initialData: PropTypes.object,
+};
+
+// =========================================================================================
+// ResumeChoiceModal — shown when user already has a resume in profile
+// =========================================================================================
+const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTitle, existingResumeUrl }) => {
+  if (!isOpen) return null;
+
+  const getResumeName = (url) => {
+    if (!url) return "Your profile resume";
+    try {
+      const parts = url.split("/");
+      const raw = parts[parts.length - 1];
+      return decodeURIComponent(raw.split("?")[0]) || "Your profile resume";
+    } catch {
+      return "Your profile resume";
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "rgba(15,23,42,0.55)", backdropFilter: "blur(6px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "20px",
+      }}
+      onMouseDown={onClose}
+    >
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff", borderRadius: "20px", padding: "32px 28px 28px",
+          width: "100%", maxWidth: "460px",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08)",
+          animation: "slideUpFade 0.25s ease",
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#0f172a" }}>Choose Your Resume</h3>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+              Applying for: <span style={{ color: "#4f46e5" }}>{jobTitle}</span>
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "#94a3b8", padding: "4px", borderRadius: "8px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: "#e2e8f0", marginBottom: 20 }} />
+
+        {/* Option 1 — Use Existing */}
+        <button
+          onClick={onUseExisting}
+          style={{
+            width: "100%", textAlign: "left", padding: "18px 20px",
+            border: "2px solid #e0e7ff", borderRadius: "14px",
+            background: "linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%)",
+            cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", gap: 16,
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "#4f46e5"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e0e7ff"; e.currentTarget.style.transform = "translateY(0)"; }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: "12px", flexShrink: 0,
+            background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <CheckCircle size={22} color="#fff" />
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 3 }}>
+              Use Existing Resume
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{
+                fontSize: 12, color: "#6366f1", fontWeight: 600,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                maxWidth: 180,
+              }}>
+                {getResumeName(existingResumeUrl)}
+              </div>
+              {/* View link — stops propagation so it doesn't trigger apply */}
+              {existingResumeUrl && (
+                <a
+                  href={existingResumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 4,
+                    fontSize: 11, fontWeight: 700, color: "#0ea5e9",
+                    textDecoration: "none", padding: "2px 8px",
+                    background: "#e0f2fe", borderRadius: "6px",
+                    flexShrink: 0, whiteSpace: "nowrap",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#bae6fd"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#e0f2fe"}
+                >
+                  {/* Eye icon */}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  View
+                </a>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginTop: 3 }}>
+              Click to apply instantly with this resume
+            </div>
+          </div>
+          <div style={{ marginLeft: "auto", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </button>
+
+        {/* Option 2 — Upload New */}
+        <button
+          onClick={onUploadNew}
+          style={{
+            width: "100%", textAlign: "left", padding: "18px 20px",
+            border: "2px solid #e2e8f0", borderRadius: "14px",
+            background: "#fafbff", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 16,
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "#94a3b8"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.transform = "translateY(0)"; }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: "12px", flexShrink: 0,
+            background: "linear-gradient(135deg, #0ea5e9, #0284c7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <FileText size={22} color="#fff" />
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 2 }}>
+              Upload a Different Resume
+            </div>
+            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>
+              PDF, DOC, or DOCX (Max 5MB)
+            </div>
+          </div>
+          <div style={{ marginLeft: "auto", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+        </button>
+
+        {/* Cancel */}
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%", marginTop: 16, padding: "11px",
+            background: "none", border: "none", cursor: "pointer",
+            color: "#94a3b8", fontWeight: 700, fontSize: 13,
+            borderRadius: "10px", transition: "color 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "#64748b"}
+          onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
+        >
+          Cancel
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes slideUpFade {
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
+    </div>
+  );
 };
 
 // =========================================================================================
@@ -7630,6 +7846,7 @@ function Jobs() {
   const [bulkReviewJobs, setBulkReviewJobs] = useState([]);
 
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [showResumeChoiceModal, setShowResumeChoiceModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [editingJob, setEditingJob] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -8313,7 +8530,7 @@ function Jobs() {
     }
   };
 
-  const handleApply = async (job, resumeFile = null) => {
+  const handleApply = async (job, resumeFile = null, useExistingResume = false) => {
     try {
       setLoadingState((prev) => ({ ...prev, applying: true }));
 
@@ -8330,7 +8547,8 @@ function Jobs() {
         return;
       }
 
-      if (!resumeFile && (user?.role === "Member" || user?.role === "Candidate")) {
+      // Only show upload modal if no file AND not using the existing profile resume
+      if (!resumeFile && !useExistingResume && (user?.role === "Member" || user?.role === "Candidate")) {
         setSelectedJob(job);
         setShowResumeModal(true);
         return;
@@ -8359,20 +8577,12 @@ function Jobs() {
     e.stopPropagation();
     if (isApplied(job)) return;
 
-    if (hasDefaultResume()) {
-      const useDefault = window.confirm(
-        "You have a default resume on file. Would you like to use it?\n\n" +
-          "Click OK to use default resume\n" +
-          "Click Cancel to upload a different resume"
-      );
+    setSelectedJob(job);
 
-      if (useDefault) handleApply(job);
-      else {
-        setSelectedJob(job);
-        setShowResumeModal(true);
-      }
+    if (hasDefaultResume()) {
+      // Show the nice choice modal instead of browser confirm()
+      setShowResumeChoiceModal(true);
     } else {
-      setSelectedJob(job);
       setShowResumeModal(true);
     }
   };
@@ -9357,6 +9567,21 @@ function Jobs() {
         onSave={handleSaveBulkJobs}
         onBulkSubmit={handleSubmitBulkJobs}
         refereesList={refereesList}
+      />
+
+      <ResumeChoiceModal
+        isOpen={showResumeChoiceModal}
+        onClose={() => setShowResumeChoiceModal(false)}
+        jobTitle={selectedJob?.title}
+        existingResumeUrl={user?.resumeLink}
+        onUseExisting={() => {
+          setShowResumeChoiceModal(false);
+          handleApply(selectedJob, null, true); // useExistingResume = true → skips upload guard
+        }}
+        onUploadNew={() => {
+          setShowResumeChoiceModal(false);
+          setShowResumeModal(true);
+        }}
       />
 
       <ResumeUploadModal

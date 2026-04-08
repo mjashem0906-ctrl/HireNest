@@ -13,7 +13,8 @@ const FormInput= ({
   required = false,
   error,
   icon,
-  multiline = false
+  multiline = false,
+  ...rest
 }) => {
   return (
     <div className={styles.formInput}>
@@ -30,6 +31,7 @@ const FormInput= ({
             placeholder={placeholder}
             className={`${styles.input} ${styles.textarea} ${icon ? styles.withIcon : ''} ${error ? styles.error : ''}`}
             rows={4}
+            {...rest}
           />
         ) : (
           <input
@@ -38,6 +40,7 @@ const FormInput= ({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             className={`${styles.input} ${icon ? styles.withIcon : ''} ${error ? styles.error : ''}`}
+            {...rest}
           />
         )}
       </div>

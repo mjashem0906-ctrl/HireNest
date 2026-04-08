@@ -19,11 +19,17 @@ const PrivateRoute = ({ children, roles }) => {
     return <Navigate to="/login" />;
   }
 
-  // Profile setup check removed as per user request
-  // The user should land on Dashboard even if profile is incomplete.
+  // Redirect new users (no memberId or incomplete profile) to profile setup
+  // Admins do not need to complete a profile.
+  if (user.role !== 'Admin' && (!user.memberId || user.profileCompleted === 0)) {
+    // Allow access to /profile-setup itself to avoid infinite redirect
+    if (window.location.pathname !== "/profile-setup") {
+      return <Navigate to="/profile-setup" replace />;
+    }
+  }
 
   if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/unauthorized" />; // make sure this route exists
+    return <Navigate to="/unauthorized" />;
   }
 
   return children;

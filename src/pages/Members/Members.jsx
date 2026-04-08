@@ -62,6 +62,8 @@ function Members() {
     setAllMembers(sortedMembers);
 
     let initialDisplayData = [...sortedMembers];
+    let dashboardFilterValues = {};
+    let dashboardActiveFilters = {};
 
     // ✅ Catch and apply filters sent from the Dashboard
     if (location.state) {
@@ -70,11 +72,15 @@ function Members() {
           const exp = String(m.workExp || "").toLowerCase().trim();
           return exp === "0" || exp === "fresher" || exp === "0 years";
         });
+        dashboardFilterValues = { workExp: 'fresher' };
+        dashboardActiveFilters = { workExp: 'fresher' };
       } else if (location.state.expFilter === "experienced") {
         initialDisplayData = initialDisplayData.filter((m) => {
           const exp = String(m.workExp || "").toLowerCase().trim();
           return exp !== "" && exp !== "0" && exp !== "fresher" && exp !== "0 years" && exp !== "unknown" && exp !== "null";
         });
+        dashboardFilterValues = { workExp: 'experienced' };
+        dashboardActiveFilters = { workExp: 'experienced' };
       } else if (location.state.exactExp) {
         initialDisplayData = initialDisplayData.filter((m) => {
           const exp = String(m.workExp || "").trim();
@@ -83,6 +89,8 @@ function Members() {
           }
           return exp === location.state.exactExp;
         });
+        dashboardFilterValues = { workExp: location.state.exactExp };
+        dashboardActiveFilters = { workExp: location.state.exactExp };
       } 
       else if (location.state.exactEdu) {
         initialDisplayData = initialDisplayData.filter((m) => {
@@ -92,19 +100,21 @@ function Members() {
           }
           return edu === location.state.exactEdu;
         });
+        dashboardFilterValues = { highest_education: location.state.exactEdu };
+        dashboardActiveFilters = { highest_education: location.state.exactEdu };
       }
 
       else if (location.state.exactDistrict) {
-  initialDisplayData = initialDisplayData.filter((m) => {
-    const district = String(m.district || "").trim();
-
-    if (location.state.exactDistrict === "Unknown") {
-      return district === "" || district.toLowerCase() === "unknown" || district === "null";
-    }
-
-    return district === location.state.exactDistrict;
-  });
-}
+        initialDisplayData = initialDisplayData.filter((m) => {
+          const district = String(m.district || "").trim();
+          if (location.state.exactDistrict === "Unknown") {
+            return district === "" || district.toLowerCase() === "unknown" || district === "null";
+          }
+          return district === location.state.exactDistrict;
+        });
+        dashboardFilterValues = { district: location.state.exactDistrict };
+        dashboardActiveFilters = { district: location.state.exactDistrict };
+      }
       // ✅ Catch Skill clicks from the dashboard
       else if (location.state.exactSkill) {
         initialDisplayData = initialDisplayData.filter((m) => {
@@ -123,10 +133,22 @@ function Members() {
           
           return userSkills.includes(location.state.exactSkill.toLowerCase());
         });
+        dashboardFilterValues = { skills: location.state.exactSkill };
+        dashboardActiveFilters = { skills: location.state.exactSkill };
+      }
+      // ✅ Catch Member Type clicks from the dashboard (Overview card)
+      else if (location.state.exactMemberType) {
+        initialDisplayData = initialDisplayData.filter((m) => m.memberType === location.state.exactMemberType);
+        dashboardFilterValues = { memberType: location.state.exactMemberType };
+        dashboardActiveFilters = { memberType: location.state.exactMemberType };
       }
     }
 
     setMembersData(initialDisplayData);
+    if (Object.keys(dashboardFilterValues).length > 0) {
+      setFilterValues(dashboardFilterValues);
+      setActiveFilters(dashboardActiveFilters);
+    }
     setLoading(false);
   };
 

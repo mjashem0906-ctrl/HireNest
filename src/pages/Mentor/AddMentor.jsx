@@ -485,7 +485,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGrid}>
                 <FormInput
-                  label="Full Name *"
+                  label="Full Name "
                   value={formData.name}
                   onChange={(v) => setFormData({ ...formData, name: v })}
                   required

@@ -167,8 +167,14 @@ const LoginForm = () => {
       const res = await API.post("/auth/login", formData);
 
       if (res.data.success) {
-        login(res.data.user);
-        navigate("/");
+        const userData = res.data.user;
+        login(userData);
+        // Admins bypass the profile setup requirement
+        if (userData.role !== 'Admin' && (!userData.memberId || userData.profileCompleted === 0)) {
+          navigate("/profile-setup");
+        } else {
+          navigate("/");
+        }
       } else {
         setError(res.data.message || "Login failed");
       }

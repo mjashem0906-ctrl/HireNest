@@ -26,10 +26,10 @@ body {
   background-image: url("/Logo.png");
 
   /* Repeat horizontally like screenshot */
-  background-repeat: repeat-x;
+  background-repeat: no-repeat;
 
   /* Make logo very large */
-  background-size: 800px auto;
+  background-size: 1150px auto;
 
   /* Center vertically */
   background-position: center;

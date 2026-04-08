@@ -20,11 +20,34 @@ const CandidateDashboard = () => {
 
   const [loading, setLoading] = useState(true);
   const [memberName, setMemberName] = useState("");
+  const [ownMember, setOwnMember] = useState(null);
   const [data, setData] = useState({
     recentApplications: [],
     newMentors: [],
     recentJobs: [],
   });
+
+  // ── Local profile completion from actual member fields ────────────
+  const calcCompletion = (m) => {
+    if (!m) return 0;
+    const has = (v) => {
+      if (Array.isArray(v)) return v.length > 0;
+      return v !== undefined && v !== null && String(v).trim().length > 0;
+    };
+    const checks = [
+      // Basic
+      has(m.name), has(m.mobileNumber), has(m.gender), has(m.dateOfBirth), has(m.photoUrl), has(m.district),
+      // Career
+      has(m.designation), has(m.workExp), has(m.careerProfile?.role), has(m.careerProfile?.industry), has(m.skills),
+      // Education / Docs
+      has(m.resumeLink), has(m.highest_education), has(m.branch), has(m.passOutYear),
+      // Personal
+      has(m.fatherName), has(m.address || m.hometown), has(m.languages), has(m.maritalStatus), has(m.mobileNumber),
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  };
+
+  const profileCompletion = calcCompletion(ownMember);
 
   // ✅ 3D tilt refs (ONLY for About card)
   const aboutCardRef = useRef(null);
@@ -114,6 +137,7 @@ const CandidateDashboard = () => {
           (m) => String(m._id) === String(user?.memberId)
         );
         if (ownMember?.name) setMemberName(ownMember.name);
+        setOwnMember(ownMember || null);
 
         const mentors = allMembers
           .filter((m) => m.memberType?.toLowerCase() === "mentor")
@@ -254,41 +278,76 @@ const CandidateDashboard = () => {
         </div>
       </section>
 
-      {/* ✅ Profile Completion (NOW SAME PREMIUM CARD STYLE) */}
-      {user?.profileCompleted < 100 && (
-        <section className={styles.profileCompletionSection}>
+      {/* ✅ Profile Completion — driven by actual Detailed Profile fields */}
+      {profileCompletion < 100 && (
+        <section className={`${styles.profileCompletionSection} ${styles.enhancedProfileSection}`}>
           <div className={styles.premiumGlow} />
           <div className={styles.premiumShine} />
           <div className={styles.premiumNoise} />
 
           <div className={styles.sectionInnerPad}>
-            <div className={styles.profileHeader}>
-              <div className={styles.profileHeaderLeft}>
-                <div className={styles.checkIcon}>✓</div>
+            <div className={styles.profileHeaderEnhanced}>
+              <div className={styles.profileHeaderLeftEnhanced}>
+                <div className={styles.checkIconEnhanced}>
+                  <CheckCircle2 strokeWidth={2.5} size={24} />
+                </div>
                 <div>
                   <h3>Complete Your Profile</h3>
                   <p>Boost your chances of getting noticed by mentors.</p>
                 </div>
               </div>
-
-              <div className={styles.percentageDisplay}>
-                {user?.profileCompleted}%
+              <div className={styles.profileHeaderRightEnhanced}>
+                <span className={styles.percentageDisplayEnhanced}>
+                  {profileCompletion}%
+                </span>
               </div>
             </div>
 
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${user?.profileCompleted}%` }}
-              />
+            <div className={styles.progressContainerEnhanced}>
+              <div className={styles.progressBarEnhanced}>
+                <div
+                  className={styles.progressFillEnhanced}
+                  style={{ width: `${profileCompletion}%` }}
+                />
+              </div>
             </div>
 
-            <button
-              className={styles.completeButton}
-              onClick={() => navigate("/member/me")}
-            >
-              Complete Now <span>→</span>
-            </button>
+            <div className={styles.badgesContainerEnhanced}>
+              {[
+                { label: 'Photo',        done: !!(ownMember?.photoUrl) },
+                { label: 'Mobile',       done: !!(ownMember?.mobileNumber) },
+                { label: 'District',     done: !!(ownMember?.district) },
+                { label: 'Designation',  done: !!(ownMember?.designation) },
+                { label: 'Degree',       done: !!(ownMember?.highest_education) },
+                { label: 'Branch',       done: !!(ownMember?.branch) },
+                { label: 'Pass-out Yr', done: !!(ownMember?.passOutYear) },
+                { label: 'Resume',       done: !!(ownMember?.resumeLink) },
+                { label: 'Desired Role', done: !!(ownMember?.careerProfile?.role) },
+                { label: 'Industry',     done: !!(ownMember?.careerProfile?.industry) },
+                { label: 'Skills',       done: (ownMember?.skills?.length > 0) },
+                { label: 'Experience',   done: !!(ownMember?.workExp) },
+                { label: 'Father Name',  done: !!(ownMember?.fatherName) },
+                { label: 'Address',      done: !!(ownMember?.address || ownMember?.hometown) },
+                { label: 'Languages',    done: (ownMember?.languages?.length > 0) },
+              ].map(({ label, done }) => (
+                <span
+                  key={label}
+                  className={done ? styles.badgeDoneEnhanced : styles.badgePendingEnhanced}
+                >
+                  {done ? <CheckCircle2 size={12} strokeWidth={3} /> : <div className={styles.dotPending} />} 
+                  {label}
+                </span>
+              ))}
+            </div>
+
+            <div className={styles.actionRowEnhanced}>
+              <button
+                className={styles.completeButtonEnhanced}
+                onClick={() => navigate("/member/me")}
+              >
+                Complete Now <span>→</span>
+              </button>
+            </div>
           </div>
         </section>
       )}

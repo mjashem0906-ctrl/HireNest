@@ -30,8 +30,8 @@ function OAuthSuccess() {
 
         console.log("[OAuth] Login complete, directing home...");
 
-        // ✅ FIX: redirect new Google users to profile setup if profile is incomplete
-        if (!userData.memberId || userData.profileCompleted === 0) {
+        // Admins bypass the profile setup
+        if (userData.role !== 'Admin' && (!userData.memberId || userData.profileCompleted === 0)) {
           navigate("/profile-setup", { replace: true });
         } else {
           navigate("/", { replace: true });
