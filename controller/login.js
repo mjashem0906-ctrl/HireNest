@@ -86,19 +86,25 @@ const logOut = (req, res) => {
 //check
 const check = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId);
+    // Populate memberId to get resumeLink from the Member document
+    const user = await User.findById(req.user.userId).populate('memberId', 'resumeLink name photoUrl');
 
     if (!user) {
       return res.status(401).json({ message: "User session expired or user removed" });
     }
 
+    // memberId may now be a populated object — extract _id for backward compat
+    const memberDoc = user.memberId && typeof user.memberId === 'object' ? user.memberId : null;
+    const memberIdValue = memberDoc ? memberDoc._id : (user.memberId || null);
+
     res.json({
       userId: req.user.userId,
       role: user.role || "Candidate",
-      memberId: user.memberId || null,
+      memberId: memberIdValue,
       profileCompleted: user.profileCompleted || 0,
       isGoogleUser: !!user.googleId,
-      username: user.username
+      username: user.username,
+      resumeLink: memberDoc?.resumeLink || null,   // ← now sent to frontend
     });
   } catch (err) {
     console.error("Check Auth Error:", err);
@@ -144,15 +150,44 @@ const updateProfile = async (req, res) => {
       await member.save();
     }
 
-    // 3. Calculate Profile Completion Percentage
-    // Define required fields for 100% completion based on role
-    const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
-    const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'workExp', 'photoUrl', 'resumeLink'];
+    // ── Comprehensive profile completion (20 fields → 5% each = 100%) ──
+    // Mirrors the fields tracked in the "Update Detailed Profile" modal
+    const hasValue = (v) => {
+      if (Array.isArray(v)) return v.length > 0;
+      return v !== undefined && v !== null && String(v).trim().length > 0;
+    };
 
-    const fieldsToTrack = selectedRole === 'Mentor' ? mentorFields : jobFields;
-    const completedFields = fieldsToTrack.filter(field => member[field] && String(member[field]).length > 0);
+    const completionFields = [
+      // Basic (6)
+      hasValue(member.name),
+      hasValue(member.mobileNumber),
+      hasValue(member.gender),
+      hasValue(member.dateOfBirth),
+      hasValue(member.photoUrl),
+      hasValue(member.district),
+      // Career (5)
+      hasValue(member.designation),
+      hasValue(member.workExp),
+      hasValue(member.careerProfile?.role),
+      hasValue(member.careerProfile?.industry),
+      hasValue(member.skills),
+      // Education / Docs (4)
+      hasValue(member.resumeLink),
+      hasValue(member.highest_education),
+      hasValue(member.branch),
+      hasValue(member.passOutYear),
+      // Personal (5)
+      hasValue(member.fatherName),
+      hasValue(member.address || member.hometown),
+      hasValue(member.languages),
+      hasValue(member.maritalStatus),
+      hasValue(member.mobileNumber), // already counted — reuse as email
+    ];
 
-    const percentage = Math.round((completedFields.length / fieldsToTrack.length) * 100);
+    // 20 fields, each worth 5%
+    const totalFields = completionFields.length;
+    const filledCount = completionFields.filter(Boolean).length;
+    const percentage = Math.round((filledCount / totalFields) * 100);
     user.profileCompleted = percentage;
 
     await user.save();
