@@ -6363,7 +6363,8 @@ const BulkCSVReviewModal = ({
   jobsData,
   onSave,
   onBulkSubmit,
-  refereesList,
+  refereesList = [],
+  recruitersList = [],
 }) => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editedJobs, setEditedJobs] = useState([]);
@@ -6420,7 +6421,7 @@ const BulkCSVReviewModal = ({
       <div className={styles.bulkModal}>
         <div className={styles.bulkModalHeader}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <h2 style={{ margin: 0 }}>Review & Edit CSV Jobs</h2>
+            <h2 style={{ margin: 0 }}>Review & Edit CSV/Exel Jobs</h2>
             <div style={{ fontSize: 12, fontWeight: 900, color: "#64748b" }}>
               Review the imported rows, edit if needed, then submit all.
             </div>
@@ -6667,22 +6668,20 @@ const BulkCSVReviewModal = ({
                             <div className={styles.bulkFieldGroup}>
                               <label>Education</label>
                               {isEditing ? (
-                                <>
-                                  <input
-                                    list="bulkDegreeOptions"
-                                    value={job.education || ""}
-                                    onChange={(e) =>
-                                      handleFieldChange(index, "education", e.target.value)
-                                    }
-                                    className={styles.bulkInput}
-                                    placeholder="Education"
-                                  />
-                                  <datalist id="bulkDegreeOptions">
-                                    {DEGREE_OPTIONS.map((opt, i) => (
-                                      <option key={i} value={opt} />
-                                    ))}
-                                  </datalist>
-                                </>
+                                <select
+                                  value={job.education || ""}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "education", e.target.value)
+                                  }
+                                  className={styles.bulkSelect}
+                                >
+                                  <option value="">Select Education</option>
+                                  {DEGREE_OPTIONS.map((opt, i) => (
+                                    <option key={i} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
                               ) : (
                                 <div>{job.education || "—"}</div>
                               )}
@@ -6691,26 +6690,24 @@ const BulkCSVReviewModal = ({
                             <div className={styles.bulkFieldGroup}>
                               <label>Passed Out Year</label>
                               {isEditing ? (
-                                <>
-                                  <input
-                                    list="bulkPassoutYearOptions"
-                                    value={job.passedOutYear || ""}
-                                    onChange={(e) =>
-                                      handleFieldChange(
-                                        index,
-                                        "passedOutYear",
-                                        e.target.value
-                                      )
-                                    }
-                                    className={styles.bulkInput}
-                                    placeholder="2024"
-                                  />
-                                  <datalist id="bulkPassoutYearOptions">
-                                    {PASSOUT_YEAR_OPTIONS.map((year, i) => (
-                                      <option key={i} value={year} />
-                                    ))}
-                                  </datalist>
-                                </>
+                                <select
+                                  value={job.passedOutYear || ""}
+                                  onChange={(e) =>
+                                    handleFieldChange(
+                                      index,
+                                      "passedOutYear",
+                                      e.target.value
+                                    )
+                                  }
+                                  className={styles.bulkSelect}
+                                >
+                                  <option value="">Select Year</option>
+                                  {PASSOUT_YEAR_OPTIONS.map((year, i) => (
+                                    <option key={i} value={year}>
+                                      {year}
+                                    </option>
+                                  ))}
+                                </select>
                               ) : (
                                 <div>{job.passedOutYear || "—"}</div>
                               )}
@@ -6762,6 +6759,41 @@ const BulkCSVReviewModal = ({
                                     ? refereesList?.find(
                                         (r) => r._id === job.refereedBy
                                       )?.name || "Referee Selected"
+                                    : "None"}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className={styles.bulkFieldGroup}>
+                              <label>Job Posted By (Recruiter)</label>
+                              {isEditing ? (
+                                <select
+                                  value={job.jobPostedBy || ""}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "jobPostedBy", e.target.value)
+                                  }
+                                  className={styles.bulkSelect}
+                                >
+                                  <option value="">
+                                    Select a Recruiter
+                                  </option>
+                                  {recruitersList?.map((recruiter) => (
+                                    <option
+                                      key={recruiter._id}
+                                      value={recruiter._id}
+                                    >
+                                      {recruiter.fullName ||
+                                        recruiter.email ||
+                                        "Unknown Recruiter"}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <div>
+                                  {job.jobPostedBy
+                                    ? recruitersList?.find(
+                                        (r) => r._id === job.jobPostedBy
+                                      )?.fullName || "Recruiter Selected"
                                     : "None"}
                                 </div>
                               )}
@@ -6968,9 +7000,18 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     setCsvFileName(file.name);
 
-    const allowedTypes = ["text/csv", "application/vnd.ms-excel"];
-    if (!allowedTypes.includes(file.type) && !file.name.endsWith(".csv")) {
-      alert("Please upload a valid CSV file");
+    const allowedTypes = [
+      "text/csv",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+    if (
+      !allowedTypes.includes(file.type) &&
+      !file.name.toLowerCase().endsWith(".csv") &&
+      !file.name.toLowerCase().endsWith(".xlsx") &&
+      !file.name.toLowerCase().endsWith(".xls")
+    ) {
+      alert("Please upload a valid CSV or Excel file");
       e.target.value = "";
       setCsvFileName("");
       return;
@@ -6986,43 +7027,89 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const text = event.target.result;
-        const rows = String(text)
-          .split("\n")
-          .filter((row) => row.trim() !== "");
-
-        if (rows.length < 2) {
-          alert("CSV is empty or invalid format");
-          return;
-        }
-
-        const headers = rows[0].split(",").map((h) => h.trim().toLowerCase());
+        const data = event.target.result;
         const bulkData = [];
 
-        for (let i = 1; i < rows.length; i++) {
-          const values = rows[i].split(",").map((v) => v.trim());
-          const entry = {};
-          headers.forEach((header, index) => {
-            entry[header] = values[index] || "";
-          });
+        if (file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv") {
+          const text = new TextDecoder("utf-8").decode(data);
+          const rows = String(text)
+            .split("\n")
+            .filter((row) => row.trim() !== "");
 
-          bulkData.push({
-            title: entry.title || "",
-            companyName: entry.companyname || entry.companyName || "",
-            role: entry.role || "",
-            employmentType:
-              entry.employmenttype || entry.employmentType || "Full-time",
-            location: entry.location || "",
-            experience: entry.experience || "",
-            salary: entry.salary || "",
-            education: entry.education || "",
-            passedOutYear:
-              entry.passedoutyear || entry.passedOutYear || "",
-            keySkills: entry.keyskills || entry.keySkills || "",
-            description: entry.description || "",
-            refereedBy: "",
-            jobPosted: "",
-          });
+          if (rows.length < 2) {
+            alert("CSV is empty or invalid format");
+            return;
+          }
+
+          const headers = rows[0].split(",").map((h) => h.trim().toLowerCase());
+
+          for (let i = 1; i < rows.length; i++) {
+            const values = rows[i].split(",").map((v) => v.trim());
+            const entry = {};
+            headers.forEach((header, index) => {
+              entry[header] = values[index] || "";
+            });
+
+            bulkData.push({
+              title: entry.title || "",
+              companyName: entry.companyname || entry.companyName || "",
+              role: entry.role || "",
+              employmentType:
+                entry.employmenttype || entry.employmentType || "Full-time",
+              location: entry.location || "",
+              experience: entry.experience || "",
+              salary: entry.salary || "",
+              education: entry.education || "",
+              passedOutYear:
+                entry.passedoutyear || entry.passedOutYear || "",
+              keySkills: entry.keyskills || entry.keySkills || "",
+              description: entry.description || "",
+              refereedBy: "",
+              jobPosted: "",
+            });
+          }
+        } else {
+          // Parse as Excel
+          const workbook = XLSX.read(data, { type: "array" });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+          if (jsonData.length < 2) {
+            alert("Excel file is empty or invalid format");
+            return;
+          }
+
+          const headers = jsonData[0].map((h) => String(h || "").trim().toLowerCase());
+
+          for (let i = 1; i < jsonData.length; i++) {
+            const rowData = jsonData[i];
+            // Skip completely empty rows
+            if (rowData.every((cell) => cell === "")) continue;
+
+            const entry = {};
+            headers.forEach((header, index) => {
+              entry[header] = String(rowData[index] || "").trim();
+            });
+
+            bulkData.push({
+              title: entry.title || "",
+              companyName: entry.companyname || entry.companyName || "",
+              role: entry.role || "",
+              employmentType:
+                entry.employmenttype || entry.employmentType || "Full-time",
+              location: entry.location || "",
+              experience: entry.experience || "",
+              salary: entry.salary || "",
+              education: entry.education || "",
+              passedOutYear:
+                entry.passedoutyear || entry.passedOutYear || "",
+              keySkills: entry.keyskills || entry.keySkills || "",
+              description: entry.description || "",
+              refereedBy: "",
+              jobPosted: "",
+            });
+          }
         }
 
         if (bulkData.length === 1) {
@@ -7041,17 +7128,19 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
           setRefereedBy("");
           setJobPosted("");
           alert("Data loaded into form. Review and click Post.");
-        } else {
+        } else if (bulkData.length > 1) {
           onSubmit(bulkData, true);
+        } else {
+          alert("No valid data found in file.");
         }
       } catch (error) {
-        console.error("CSV parsing error:", error);
-        alert("Error parsing CSV file. Please check the format.");
+        console.error("File parsing error:", error);
+        alert("Error parsing file. Please check the format.");
       }
     };
 
     reader.onerror = () => alert("Error reading file. Please try again.");
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleSubmit = (e) => {
@@ -7117,7 +7206,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
               <input
                 type="file"
-                accept=".csv"
+                accept=".csv, .xls, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                 id="csv-upload"
                 className={styles.csvInput}
                 onChange={handleFileChange}
@@ -7128,8 +7217,8 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                   <FileText size={20} />
                 </span>
                 <span className={styles.csvText}>
-                  <h4>Upload CSV Format</h4>
-                  <p>Drop your CSV here or click to browse (max 5MB)</p>
+                  <h4>Upload CSV/Excel Format</h4>
+                  <p>Drop your CSV or Excel file here or click to browse (max 5MB)</p>
                 </span>
                 <span className={styles.csvAction}>Choose File</span>
               </label>
@@ -7894,6 +7983,7 @@ function Jobs() {
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
   const [refereesList, setRefereesList] = useState([]);
+  const [recruitersList, setRecruitersList] = useState([]);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
 
@@ -7923,6 +8013,18 @@ function Jobs() {
       setRefereesList(filtered);
     }
   }, [memberContext]);
+
+  useEffect(() => {
+    const fetchRecruiters = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
+        setRecruitersList(response.data);
+      } catch (error) {
+        console.error("Error fetching recruiters:", error);
+      }
+    };
+    fetchRecruiters();
+  }, []);
 
   useEffect(() => {
     const updateHeaderHeight = () => {
@@ -9567,6 +9669,7 @@ function Jobs() {
         onSave={handleSaveBulkJobs}
         onBulkSubmit={handleSubmitBulkJobs}
         refereesList={refereesList}
+        recruitersList={recruitersList}
       />
 
       <ResumeChoiceModal

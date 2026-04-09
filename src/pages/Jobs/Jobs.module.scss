@@ -11086,8 +11086,8 @@ $radius-xl: 22px;
   width: min(1200px, 96vw);
   max-height: calc(100vh - 32px);
   background: var(--jb-white);
-  border-radius: 22px;
-  border: 1px solid var(--jb-border);
+  border-radius: 24px;
+  border: 1.5px solid var(--jb-border);
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
   overflow: hidden;
   display: flex;
@@ -11096,18 +11096,19 @@ $radius-xl: 22px;
 }
 
 .bulkModalHeader {
-  padding: 16px 18px;
+  padding: 20px 22px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(139, 92, 246, 0.08));
-  border-bottom: 1px solid var(--jb-border);
+  border-bottom: 1.5px solid var(--jb-border);
+  backdrop-filter: blur(2px);
 
   h2 {
     margin: 0;
-    font-weight: 1200;
-    font-size: 30px;
-    letter-spacing: -0.4px;
+    font-weight: 1300;
+    font-size: 32px;
+    letter-spacing: -0.6px;
     color: var(--jb-text);
   }
 }
@@ -11137,34 +11138,35 @@ $radius-xl: 22px;
 }
 
 .bulkStats {
-  padding: 12px 18px;
+  padding: 14px 22px;
   display: flex;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
   align-items: center;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(248, 250, 252, 0.75);
+  border-bottom: 1.5px solid rgba(226, 232, 240, 0.8);
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.8));
 
   span {
     display: inline-flex;
     gap: 8px;
     align-items: center;
-    font-weight: 950;
+    font-weight: 1000;
     color: var(--jb-text2);
+    font-size: 13px;
   }
 
   strong {
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(37, 99, 235, 0.1);
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(139, 92, 246, 0.08));
     color: #1d4ed8;
-    font-weight: 1100;
+    font-weight: 1200;
   }
 }
 
 :global([data-theme="dark"]) .bulkStats {
-  background: rgba(148, 163, 184, 0.06);
-  border-bottom: 1px solid var(--jb-border);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.5));
+  border-bottom: 1.5px solid var(--jb-border);
   
   strong {
     background: rgba(37, 99, 235, 0.2);
@@ -11173,9 +11175,10 @@ $radius-xl: 22px;
 }
 
 .bulkTableContainer {
-  padding: 14px 18px 16px;
+  padding: 16px 22px 18px;
   overflow: auto;
   flex: 1;
+  background: var(--jb-white);
 }
 
 .bulkTableContainer::-webkit-scrollbar {
@@ -11197,34 +11200,35 @@ $radius-xl: 22px;
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border: 1px solid rgba(226, 232, 240, 0.95);
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
   border-radius: 18px;
   overflow: hidden;
   background: var(--jb-white);
-  box-shadow: $shadow-sm;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 :global([data-theme="dark"]) .bulkTable {
-  border: 1px solid var(--jb-border);
+  border: 1.5px solid var(--jb-border);
 }
 
 .bulkTable thead th {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: var(--jb-soft);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(139, 92, 246, 0.08));
+  border-bottom: 1.5px solid rgba(226, 232, 240, 0.95);
   padding: 14px 14px;
-  font-size: 12px;
-  letter-spacing: 0.8px;
+  font-size: 11px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  font-weight: 1200;
+  font-weight: 1300;
   color: var(--jb-text2);
   white-space: nowrap;
 }
 
 :global([data-theme="dark"]) .bulkTable thead th {
-  border-bottom: 1px solid var(--jb-border);
+  border-bottom: 1.5px solid var(--jb-border);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(139, 92, 246, 0.12));
 }
 
 .bulkTable tbody td {
@@ -11350,12 +11354,14 @@ $radius-xl: 22px;
 }
 
 .bulkExpandedRow td {
-  background: rgba(248, 250, 252, 0.7);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.04), rgba(139, 92, 246, 0.04));
   padding: 16px;
+  border-top: 1.5px solid rgba(37, 99, 235, 0.12);
 }
 
 :global([data-theme="dark"]) .bulkExpandedRow td {
-  background: rgba(148, 163, 184, 0.06);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(139, 92, 246, 0.08));
+  border-top: 1.5px solid rgba(37, 99, 235, 0.2);
 }
 
 .bulkExpandedContent {
@@ -11372,16 +11378,23 @@ $radius-xl: 22px;
   label {
     display: block;
     margin-bottom: 8px;
-    font-size: 12px;
-    font-weight: 1200;
-    letter-spacing: 0.8px;
+    font-size: 11px;
+    letter-spacing: 1px;
     text-transform: uppercase;
+    font-weight: 1200;
     color: var(--jb-text2);
   }
 
   div {
     font-weight: 900;
     color: var(--jb-text);
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(248, 250, 252, 0.5);
+  }
+
+  :global([data-theme="dark"]) & div {
+    background: rgba(148, 163, 184, 0.05);
   }
 }
 
@@ -11390,6 +11403,106 @@ $radius-xl: 22px;
   line-height: 1.5;
   color: var(--jb-text2);
   font-weight: 850;
+}
+
+.bulkInput,
+.bulkSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  background: var(--jb-white);
+  color: var(--jb-text);
+  font-weight: 950;
+  font-size: 13px;
+  transition: 0.18s ease;
+  box-sizing: border-box;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--jb-white);
+  }
+
+  &::placeholder {
+    color: rgba(107, 114, 128, 0.75);
+    font-weight: 850;
+  }
+
+  option {
+    background: var(--jb-white);
+    color: var(--jb-text);
+    font-weight: 900;
+    padding: 8px 4px;
+  }
+}
+
+:global([data-theme="dark"]) .bulkInput,
+:global([data-theme="dark"]) .bulkSelect {
+  border: 1.5px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--jb-text);
+
+  &:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  &::placeholder {
+    color: rgba(148, 163, 184, 0.75);
+  }
+
+  option {
+    background: #1e293b;
+    color: #e2e8f0;
+    font-weight: 900;
+    padding: 8px 4px;
+  }
+}
+
+.bulkTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  background: var(--jb-white);
+  color: var(--jb-text);
+  font-weight: 900;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+  transition: 0.18s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--jb-white);
+  }
+
+  &::placeholder {
+    color: rgba(107, 114, 128, 0.75);
+    font-weight: 850;
+  }
+}
+
+:global([data-theme="dark"]) .bulkTextarea {
+  border: 1.5px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.5);
+  color: var(--jb-text);
+
+  &:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  &::placeholder {
+    color: rgba(148, 163, 184, 0.75);
+  }
 }
 
 .bulkPagination {
@@ -11439,9 +11552,9 @@ $radius-xl: 22px;
 }
 
 .bulkFooterButtons {
-  padding: 14px 18px 18px;
-  border-top: 1px solid rgba(226, 232, 240, 0.85);
-  background: rgba(248, 250, 252, 0.9);
+  padding: 16px 22px 20px;
+  border-top: 1.5px solid rgba(226, 232, 240, 0.85);
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(248, 250, 252, 0.9));
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
@@ -11452,33 +11565,41 @@ $radius-xl: 22px;
 }
 
 :global([data-theme="dark"]) .bulkFooterButtons {
-  border-top: 1px solid var(--jb-border);
-  background: rgba(148, 163, 184, 0.06);
+  border-top: 1.5px solid var(--jb-border);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.7));
 }
 
 .bulkSaveAllButton,
 .bulkSubmitAllButton,
 .bulkCancelButton {
-  height: 50px;
+  height: 52px;
   border-radius: 16px;
   border: none;
   cursor: pointer;
   font-weight: 1200;
+  font-size: 14px;
   transition: 0.18s ease;
 
   &:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
     box-shadow: $shadow-md;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 }
 
 .bulkSaveAllButton {
   background: rgba(37, 99, 235, 0.12);
   color: #1d4ed8;
+  border: 1.5px solid rgba(37, 99, 235, 0.2);
 }
 
 :global([data-theme="dark"]) .bulkSaveAllButton {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.15);
 }
 
 .bulkSubmitAllButton {
@@ -11488,12 +11609,13 @@ $radius-xl: 22px;
 }
 
 .bulkCancelButton {
-  background: rgba(107, 114, 128, 0.12);
+  background: rgba(107, 114, 128, 0.1);
   color: #374151;
+  border: 1.5px solid rgba(107, 114, 128, 0.2);
 }
 
 :global([data-theme="dark"]) .bulkCancelButton {
-  background: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.1);
 }
 
 @media (max-width: 600px) {
