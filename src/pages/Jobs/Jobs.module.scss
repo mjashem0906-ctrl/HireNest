@@ -10790,6 +10790,7 @@ $radius-xl: 22px;
   position: fixed;
   inset: 0;
   background: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
   z-index: 2200;

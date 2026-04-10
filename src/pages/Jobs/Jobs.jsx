@@ -6927,6 +6927,44 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     saveAs(blob, "jobs_template.csv");
   };
 
+    const downloadExcelTemplate = () => {
+    const headers = [
+      "title",
+      "companyName",
+      "Job role",
+      "employmentType",
+      "location",
+      "experience",
+      "salary",
+      "education",
+      "passedOutYear",
+      "keySkills",
+      "description",
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers]);
+
+    // Set column widths for better readability
+    const colWidths = [
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 30 },
+    ];
+    ws["!cols"] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, "Jobs Template");
+    XLSX.writeFile(wb, "jobs_template.xlsx");
+  };
+
   useEffect(() => {
     if (memberContext) {
       const filtered = memberContext.filter((m) => m.memberType === "Referee");
@@ -7202,6 +7240,13 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 >
                   Download CSV Template
                 </button>
+                <button
+                  type="button"
+                  onClick={downloadExcelTemplate}
+                  className={styles.downloadTemplateBtn}
+                >
+                  Download Excel Template
+                </button>
               </div>
 
               <input
@@ -7452,7 +7497,7 @@ ProvidedForm.propTypes = {
 // =========================================================================================
 // ResumeChoiceModal — shown when user already has a resume in profile
 // =========================================================================================
-const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTitle, existingResumeUrl }) => {
+const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTitle, existingResumeUrl, isDarkTheme }) => {
   if (!isOpen) return null;
 
   const getResumeName = (url) => {
@@ -7479,27 +7524,33 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
       <div
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          background: "#fff", borderRadius: "20px", padding: "32px 28px 28px",
+          background: isDarkTheme ? "#0f172a" : "#fff",
+          borderRadius: "20px", padding: "32px 28px 28px",
           width: "100%", maxWidth: "460px",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08)",
+          boxShadow: isDarkTheme ? "0 25px 60px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.3)" : "0 25px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08)",
           animation: "slideUpFade 0.25s ease",
+          border: isDarkTheme ? "1px solid rgba(148, 163, 184, 0.18)" : "none",
         }}
       >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#0f172a" }}>Choose Your Resume</h3>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: isDarkTheme ? "#e5e7eb" : "#0f172a" }}>Choose Your Resume</h3>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: isDarkTheme ? "#cbd5e1" : "#64748b", fontWeight: 600 }}>
               Applying for: <span style={{ color: "#4f46e5" }}>{jobTitle}</span>
             </p>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "#94a3b8", padding: "4px", borderRadius: "8px",
+              background: isDarkTheme ? "rgba(148, 163, 184, 0.10)" : "#f1f5f9",
+              border: "none", cursor: "pointer",
+              color: isDarkTheme ? "#94a3b8" : "#94a3b8", padding: "4px", borderRadius: "8px",
               display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "0.2s ease",
             }}
+            onMouseEnter={e => e.currentTarget.style.color = isDarkTheme ? "#fca5a5" : "#ef4444"}
+            onMouseLeave={e => e.currentTarget.style.color = isDarkTheme ? "#94a3b8" : "#94a3b8"}
             aria-label="Close"
           >
             <X size={20} />
@@ -7507,20 +7558,21 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: "#e2e8f0", marginBottom: 20 }} />
+        <div style={{ height: 1, background: isDarkTheme ? "rgba(148, 163, 184, 0.18)" : "#e2e8f0", marginBottom: 20 }} />
 
         {/* Option 1 — Use Existing */}
         <button
           onClick={onUseExisting}
           style={{
             width: "100%", textAlign: "left", padding: "18px 20px",
-            border: "2px solid #e0e7ff", borderRadius: "14px",
-            background: "linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%)",
+            border: isDarkTheme ? "2px solid rgba(79, 70, 229, 0.3)" : "2px solid #e0e7ff",
+            borderRadius: "14px",
+            background: isDarkTheme ? "linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.08))" : "linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%)",
             cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", gap: 16,
             transition: "all 0.2s ease",
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = "#4f46e5"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e0e7ff"; e.currentTarget.style.transform = "translateY(0)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = isDarkTheme ? "rgba(79, 70, 229, 0.3)" : "#e0e7ff"; e.currentTarget.style.transform = "translateY(0)"; }}
         >
           <div style={{
             width: 44, height: 44, borderRadius: "12px", flexShrink: 0,
@@ -7530,12 +7582,12 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
             <CheckCircle size={22} color="#fff" />
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 3 }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: isDarkTheme ? "#e5e7eb" : "#1e293b", marginBottom: 3 }}>
               Use Existing Resume
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <div style={{
-                fontSize: 12, color: "#6366f1", fontWeight: 600,
+                fontSize: 12, color: isDarkTheme ? "#a5b4fc" : "#6366f1", fontWeight: 600,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                 maxWidth: 180,
               }}>
@@ -7550,14 +7602,14 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
                   onClick={e => e.stopPropagation()}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 4,
-                    fontSize: 11, fontWeight: 700, color: "#0ea5e9",
+                    fontSize: 11, fontWeight: 700, color: isDarkTheme ? "#38bdf8" : "#0ea5e9",
                     textDecoration: "none", padding: "2px 8px",
-                    background: "#e0f2fe", borderRadius: "6px",
+                    background: isDarkTheme ? "rgba(56, 189, 248, 0.15)" : "#e0f2fe", borderRadius: "6px",
                     flexShrink: 0, whiteSpace: "nowrap",
                     transition: "background 0.15s",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#bae6fd"}
-                  onMouseLeave={e => e.currentTarget.style.background = "#e0f2fe"}
+                  onMouseEnter={e => e.currentTarget.style.background = isDarkTheme ? "rgba(56, 189, 248, 0.25)" : "#bae6fd"}
+                  onMouseLeave={e => e.currentTarget.style.background = isDarkTheme ? "rgba(56, 189, 248, 0.15)" : "#e0f2fe"}
                 >
                   {/* Eye icon */}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -7568,7 +7620,7 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
                 </a>
               )}
             </div>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginTop: 3 }}>
+            <div style={{ fontSize: 11, color: isDarkTheme ? "#cbd5e1" : "#94a3b8", fontWeight: 500, marginTop: 3 }}>
               Click to apply instantly with this resume
             </div>
           </div>
@@ -7584,13 +7636,14 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
           onClick={onUploadNew}
           style={{
             width: "100%", textAlign: "left", padding: "18px 20px",
-            border: "2px solid #e2e8f0", borderRadius: "14px",
-            background: "#fafbff", cursor: "pointer",
+            border: isDarkTheme ? "2px solid rgba(148, 163, 184, 0.2)" : "2px solid #e2e8f0",
+            borderRadius: "14px",
+            background: isDarkTheme ? "rgba(148, 163, 184, 0.06)" : "#fafbff", cursor: "pointer",
             display: "flex", alignItems: "center", gap: 16,
             transition: "all 0.2s ease",
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = "#94a3b8"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.transform = "translateY(0)"; }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = isDarkTheme ? "#cbd5e1" : "#94a3b8"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = isDarkTheme ? "rgba(148, 163, 184, 0.2)" : "#e2e8f0"; e.currentTarget.style.transform = "translateY(0)"; }}
         >
           <div style={{
             width: 44, height: 44, borderRadius: "12px", flexShrink: 0,
@@ -7600,15 +7653,15 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
             <FileText size={22} color="#fff" />
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 2 }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: isDarkTheme ? "#e5e7eb" : "#1e293b", marginBottom: 2 }}>
               Upload a Different Resume
             </div>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>
+            <div style={{ fontSize: 11, color: isDarkTheme ? "#cbd5e1" : "#94a3b8", fontWeight: 500 }}>
               PDF, DOC, or DOCX (Max 5MB)
             </div>
           </div>
           <div style={{ marginLeft: "auto", flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isDarkTheme ? "#cbd5e1" : "#94a3b8"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </div>
@@ -7620,11 +7673,11 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
           style={{
             width: "100%", marginTop: 16, padding: "11px",
             background: "none", border: "none", cursor: "pointer",
-            color: "#94a3b8", fontWeight: 700, fontSize: 13,
+            color: isDarkTheme ? "#94a3b8" : "#94a3b8", fontWeight: 700, fontSize: 13,
             borderRadius: "10px", transition: "color 0.2s",
           }}
-          onMouseEnter={e => e.currentTarget.style.color = "#64748b"}
-          onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
+          onMouseEnter={e => e.currentTarget.style.color = isDarkTheme ? "#cbd5e1" : "#64748b"}
+          onMouseLeave={e => e.currentTarget.style.color = isDarkTheme ? "#94a3b8" : "#94a3b8"}
         >
           Cancel
         </button>
@@ -9677,6 +9730,7 @@ function Jobs() {
         onClose={() => setShowResumeChoiceModal(false)}
         jobTitle={selectedJob?.title}
         existingResumeUrl={user?.resumeLink}
+        isDarkTheme={isDarkTheme}
         onUseExisting={() => {
           setShowResumeChoiceModal(false);
           handleApply(selectedJob, null, true); // useExistingResume = true → skips upload guard

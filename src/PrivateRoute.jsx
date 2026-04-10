@@ -7,6 +7,7 @@ import { useAuth } from "./context/AuthContext";
 
 const PrivateRoute = ({ children, roles }) => {
   const { user, loading } = useAuth();
+
   if (loading) {
     return (
       <div className="app">
@@ -15,8 +16,9 @@ const PrivateRoute = ({ children, roles }) => {
     );
   }
 
+  // If no user after loading completes, redirect to login
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   // Redirect new users (no memberId or incomplete profile) to profile setup
@@ -33,8 +35,6 @@ const PrivateRoute = ({ children, roles }) => {
   }
 
   return children;
-
-
 };
 
 export default PrivateRoute;

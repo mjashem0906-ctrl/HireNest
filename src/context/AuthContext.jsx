@@ -16,9 +16,16 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const res = await API.get('/auth/check', { withCredentials: true }); // adjust path if needed
-      setUser(res.data); // { userId, role }
+      if (res.status === 200 && res.data) {
+        setUser(res.data); // { userId, role }
+      } else {
+        setUser(null);
+        localStorage.removeItem('token');
+      }
     } catch (err) {
+      console.error("Auth check failed:", err.response?.status, err.message);
       setUser(null);
+      localStorage.removeItem('token'); // Clear stale token on auth failure
     } finally {
       setLoading(false);
     }
@@ -30,11 +37,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData); // optional manual login update
+    // If a token was in localStorage, it should be overwritten by server cookie
+    // but let's ensure a fresh state
+    localStorage.removeItem('token');
   };
 
   const logout = async () => {
-    await API.post('/auth/logout', {}, { withCredentials: true });
+    try {
+      await API.post('/auth/logout', {}, { withCredentials: true });
+    } catch (err) {
+      console.error("Logout API call failed:", err);
+    }
+    // Clear both context and localStorage
     setUser(null);
+    localStorage.removeItem('token');
   };
 
   return (
