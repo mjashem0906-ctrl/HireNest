@@ -609,6 +609,8 @@ const addServicePost = async (req, res) => {
       education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted
     } = req.body;
 
+    const normalizedEmploymentType = normalizeEmploymentType(employmentType);
+
     // Validate that at least one of refereedBy or jobPosted is provided
     if (!refereedBy && !jobPosted) {
       return res.status(400).json({
@@ -643,7 +645,7 @@ const addServicePost = async (req, res) => {
       title,
       description,
       companyName,
-      employmentType,
+      employmentType: normalizedEmploymentType,
       location,
       education,
       passedOutYear,
@@ -1241,14 +1243,35 @@ const bulkCreateServices = async (req, res) => {
       });
     }
 
-    // Add memberId to each service
-    const memberId = req.user?.memberId;
-    const servicesWithMemberId = servicesData.map(service => ({
-      ...service,
-      memberId
-    }));
+    const memberId = req.user?.memberId || null;
+    const createdServices = [];
 
-    const createdServices = await Service.insertMany(servicesWithMemberId);
+    for (const serviceData of servicesData) {
+      // Validate each job matches the mandatory selection rule
+      if (!serviceData.refereedBy && !serviceData.jobPosted) {
+        return res.status(400).json({
+          success: false,
+          message: "Validation Error",
+          errors: [`Job "${serviceData.title || "Untitled"}" requires either a 'Refereed Person' or 'Job Posted By (Recruiter)'.`]
+        });
+      }
+
+      // Generate Job ID using the standard method
+      // sequential calls in a loop are safe because each one waits for the previous save
+      const jobId = await generateJobId();
+
+      // Create service
+      const service = await Service.create({
+        ...serviceData,
+        memberId,
+        employmentType: normalizeEmploymentType(serviceData.employmentType),
+        jobId,
+        refereedBy: serviceData.refereedBy || null,
+        jobPosted: serviceData.jobPosted || null
+      });
+
+      createdServices.push(service);
+    }
 
     res.status(201).json({
       success: true,
@@ -1340,6 +1363,18 @@ const linkJobToReferee = async (req, res) => {
       error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
+};
+
+const normalizeEmploymentType = (type) => {
+  if (!type) return "Full-time";
+  const t = type.toLowerCase().replace(/[^a-z-]/g, "");
+  if (t === "full-time" || t === "fulltime") return "Full-time";
+  if (t === "part-time" || t === "parttime") return "Part-time";
+  if (t === "internship") return "Internship";
+  if (t === "remote") return "Remote";
+  if (t === "contract") return "Contract";
+  if (t === "freelance") return "Freelance";
+  return "Full-time";
 };
 
 module.exports = {
