@@ -6768,9 +6768,9 @@ const BulkCSVReviewModal = ({
                               <label>Job Posted By (Recruiter)</label>
                               {isEditing ? (
                                 <select
-                                  value={job.jobPostedBy || ""}
+                                  value={job.jobPosted || ""}
                                   onChange={(e) =>
-                                    handleFieldChange(index, "jobPostedBy", e.target.value)
+                                    handleFieldChange(index, "jobPosted", e.target.value)
                                   }
                                   className={styles.bulkSelect}
                                 >
@@ -6790,9 +6790,9 @@ const BulkCSVReviewModal = ({
                                 </select>
                               ) : (
                                 <div>
-                                  {job.jobPostedBy
+                                  {job.jobPosted
                                     ? recruitersList?.find(
-                                        (r) => r._id === job.jobPostedBy
+                                        (r) => r._id === job.jobPosted
                                       )?.fullName || "Recruiter Selected"
                                     : "None"}
                                 </div>
@@ -6895,6 +6895,18 @@ BulkCSVReviewModal.propTypes = {
 
 const CSV_TEMPLATE_HEADERS =
   "title,companyName,role,employmentType,location,experience,salary,education,passedOutYear,keySkills,description\n";
+
+const normalizeEmploymentType = (type) => {
+  if (!type) return "Full-time";
+  const t = type.toLowerCase().trim().replace(/[^a-z]/g, "");
+  if (t === "fulltime") return "Full-time";
+  if (t === "parttime") return "Part-time";
+  if (t === "internship") return "Internship";
+  if (t === "remote") return "Remote";
+  if (t === "contract") return "Contract";
+  if (t === "freelance") return "Freelance";
+  return "Full-time";
+};
 
 // =========================================================================================
 // ProvidedForm
@@ -7092,8 +7104,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               title: entry.title || "",
               companyName: entry.companyname || entry.companyName || "",
               role: entry.role || "",
-              employmentType:
-                entry.employmenttype || entry.employmentType || "Full-time",
+              employmentType: normalizeEmploymentType(
+                entry.employmenttype || entry.employmentType || ""
+              ),
               location: entry.location || "",
               experience: entry.experience || "",
               salary: entry.salary || "",
@@ -7134,8 +7147,9 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               title: entry.title || "",
               companyName: entry.companyname || entry.companyName || "",
               role: entry.role || "",
-              employmentType:
-                entry.employmenttype || entry.employmentType || "Full-time",
+              employmentType: normalizeEmploymentType(
+                entry.employmenttype || entry.employmentType || ""
+              ),
               location: entry.location || "",
               experience: entry.experience || "",
               salary: entry.salary || "",
@@ -8810,21 +8824,33 @@ function Jobs() {
   const handleSubmitBulkJobs = async (editedJobs) => {
     if (!editedJobs.length) return;
 
+    // Client-side validation to ensure all jobs have at least one selection
+    const invalidJobs = editedJobs.filter((job) => !job.refereedBy && !job.jobPosted);
+    if (invalidJobs.length > 0) {
+      alert(
+        `Validation Error: ${invalidJobs.length} job(s) are missing both a 'Refereed Person' and 'Job Posted By (Recruiter)'. Please update them before submitting.`
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const jobsToSubmit = editedJobs.map((job) => ({
         ...job,
         refereedBy: job.refereedBy || null,
+        jobPosted: job.jobPosted || null,
       }));
-      const uploadPromises = jobsToSubmit.map((job) => API.post("/service", job));
-      await Promise.all(uploadPromises);
 
-      alert(`${editedJobs.length} jobs uploaded successfully!`);
+      // Use the dedicated bulk endpoint to prevent race conditions and duplicate ID errors
+      const response = await API.post("/service/bulk", jobsToSubmit);
+
+      alert(`Successfully uploaded ${response.data.data.length} jobs!`);
       fetchJobPosts();
       setShowBulkReviewModal(false);
     } catch (error) {
-      alert("Error during bulk upload. Some jobs may not have posted.");
-      console.error(error);
+      console.error("Bulk upload error:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data?.errors?.[0] || "Error during bulk upload.";
+      alert(errorMsg);
       fetchJobPosts();
     } finally {
       setIsSubmitting(false);
