@@ -160,7 +160,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   ArrowLeft, User, Mail, Phone, Briefcase, Building,
-  Calendar, Edit, MapPin, Layers, Users, BarChart, Hash, CheckCircle
+  Calendar, Edit, MapPin, Layers, Users, BarChart, Hash, CheckCircle, Trash2
 } from 'lucide-react';
 import styles from './RecruiterDetail.module.scss';
 import AddRecruiterModal from './AddRecruiterModal';
@@ -177,6 +177,18 @@ const RecruiterDetail = () => {
       setRecruiter(data);
     } catch (error) {
       console.error("Error fetching recruiter:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to PERMANENTLY delete this recruiter profile? This action cannot be undone.")) {
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/recruiters/${id}`);
+        navigate('/recruiters'); // Redirect back to directory
+      } catch (error) {
+        console.error("Error deleting recruiter:", error);
+        alert("Failed to delete recruiter. Please try again.");
+      }
     }
   };
 
@@ -199,9 +211,14 @@ const RecruiterDetail = () => {
           <button onClick={() => navigate(-1)} className={styles.backButton}>
             <ArrowLeft size={18} /> Back to Directory
           </button>
-          <button className={styles.editButton} onClick={() => setIsEditOpen(true)}>
-            <Edit size={16} /> Edit Recruiter
-          </button>
+          <div style={{display: 'flex', gap: '12px'}}>
+            <button className={styles.editButton} onClick={() => setIsEditOpen(true)}>
+              <Edit size={16} /> Edit Recruiter
+            </button>
+            <button className={styles.deleteButton} onClick={handleDelete}>
+              <Trash2 size={16} /> Delete Recruiter
+            </button>
+          </div>
         </div>
       </div>
 

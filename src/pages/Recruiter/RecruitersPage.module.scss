@@ -486,6 +486,41 @@
   }
 }
 
+/* Delete Button on Card */
+.deleteBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: white;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 5;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  transform: translateY(-5px);
+
+  &:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: scale(1.1) !important;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+  }
+}
+
+.card:hover .deleteBtn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* =========================================================
    DARK MODE — RecruitersPage
    Paste at END of RecruitersPage.module.scss
@@ -659,4 +694,19 @@
 :global([data-theme="dark"]) .loadingState .spinner {
   border: 3px solid rgba(148, 163, 184, 0.18);
   border-top: 3px solid rgba(99, 102, 241, 0.9);
+}
+
+:global(html.dark) .deleteBtn,
+:global(body.dark) .deleteBtn,
+:global(#root.dark) .deleteBtn,
+:global(.dark) .deleteBtn,
+:global([data-theme="dark"]) .deleteBtn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  
+  &:hover {
+    background: #ef4444;
+    color: white;
+  }
 }

@@ -118,7 +118,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Download, User, Mail, Phone, Briefcase, Building2, UserCircle 
+  Plus, Search, Download, User, Mail, Phone, Briefcase, Building2, UserCircle, Trash2 
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import styles from './RecruitersPage.module.scss';
@@ -139,6 +139,19 @@ const RecruitersPage = () => {
       console.error("Error fetching recruiters:", error);
     } finally {
       setTimeout(() => setLoading(false), 500); // Small delay for smooth animation transition
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation(); // Prevent navigation to details
+    if (window.confirm("Are you sure you want to permanently remove this recruiter?")) {
+      try {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/recruiters/${id}`);
+        fetchRecruiters(); // Refresh list after deletion
+      } catch (error) {
+        console.error("Error deleting recruiter:", error);
+        alert("Could not delete recruiter. Please try again.");
+      }
     }
   };
 
@@ -193,6 +206,14 @@ const RecruitersPage = () => {
               <div className={styles.avatarRing}>
                 <UserCircle size={48} strokeWidth={1.5} />
               </div>
+
+              <button 
+                className={styles.deleteBtn}
+                onClick={(e) => handleDelete(e, recruiter._id)}
+                title="Delete Recruiter"
+              >
+                <Trash2 size={18} />
+              </button>
               
               <div className={styles.info}>
                 <div className={styles.nameRow}>
