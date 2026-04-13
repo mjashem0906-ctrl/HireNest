@@ -719,6 +719,16 @@
 
 const Member = require("../models/member");   // ✅ IMPORTANT for Linux/Vercel case-sensitive
 const Activity = require("../models/activity");
+const User = require("../models/login");
+const Candidate = require("../models/candidate");
+const Recruiter = require("../models/Recruiter");
+const Referee = require("../models/Referee");
+const MemberComments = require("../models/memberComments");
+const MentorConnection = require("../models/mentorConnection");
+const AssignFor = require("../models/assignFor");
+const SubTask = require("../models/subTask");
+const Service = require("../models/service");
+const StatusChangeRequest = require("../models/StatusChangeRequest");
 
 /* ---------------------------------------
    Get all members
@@ -858,14 +868,49 @@ const updateMember = async (req, res) => {
    Delete Member
 ---------------------------------------- */
 const deleteMember = async (req, res) => {
+  const { id } = req.params;
   try {
-    const deleted = await Member.findByIdAndDelete(req.params.id);
-    if (!deleted) {
+    // 1. Find the member first to get their email
+    const member = await Member.findById(id);
+    if (!member) {
       return res.status(404).json({ message: "Member not found" });
     }
-    res.status(200).json({ message: "Member deleted successfully" });
+    const memberEmail = member.email;
+
+    // 2. Perform cascading deletes/updates
+    await Promise.all([
+      // Authentication
+      User.deleteMany({ $or: [{ memberId: id }, { username: memberEmail }] }),
+      
+      // Profiles
+      Candidate.deleteMany({ email: memberEmail }),
+      Recruiter.deleteMany({ email: memberEmail }),
+      Referee.deleteMany({ email: memberEmail }),
+      
+      // Member-related data
+      MemberComments.deleteMany({ memberId: id }),
+      MentorConnection.deleteMany({ $or: [{ userMemberId: id }, { mentorMemberId: id }] }),
+      AssignFor.deleteMany({ memberId: id }),
+      StatusChangeRequest.deleteMany({ requestedBy: id }),
+      SubTask.deleteMany({ assignedTo: id }),
+      Activity.deleteMany({ targetId: id }),
+      
+      // Jobs (Service) logic
+      // - Delete jobs posted by this member
+      Service.deleteMany({ memberId: id }),
+      // - Remove this member from appliedMembers in all jobs
+      Service.updateMany({}, { $pull: { appliedMembers: { memberId: id } } }),
+      // - Unset referral references
+      Service.updateMany({ refereedBy: id }, { $set: { refereedBy: null } }),
+      
+      // Finally delete the member record
+      Member.findByIdAndDelete(id)
+    ]);
+
+    res.status(200).json({ message: "Member and all associated data deleted successfully" });
   } catch (error) {
-    res.status(400).json({ message: "Invalid member ID", error });
+    console.error("Error deleting member and associated data:", error);
+    res.status(500).json({ message: "Server error deleting member data", error: error.message });
   }
 };
 
