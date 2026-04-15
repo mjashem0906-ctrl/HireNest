@@ -250,6 +250,8 @@ function App() {
                 </PrivateRoute>
               }
             />
+            {/* Static route — must be BEFORE recruiters/:id so it always wins */}
+            <Route path="recruiters/add" element={<AddRecruiterPage />} />
             <Route
               path="recruiters/:id"
               element={

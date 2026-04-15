@@ -16,6 +16,12 @@ const PrivateRoute = ({ children, roles }) => {
     );
   }
 
+  // Public paths that bypass auth — accessible without login
+  const publicPaths = ['/recruiters/add'];
+  if (publicPaths.includes(window.location.pathname)) {
+    return children;
+  }
+
   // If no user after loading completes, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
