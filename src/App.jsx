@@ -162,6 +162,7 @@ import MentorConnectionsAdmin from './pages/Mentor/MentorConnectionsAdmin';
 // ✅ Recruiters
 import RecruitersPage from './pages/Recruiter/RecruitersPage';
 import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
+import AddRecruiterPage from './pages/Recruiter/AddRecruiterPage';
 
 function App() {
 
@@ -181,6 +182,9 @@ function App() {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/candidate-form" element={<CandidateForm />} />
           <Route path="/candidate-dashboard" element={<CandidateDashboard />} />
+
+          {/* Add Recruiter — public bare page (no login required, no header/sidebar) */}
+          <Route path="/recruiters/add" element={<AddRecruiterPage />} />
 
           {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>

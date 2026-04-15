@@ -1,0 +1,191 @@
+// Uses the actual global CSS variables from global.scss so it
+// correctly adapts to data-theme="dark" applied by App.jsx
+
+// ── Toast Notification ───────────────────────────────────
+.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #34a853;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 14px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(52, 168, 83, 0.35);
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(-16px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toastVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+// ── Page Wrapper ─────────────────────────────────────────
+.pageWrapper {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 40px 32px;
+}
+
+// ── Page Header ─────────────────────────────────────────
+.pageHeader {
+  max-width: 960px;
+  margin: 0 auto 36px;
+  text-align: center;
+
+  .logo {
+    width: 200px;
+    display: block;
+    margin: 0 auto 20px;
+    object-fit: contain;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+// ── Form Card ────────────────────────────────────────────
+.formCard {
+  max-width: 960px;
+  margin: 0 auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px var(--shadow-medium);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Section Title ────────────────────────────────────────
+.sectionTitle {
+  grid-column: 1 / -1;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+  margin-top: 8px;
+}
+
+// ── Input Groups ─────────────────────────────────────────
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input,
+  select {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    padding: 10px 13px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    appearance: auto;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
+    &:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+      outline: none;
+    }
+
+    option {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+  }
+}
+
+// ── Form Footer ──────────────────────────────────────────
+.formFooter {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  margin-top: 8px;
+}
+
+.cancelBtn {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-secondary);
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}
+
+.submitBtn {
+  background: var(--accent-primary);
+  border: none;
+  color: #fff;
+  padding: 10px 26px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.35);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

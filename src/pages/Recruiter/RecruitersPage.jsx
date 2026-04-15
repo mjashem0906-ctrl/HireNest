@@ -118,7 +118,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Download, User, Mail, Phone, Briefcase, Building2, UserCircle, Trash2 
+  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone 
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import styles from './RecruitersPage.module.scss';
@@ -157,6 +157,17 @@ const RecruitersPage = () => {
 
   useEffect(() => {
     fetchRecruiters();
+  }, []);
+
+  // Auto-refresh list when the "Add Recruiter" popup window submits successfully
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data === 'recruiter-added') {
+        fetchRecruiters();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const filteredRecruiters = recruiters.filter(recruiter => 
@@ -242,10 +253,10 @@ const RecruitersPage = () => {
         )}
       </div>
 
-      <AddRecruiterModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSuccess={fetchRecruiters} 
+      <AddRecruiterModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchRecruiters}
       />
     </div>
   );
