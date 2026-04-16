@@ -11,7 +11,7 @@ const addRecruiter = async (req, res) => {
 
     const { 
       fullName, email, phone, designation, department,
-      employeeId, companyName, location, industries, roleTypes, hiringVolume, teamSize 
+      employeeId, companyName, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
     } = req.body;
 
     // 2. VALIDATION FIX: Only check the 5 REQUIRED fields. 
@@ -41,6 +41,7 @@ const addRecruiter = async (req, res) => {
       roleTypes: roleTypes || [],
       hiringVolume: hiringVolume || "N/A",
       teamSize: teamSize || "Individual",
+      registeredVia: registeredVia || "admin", // 'shareable_link' when from the form, 'admin' when modal
       password: "secretPassword123" 
     });
 

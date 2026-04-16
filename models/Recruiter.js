@@ -19,6 +19,7 @@ const recruiterSchema = mongoose.Schema({
   roleTypes: { type: [String], default: [] }, // New (Tech, Non-tech etc)
   hiringVolume: { type: String, default: "N/A" }, // New
   teamSize: { type: String, default: "Individual Contributor" }, // New
+  registeredVia: { type: String, enum: ['admin', 'shareable_link', 'form_link'], default: 'admin' }, // Tracks registration source
   
   password: { type: String, required: true }
 }, {
