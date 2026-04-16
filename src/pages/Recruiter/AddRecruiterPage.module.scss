@@ -65,6 +65,40 @@
   }
 }
 
+// ── Shareable Link Notice Banner ─────────────────────────
+.linkNotice {
+  max-width: 960px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-left: 4px solid #0d9488;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 0.875rem;
+  color: #134e4a;
+  line-height: 1.55;
+
+  strong {
+    font-weight: 700;
+    color: #0f766e;
+  }
+
+  em {
+    font-style: normal;
+    font-weight: 700;
+    color: #0d9488;
+  }
+}
+
+.linkNoticeIcon {
+  color: #0d9488;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 // ── Form Card ────────────────────────────────────────────
 .formCard {
   max-width: 960px;

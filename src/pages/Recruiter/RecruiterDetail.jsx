@@ -160,7 +160,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   ArrowLeft, User, Mail, Phone, Briefcase, Building,
-  Calendar, Edit, MapPin, Layers, Users, BarChart, Hash, CheckCircle, Trash2
+  Calendar, Edit, MapPin, Layers, Users, BarChart, Hash, CheckCircle, Trash2, Share2
 } from 'lucide-react';
 import styles from './RecruiterDetail.module.scss';
 import AddRecruiterModal from './AddRecruiterModal';
@@ -240,10 +240,10 @@ const RecruiterDetail = () => {
             <h1>{recruiter.fullName}</h1>
             <p className={styles.designationText}>{recruiter.designation}</p>
             <div className={styles.badgesRow}>
-              <span className={styles.infoBadge}><MapPin size={14} /> {recruiter.location || "Online"}</span>
-              <span className={styles.infoBadge}><Building size={14} /> {recruiter.companyName || "JobBridge Karnataka"}</span>
-              <span className={styles.infoBadge}><CheckCircle size={14} color="#22c55e"/> Verified</span>
-            </div>
+                <span className={styles.infoBadge}><MapPin size={14} /> {recruiter.location || "Online"}</span>
+                <span className={styles.infoBadge}><Building size={14} /> {recruiter.companyName || "JobBridge Karnataka"}</span>
+                <span className={styles.infoBadge}><CheckCircle size={14} color="#22c55e"/> Verified</span>
+              </div>
           </div>
         </div>
       </div>
@@ -317,6 +317,14 @@ const RecruiterDetail = () => {
                   {new Date(recruiter.createdAt || Date.now()).toLocaleDateString('en-US', {
                     month: 'long', year: 'numeric'
                   })}
+                </div>
+              </div>
+              <div className={styles.item}>
+                <label>Registration Source</label>
+                <div className={styles.value} style={{color: recruiter.registeredVia && recruiter.registeredVia !== 'admin' ? '#0d9488' : '#64748b'}}>
+                  {recruiter.registeredVia && recruiter.registeredVia !== 'admin'
+                    ? 'Self-registered via Form Link'
+                    : 'Added by Admin'}
                 </div>
               </div>
             </div>

@@ -118,7 +118,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone 
+  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone, Link2, CheckCircle2, Share2
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import styles from './RecruitersPage.module.scss';
@@ -128,6 +128,7 @@ const RecruitersPage = () => {
   const [recruiters, setRecruiters] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [linkCopied, setLinkCopied] = useState(false);
   const navigate = useNavigate();
 
   const fetchRecruiters = async () => {
@@ -155,6 +156,25 @@ const RecruitersPage = () => {
     }
   };
 
+  const handleCopyLink = () => {
+    const shareUrl = `${window.location.origin}/recruiters/add`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    }).catch(() => {
+      // Fallback for older browsers
+      const el = document.createElement('textarea');
+      el.value = shareUrl;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    });
+  };
+
+
   useEffect(() => {
     fetchRecruiters();
   }, []);
@@ -177,6 +197,12 @@ const RecruitersPage = () => {
 
   return (
     <div className={styles.container}>
+
+      {/* ── Link Copied Toast ── */}
+      <div className={`${styles.copyToast} ${linkCopied ? styles.copyToastVisible : ''}`}>
+        <CheckCircle2 size={18} />
+        Shareable link copied to clipboard!
+      </div>
       
       {/* Header Section */}
       <div className={styles.header}>
@@ -193,6 +219,17 @@ const RecruitersPage = () => {
         <div className={styles.actions}>
           <button className={styles.btnExcel}><Download size={18} /> Excel</button>
           <button className={styles.btnCsv}><Download size={18} /> CSV</button>
+
+          {/* Shareable Link Button */}
+          <button
+            className={`${styles.btnShareLink} ${linkCopied ? styles.btnShareLinkCopied : ''}`}
+            onClick={handleCopyLink}
+            title="Copy shareable registration link for new recruiters"
+          >
+            {linkCopied ? <CheckCircle2 size={18} /> : <Link2 size={18} />}
+            {linkCopied ? 'Copied!' : 'ShareForm Link'}
+          </button>
+
           <button className={styles.btnAdd} onClick={() => setIsModalOpen(true)}>
             <Plus size={20} /> Add Recruiter
           </button>
@@ -240,6 +277,9 @@ const RecruitersPage = () => {
                 <div className={styles.meta}>
                   <p><strong><Building2 size={14} style={{marginRight: '5px'}}/> Dept:</strong> {recruiter.department || 'General'}</p>
                   <p><strong><Briefcase size={14} style={{marginRight: '5px'}}/> Role:</strong> {recruiter.designation || 'Specialist'}</p>
+                  {recruiter.registeredVia && recruiter.registeredVia !== 'admin' && (
+                    <p className={styles.sourceText}><Share2 size={12} style={{marginRight: '5px'}}/> Registered via: Form Link</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Link2, Info } from 'lucide-react';
 import styles from './AddRecruiterPage.module.scss';
 
 const AddRecruiterPage = () => {
@@ -33,6 +33,7 @@ const AddRecruiterPage = () => {
         industries: typeof formData.industries === 'string'
           ? formData.industries.split(',').map(item => item.trim())
           : formData.industries,
+        registeredVia: 'shareable_link', // Mark this as self-registered via the shared form
       };
       await axios.post(`${import.meta.env.VITE_API_URL}/api/recruiters`, dataToSend);
       if (window.opener) window.opener.postMessage('recruiter-added', '*');
@@ -58,6 +59,15 @@ const AddRecruiterPage = () => {
         <img src="/Logo.png" alt="JobBridge Logo" className={styles.logo} />
         <h1>Register New Recruiter</h1>
         <p>Fill in the details below to add a new recruiter to the directory.</p>
+      </div>
+
+      {/* ── SHAREABLE LINK NOTICE ── */}
+      <div className={styles.linkNotice}>
+        <Link2 size={16} className={styles.linkNoticeIcon} />
+        <div>
+          <strong>You're registering via a shared form link.</strong>
+          <span> Your profile will be marked as <em>"Via Form Link"</em> in the recruiter directory, so admins know you self-registered.</span>
+        </div>
       </div>
 
       <div className={styles.formCard}>

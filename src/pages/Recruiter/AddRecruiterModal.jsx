@@ -350,6 +350,17 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
               <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} />
             </div>
 
+            <div className={styles.inputGroup}>
+              <label>Industries (comma separated)</label>
+              <input
+                type="text"
+                name="industries"
+                value={formData.industries}
+                onChange={handleChange}
+                placeholder="e.g. IT, Healthcare, FinTech"
+              />
+            </div>
+
           </div>
         </form>
 
