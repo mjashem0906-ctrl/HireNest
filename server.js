@@ -54,6 +54,7 @@ app.use("/place", require("./routes/places"));
 app.use("/service", require("./routes/service"));
 // Add this line to server.js
 app.use("/api/recruiters", require("./routes/recruiterRoutes"));
+app.use("/api/upload", require("./routes/upload"));
 app.use("/api/mentor-connections", require("./routes/mentorConnection"));
 app.use("/referee", require("./routes/refereeRoutes"));
 
