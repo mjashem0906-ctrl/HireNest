@@ -2776,27 +2776,24 @@ function AddMember({
   const combinedRoles = [...new Set([...DESIRED_ROLES_OPTIONS, ...dynamicRoles])].sort();
   const combinedIndustries = [...new Set([...INDUSTRY_OPTIONS, ...dynamicIndustries])].sort();
 
-  const uploadToCloudinary = async (file, resourceType, fileType) => { 
-    if (!file) return null; 
-    const cloudName = "dwelwaavj"; 
-    const uploadPreset = "jobbridge_preset"; 
-    const api = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`; 
-    const data = new FormData(); 
-    data.append("file", file); 
-    data.append("upload_preset", uploadPreset); 
-    
-    try { 
-      const res = await axios.post(api, data, { 
-        onUploadProgress: (p) => setUploadProgress((prev) => ({ 
-          ...prev, 
-          [fileType]: Math.round((p.loaded * 100) / p.total), 
-        })), 
-      }); 
-      return res.data.secure_url; 
-    } catch (e) { 
-      console.error(e); 
-      return null; 
-    } 
+  const uploadToServer = async (file, fileType) => {
+    if (!file) return null;
+    const data = new FormData();
+    data.append("file", file);
+    try {
+      const res = await API.post("/api/upload", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (p) =>
+          setUploadProgress((prev) => ({
+            ...prev,
+            [fileType]: Math.round((p.loaded * 100) / p.total),
+          })),
+      });
+      return res.data.url;
+    } catch (e) {
+      console.error("Upload error:", e);
+      return null;
+    }
   };
 
   const addExperience = () => {
@@ -2947,12 +2944,12 @@ function AddMember({
     try { 
       let photo = formData.photoUrl; 
       if (photoFile) { 
-        photo = await uploadToCloudinary(photoFile, "image", "photo"); 
+        photo = await uploadToServer(photoFile, "photo"); 
       } 
       
       let resume = formData.resumeLink; 
       if (resumeFile) { 
-        resume = await uploadToCloudinary(resumeFile, "auto", "resume"); 
+        resume = await uploadToServer(resumeFile, "resume"); 
       } 
       
       const payload = { 

@@ -4,7 +4,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
-import axios from "axios"; // Add this import for Cloudinary
 import "./CandidateForm.css";
 import API from "../../axios";
 
@@ -26,36 +25,31 @@ const CandidateForm = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Cloudinary upload function
-  const uploadToCloudinary = async (file) => {
+  // Server upload function (replaces Cloudinary)
+  const uploadToServer = async (file) => {
     if (!file) return null;
-    
-    const cloudName = "dwelwaavj";
-    const uploadPreset = "jobbridge_preset";
-    const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", uploadPreset);
 
     try {
-      // Use axios for Cloudinary upload
-      const res = await axios.post(api, data, {
+      const res = await API.post("/api/upload", data, {
+        headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
           setUploadProgress(progress);
-        }
+        },
       });
-      
+
       setUploadProgress(100);
-      setTimeout(() => setUploadProgress(0), 1000); // Reset after completion
-      
-      return res.data.secure_url;
+      setTimeout(() => setUploadProgress(0), 1000);
+
+      return res.data.url;
     } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
-      throw new Error("Failed to upload resume to cloud.");
+      console.error("Server Upload Error:", error);
+      throw new Error("Failed to upload file to server.");
     }
   };
 
@@ -125,7 +119,7 @@ const CandidateForm = () => {
       let resumeUrl = "";
       if (resumeFile) {
         try {
-          resumeUrl = await uploadToCloudinary(resumeFile);
+          resumeUrl = await uploadToServer(resumeFile);
           console.log("Resume uploaded successfully:", resumeUrl);
         } catch (uploadError) {
           console.error("Resume upload failed:", uploadError);

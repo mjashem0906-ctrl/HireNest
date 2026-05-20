@@ -8677,23 +8677,19 @@ function Jobs() {
     </div>
   );
 
-  const uploadToCloudinary = async (file) => {
+  const uploadToServer = async (file) => {
     if (!file) return null;
-    const cloudName = "dwelwaavj";
-    const uploadPreset = "jobbridge_preset";
-    const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
-
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", uploadPreset);
-
     try {
       setLoadingState((prev) => ({ ...prev, uploading: true }));
-      const res = await axios.post(api, data);
-      return res.data.secure_url;
+      const res = await API.post("/api/upload", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data.url;
     } catch (error) {
-      console.error("Cloudinary Upload Error:", error);
-      throw new Error("Failed to upload file to cloud.");
+      console.error("Server Upload Error:", error);
+      throw new Error("Failed to upload file to server.");
     } finally {
       setLoadingState((prev) => ({ ...prev, uploading: false }));
     }
@@ -8724,7 +8720,7 @@ function Jobs() {
       }
 
       let finalResumeLink = null;
-      if (resumeFile) finalResumeLink = await uploadToCloudinary(resumeFile);
+      if (resumeFile) finalResumeLink = await uploadToServer(resumeFile);
 
       await API.post(`/service/${job._id}/apply`, { resumeLink: finalResumeLink });
 

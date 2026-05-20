@@ -275,7 +275,6 @@ import styles from "./JobDetail.module.scss";
 import { useData } from "../../context/DataContext";
 import { useAuth } from '../../context/AuthContext';
 import API from '../../axios'; 
-import axios from "axios";
 import { 
   Briefcase, Award, CheckCircle, Zap, Users, Star, 
   Calendar, GraduationCap, ArrowLeft, MapPin, 
@@ -425,13 +424,14 @@ function JobDetail() {
     return String(mId) === String(user?.memberId || user?._id);
   });
 
-  // 2. Application Logic (Cloudinary)
-  const uploadToCloudinary = async (file) => {
+  // Server upload function (replaces Cloudinary)
+  const uploadToServer = async (file) => {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "jobbridge_preset");
-    const res = await axios.post("https://api.cloudinary.com/v1_1/dwelwaavj/auto/upload", data);
-    return res.data.secure_url;
+    const res = await API.post("/api/upload", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.url;
   };
 
   const handleApply = async (resumeFile = null) => {
@@ -443,7 +443,7 @@ function JobDetail() {
 
     try {
       let finalResumeLink = user.resumeLink || null;
-      if (resumeFile) finalResumeLink = await uploadToCloudinary(resumeFile);
+      if (resumeFile) finalResumeLink = await uploadToServer(resumeFile);
 
       const response = await API.post(`/service/${job._id}/apply`, { resumeLink: finalResumeLink });
       

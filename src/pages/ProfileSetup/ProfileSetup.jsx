@@ -169,7 +169,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import API from "../../axios";
 import { useAuth } from "../../context/AuthContext";
 import FormInput from "../../components/UI/FormInput";
@@ -289,23 +288,19 @@ const ProfileSetup = () => {
     const [resumeFile, setResumeFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
 
-    const uploadToCloudinary = async (file) => {
+    // Server upload function (replaces Cloudinary)
+    const uploadToServer = async (file) => {
         if (!file) return null;
-        const cloudName = "dwelwaavj";
-        const uploadPreset = "jobbridge_preset";
-        const api = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
-
         const data = new FormData();
         data.append("file", file);
-        data.append("upload_preset", uploadPreset);
-
-        const res = await axios.post(api, data, {
+        const res = await API.post("/api/upload", data, {
+            headers: { "Content-Type": "multipart/form-data" },
             onUploadProgress: (progressEvent) => {
                 const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setUploadProgress(progress);
-            }
+            },
         });
-        return res.data.secure_url;
+        return res.data.url;
     };
 
     const handleMobileChange = (v) => {
@@ -373,8 +368,8 @@ const ProfileSetup = () => {
             let photoUrl = "";
             let resumeLink = "";
             
-            if (photoFile) photoUrl = await uploadToCloudinary(photoFile);
-            if (resumeFile) resumeLink = await uploadToCloudinary(resumeFile);
+            if (photoFile) photoUrl = await uploadToServer(photoFile);
+            if (resumeFile) resumeLink = await uploadToServer(resumeFile);
 
             const res = await API.post("/auth/update-profile", {
                 role,
