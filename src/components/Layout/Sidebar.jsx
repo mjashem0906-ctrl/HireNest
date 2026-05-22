@@ -10,6 +10,7 @@ import {
   UserCheck,
   User,
   BriefcaseBusiness,
+  Briefcase,
   GraduationCap,
   X,
   ChevronLeft,
@@ -32,6 +33,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members' },
+      { path: '/job-seekers', icon: Briefcase, label: 'Job Seekers' },
       { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
       { path: '/recruiters', icon: Building, label: 'Job Recruiter' },
       { path: '/referees', icon: UserCheck, label: 'Job Referee' },
@@ -56,6 +58,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members' },
+      { path: '/job-seekers', icon: Briefcase, label: 'Job Seekers' },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
     ];
   }

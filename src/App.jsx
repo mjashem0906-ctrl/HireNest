@@ -1,133 +1,3 @@
-// //------------------31/01-----------------------3.37------------------
-
-// import React from 'react';
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import { GoogleOAuthProvider } from "@react-oauth/google";
-
-// import './styles/global.scss';
-// import Layout from './components/Layout/Layout';
-// import Dashboard from './pages/Dashboard/Dashboard';
-// import Members from './pages/Members/Members';
-// import MembersDetail from './pages/Members/MembersDetail';
-// import PrivateRoute from './PrivateRoute';
-// import LoginForm from './LoginForm';
-// import Unauthorized from './pages/Unauthorized/Unauthorized';
-// import NotFound from './pages/NotFound/NotFound';
-// import UserList from './pages/CreateUser/UserList';
-// import InstallPopup from './components/UI/InstallPopup';
-
-// import GoogleLogin from './components/Google/GoogleLogin';
-// import CandidateForm from './components/Google/CandidateForm';
-// import CandidateDashboard from './pages/CandidateDashboard/CandidateDashboard';
-// import OAuthSuccess from './OAuthSuccess';
-// import ProfileSetup from './pages/ProfileSetup/ProfileSetup';
-// import Jobs from './pages/Jobs/Jobs';
-// import JobDetail from "./pages/Jobs/JobDetail";
-// import RefereePage from './pages/Referees/RefereePage';
-// import RefereeDetailsPage from './pages/Referees/RefereeDetailsPage';
-
-// // ✅ Mentors
-// import MentorsPage from './pages/Mentor/MentorsPage';
-// import MentorDetails from './pages/Mentor/MentorDetails';
-
-// // 👇👇 1. ADD THIS IMPORT (Adjust path if your file is named differently) 👇👇
-// import RecruitersPage from './pages/Recruiter/RecruitersPage'; 
-
-// function App() {
-//   return (
-//     <>
-//       <Router>
-//         <Routes>
-//           {/* Public Routes */}
-//           <Route path="/login" element={<LoginForm />} />
-//           <Route path="/google-login" element={<GoogleLogin />} />
-//           <Route path="/oauth-success" element={<OAuthSuccess />} />
-//           <Route path="/profile-setup" element={<ProfileSetup />} />
-//           <Route path="/candidate-form" element={<CandidateForm />} />
-//           <Route path="/candidate-dashboard" element={<CandidateDashboard />} />
-
-//           {/* Protected Routes (Wrapped in Layout) */}
-//           <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-//             <Route index element={<Dashboard />} />
-
-//             {/* Admin & IT Member Routes */}
-//             <Route 
-//               path="members" 
-//               element={
-//                 <PrivateRoute roles={['Admin', 'IT_Member']}>
-//                   <Members />
-//                 </PrivateRoute>
-//               } 
-//             />
-//             <Route 
-//               path="member/:id" 
-//               element={
-//                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Mentor', 'Job', 'Candidate']}>
-//                   <MembersDetail />
-//                 </PrivateRoute>
-//               } 
-//             />
-//             <Route 
-//               path="createUser" 
-//               element={
-//                 <PrivateRoute roles={['Admin']}>
-//                   <UserList />
-//                 </PrivateRoute>
-//               } 
-//             />
-
-//             {/* Mentors Routes */}
-//             <Route 
-//               path="mentors" 
-//               element={
-//                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Candidate', 'Job', 'Mentor']}>
-//                   <MentorsPage />
-//                 </PrivateRoute>
-//               } 
-//             />
-//             <Route 
-//               path="mentors/:id" 
-//               element={
-//                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Candidate', 'Job', 'Mentor']}>
-//                   <MentorDetails />
-//                 </PrivateRoute>
-//               } 
-//             />
-
-//             {/* 👇👇 2. ADD THIS NEW ROUTE BLOCK FOR RECRUITERS 👇👇 */}
-//             <Route 
-//               path="recruiters" 
-//               element={
-//                 // Feel free to adjust the 'roles' array based on who should see this page
-//                 <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate']}>
-//                   <RecruitersPage />
-//                 </PrivateRoute>
-//               } 
-//             />
-
-//             {/* Referee Routes */}
-//             <Route path="referees" element={<RefereePage />} />
-//             <Route path="referee/:id" element={<RefereeDetailsPage />} />
-
-//             {/* Jobs Routes */}
-//             <Route path="jobs" element={<Jobs />} />
-//             <Route path="jobs/:id" element={<JobDetail />} />
-
-//             {/* Error Pages */}
-//             <Route path="unauthorized" element={<Unauthorized />} />
-//             <Route path="*" element={<NotFound />} />
-//           </Route>
-//         </Routes>
-//       </Router>
-//       <InstallPopup />
-//     </>
-//   );
-// }
-
-// export default App;
-
-// App.jsx (FULL UPDATED CODE)
-
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -164,6 +34,9 @@ import RecruitersPage from './pages/Recruiter/RecruitersPage';
 import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
 import AddRecruiterPage from './pages/Recruiter/AddRecruiterPage';
 
+// ✅ Job Seekers
+import JobSeekersPage from './pages/JobSeeker/JobSeekersPage';
+
 function App() {
 
   // ✅ THIS IS THE FIX (DARK THEME ACTIVATION)
@@ -195,6 +68,15 @@ function App() {
               element={
                 <PrivateRoute roles={['Admin', 'IT_Member']}>
                   <Members />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="job-seekers"
+              element={
+                <PrivateRoute roles={['Admin', 'IT_Member']}>
+                  <JobSeekersPage />
                 </PrivateRoute>
               }
             />

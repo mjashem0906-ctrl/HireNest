@@ -1,127 +1,12 @@
-// //------------------------------31/01-------------------4.22---------------------
-
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-// import { useNavigate } from 'react-router-dom';
-// import {
-//   Plus, Search, Download, User, Mail, Phone
-// } from 'lucide-react';
-// import AddRecruiterModal from './AddRecruiterModal';
-// import styles from './RecruitersPage.module.scss';
-
-// const RecruitersPage = () => {
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [recruiters, setRecruiters] = useState([]);
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [loading, setLoading] = useState(true); // Added loading state
-
-//   const navigate = useNavigate();
-
-//   const fetchRecruiters = async () => {
-//     setLoading(true);
-//     try {
-//       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
-//       setRecruiters(response.data);
-//     } catch (error) {
-//       console.error("Error fetching recruiters:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchRecruiters();
-//   }, []);
-
-//   // Filter logic
-//   const filteredRecruiters = recruiters.filter(recruiter =>
-//     recruiter.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//     recruiter.email?.toLowerCase().includes(searchTerm.toLowerCase())
-//   );
-
-//   return (
-//     <div className={styles.container}>
-
-//       {/* Header Section */}
-//       <div className={styles.header}>
-//         <div className={styles.searchWrapper}>
-//           <Search className={styles.searchIcon} size={18} />
-//           <input
-//             type="text"
-//             placeholder="Search recruiters..."
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//           />
-//         </div>
-
-//         <div className={styles.actions}>
-//           <button className={styles.btnExcel}><Download size={16} /> Export Excel</button>
-//           <button className={styles.btnCsv}><Download size={16} /> Export CSV</button>
-//           <button className={styles.btnAdd} onClick={() => setIsModalOpen(true)}>
-//             <Plus size={18} /> Add Recruiter
-//           </button>
-//         </div>
-//       </div>
-
-//       {/* Cards Grid */}
-//       <div className={styles.grid}>
-//         {loading ? (
-//           <div className={styles.emptyState}>Loading recruiters...</div>
-//         ) : filteredRecruiters.length > 0 ? (
-//           filteredRecruiters.map((recruiter) => (
-//             <div
-//               key={recruiter._id}
-//               className={styles.card}
-//               onClick={() => navigate(`/recruiters/${recruiter._id}`)}
-//               style={{ cursor: 'pointer' }}
-//             >
-//               <div className={styles.avatar}>
-//                 <User size={32} />
-//               </div>
-//               <div className={styles.info}>
-//                 <div className={styles.nameRow}>
-//                   <h3>{recruiter.fullName}</h3>
-//                   <span className={styles.roleBadge}>Recruiter</span>
-//                 </div>
-//                 <div className={styles.contact}>
-//                   <div className={styles.row}><Mail size={14} className="mr-2" /> {recruiter.email}</div>
-//                   <div className={styles.row}><Phone size={14} className="mr-2" /> {recruiter.phone}</div>
-//                 </div>
-//                 <div className={styles.meta}>
-//                   <p><strong>Department:</strong> {recruiter.department}</p>
-//                   <p><strong>Designation:</strong> {recruiter.designation}</p>
-//                 </div>
-//               </div>
-//             </div>
-//           ))
-//         ) : (
-//           <div className={styles.emptyState}>
-//             <h3>No Recruiters Found</h3>
-//           </div>
-//         )}
-//       </div>
-
-//       <AddRecruiterModal
-//         isOpen={isModalOpen}
-//         onClose={() => setIsModalOpen(false)}
-//         onSuccess={fetchRecruiters}
-//       />
-//     </div>
-//   );
-// };
-
-// export default RecruitersPage;
-
-//------------------------------6/2------------------11.32-----------------
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone, Link2, CheckCircle2, Share2
+  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone, Link2, CheckCircle2, Share2, Filter, X
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import styles from './RecruitersPage.module.scss';
+import FilterStatus from '../../components/Filter/FIlterStatus';
 
 const RecruitersPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,6 +14,14 @@ const RecruitersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
+  const [filterValues, setFilterValues] = useState({
+    department: '',
+    designation: '',
+    location: '',
+    registeredVia: '',
+  });
+  const [activeFilters, setActiveFilters] = useState({});
   const navigate = useNavigate();
 
   const fetchRecruiters = async () => {
@@ -174,7 +67,6 @@ const RecruitersPage = () => {
     });
   };
 
-
   useEffect(() => {
     fetchRecruiters();
   }, []);
@@ -190,10 +82,120 @@ const RecruitersPage = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const filteredRecruiters = recruiters.filter(recruiter => 
-    recruiter.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    recruiter.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Unique Departments
+  const allDepartments = useMemo(() => {
+    const deptSet = new Set();
+    recruiters.forEach((r) => {
+      if (r.department) {
+        const trimmed = r.department.trim();
+        if (trimmed) deptSet.add(trimmed);
+      }
+    });
+    return Array.from(deptSet).sort();
+  }, [recruiters]);
+
+  // Unique Designations
+  const allDesignations = useMemo(() => {
+    const desSet = new Set();
+    recruiters.forEach((r) => {
+      if (r.designation) {
+        const trimmed = r.designation.trim();
+        if (trimmed) desSet.add(trimmed);
+      }
+    });
+    return Array.from(desSet).sort();
+  }, [recruiters]);
+
+  // Unique Locations
+  const allLocations = useMemo(() => {
+    const locSet = new Set();
+    recruiters.forEach((r) => {
+      if (r.location) {
+        const trimmed = r.location.trim();
+        if (trimmed) locSet.add(trimmed);
+      }
+    });
+    return Array.from(locSet).sort();
+  }, [recruiters]);
+
+  const recruitersFilterConfig = {
+    labels: {
+      department: "Department",
+      designation: "Role / Designation",
+      location: "Hiring Region",
+      registeredVia: "Registration Source",
+    },
+  };
+
+  const handleFilterChange = (key, value) => {
+    const updatedValues = { ...filterValues, [key]: value || "" };
+    setFilterValues(updatedValues);
+
+    const updatedActive = { ...activeFilters };
+    if (value) {
+      if (key === 'registeredVia') {
+        updatedActive[key] = value === 'form' ? 'Registered via Form Link' : 'Admin added';
+      } else {
+        updatedActive[key] = value;
+      }
+    } else {
+      delete updatedActive[key];
+    }
+    setActiveFilters(updatedActive);
+  };
+
+  const clearFilter = (key) => {
+    handleFilterChange(key, "");
+  };
+
+  const clearAllFilters = () => {
+    setFilterValues({
+      department: "",
+      designation: "",
+      location: "",
+      registeredVia: "",
+    });
+    setActiveFilters({});
+    setSearchTerm("");
+  };
+
+  const filteredRecruiters = recruiters.filter(recruiter => {
+    // 1. Search term
+    const term = searchTerm.toLowerCase();
+    const matchesSearch =
+      !searchTerm ||
+      recruiter.fullName?.toLowerCase().includes(term) ||
+      recruiter.email?.toLowerCase().includes(term) ||
+      recruiter.phone?.toLowerCase().includes(term) ||
+      recruiter.companyName?.toLowerCase().includes(term);
+
+    // 2. Department
+    const matchesDept =
+      !filterValues.department ||
+      recruiter.department?.trim().toLowerCase() === filterValues.department.trim().toLowerCase();
+
+    // 3. Designation
+    const matchesDesignation =
+      !filterValues.designation ||
+      recruiter.designation?.trim().toLowerCase() === filterValues.designation.trim().toLowerCase();
+
+    // 4. Location
+    const matchesLocation =
+      !filterValues.location ||
+      recruiter.location?.trim().toLowerCase() === filterValues.location.trim().toLowerCase();
+
+    // 5. Registered source
+    let matchesSource = true;
+    if (filterValues.registeredVia) {
+      if (filterValues.registeredVia === 'form') {
+        matchesSource = recruiter.registeredVia && recruiter.registeredVia !== 'admin';
+      } else {
+        matchesSource = !recruiter.registeredVia || recruiter.registeredVia === 'admin';
+      }
+    }
+
+    return matchesSearch && matchesDept && matchesDesignation && matchesLocation && matchesSource;
+  });
 
   return (
     <div className={styles.container}>
@@ -210,13 +212,23 @@ const RecruitersPage = () => {
           <Search className={styles.searchIcon} size={20} />
           <input
             type="text"
-            placeholder="Search recruiters by name or email..."
+            placeholder="Search recruiters by name, email, or company..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className={styles.actions}>
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={styles.filterToggleButton}
+            title={showFilters ? "Hide Filters" : "Show Filters"}
+          >
+            {showFilters ? <X size={18} /> : <Filter size={18} />}
+            {showFilters ? 'Hide Filters' : 'Filters'}
+          </button>
+
           <button className={styles.btnExcel}><Download size={18} /> Excel</button>
           <button className={styles.btnCsv}><Download size={18} /> CSV</button>
 
@@ -234,6 +246,100 @@ const RecruitersPage = () => {
             <Plus size={20} /> Add Recruiter
           </button>
         </div>
+      </div>
+
+      {/* Expandable Filter Panel */}
+      {showFilters && (
+        <div className={styles.horizontalFilterContainer}>
+          <div className={styles.filterRowWithScroll}>
+            <div className={styles.filterRowContent}>
+              
+              {/* Department */}
+              <div className={styles.filterField}>
+                <label>Department</label>
+                <select
+                  value={filterValues.department || ""}
+                  onChange={(e) => handleFilterChange("department", e.target.value)}
+                >
+                  <option value="">All Departments</option>
+                  {allDepartments.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Designation */}
+              <div className={styles.filterField}>
+                <label>Designation / Role</label>
+                <select
+                  value={filterValues.designation || ""}
+                  onChange={(e) => handleFilterChange("designation", e.target.value)}
+                >
+                  <option value="">All Roles</option>
+                  {allDesignations.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Hiring Region / Location */}
+              <div className={styles.filterField}>
+                <label>Hiring Region</label>
+                <select
+                  value={filterValues.location || ""}
+                  onChange={(e) => handleFilterChange("location", e.target.value)}
+                >
+                  <option value="">All Regions</option>
+                  {allLocations.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Registration Source */}
+              <div className={styles.filterField}>
+                <label>Source</label>
+                <select
+                  value={filterValues.registeredVia || ""}
+                  onChange={(e) => handleFilterChange("registeredVia", e.target.value)}
+                >
+                  <option value="">All Sources</option>
+                  <option value="form">Registered via Form Link</option>
+                  <option value="admin">Admin Added</option>
+                </select>
+              </div>
+
+              <button
+                className={styles.clearAllButton}
+                onClick={clearAllFilters}
+              >
+                Clear All
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Status Badge Bar */}
+      <FilterStatus
+        activeFilters={activeFilters}
+        onClearFilter={clearFilter}
+        onClearAll={clearAllFilters}
+        filterConfig={recruitersFilterConfig}
+      />
+
+      {/* Count Info Panel */}
+      <div className={styles.countInfo}>
+        <span className={styles.countText}>
+          Showing <strong>{filteredRecruiters.length}</strong> of <strong>{recruiters.length}</strong> recruitment professionals
+        </span>
       </div>
 
       {/* Grid */}

@@ -162,6 +162,9 @@ const LoginForm = () => {
             <div className="divider">
               <span>OR</span>
             </div>
+            <p style={{textAlign: "center", fontSize:"1rem", fontWeight:"500", color: "rgba(121, 121, 122, 1)"}}>
+              For Job Seeker
+            </p>
 
             {/* Google Login */}
             <button

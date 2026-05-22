@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { Plus, User, Phone, Mail, Calendar, Building, Edit, Trash2, ListFilter, Search, Filter, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -39,6 +39,22 @@ function Members() {
   const [activeFilters, setActiveFilters] = useState({});
   const [filterValues, setFilterValues] = useState({});
   const [showFilters, setShowFilters] = useState(true);
+
+  // --- MEMOIZED SEARCH FILTER ---
+  const displayedMembers = useMemo(() => {
+    const search = globalFilter?.toLowerCase() || '';
+    if (!search) return membersData;
+    return membersData.filter(member => {
+      return (
+        member.name?.toLowerCase().includes(search) ||
+        member.email?.toLowerCase().includes(search) ||
+        member.profession?.toLowerCase().includes(search) ||
+        member.personalEmail?.toLowerCase().includes(search) ||
+        member.mobileNumber?.toLowerCase().includes(search) ||
+        member.memberReferenceNumber?.toString().includes(search)
+      );
+    });
+  }, [membersData, globalFilter]);
 
   // --- COLUMNS ---
   const memberColumns = [
@@ -220,6 +236,7 @@ function Members() {
       Education: m.highest_education || "",
       FieldOfStudy: m.fieldofStudy_Interest || "",
       PreferredRole: m.preferredJobRole_Sector || "",
+      EmploymentType: m.employmentType || m.careerProfile?.employmentType || "",
       Experience: m.workExp || "",
       Relocation: m.relocationStatus || "",
       PreferredLocation: m.preferredJobLocation || "",
@@ -267,19 +284,27 @@ function Members() {
       symMemberStatus: 'Solidarity Member Status', seekerNeed: 'Seeker Need', highest_education: 'Highest Education', 
       preferredJobRole_Sector: 'Preferred Job Role', workExp: 'Work Experience', relocationStatus: 'Relocation Status', 
       jobOfferType: 'Job Offer Type', offeringSector: 'Offering Sector', referrerStatus: 'Referrer Status', 
-      levelOfSupport: 'Level Of Support', interest_SkillBuildingProgram: 'Skill Program', forGrouping: 'Group Tags'
+      levelOfSupport: 'Level Of Support', interest_SkillBuildingProgram: 'Skill Program', forGrouping: 'Group Tags',
+      startDate: 'Member Since From', endDate: 'Member Since To', skills: 'Skills'
     },
     fieldTypes: {
       name: 'string', initialNumber: 'number', finalNumber: 'number', district: 'string',
       nDistrict: 'string', profession: 'string', memberType: 'string', gender: 'string', symMemberStatus: 'string', 
       seekerNeed: 'array', highest_education: 'string', preferredJobRole_Sector: 'string', workExp: 'string',
       relocationStatus: 'string', jobOfferType: 'array', offeringSector: 'array', referrerStatus: 'string', 
-      levelOfSupport: 'array', interest_SkillBuildingProgram: 'string', forGrouping: 'array'
+      levelOfSupport: 'array', interest_SkillBuildingProgram: 'string', forGrouping: 'array',
+      startDate: 'date', endDate: 'date', skills: 'string'
     },
     formatters: {
       array: (value) => Array.isArray(value) ? value.join(', ') : value,
       number: (value) => value ? value.toString() : '',
     }
+  };
+
+  const parseMemberDate = (member) => {
+    const d = member.createdAt || member.timestamp;
+    if (!d) return null;
+    return parseDOB(d);
   };
 
   const applyFilters = (filters) => {
@@ -319,6 +344,36 @@ function Members() {
     if (filters.finalNumber !== undefined && filters.finalNumber !== "") {
       filtered = filtered.filter((p) => p.age <= Number(filters.finalNumber));
       newActiveFilters.finalNumber = filters.finalNumber;
+    }
+
+    if (filters.startDate) {
+      const start = new Date(filters.startDate).setHours(0, 0, 0, 0);
+      filtered = filtered.filter(p => {
+        const dt = parseMemberDate(p);
+        return dt && dt.getTime() >= start;
+      });
+      newActiveFilters.startDate = filters.startDate;
+    }
+    if (filters.endDate) {
+      const end = new Date(filters.endDate).setHours(23, 59, 59, 999);
+      filtered = filtered.filter(p => {
+        const dt = parseMemberDate(p);
+        return dt && dt.getTime() <= end;
+      });
+      newActiveFilters.endDate = filters.endDate;
+    }
+
+    if (filters.skills) {
+      filtered = filtered.filter(p => {
+        let userSkills = p.skills || [];
+        if (typeof userSkills === 'string') {
+          userSkills = userSkills.split(',').map(s => s.trim().toLowerCase());
+        } else if (Array.isArray(userSkills)) {
+          userSkills = userSkills.map(s => String(s).trim().toLowerCase());
+        }
+        return userSkills.includes(filters.skills.toLowerCase());
+      });
+      newActiveFilters.skills = filters.skills;
     }
 
     const arrayFilters = ['seekerNeed', 'jobOfferType', 'offeringSector', 'levelOfSupport', 'forGrouping'];
@@ -411,6 +466,19 @@ function Members() {
   const relocationStatusOptions = unique(allMembers.map((m) => m.relocationStatus));
   const referrerStatusOptions = unique(allMembers.map((m) => m.referrerStatus));
 
+  const skillsOptions = unique(
+    allMembers.flatMap(m => {
+      let s = m.skills || [];
+      if (typeof s === 'string') {
+        return s.split(',').map(item => item.trim());
+      }
+      if (Array.isArray(s)) {
+        return s.map(item => String(item).trim());
+      }
+      return [];
+    })
+  );
+
   return (
     <div className={styles.members}>
       {/* HEADER */}
@@ -497,6 +565,51 @@ function Members() {
                     applyFilters(newFilters);
                   }}
                 />
+              </div>
+
+              <div className={styles.filterField}>
+                <label>MEMBER SINCE FROM</label>
+                <input
+                  type="date"
+                  value={filterValues.startDate || ''}
+                  onChange={(e) => {
+                    const newFilters = { ...filterValues, startDate: e.target.value || null };
+                    setFilterValues(newFilters);
+                    applyFilters(newFilters);
+                  }}
+                />
+              </div>
+
+              <div className={styles.filterField}>
+                <label>MEMBER SINCE TO</label>
+                <input
+                  type="date"
+                  value={filterValues.endDate || ''}
+                  onChange={(e) => {
+                    const newFilters = { ...filterValues, endDate: e.target.value || null };
+                    setFilterValues(newFilters);
+                    applyFilters(newFilters);
+                  }}
+                />
+              </div>
+
+              <div className={styles.filterField}>
+                <label>SKILLS</label>
+                <select
+                  value={filterValues.skills || ''}
+                  onChange={(e) => {
+                    const newFilters = { ...filterValues, skills: e.target.value || null };
+                    setFilterValues(newFilters);
+                    applyFilters(newFilters);
+                  }}
+                >
+                  <option value="">All Skills</option>
+                  {skillsOptions.map(skill => (
+                    <option key={skill} value={skill}>
+                      {skill.length > 20 ? `${skill.substring(0, 20)}...` : skill}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className={styles.filterField}>
@@ -678,11 +791,18 @@ function Members() {
         data-page-type="members"
       />
 
+      {/* Count Info Panel */}
+      <div className={styles.countInfo}>
+        <span className={styles.countText}>
+          Showing <strong>{displayedMembers.length}</strong> of <strong>{allMembers.length}</strong> active members
+        </span>
+      </div>
+
       {/* CONTENT VIEWS */}
       {view === 'table' ? (
         <div className={styles.tableView}>
           <DataTable 
-            data={membersData} 
+            data={displayedMembers} 
             columns={memberColumns} 
             globalFilter={globalFilter}
             onGlobalFilterChange={setGlobalFilter} 
@@ -692,17 +812,7 @@ function Members() {
       ) : (
         <div className={styles.cardView}>
           <div className={styles.membersList}>
-            {membersData.filter(member => {
-              const search = globalFilter?.toLowerCase() || '';
-              return (
-                member.name?.toLowerCase().includes(search) ||
-                member.email?.toLowerCase().includes(search) ||
-                member.profession?.toLowerCase().includes(search) ||
-                member.personalEmail?.toLowerCase().includes(search) ||
-                member.mobileNumber?.toLowerCase().includes(search) ||
-                member.memberReferenceNumber?.toString().includes(search)
-              );
-            }).map((member) => (
+            {displayedMembers.map((member) => (
               <CustomCard key={member._id} className={styles.memberCard} hover>
                 <div className={styles.memberHeader}>
                   <img

@@ -24,6 +24,7 @@ import {
   Phone,
   ClipboardList,
   Wrench,
+  Linkedin,
 } from "lucide-react";
 import AddMember from "../../components/Models/AddMember";
 
@@ -286,6 +287,15 @@ function MembersDetail() {
                       "Negotiable"}
                   </div>
                 </div>
+
+                <div className={styles.item}>
+                  <label>Employment Type</label>
+                  <div className={styles.value}>
+                    {member.employmentType ||
+                      member.careerProfile?.employmentType ||
+                      "Not specified"}
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -380,6 +390,41 @@ function MembersDetail() {
                     </div>
                   </div>
                 </div>
+
+                {member.linkedinUrl && (
+                  <div style={{ display: "flex", gap: 15, alignItems: "center" }}>
+                    <Linkedin size={20} />
+                    <div>
+                      <label
+                        style={{
+                          fontSize: 12,
+                          color: "var(--p-muted2)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        LINKEDIN
+                      </label>
+                      <div>
+                        <a
+                          href={member.linkedinUrl.startsWith("http") ? member.linkedinUrl : `https://${member.linkedinUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontWeight: 600,
+                            color: "#0a66c2",
+                            textDecoration: "none",
+                            wordBreak: "break-all",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          View Profile <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 

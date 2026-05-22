@@ -866,3 +866,277 @@
   border: 1px solid rgba(52, 211, 153, 0.35);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 }
+
+/* Filter Toggle Button */
+.filterToggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #f5f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(99, 102, 241, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Horizontal Filter Container */
+.horizontalFilterContainer {
+  margin-bottom: 24px;
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 20px;
+  padding: 20px 24px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filterRowWithScroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+
+  &::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 3px;
+
+    &:hover {
+      background-color: #94a3b8;
+    }
+  }
+}
+
+.filterRowContent {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: max-content;
+  padding-right: 12px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  flex-shrink: 0;
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 12px 36px 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;
+    color: #1e293b;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      transform: translateY(-1px);
+    }
+
+    &:hover {
+      border-color: #94a3b8;
+    }
+
+    option {
+      background: white;
+      color: #1e293b;
+    }
+  }
+}
+
+.clearAllButton {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 44px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #f5f3ff;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Count Info Panel */
+.countInfo {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 12px 20px;
+  border: 1.5px dashed #e2e8f0;
+
+  .countText {
+    font-size: 14px;
+    color: #475569;
+    font-weight: 550;
+    
+    strong {
+      color: #6366f1;
+      font-weight: 700;
+    }
+  }
+}
+
+/* =========================================================
+   DARK MODE — RecruitersPage Filters & Count
+   ========================================================= */
+
+:global(html.dark) .filterToggleButton,
+:global(body.dark) .filterToggleButton,
+:global(#root.dark) .filterToggleButton,
+:global(.dark) .filterToggleButton,
+:global([data-theme="dark"]) .filterToggleButton {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: #8b5cf6;
+    color: #a78bfa;
+  }
+}
+
+:global(html.dark) .horizontalFilterContainer,
+:global(body.dark) .horizontalFilterContainer,
+:global(#root.dark) .horizontalFilterContainer,
+:global(.dark) .horizontalFilterContainer,
+:global([data-theme="dark"]) .horizontalFilterContainer {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+:global(html.dark) .filterField label,
+:global(body.dark) .filterField label,
+:global(#root.dark) .filterField label,
+:global(.dark) .filterField label,
+:global([data-theme="dark"]) .filterField label {
+  color: #94a3b8;
+}
+
+:global(html.dark) .filterField select,
+:global(body.dark) .filterField select,
+:global(#root.dark) .filterField select,
+:global(.dark) .filterField select,
+:global([data-theme="dark"]) .filterField select {
+  background-color: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #e5e7eb;
+
+  &:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  }
+
+  option {
+    background: #0f172a;
+    color: #e5e7eb;
+  }
+}
+
+:global(html.dark) .clearAllButton,
+:global(body.dark) .clearAllButton,
+:global(#root.dark) .clearAllButton,
+:global(.dark) .clearAllButton,
+:global([data-theme="dark"]) .clearAllButton {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: #8b5cf6;
+    color: #a78bfa;
+  }
+}
+
+:global(html.dark) .countInfo,
+:global(body.dark) .countInfo,
+:global(#root.dark) .countInfo,
+:global(.dark) .countInfo,
+:global([data-theme="dark"]) .countInfo {
+  background: rgba(148, 163, 184, 0.05);
+  border: 1.5px dashed rgba(148, 163, 184, 0.18);
+
+  .countText {
+    color: #cbd5e1;
+
+    strong {
+      color: #a78bfa;
+    }
+  }
+}

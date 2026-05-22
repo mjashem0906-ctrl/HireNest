@@ -1,0 +1,658 @@
+/* ==========================================================================
+   JOB SEEKERS STYLESHEET (JobSeekersPage.module.scss)
+   Highly responsive layout with rich aesthetics, glassmorphism, 
+   smooth animations, micro-interactions, and flawless dark/light themeing.
+   ========================================================================== */
+
+/* ==========================================
+   THEME TOKENS & SYSTEM VARIABLES
+   ========================================== */
+:root {
+  --l-bg: #f8fafc;
+  --l-card: #ffffff;
+  --l-text: #0f172a;
+  --l-muted: #64748b;
+
+  --l-border: #e2e8f0;
+  --l-border2: #f1f5f9;
+
+  --l-indigo: #6366f1;
+  --l-indigoSoft: rgba(99, 102, 241, 0.10);
+
+  --l-inputBg: #ffffff;
+  --l-inputText: #0f172a;
+
+  --l-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* DARK MODE */
+:global(html[data-theme="dark"]),
+:global(body[data-theme="dark"]),
+:global(.dark) {
+  --l-bg: #0b1220;
+  --l-card: rgba(15, 23, 42, 0.92);
+  --l-text: #e5e7eb;
+  --l-muted: #94a3b8;
+
+  --l-border: rgba(148, 163, 184, 0.16);
+  --l-border2: rgba(148, 163, 184, 0.10);
+
+  --l-indigoSoft: rgba(99, 102, 241, 0.18);
+
+  --l-inputBg: rgba(2, 6, 23, 0.35);
+  --l-inputText: #e5e7eb;
+
+  --l-shadow: 0 22px 40px rgba(0, 0, 0, 0.30);
+}
+
+.container {
+  padding: 2.5rem;
+  background-color: var(--l-bg);
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+/* ==========================================
+   1. TOP TOOLBAR
+   ========================================== */
+.topToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  .searchWrapper {
+    position: relative;
+    flex: 1;
+    max-width: 450px;
+    min-width: 280px;
+
+    input {
+      width: 100%;
+      padding: 14px 14px 14px 50px;
+      border-radius: 16px;
+      border: 1px solid var(--l-border);
+      background: var(--l-inputBg);
+      color: var(--l-inputText);
+      outline: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.95rem;
+
+      &::placeholder {
+        color: rgba(148, 163, 184, 0.85);
+      }
+
+      &:focus {
+        border-color: var(--l-indigo);
+        box-shadow: 0 0 0 4px var(--l-indigoSoft);
+      }
+    }
+
+    .searchIcon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--l-indigo);
+      pointer-events: none;
+    }
+  }
+
+  .actionGroup {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.excel {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+  }
+
+  &.csv {
+    background: rgba(148, 163, 184, 0.10);
+    color: var(--l-muted);
+    border-color: var(--l-border);
+  }
+  
+  &.add {
+    background: var(--l-indigo);
+    color: white;
+    box-shadow: 0 4px 14px var(--l-indigoSoft);
+    
+    &:hover {
+      background: #4f46e5;
+    }
+  }
+}
+
+/* Count Info Panel */
+.countInfo {
+  max-width: 100%;
+  margin: 0 auto 24px auto;
+  display: flex;
+  align-items: center;
+  background: var(--l-card);
+  border-radius: 16px;
+  padding: 12px 20px;
+  border: 1.5px dashed var(--l-border);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.03);
+
+  .countText {
+    font-size: 14px;
+    color: var(--l-text);
+    font-weight: 700;
+    margin-bottom: 0;
+    
+    strong {
+      color: var(--l-indigo);
+      font-weight: 800;
+    }
+  }
+}
+
+/* ==========================================
+   2. GRID & PREMIUM SEEKER CARDS
+   ========================================== */
+.seekerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.seekerCard {
+  background: var(--l-card);
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid var(--l-border2);
+  display: flex;
+  gap: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--l-shadow);
+    border-color: rgba(99, 102, 241, 0.45);
+  }
+
+  .avatarWrapper {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid var(--l-border);
+    transition: transform 0.3s ease;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  &:hover .avatarWrapper {
+    transform: scale(1.03);
+  }
+
+  .content {
+    flex: 1;
+    min-width: 0; // Fixes flex overflow with truncation
+
+    h3 {
+      margin: 0 0 5px 0;
+      font-size: 1.25rem;
+      color: var(--l-text);
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .badgeRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .statusBadge {
+      display: inline-block;
+      background: var(--l-indigoSoft);
+      color: var(--l-indigo);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .refBadge {
+      display: inline-block;
+      background: rgba(148, 163, 184, 0.10);
+      color: var(--l-muted);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .infoList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      .infoItem {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: var(--l-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        svg {
+          color: rgba(148, 163, 184, 0.85);
+          flex-shrink: 0;
+        }
+
+        strong {
+          color: var(--l-text);
+          font-weight: 600;
+        }
+      }
+    }
+
+    /* Resume & Management Actions */
+    .cardActions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--l-border2);
+      padding-top: 14px;
+      gap: 10px;
+      
+      .resumeLink {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99, 102, 241, 0.08);
+        color: var(--l-indigo);
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: var(--l-indigo);
+          color: white;
+        }
+      }
+      
+      .adminTools {
+        display: flex;
+        gap: 6px;
+        margin-left: auto;
+        
+        .actionBtn {
+          background: transparent;
+          border: none;
+          padding: 6px;
+          border-radius: 8px;
+          color: var(--l-muted);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          
+          &:hover {
+            background: rgba(148, 163, 184, 0.12);
+          }
+          
+          &.edit:hover {
+            color: var(--l-indigo);
+          }
+          
+          &.delete:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ==========================================
+   3. LOADING, ERROR & EMPTY STATES
+   ========================================== */
+.loadingArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px;
+  color: var(--l-muted);
+  gap: 15px;
+
+  .spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid rgba(148, 163, 184, 0.20);
+    border-top: 4px solid var(--l-indigo);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80px 20px;
+  background: var(--l-card);
+  border-radius: 28px;
+  border: 2px dashed var(--l-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  max-width: 500px;
+  margin: 40px auto;
+
+  svg {
+    color: var(--l-indigo);
+    opacity: 0.8;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--l-text);
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  p {
+    color: var(--l-muted);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+
+.resetBtn {
+  background: var(--l-indigo);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px var(--l-indigoSoft);
+
+  &:hover {
+    transform: translateY(-2px);
+    background: #4f46e5;
+  }
+}
+
+/* ==========================================
+   ANIMATIONS & KEYFRAMES
+   ========================================== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   FILTER COMPONENT TOGGLES & CONTAINERS (Cohesive with tokens)
+   ========================================== */
+.filterToggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 1px solid var(--l-border);
+  background: var(--l-card);
+  color: var(--l-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--l-indigoSoft);
+    color: var(--l-indigo);
+    border-color: var(--l-indigo);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  @media (max-width: 768px) {
+    span {
+      display: none;
+    }
+    padding: 12px;
+  }
+}
+
+.horizontalFilterContainer {
+  background: var(--l-card);
+  border: 1px solid var(--l-border);
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--l-shadow);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.filterRowWithScroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--l-border) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--l-border2);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--l-border);
+    border-radius: 3px;
+
+    &:hover {
+      background-color: var(--l-muted);
+    }
+  }
+}
+
+.filterRowContent {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: fit-content;
+  padding-right: 20px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  flex-shrink: 0;
+
+  label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--l-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+  }
+
+  select,
+  input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--l-border);
+    background: var(--l-inputBg);
+    color: var(--l-inputText);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    height: 42px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 14px;
+    padding-right: 32px;
+    min-width: 160px;
+
+    &:focus {
+      outline: none;
+      border-color: var(--l-indigo);
+      box-shadow: 0 0 0 3px var(--l-indigoSoft);
+    }
+
+    &::placeholder {
+      color: rgba(148, 163, 184, 0.7);
+      font-weight: 400;
+    }
+  }
+
+  select option {
+    background: var(--l-card);
+    color: var(--l-text);
+    padding: 8px;
+  }
+
+  input[type="number"],
+  input[type="date"] {
+    background-image: none;
+    padding-right: 14px;
+  }
+}
+
+.clearAllButton {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--l-border);
+  background: var(--l-card);
+  color: var(--l-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 42px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  flex-shrink: 0;
+  margin-left: 8px;
+
+  &:hover {
+    background: var(--l-indigoSoft);
+    border-color: var(--l-indigo);
+    color: var(--l-indigo);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .horizontalFilterContainer {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .filterField {
+    min-width: 140px;
+    
+    select, input {
+      min-width: 140px;
+    }
+  }
+}
