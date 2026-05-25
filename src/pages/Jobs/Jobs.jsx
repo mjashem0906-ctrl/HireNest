@@ -2177,7 +2177,11 @@ function Jobs() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
 
-  const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const BACKEND_URL =
+    import.meta.env.VITE_API_URL ||
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+      ? "http://localhost:5000"
+      : "https://jobbridgenode.com");
   const JOBS_PER_PAGE = 10;
 
   useEffect(() => {

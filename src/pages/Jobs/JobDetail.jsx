@@ -21,7 +21,11 @@ const getDirectImageUrl = (driveUrl) => {
   if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) { fileId = driveUrl; }
   if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
   if (driveUrl.startsWith("uploads") || driveUrl.includes("\\")) {
-      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const backendUrl =
+        import.meta.env.VITE_API_URL ||
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? "http://localhost:5000"
+          : "https://jobbridgenode.com");
       return `${backendUrl}/${driveUrl.replace(/\\/g, "/")}`;
   }
   return driveUrl;
