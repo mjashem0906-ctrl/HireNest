@@ -13,12 +13,13 @@ const recruiterSchema = mongoose.Schema({
   profilePicture: { type: String, default: "" }, // New (URL)
 
   // 2. Company & Scope Details
-  companyName: { type: String, default: "JobBridge Karnataka" }, // New
-  location: { type: String, default: "Not Specified" }, // New (City/Country)
-  industries: { type: [String], default: [] }, // New (Array of strings)
+  companyName: { type: String, required: true }, // New
+  companyEmail: { type: String, required: true },
+  location: { type: String, required: true }, // New (City/Country)
+  industries: { type: [String], required: true }, // New (Array of strings)
   roleTypes: { type: [String], default: [] }, // New (Tech, Non-tech etc)
-  hiringVolume: { type: String, default: "N/A" }, // New
-  teamSize: { type: String, default: "Individual Contributor" }, // New
+  hiringVolume: { type: String, required: true }, // New
+  teamSize: { type: String, required: true }, // New
   registeredVia: { type: String, enum: ['admin', 'shareable_link', 'form_link'], default: 'admin' }, // Tracks registration source
   
   password: { type: String, required: true }

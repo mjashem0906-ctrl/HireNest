@@ -1,5 +1,3 @@
-//------------------29.01------------------------1.43-------------------
-
 const Recruiter = require('../models/Recruiter');
 
 // @desc    Register a new recruiter
@@ -11,14 +9,19 @@ const addRecruiter = async (req, res) => {
 
     const { 
       fullName, email, phone, designation, department,
-      employeeId, companyName, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
+      employeeId, companyName, companyEmail, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
     } = req.body;
 
-    // 2. VALIDATION FIX: Only check the 5 REQUIRED fields. 
-    // We removed employeeId, companyName, etc. from here because they are optional.
-    if (!fullName || !email || !phone || !designation || !department) {
+    // 2. VALIDATION: Check required fields.
+    if (
+      !fullName || !email || !phone || !designation || !department || 
+      !companyName || !companyEmail || !location || !hiringVolume || !teamSize ||
+      !industries || (Array.isArray(industries) && industries.length === 0)
+    ) {
       console.log("❌ Validation Failed: Missing required fields");
-      return res.status(400).json({ message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept)" });
+      return res.status(400).json({ 
+        message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept, Company Name, Company Email, Hiring Region, Monthly Hiring Volume, Team Size, Industries)" 
+      });
     }
 
     const recruiterExists = await Recruiter.findOne({ email });
@@ -26,21 +29,22 @@ const addRecruiter = async (req, res) => {
       return res.status(400).json({ message: "This email is already registered" });
     }
 
-    // 3. Create Recruiter (Defaults will apply here if fields are missing)
+    // 3. Create Recruiter
     const recruiter = await Recruiter.create({
       fullName,
       email,
       phone,
       designation,
       department,
+      companyName,
+      companyEmail,
+      location,
+      industries,
+      hiringVolume,
+      teamSize,
       // Optional fields with defaults
       employeeId: employeeId || "N/A",
-      companyName: companyName || "JobBridge Karnataka",
-      location: location || "Remote",
-      industries: industries || [],
       roleTypes: roleTypes || [],
-      hiringVolume: hiringVolume || "N/A",
-      teamSize: teamSize || "Individual",
       registeredVia: registeredVia || "admin", // 'shareable_link' when from the form, 'admin' when modal
       password: "secretPassword123" 
     });

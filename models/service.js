@@ -19,6 +19,11 @@ const serviceSchema = new mongoose.Schema({
         default: "",
         trim: true
     },
+    companyLogo: {
+        type: String,
+        default: "",
+        trim: true
+    },
     employmentType: {
         type: String,
         default: "Full-time",
