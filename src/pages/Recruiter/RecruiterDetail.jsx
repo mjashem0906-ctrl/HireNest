@@ -286,6 +286,14 @@ const RecruiterDetail = () => {
                 <label>Team Size</label>
                 <div className={styles.value}>{recruiter.teamSize || "Individual Contributor"}</div>
               </div>
+              <div className={styles.item}>
+                <label>Company Name</label>
+                <div className={styles.value}>{recruiter.companyName || "JobBridge Karnataka"}</div>
+              </div>
+              <div className={styles.item}>
+                <label>Company Email</label>
+                <div className={styles.value}>{recruiter.companyEmail || "Not Provided"}</div>
+              </div>
               <div className={styles.item} style={{gridColumn: 'span 2'}}>
                 <label>Specialized Industries</label>
                 <div className={styles.value} style={{color: '#6366f1'}}>

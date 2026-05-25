@@ -214,8 +214,8 @@ import styles from './AddRecruiterModal.module.scss';
 const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   const initialFormState = {
     fullName: '', email: '', phone: '', designation: '', department: '',
-    employeeId: '', companyName: 'JobBridge Karnataka', location: '',
-    industries: '', hiringVolume: '', teamSize: 'Individual Contributor'
+    employeeId: '', companyName: 'JobBridge Karnataka', companyEmail: '', location: '',
+    industries: '', hiringVolume: '', teamSize: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -226,6 +226,7 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
       if (isEditMode && recruiterToEdit) {
         setFormData({
           ...recruiterToEdit,
+          companyEmail: recruiterToEdit.companyEmail || '',
           industries: Array.isArray(recruiterToEdit.industries)
             ? recruiterToEdit.industries.join(', ')
             : recruiterToEdit.industries || '',
@@ -322,13 +323,13 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Hiring Region</label>
-              <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Bangalore, India" />
+              <label>Hiring Region *</label>
+              <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="e.g. Bangalore, India" required />
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Monthly Hiring Volume</label>
-              <select name="hiringVolume" value={formData.hiringVolume} onChange={handleChange}>
+              <label>Monthly Hiring Volume *</label>
+              <select name="hiringVolume" value={formData.hiringVolume} onChange={handleChange} required>
                 <option value="">Select Volume</option>
                 <option value="1-5 positions">1-5 positions</option>
                 <option value="5-15 positions">5-15 positions</option>
@@ -337,8 +338,9 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Team Size</label>
-              <select name="teamSize" value={formData.teamSize} onChange={handleChange}>
+              <label>Team Size *</label>
+              <select name="teamSize" value={formData.teamSize} onChange={handleChange} required>
+                <option value="">Select Team Size</option>
                 <option value="Individual Contributor">Individual Contributor</option>
                 <option value="Small Team (1-5)">Small Team (1-5)</option>
                 <option value="Large Team (5+)">Large Team (5+)</option>
@@ -346,18 +348,24 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Company Name</label>
-              <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} />
+              <label>Company Name *</label>
+              <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} required />
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Industries (comma separated)</label>
+              <label>Company Email ID *</label>
+              <input type="email" name="companyEmail" value={formData.companyEmail || ''} onChange={handleChange} placeholder="company@example.com" required />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label>Industries (comma separated) *</label>
               <input
                 type="text"
                 name="industries"
                 value={formData.industries}
                 onChange={handleChange}
                 placeholder="e.g. IT, Healthcare, FinTech"
+                required
               />
             </div>
 

@@ -19,6 +19,7 @@ const RecruitersPage = () => {
     department: '',
     designation: '',
     location: '',
+    companyName: '',
     registeredVia: '',
   });
   const [activeFilters, setActiveFilters] = useState({});
@@ -118,11 +119,24 @@ const RecruitersPage = () => {
     return Array.from(locSet).sort();
   }, [recruiters]);
 
+  // Unique Company Names
+  const allCompanyNames = useMemo(() => {
+    const companySet = new Set();
+    recruiters.forEach((r) => {
+      if (r.companyName) {
+        const trimmed = r.companyName.trim();
+        if (trimmed) companySet.add(trimmed);
+      }
+    });
+    return Array.from(companySet).sort();
+  }, [recruiters]);
+
   const recruitersFilterConfig = {
     labels: {
       department: "Department",
       designation: "Role / Designation",
       location: "Hiring Region",
+      companyName: "Company Name",
       registeredVia: "Registration Source",
     },
   };
@@ -153,6 +167,7 @@ const RecruitersPage = () => {
       department: "",
       designation: "",
       location: "",
+      companyName: "",
       registeredVia: "",
     });
     setActiveFilters({});
@@ -184,7 +199,12 @@ const RecruitersPage = () => {
       !filterValues.location ||
       recruiter.location?.trim().toLowerCase() === filterValues.location.trim().toLowerCase();
 
-    // 5. Registered source
+    // 5. Company Name
+    const matchesCompany =
+      !filterValues.companyName ||
+      recruiter.companyName?.trim().toLowerCase() === filterValues.companyName.trim().toLowerCase();
+
+    // 6. Registered source
     let matchesSource = true;
     if (filterValues.registeredVia) {
       if (filterValues.registeredVia === 'form') {
@@ -194,7 +214,7 @@ const RecruitersPage = () => {
       }
     }
 
-    return matchesSearch && matchesDept && matchesDesignation && matchesLocation && matchesSource;
+    return matchesSearch && matchesDept && matchesDesignation && matchesLocation && matchesCompany && matchesSource;
   });
 
   return (
@@ -297,6 +317,22 @@ const RecruitersPage = () => {
                   {allLocations.map((l) => (
                     <option key={l} value={l}>
                       {l}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Company Name */}
+              <div className={styles.filterField}>
+                <label>Company Name</label>
+                <select
+                  value={filterValues.companyName || ""}
+                  onChange={(e) => handleFilterChange("companyName", e.target.value)}
+                >
+                  <option value="">All Companies</option>
+                  {allCompanyNames.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
                     </option>
                   ))}
                 </select>

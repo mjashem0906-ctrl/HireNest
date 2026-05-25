@@ -296,6 +296,33 @@ function MembersDetail() {
                       "Not specified"}
                   </div>
                 </div>
+
+                <div className={styles.item}>
+                  <label>Notice Period</label>
+                  <div className={styles.value}>
+                    {member.careerProfile?.noticePeriod ||
+                      member.noticePeriod ||
+                      "Not specified"}
+                  </div>
+                </div>
+
+                <div className={styles.item}>
+                  <label>LinkedIn Profile URL</label>
+                  <div className={styles.value}>
+                    {member.linkedinUrl ? (
+                      <a
+                        href={member.linkedinUrl.startsWith("http") ? member.linkedinUrl : `https://${member.linkedinUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#0a66c2", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                      >
+                        View LinkedIn <ExternalLink size={14} />
+                      </a>
+                    ) : (
+                      "Not specified"
+                    )}
+                  </div>
+                </div>
               </div>
             </section>
 

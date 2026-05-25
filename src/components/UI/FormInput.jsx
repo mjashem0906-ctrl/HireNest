@@ -31,6 +31,7 @@ const FormInput= ({
             placeholder={placeholder}
             className={`${styles.input} ${styles.textarea} ${icon ? styles.withIcon : ''} ${error ? styles.error : ''}`}
             rows={4}
+            required={required}
             {...rest}
           />
         ) : (
@@ -40,6 +41,7 @@ const FormInput= ({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             className={`${styles.input} ${icon ? styles.withIcon : ''} ${error ? styles.error : ''}`}
+            required={required}
             {...rest}
           />
         )}

@@ -47,7 +47,9 @@ const initialState = {
     department: "",
     employmentType: "",
     expectedSalary: "",
+    noticePeriod: "",
   },
+  linkedinUrl: "",
   experienceDetails: [],
   certifications: [],
   skills: [],
@@ -743,9 +745,11 @@ function AddMember({
         branch: editMember.branch || "",
         passOutYear: editMember.passOutYear || "",
         dateOfBirth: editMember.dateOfBirth ? new Date(editMember.dateOfBirth) : null,
+        linkedinUrl: editMember.linkedinUrl || "",
         careerProfile: {
           ...initialState.careerProfile,
           ...(editMember.careerProfile || {}),
+          noticePeriod: editMember.careerProfile?.noticePeriod || editMember.noticePeriod || "",
         },
         experienceDetails: editMember.experienceDetails || [],
         certifications: editMember.certifications || [],
@@ -968,7 +972,9 @@ function AddMember({
           industry: String(formData.careerProfile?.industry || "").trim(), 
           location: String(formData.careerProfile?.location || "").trim(), 
           expectedSalary: String(formData.careerProfile?.expectedSalary || "").trim(), 
+          noticePeriod: String(formData.careerProfile?.noticePeriod || "").trim(),
         }, 
+        linkedinUrl: String(formData.linkedinUrl || "").trim(), 
         experienceDetails: (formData.experienceDetails || []).map((e) => ({
           companyName: e?.companyName || "",
           designation: e?.designation || "",
@@ -1332,6 +1338,27 @@ function AddMember({
                   { value: "Contract", label: "Contract" },
                 ]}
                 onChange={(v) => setFormData({ ...formData, careerProfile: { ...formData.careerProfile, employmentType: v } })}
+              />
+
+              <DropdownSelect
+                label="Notice Period"
+                value={formData.careerProfile.noticePeriod}
+                options={[
+                  { value: "Immediate", label: "Immediate" },
+                  { value: "15 days", label: "15 days" },
+                  { value: "30 days", label: "30 days" },
+                  { value: "45 days", label: "45 days" },
+                  { value: "60 days", label: "60 days" },
+                  { value: "90 days", label: "90 days" },
+                ]}
+                onChange={(v) => setFormData({ ...formData, careerProfile: { ...formData.careerProfile, noticePeriod: v } })}
+              />
+
+              <FormInput
+                label="LinkedIn Profile URL"
+                value={formData.linkedinUrl}
+                onChange={(v) => setFormData({ ...formData, linkedinUrl: v })}
+                placeholder="https://linkedin.com/in/your-profile"
               />
 
               <div style={{ gridColumn: "1 / -1", marginTop: "20px" }}>
