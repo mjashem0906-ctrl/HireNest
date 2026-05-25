@@ -21,7 +21,8 @@ const getDirectImageUrl = (driveUrl) => {
   if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) { fileId = driveUrl; }
   if (fileId) return `https://drive.google.com/thumbnail?id=${fileId}`;
   if (driveUrl.startsWith("uploads") || driveUrl.includes("\\")) {
-      return `http://localhost:5000/${driveUrl.replace(/\\/g, "/")}`;
+      const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      return `${backendUrl}/${driveUrl.replace(/\\/g, "/")}`;
   }
   return driveUrl;
 };
