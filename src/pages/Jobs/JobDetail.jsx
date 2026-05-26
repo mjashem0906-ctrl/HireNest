@@ -7,7 +7,7 @@ import API from '../../axios';
 import { 
   Briefcase, Award, CheckCircle, Zap, Users, Star, 
   Calendar, GraduationCap, ArrowLeft, MapPin, 
-  CircleDollarSign, Clock, FileText, Trash2, X
+  IndianRupee, Clock, FileText, Trash2, X, Building
 } from 'lucide-react';
 
 // --- HELPERS ---
@@ -272,10 +272,11 @@ function JobDetail() {
         <div className={styles.tileGrid}>
           <InfoTile icon={<FileText color="#6366f1" size={20}/>} label="JOB ID" value={job.jobId} />
           <InfoTile icon={<Briefcase color="#10b981" size={20}/>} label="COMPANY" value={job.companyName} />
+          <InfoTile icon={<Building color="#6366f1" size={20}/>} label="INDUSTRY" value={job.industry} />
           <InfoTile icon={<Briefcase color="#3b82f6" size={20}/>} label="JOB ROLE" value={job.role} />
           <InfoTile icon={<Clock color="#8b5cf6" size={20}/>} label="EMPLOYMENT TYPE" value={job.employmentType} />
           <InfoTile icon={<MapPin color="#ef4444" size={20}/>} label="LOCATION" value={job.location} />
-          <InfoTile icon={<CircleDollarSign color="#f59e0b" size={20}/>} label="SALARY" value={job.salary} />
+          <InfoTile icon={<IndianRupee color="#f59e0b" size={20}/>} label="SALARY" value={job.salary} />
           <InfoTile icon={<GraduationCap color="#3b82f6" size={20}/>} label="EDUCATION" value={job.education} />
           <InfoTile icon={<Calendar color="#06b6d4" size={20}/>} label="PASSOUT YEAR" value={job.passedOutYear} />
           <InfoTile icon={<Users color="#ec4899" size={20}/>} label="REFEREE" value={job.refereedBy?.name || "N/A"} />

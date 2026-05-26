@@ -214,7 +214,7 @@ import styles from './AddRecruiterModal.module.scss';
 const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   const initialFormState = {
     fullName: '', email: '', phone: '', designation: '', department: '',
-    employeeId: '', companyName: 'JobBridge Karnataka', companyEmail: '', location: '',
+    employeeId: '', companyName: 'JobBridge Karnataka', companyGST: '', companyEmail: '', location: '',
     industries: '', hiringVolume: '', teamSize: ''
   };
 
@@ -227,6 +227,7 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
         setFormData({
           ...recruiterToEdit,
           companyEmail: recruiterToEdit.companyEmail || '',
+          companyGST: recruiterToEdit.companyGST || '',
           industries: Array.isArray(recruiterToEdit.industries)
             ? recruiterToEdit.industries.join(', ')
             : recruiterToEdit.industries || '',
@@ -350,6 +351,11 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
             <div className={styles.inputGroup}>
               <label>Company Name *</label>
               <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} required />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label>Company GST *</label>
+              <input type="text" name="companyGST" value={formData.companyGST || ''} onChange={handleChange} placeholder="e.g. 29AAAAA1111A1Z1" required />
             </div>
 
             <div className={styles.inputGroup}>

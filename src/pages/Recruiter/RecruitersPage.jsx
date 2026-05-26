@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Plus, Search, Download, Briefcase, Building2, UserCircle, Trash2, Mail, Phone, Link2, CheckCircle2, Share2, Filter, X
+  Plus, Search, Download, Briefcase, Building, Building2, UserCircle, Trash2, Mail, Phone, Link2, CheckCircle2, Share2, Filter, X
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import styles from './RecruitersPage.module.scss';
@@ -417,6 +417,7 @@ const RecruitersPage = () => {
                 </div>
 
                 <div className={styles.meta}>
+                  <p><strong><Building size={14} style={{marginRight: '5px'}}/> Company:</strong> {recruiter.companyName || 'JobBridge Karnataka'}</p>
                   <p><strong><Building2 size={14} style={{marginRight: '5px'}}/> Dept:</strong> {recruiter.department || 'General'}</p>
                   <p><strong><Briefcase size={14} style={{marginRight: '5px'}}/> Role:</strong> {recruiter.designation || 'Specialist'}</p>
                   {recruiter.registeredVia && recruiter.registeredVia !== 'admin' && (

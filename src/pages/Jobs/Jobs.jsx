@@ -21,7 +21,7 @@ import {
   Eye,
   EyeOff,
   MapPin,
-  DollarSign,
+  IndianRupee,
   GraduationCap,
   Calendar,
   Users,
@@ -219,6 +219,14 @@ const DEGREE_OPTIONS = [
 
 const PASSOUT_YEAR_OPTIONS = Array.from({ length: 40 }, (_, i) => String(new Date().getFullYear() + 3 - i));
 
+const INDUSTRY_OPTIONS = [
+  "Information Technology", "Healthcare", "Education", "Finance & Banking",
+  "Manufacturing", "Retail & E-commerce", "Construction", "Automotive",
+  "Telecommunications", "Real Estate", "Media & Entertainment",
+  "Hospitality & Tourism", "Agriculture", "Logistics & Supply Chain",
+  "Government & Public Administration", "Non-Profit / NGO"
+];
+
 
 const KARNATAKA_DISTRICTS = [
   "Bagalkote",
@@ -262,6 +270,8 @@ const EditableDropdown = ({
   required = false,
   error = "",
   onChange,
+  category = null,
+  onCustomAdded = () => {},
 }) => {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -288,11 +298,28 @@ const EditableDropdown = ({
     .filter(Boolean)
     .filter((opt) => norm(opt).includes(norm(query)));
 
+  const saveCustomValueToBackend = async (val) => {
+    if (!category) return;
+    const trimmedValue = String(val || "").trim();
+    if (!trimmedValue) return;
+
+    const exists = options.some((opt) => norm(opt) === norm(trimmedValue));
+    if (exists) return;
+
+    try {
+      await API.post("/dropdown", { category, value: trimmedValue });
+      onCustomAdded();
+    } catch (err) {
+      console.error("Failed to save custom dropdown value:", err);
+    }
+  };
+
   const commit = (val) => {
     const v = String(val || "").trim();
     onChange(v);
     setQuery(v);
     setOpen(false);
+    saveCustomValueToBackend(v);
   };
 
   return (
@@ -764,6 +791,28 @@ const BulkCSVReviewModal = ({
                             </div>
 
                             <div className={styles.bulkFieldGroup}>
+                              <label>Industry</label>
+                              {isEditing ? (
+                                <select
+                                  value={job.industry || ""}
+                                  onChange={(e) =>
+                                    handleFieldChange(index, "industry", e.target.value)
+                                  }
+                                  className={styles.bulkSelect}
+                                >
+                                  <option value="">Select Industry</option>
+                                  {INDUSTRY_OPTIONS.map((opt, i) => (
+                                    <option key={i} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <div>{job.industry || "—"}</div>
+                              )}
+                            </div>
+
+                            <div className={styles.bulkFieldGroup}>
                               <label>Refereed Person</label>
                               {isEditing ? (
                                 <select
@@ -928,7 +977,7 @@ BulkCSVReviewModal.propTypes = {
 };
 
 const CSV_TEMPLATE_HEADERS =
-  "title,companyName,role,employmentType,location,experience,salary,education,passedOutYear,keySkills,description\n";
+  "title,companyName,role,employmentType,location,experience,salary,education,passedOutYear,keySkills,description,industry\n";
 
 const normalizeEmploymentType = (type) => {
   if (!type) return "Full-time";
@@ -960,6 +1009,12 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
   const [role, setRole] = useState("");
   const [keySkills, setKeySkills] = useState("");
   const [jobPosted, setJobPosted] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [dynamicIndustries, setDynamicIndustries] = useState([]);
+
+  const combinedIndustries = useMemo(() => {
+    return [...new Set([...INDUSTRY_OPTIONS, ...dynamicIndustries])].sort();
+  }, [dynamicIndustries]);
 
   const { memberContext } = useData();
   const [refereedBy, setRefereedBy] = useState("");
@@ -967,6 +1022,38 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
   const [recruitersList, setRecruitersList] = useState([]);
 
   const [csvFileName, setCsvFileName] = useState("");
+
+  useEffect(() => {
+    const fetchIndustries = async () => {
+      try {
+        const response = await API.get("/dropdown?category=industry");
+        const fetched = Array.isArray(response.data)
+          ? response.data.map((item) => typeof item === 'object' ? item.value : item)
+          : [];
+        setDynamicIndustries(fetched);
+      } catch (error) {
+        console.error("Error fetching industries:", error);
+      }
+    };
+    if (isOpen) {
+      fetchIndustries();
+    }
+  }, [isOpen]);
+
+  const handleCustomIndustryAdded = () => {
+    const fetchIndustries = async () => {
+      try {
+        const response = await API.get("/dropdown?category=industry");
+        const fetched = Array.isArray(response.data)
+          ? response.data.map((item) => typeof item === 'object' ? item.value : item)
+          : [];
+        setDynamicIndustries(fetched);
+      } catch (error) {
+        console.error("Error fetching industries:", error);
+      }
+    };
+    fetchIndustries();
+  };
 
   const downloadCSVTemplate = () => {
     const blob = new Blob([CSV_TEMPLATE_HEADERS], {
@@ -988,6 +1075,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       "passedOutYear",
       "keySkills",
       "description",
+      "industry",
     ];
 
     const wb = XLSX.utils.book_new();
@@ -1006,6 +1094,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       { wch: 15 },
       { wch: 25 },
       { wch: 30 },
+      { wch: 20 },
     ];
     ws["!cols"] = colWidths;
 
@@ -1050,6 +1139,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       setSalary(initialData.salary || "");
       setRole(initialData.role || "");
       setKeySkills(initialData.keySkills || "");
+      setIndustry(initialData.industry || "");
 
       const refId =
         initialData.refereedBy && typeof initialData.refereedBy === "object"
@@ -1079,6 +1169,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       setKeySkills("");
       setRefereedBy("");
       setJobPosted("");
+      setIndustry("");
     }
   }, [isOpen, initialData]);
 
@@ -1153,6 +1244,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
                 entry.passedoutyear || entry.passedOutYear || "",
               keySkills: entry.keyskills || entry.keySkills || "",
               description: entry.description || "",
+              industry: entry.industry || "",
               refereedBy: "",
               jobPosted: "",
             });
@@ -1196,6 +1288,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
                 entry.passedoutyear || entry.passedOutYear || "",
               keySkills: entry.keyskills || entry.keySkills || "",
               description: entry.description || "",
+              industry: entry.industry || "",
               refereedBy: "",
               jobPosted: "",
             });
@@ -1215,6 +1308,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
           setPassedOutYear(job.passedOutYear);
           setKeySkills(job.keySkills);
           setDescription(job.description);
+          setIndustry(job.industry || "");
           setRefereedBy("");
           setJobPosted("");
           alert("Data loaded into form. Review and click Post.");
@@ -1280,6 +1374,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
         salary,
         role,
         keySkills,
+        industry,
         refereedBy: refereedBy || null,
         jobPosted: jobPosted || null,
       },
@@ -1461,6 +1556,22 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
             </div>
 
             <div className={styles.formGroup}>
+              <EditableDropdown
+                label={
+                  <>
+                    <Building size={14} /> Industry
+                  </>
+                }
+                value={industry}
+                options={combinedIndustries}
+                placeholder="Select or Type Industry"
+                onChange={setIndustry}
+                category="industry"
+                onCustomAdded={handleCustomIndustryAdded}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
               <label>
                 <Calendar size={14} /> Employment Type
               </label>
@@ -1501,7 +1612,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
 
             <div className={styles.formGroup}>
               <label>
-                <DollarSign size={14} /> Salary
+                <IndianRupee size={14} /> Salary
               </label>
               <input
                 className={styles.formInput}
@@ -2155,6 +2266,7 @@ function Jobs() {
   companyName: "",
   role: "",
   employmentType: "",
+  industry: "",
   location: "",
   experience: "",
   salary: "",
@@ -2326,6 +2438,7 @@ function Jobs() {
   companyName,
   role,
   employmentType,
+  industry,
   location,
   experience,
   salary,
@@ -2343,6 +2456,7 @@ function Jobs() {
       const titleFilter = title?.trim().toLowerCase() || "";
       const companyFilter = companyName?.trim().toLowerCase() || "";
       const roleFilter = role?.trim().toLowerCase() || "";
+      const industryFilter = industry?.trim().toLowerCase() || "";
       const locationFilter = location?.trim().toLowerCase() || "";
       const experienceFilter = experience?.trim().toLowerCase() || "";
       const salaryFilter = salary?.trim().toLowerCase() || "";
@@ -2426,6 +2540,12 @@ function Jobs() {
           return false;
 
         if (employmentType && job.employmentType !== employmentType) return false;
+
+        if (
+          industryFilter &&
+          !(job.industry || "").toLowerCase().includes(industryFilter)
+        )
+          return false;
 
         if (refereedByFilter) {
           const refName = (
@@ -2518,6 +2638,7 @@ function Jobs() {
   companyName: "",
   role: "",
   employmentType: "",
+  industry: "",
   location: "",
   experience: "",
   salary: "",
@@ -2543,6 +2664,10 @@ function Jobs() {
 
   const locationOptions = useMemo(
     () => Array.from(new Set(jobPosts.map((j) => j.location).filter(Boolean))),
+    [jobPosts]
+  );
+  const industryOptions = useMemo(
+    () => Array.from(new Set(jobPosts.map((j) => j.industry).filter(Boolean))).sort(),
     [jobPosts]
   );
   const titleOptions = useMemo(
@@ -3396,28 +3521,58 @@ function Jobs() {
 
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>EMPLOYMENT TYPE</label>
-              <div className={styles.radioGroup}>
-                <label className={styles.checkRow}>
-                  <input
-                    type="radio"
-                    name="employmentType"
-                    checked={(getDisplayValue("employmentType") || "") === ""}
-                    onChange={() => handleFilterChange("employmentType", "")}
-                  />
-                  <span>All Types</span>
-                </label>
-                {EMPLOYMENT_TYPES.map((t) => (
-                  <label key={t} className={styles.checkRow}>
-                    <input
-                      type="radio"
-                      name="employmentType"
-                      checked={(getDisplayValue("employmentType") || "") === t}
-                      onChange={() => handleFilterChange("employmentType", t)}
-                    />
-                    <span>{t}</span>
-                  </label>
-                ))}
-              </div>
+              <Select
+                options={[
+                  { value: "", label: "All Types" },
+                  ...EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t })),
+                ]}
+                value={
+                  getDisplayValue("employmentType")
+                    ? {
+                        value: getDisplayValue("employmentType"),
+                        label: getDisplayValue("employmentType"),
+                      }
+                    : { value: "", label: "All Types" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("employmentType", selected?.value || "")
+                }
+                isSearchable
+                isClearable
+                placeholder="All Types"
+                styles={customSelectStyles}
+                className={styles.reactSelect}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+              />
+            </div>
+
+            <div className={styles.sidebarField}>
+              <label className={styles.sidebarLabel}>INDUSTRY</label>
+              <Select
+                options={[
+                  { value: "", label: "All Industries" },
+                  ...industryOptions.map((ind) => ({ value: ind, label: ind })),
+                ]}
+                value={
+                  getDisplayValue("industry")
+                    ? {
+                        value: getDisplayValue("industry"),
+                        label: getDisplayValue("industry"),
+                      }
+                    : { value: "", label: "All Industries" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("industry", selected?.value || "")
+                }
+                isSearchable
+                isClearable
+                placeholder="All Industries"
+                styles={customSelectStyles}
+                className={styles.reactSelect}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+              />
             </div>
 
             <div className={styles.sidebarField}>
@@ -3649,7 +3804,7 @@ function Jobs() {
                                 )}
                                 {job.salary && (
                                   <span>
-                                    <DollarSign size={14} /> {job.salary}
+                                    <IndianRupee size={14} /> {job.salary}
                                   </span>
                                 )}
                               </div>
