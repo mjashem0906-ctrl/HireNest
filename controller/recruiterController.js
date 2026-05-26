@@ -9,18 +9,18 @@ const addRecruiter = async (req, res) => {
 
     const { 
       fullName, email, phone, designation, department,
-      employeeId, companyName, companyEmail, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
+      employeeId, companyName, companyGST, companyEmail, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
     } = req.body;
 
     // 2. VALIDATION: Check required fields.
     if (
       !fullName || !email || !phone || !designation || !department || 
-      !companyName || !companyEmail || !location || !hiringVolume || !teamSize ||
+      !companyName || !companyGST || !companyEmail || !location || !hiringVolume || !teamSize ||
       !industries || (Array.isArray(industries) && industries.length === 0)
     ) {
       console.log("❌ Validation Failed: Missing required fields");
       return res.status(400).json({ 
-        message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept, Company Name, Company Email, Hiring Region, Monthly Hiring Volume, Team Size, Industries)" 
+        message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept, Company Name, Company GST, Company Email, Hiring Region, Monthly Hiring Volume, Team Size, Industries)" 
       });
     }
 
@@ -37,6 +37,7 @@ const addRecruiter = async (req, res) => {
       designation,
       department,
       companyName,
+      companyGST,
       companyEmail,
       location,
       industries,

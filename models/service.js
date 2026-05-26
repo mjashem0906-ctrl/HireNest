@@ -34,6 +34,11 @@ const serviceSchema = new mongoose.Schema({
         default: "",
         trim: true
     },
+    industry: {
+        type: String,
+        default: "",
+        trim: true
+    },
     
     // --- Requirements ---
     education: {

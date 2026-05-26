@@ -14,6 +14,7 @@ const recruiterSchema = mongoose.Schema({
 
   // 2. Company & Scope Details
   companyName: { type: String, required: true }, // New
+  companyGST: { type: String, required: true },
   companyEmail: { type: String, required: true },
   location: { type: String, required: true }, // New (City/Country)
   industries: { type: [String], required: true }, // New (Array of strings)

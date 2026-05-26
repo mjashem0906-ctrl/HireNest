@@ -38,7 +38,7 @@ const addServicePost = async (req, res) => {
   try {
     const {
       title, description, companyName, companyLogo, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry
     } = req.body;
 
     const normalizedEmploymentType = normalizeEmploymentType(employmentType);
@@ -80,6 +80,7 @@ const addServicePost = async (req, res) => {
       companyLogo,
       employmentType: normalizedEmploymentType,
       location,
+      industry,
       education,
       passedOutYear,
       experience,
@@ -553,7 +554,7 @@ const updateServicePost = async (req, res) => {
     const { id } = req.params;
     const {
       title, description, companyName, companyLogo, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry
     } = req.body;
 
     // Check if user is admin or the original poster
@@ -577,7 +578,7 @@ const updateServicePost = async (req, res) => {
     const updatedService = await Service.findByIdAndUpdate(
       id,
       {
-        title, description, companyName, companyLogo, employmentType, location,
+        title, description, companyName, companyLogo, employmentType, location, industry,
         education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted,
         updatedAt: new Date()
       },
