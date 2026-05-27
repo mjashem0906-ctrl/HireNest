@@ -37,17 +37,25 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error("API Error:", {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      message: error.message
-    });
+    const isAuthCheck = error.config?.url?.includes("/auth/check");
+    const is401 = error.response?.status === 401;
+
+    // Suppress console.error for expected 401 on routine /auth/check calls
+    if (!is401 || !isAuthCheck) {
+      console.error("API Error:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message
+      });
+    }
 
     // Handle specific errors
-    if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      console.warn("Unauthorized access. Redirecting to login...");
+    if (is401) {
+      // Only warn if this is not a routine auth check call (avoid console noise on landing/login page loads)
+      if (!isAuthCheck) {
+        console.warn("Unauthorized access. Redirecting to login...");
+      }
       // You can add redirect logic here if needed
     }
 

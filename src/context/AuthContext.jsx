@@ -43,11 +43,15 @@ export const AuthProvider = ({ children }) => {
 
     } catch (err) {
 
-      console.error(
-        "Auth check failed:",
-        err.response?.status,
-        err.message
-      );
+      if (err.response?.status === 401) {
+        console.log("No active session (guest user).");
+      } else {
+        console.error(
+          "Auth check failed:",
+          err.response?.status,
+          err.message
+        );
+      }
 
       setUser(null);
 

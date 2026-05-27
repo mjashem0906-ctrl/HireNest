@@ -171,7 +171,7 @@ function EducationDropdown({ value, onChange }) {
   );
 }
 
-function JobRoleDropdown({ value, onChange }) {
+function JobRoleDropdown({ value, options = [], onChange }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -189,7 +189,7 @@ function JobRoleDropdown({ value, onChange }) {
   }, []);
 
   const norm = (s) => String(s || "").toLowerCase().trim();
-  const filtered = JOB_ROLE_OPTIONS.filter((opt) => norm(opt).includes(norm(query)));
+  const filtered = options.filter((opt) => norm(opt).includes(norm(query)));
 
   const commit = (val) => {
     const v = String(val || "").trim();
@@ -280,9 +280,10 @@ const ProfileSetup = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [dynamicDistricts, setDynamicDistricts] = useState([]);
+    const [dynamicRoles, setDynamicRoles] = useState([]);
 
     useEffect(() => {
-        const fetchDistricts = async () => {
+        const fetchDropdownData = async () => {
             try {
                 const res = await API.get("/dropdown?category=locationPreferences");
                 const fetchedLocs = Array.isArray(res.data) 
@@ -292,8 +293,18 @@ const ProfileSetup = () => {
             } catch (err) {
                 console.error("Failed to fetch locations:", err);
             }
+
+            try {
+                const res = await API.get("/dropdown?category=desiredRoles");
+                const fetchedRoles = Array.isArray(res.data) 
+                  ? res.data.map((item) => typeof item === 'object' ? item.value : item) 
+                  : [];
+                setDynamicRoles(fetchedRoles);
+            } catch (err) {
+                console.error("Failed to fetch preferred job roles:", err);
+            }
         };
-        fetchDistricts();
+        fetchDropdownData();
     }, []);
 
     const combinedDistricts = [...new Set([
@@ -302,6 +313,11 @@ const ProfileSetup = () => {
         ...KERALA_DISTRICTS,
         ...dynamicDistricts
     ])].sort().map(d => ({ value: d, label: d }));
+
+    const combinedRoles = [...new Set([
+        ...JOB_ROLE_OPTIONS,
+        ...dynamicRoles
+    ])].sort();
 
     // Server upload function (replaces Cloudinary)
     const uploadToServer = async (file) => {
@@ -494,6 +510,7 @@ const ProfileSetup = () => {
                                     />
                                     <JobRoleDropdown
                                         value={formData.preferredJobRole_Sector}
+                                        options={combinedRoles}
                                         onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: v })}
                                     />
                                 </>
