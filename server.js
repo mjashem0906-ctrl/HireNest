@@ -65,4 +65,12 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, async() => {
   console.log(`✅ Server running on port ${PORT}`);
+  
+  // Sync dropdowns with existing member data on startup
+  try {
+    const syncDropdowns = require("./utils/syncDropdowns");
+    await syncDropdowns();
+  } catch (err) {
+    console.error("Failed to run syncDropdowns on startup:", err);
+  }
 });
