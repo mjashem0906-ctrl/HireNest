@@ -156,6 +156,21 @@ memberSchema.pre("save", function (next) {
     }
   }
 
+  // Sync preferredJobRole_Sector and careerProfile.role
+  if (this.isModified("careerProfile.role")) {
+    this.preferredJobRole_Sector = this.careerProfile.role;
+  } else if (this.isModified("preferredJobRole_Sector")) {
+    if (!this.careerProfile) this.careerProfile = {};
+    this.careerProfile.role = this.preferredJobRole_Sector;
+  } else {
+    if (this.preferredJobRole_Sector && (!this.careerProfile || !this.careerProfile.role)) {
+      if (!this.careerProfile) this.careerProfile = {};
+      this.careerProfile.role = this.preferredJobRole_Sector;
+    } else if (this.careerProfile?.role && !this.preferredJobRole_Sector) {
+      this.preferredJobRole_Sector = this.careerProfile.role;
+    }
+  }
+
   next();
 });
 
