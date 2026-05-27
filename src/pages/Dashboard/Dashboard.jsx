@@ -249,10 +249,9 @@ function MemberDashboard() {
     { title: "Job Seekers", count: seekers, icon: Briefcase, color: "#10b981", path: "/job-seekers" },
     { title: "Freshers", count: freshersCount, icon: GraduationCap, color: "#06b6d4", path: "/job-seekers", state: { expFilter: "fresher" } },
     { title: "Experienced", count: experiencedCount, icon: Star, color: "#eab308", path: "/job-seekers", state: { expFilter: "experienced" } },
-    { title: "Providers", count: providers, icon: UserCheck, color: "#f59e0b", path: "/members" },
     { title: "Recruiters", count: recruiters, icon: Building2, color: "#8b5cf6", path: "/recruiters" },
     { title: "Job Referee", count: referees, icon: User, color: "#ec4899", path: "/referees" },
-    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#f97316", path: "/members" },
+    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#f97316", path: "/members", state: { exactMemberType: "In need of Upskilling" } },
   ];
 
   const memberTypeData = [

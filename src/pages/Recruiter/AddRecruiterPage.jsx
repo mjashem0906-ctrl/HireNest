@@ -7,7 +7,7 @@ const AddRecruiterPage = () => {
 
   const initialFormState = {
     fullName: '', email: '', phone: '', designation: '', department: '',
-    employeeId: '', companyName: 'JobBridge Karnataka', companyGST: '', companyEmail: '', location: '',
+    employeeId: '', companyName: ' ', companyGST: '', companyEmail: '', location: '',
     industries: '', hiringVolume: '', teamSize: ''
   };
 

@@ -48,7 +48,7 @@
   }
 }
 
-.selectedValue {
+.chosenValue {
   flex: 1;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -157,7 +157,7 @@
   object-fit: cover;
 }
 
-.multiSelected {
+.multiChosen {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;

@@ -84,23 +84,23 @@ const DropdownSelect = ({
   };
 
   return (
-    <div className={styles.dropdown} ref={dropdownRef}>
-      <label className={styles.label}>
+    <div className={`${styles.dropdown} custom-dropdown-area`} ref={dropdownRef}>
+      <label className={`${styles.label} custom-dropdown-label`}>
         {label}
         {required && <span className={styles.required}>*</span>}
       </label>
 
       {/* Selected Value */}
       <div
-        className={`${styles.select} ${isOpen ? styles.open : ""} ${
+        className={`${styles.select} ${isOpen ? `${styles.open} custom-dropdown-open` : ""} ${
           error ? styles.error : ""
-        }`}
+        } custom-dropdown-select`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={styles.selectedValue}>
+        <span className={`${styles.chosenValue} custom-dropdown-value`}>
           {multiple ? (
             selectedValues.length > 0 ? (
-              <div className={styles.multiSelected}>
+              <div className={styles.multiChosen}>
                 {selectedValues.map((sel) => (
                   <span key={sel.value} className={styles.chip}>
                     {renderIcon(sel)}
@@ -120,7 +120,7 @@ const DropdownSelect = ({
               placeholder
             )
           ) : selectedValues ? (
-            <span className={styles.optionContent}>
+            <span className={`${styles.optionContent} custom-dropdown-content`}>
               {renderIcon(selectedValues)}
               {selectedValues.label}
               <X
@@ -137,16 +137,16 @@ const DropdownSelect = ({
           )}
         </span>
         <ChevronDown
-          className={`${styles.chevron} ${isOpen ? styles.rotated : ""}`}
+          className={`${styles.chevron} ${isOpen ? styles.rotated : ""} custom-dropdown-chevron`}
           size={16}
         />
       </div>
 
       {/* Options */}
       {isOpen && (
-        <div className={styles.options}>
+        <div className={`${styles.options} custom-dropdown-options`}>
           {searchable && (
-            <div className={styles.searchBox}>
+            <div className={`${styles.searchBox} custom-dropdown-search`}>
               <Search size={16} />
               <input
                 type="text"
@@ -165,12 +165,12 @@ const DropdownSelect = ({
                 className={`${styles.option} ${
                   multiple
                     ? value.includes(option.value)
-                      ? styles.selected
+                      ? `${styles.selected} custom-dropdown-selected`
                       : ""
                     : option.value === value
-                    ? styles.selected
+                    ? `${styles.selected} custom-dropdown-selected`
                     : ""
-                }`}
+                } custom-dropdown-option`}
                 onClick={() => handleSelect(option.value)}
               >
                 {renderIcon(option)}

@@ -527,7 +527,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Mail, Phone, Briefcase, Building2, User, 
-  FileText, Target, Award, Edit, Save, X, MapPin, Star, Users, Layers, ExternalLink, Briefcase as JobIcon
+  FileText, Target, Award, Edit, Save, X, MapPin, Star, Users, Layers, ExternalLink, Briefcase as JobIcon, Clock
 } from 'lucide-react';
 import { useData } from "../../context/DataContext";
 import API from "../../axios";
@@ -760,6 +760,15 @@ const RefereeDetailsPage = () => {
                       <div>
                         <label className={styles.jobMetaLabel}>Experience</label>
                         <div className={styles.jobMetaValue}>{job.experience}</div>
+                      </div>
+                    )}
+                    {job.createdAt && (
+                      <div>
+                        <label className={styles.jobMetaLabel}>Posted</label>
+                        <div className={styles.jobMetaValue}>
+                          <Clock size={14} />
+                          {new Date(job.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </div>
                       </div>
                     )}
                   </div>

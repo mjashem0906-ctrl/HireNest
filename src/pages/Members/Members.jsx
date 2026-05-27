@@ -154,7 +154,7 @@ function Members() {
       }
       // ✅ Catch Member Type clicks from the dashboard (Overview card)
       else if (location.state.exactMemberType) {
-        initialDisplayData = initialDisplayData.filter((m) => m.memberType === location.state.exactMemberType);
+        initialDisplayData = initialDisplayData.filter((m) => (m.memberType || "").includes(location.state.exactMemberType));
         dashboardFilterValues = { memberType: location.state.exactMemberType };
         dashboardActiveFilters = { memberType: location.state.exactMemberType };
       }
@@ -327,7 +327,11 @@ function Members() {
     
     exactFilters.forEach(key => {
       if (filters[key]) {
-        filtered = filtered.filter(p => p[key] === filters[key]);
+        if (key === 'memberType') {
+          filtered = filtered.filter(p => (p.memberType || "").includes(filters[key]));
+        } else {
+          filtered = filtered.filter(p => p[key] === filters[key]);
+        }
         newActiveFilters[key] = filters[key];
       }
     });

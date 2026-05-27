@@ -202,7 +202,7 @@ function EditableDropdown({
       <label className={styles.edLabel}>
         {label} {required && <span className={styles.edReq}>*</span>}
         {isSaving && (
-          <span style={{ marginLeft: 6, fontSize: 11, color: "#2563eb", fontWeight: 600 }}>
+          <span style={{ marginLeft: 6, fontSize: 11, color: "var(--am-primary)", fontWeight: 600 }}>
             saving...
           </span>
         )}
@@ -538,9 +538,9 @@ function TagInputField({
                   gap: 8,
                   padding: "6px 10px",
                   borderRadius: 999,
-                  background: "rgba(37,99,235,0.12)",
-                  border: "1px solid rgba(37,99,235,0.25)",
-                  color: "#1e40af",
+                  background: "var(--am-primary-soft)",
+                  border: "1px solid var(--am-border)",
+                  color: "var(--am-primary)",
                   fontWeight: 800,
                   fontSize: 13,
                 }}
@@ -558,7 +558,7 @@ function TagInputField({
                     cursor: "pointer",
                     fontSize: 16,
                     lineHeight: 1,
-                    color: "#1e40af",
+                    color: "var(--am-primary)",
                     fontWeight: 900,
                   }}
                   aria-label={`Remove ${tag}`}
@@ -655,7 +655,7 @@ function TagInputField({
                     >
                       <span>{opt}</span>
                       {isSelected && (
-                        <span style={{ color: "#2563eb", fontWeight: "bold", fontSize: "14px" }}>✓</span>
+                        <span style={{ color: "var(--am-primary)", fontWeight: "bold", fontSize: "14px" }}>✓</span>
                       )}
                     </button>
                   );
@@ -865,7 +865,7 @@ function AddMember({
       hasError = true;
     }
     if (!String(formData.careerProfile?.role || "").trim()) {
-      nextErrors.role = "Desired Role is required.";
+      nextErrors.role = "Preferred Job Role is required.";
       hasError = true;
     }
     if (!String(formData.careerProfile?.industry || "").trim()) {
@@ -1059,9 +1059,9 @@ function AddMember({
                     marginTop: 12,
                     borderRadius: 16,
                     border: errors.photo
-                      ? "1px solid rgba(239,68,68,0.55)"
-                      : "1px solid rgba(148,163,184,0.25)",
-                    background: "rgba(148,163,184,0.07)",
+                      ? "1.5px solid var(--am-danger)"
+                      : "1.5px solid var(--am-border)",
+                    background: "var(--am-soft)",
                     padding: 16,
                     display: "flex",
                     alignItems: "center",
@@ -1087,10 +1087,13 @@ function AddMember({
                         placeItems: "center",
                         background: photoFile
                           ? "rgba(34,197,94,0.12)"
-                          : "rgba(59,130,246,0.12)",
+                          : "var(--am-primary-soft)",
                         border: photoFile
                           ? "1px solid rgba(34,197,94,0.25)"
-                          : "1px solid rgba(59,130,246,0.25)",
+                          : "1.5px solid var(--am-primary)",
+                        color: photoFile
+                          ? "#15803d"
+                          : "var(--am-primary)",
                       }}
                     >
                       {photoFile ? (
@@ -1133,7 +1136,7 @@ function AddMember({
                               alignItems: "center",
                               gap: 8,
                               fontWeight: 800,
-                              color: "#2563eb",
+                              color: "var(--am-primary)",
                               textDecoration: "none",
                             }}
                           >
@@ -1201,13 +1204,13 @@ function AddMember({
                       onClick={() => photoInputRef.current?.click()}
                       style={{
                         border: "none",
-                        background: "#2563eb",
+                        background: "linear-gradient(135deg, #e11d48, #be123c)",
                         color: "white",
                         padding: "10px 14px",
                         borderRadius: 12,
                         fontWeight: 800,
                         cursor: "pointer",
-                        boxShadow: "0 10px 18px rgba(37,99,235,0.18)",
+                        boxShadow: "0 4px 12px rgba(225, 29, 72, 0.3)",
                       }}
                     >
                       {photoFile ? "Replace" : "Upload"}
@@ -1219,8 +1222,9 @@ function AddMember({
                         onClick={clearSelectedPhoto}
                         title="Remove selected photo"
                         style={{
-                          border: "1px solid rgba(148,163,184,0.35)",
+                          border: "1.5px solid var(--am-border)",
                           background: "transparent",
+                          color: "var(--am-text2)",
                           padding: "10px 12px",
                           borderRadius: 12,
                           cursor: "pointer",
@@ -1280,15 +1284,15 @@ function AddMember({
               />
 
               <EditableDropdown
-                label="Desired Role"
+                label="Preferred Job Role"
                 required
                 error={errors.role}
                 value={formData.careerProfile.role}
                 options={combinedRoles}
-                placeholder="Select or type desired role..."
+                placeholder="Select or type preferred job role..."
                 category="desiredRoles"
                 onCustomAdded={fetchDynamicDropdowns}
-                onChange={(v) => { setFormData({ ...formData, careerProfile: { ...formData.careerProfile, role: v }}); setErrors(p => ({ ...p, role: "" })); }}
+                onChange={(v) => { setFormData({ ...formData, preferredJobRole_Sector: v, careerProfile: { ...formData.careerProfile, role: v }}); setErrors(p => ({ ...p, role: "" })); }}
               />
 
               <EditableDropdown
@@ -1388,8 +1392,8 @@ function AddMember({
                       marginTop: 12,
                       padding: 14,
                       borderRadius: 12,
-                      border: "1px dashed rgba(148,163,184,0.45)",
-                      color: "rgba(100,116,139,1)",
+                      border: "1.5px dashed var(--am-border)",
+                      color: "var(--am-muted)",
                       fontWeight: 700,
                     }}
                   >
@@ -1402,8 +1406,8 @@ function AddMember({
                         key={idx}
                         style={{
                           borderRadius: 16,
-                          border: "1px solid rgba(148,163,184,0.25)",
-                          background: "rgba(148,163,184,0.05)",
+                          border: "1.5px solid var(--am-border)",
+                          background: "var(--am-soft)",
                           padding: 16,
                         }}
                       >
@@ -1521,9 +1525,9 @@ function AddMember({
                     marginTop: 12,
                     borderRadius: 16,
                     border: errors.resume
-                      ? "1px solid rgba(239,68,68,0.55)"
-                      : "1px solid rgba(148,163,184,0.25)",
-                    background: "rgba(148,163,184,0.07)",
+                      ? "1.5px solid var(--am-danger)"
+                      : "1.5px solid var(--am-border)",
+                    background: "var(--am-soft)",
                     padding: 16,
                     display: "flex",
                     alignItems: "center",
@@ -1541,10 +1545,13 @@ function AddMember({
                         placeItems: "center",
                         background: resumeFile
                           ? "rgba(34,197,94,0.12)"
-                          : "rgba(59,130,246,0.12)",
+                          : "var(--am-primary-soft)",
                         border: resumeFile
                           ? "1px solid rgba(34,197,94,0.25)"
-                          : "1px solid rgba(59,130,246,0.25)",
+                          : "1.5px solid var(--am-primary)",
+                        color: resumeFile
+                          ? "#15803d"
+                          : "var(--am-primary)",
                       }}
                     >
                       {resumeFile ? (
@@ -1582,7 +1589,7 @@ function AddMember({
                               alignItems: "center",
                               gap: 8,
                               fontWeight: 800,
-                              color: "#2563eb",
+                              color: "var(--am-primary)",
                               textDecoration: "none",
                             }}
                           >
@@ -1625,13 +1632,13 @@ function AddMember({
                       onClick={() => resumeInputRef.current?.click()}
                       style={{
                         border: "none",
-                        background: "#2563eb",
+                        background: "linear-gradient(135deg, #e11d48, #be123c)",
                         color: "white",
                         padding: "10px 14px",
                         borderRadius: 12,
                         fontWeight: 800,
                         cursor: "pointer",
-                        boxShadow: "0 10px 18px rgba(37,99,235,0.18)",
+                        boxShadow: "0 4px 12px rgba(225, 29, 72, 0.3)",
                       }}
                     >
                       {resumeFile ? "Replace" : "Upload"}
@@ -1643,8 +1650,9 @@ function AddMember({
                         onClick={clearSelectedResume}
                         title="Remove selected file"
                         style={{
-                          border: "1px solid rgba(148,163,184,0.35)",
+                          border: "1.5px solid var(--am-border)",
                           background: "transparent",
+                          color: "var(--am-text2)",
                           padding: "10px 12px",
                           borderRadius: 12,
                           cursor: "pointer",
@@ -1725,8 +1733,8 @@ function AddMember({
                     marginTop: 12,
                     padding: 14,
                     borderRadius: 12,
-                    border: "1px dashed rgba(148,163,184,0.45)",
-                    color: "rgba(100,116,139,1)",
+                    border: "1.5px dashed var(--am-border)",
+                    color: "var(--am-muted)",
                     fontWeight: 700,
                   }}
                 >
@@ -1739,8 +1747,8 @@ function AddMember({
                       key={idx}
                       style={{
                         borderRadius: 16,
-                        border: "1px solid rgba(148,163,184,0.25)",
-                        background: "rgba(148,163,184,0.05)",
+                        border: "1.5px solid var(--am-border)",
+                        background: "var(--am-soft)",
                         padding: 16,
                       }}
                     >

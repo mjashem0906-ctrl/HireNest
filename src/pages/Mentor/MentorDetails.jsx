@@ -803,7 +803,7 @@
 
 // export default MentorDetails;
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -852,6 +852,40 @@ const MentorDetails = () => {
   const [connectingId, setConnectingId] = useState(null);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectMessage, setConnectMessage] = useState("");
+
+  // ── 3D tilt refs & handlers ─────────────────────────────
+  const mainCardRef = useRef(null);
+  const personalCardRef = useRef(null);
+  const professionalCardRef = useRef(null);
+  const requestsCardRef = useRef(null);
+  const rafRef = useRef({});
+
+  const handleCardMouseMove = (e, ref, cardId) => {
+    const el = ref.current;
+    if (!el) return;
+    if (rafRef.current[cardId]) cancelAnimationFrame(rafRef.current[cardId]);
+    rafRef.current[cardId] = requestAnimationFrame(() => {
+      const rect = el.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;
+      const py = (e.clientY - rect.top)  / rect.height;
+      const max = 7; // subtle premium tilt
+      
+      el.style.setProperty("--rx", `${(-(py - 0.5) * max * 2).toFixed(2)}deg`);
+      el.style.setProperty("--ry", `${((px - 0.5) * max * 2).toFixed(2)}deg`);
+      el.style.setProperty("--mx", `${(px * 100).toFixed(2)}%`);
+      el.style.setProperty("--my", `${(py * 100).toFixed(2)}%`);
+    });
+  };
+
+  const handleCardMouseLeave = (ref, cardId) => {
+    const el = ref.current;
+    if (!el) return;
+    if (rafRef.current[cardId]) cancelAnimationFrame(rafRef.current[cardId]);
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
+    el.style.setProperty("--mx", "50%");
+    el.style.setProperty("--my", "50%");
+  };
 
   const isAdmin = user?.role?.toLowerCase() === "admin";
   const role = user?.role?.toLowerCase?.() || "";
@@ -1119,7 +1153,15 @@ const MentorDetails = () => {
         </button>
       </div>
 
-      <div className={`${styles.mainProfileCard} ${styles.animateIn}`}>
+      <div 
+        ref={mainCardRef}
+        onMouseMove={(e) => handleCardMouseMove(e, mainCardRef, "main")}
+        onMouseLeave={() => handleCardMouseLeave(mainCardRef, "main")}
+        className={`${styles.mainProfileCard} ${styles.animateIn}`}
+      >
+        <div className={styles.cardGlow} />
+        <div className={styles.cardShine} />
+
         <div className={styles.profileHero}>
           <div className={styles.avatarWrapper}>
             <img
@@ -1213,10 +1255,20 @@ const MentorDetails = () => {
         className={`${styles.contentGrid} ${styles.animateIn}`}
         style={{ animationDelay: "0.12s" }}
       >
-        <section className={styles.infoCard}>
+        <section 
+          ref={personalCardRef}
+          onMouseMove={(e) => handleCardMouseMove(e, personalCardRef, "personal")}
+          onMouseLeave={() => handleCardMouseLeave(personalCardRef, "personal")}
+          className={styles.infoCard}
+        >
+          <div className={styles.cardGlow} />
+          <div className={styles.cardShine} />
+          
           <div className={styles.cardHeader}>
-            <User size={20} />
-            Personal Details
+            <div className={styles.iconBox}>
+              <User size={20} />
+            </div>
+            <h2>Personal Details</h2>
           </div>
 
           <div className={styles.detailsGrid}>
@@ -1256,10 +1308,20 @@ const MentorDetails = () => {
           </div>
         </section>
 
-        <section className={styles.infoCard}>
+        <section 
+          ref={professionalCardRef}
+          onMouseMove={(e) => handleCardMouseMove(e, professionalCardRef, "professional")}
+          onMouseLeave={() => handleCardMouseLeave(professionalCardRef, "professional")}
+          className={styles.infoCard}
+        >
+          <div className={styles.cardGlow} />
+          <div className={styles.cardShine} />
+
           <div className={styles.cardHeader}>
-            <Briefcase size={20} />
-            Professional Info
+            <div className={styles.iconBox}>
+              <Briefcase size={20} />
+            </div>
+            <h2>Professional Info</h2>
           </div>
 
           <div className={styles.detailsGrid}>
@@ -1351,11 +1413,21 @@ const MentorDetails = () => {
           className={`${styles.requestsSectionWrap} ${styles.animateIn}`}
           style={{ animationDelay: "0.22s" }}
         >
-          <section className={styles.requestsCard}>
+          <section 
+            ref={requestsCardRef}
+            onMouseMove={(e) => handleCardMouseMove(e, requestsCardRef, "requests")}
+            onMouseLeave={() => handleCardMouseLeave(requestsCardRef, "requests")}
+            className={styles.requestsCard}
+          >
+            <div className={styles.cardGlow} />
+            <div className={styles.cardShine} />
+
             <div className={styles.requestsHeader}>
               <div>
                 <h2>
-                  <UserCheck size={22} />
+                  <div className={styles.iconBox}>
+                    <UserCheck size={20} />
+                  </div>
                   Connection Requests
                 </h2>
                 <p>Manage mentor requests and view candidate profiles</p>

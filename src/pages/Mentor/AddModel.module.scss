@@ -258,8 +258,8 @@
   --m-field-border: #e2e8f0;
   --m-field-text: #0f172a;
   --m-placeholder: rgba(100, 116, 139, 0.65);
-  --m-focus: rgba(99, 102, 241, 0.85);
-  --m-focusRing: rgba(99, 102, 241, 0.18);
+  --m-focus: rgba(225, 29, 72, 0.85);
+  --m-focusRing: rgba(225, 29, 72, 0.18);
 
   background: var(--m-bg);
   width: 100%;
@@ -355,7 +355,7 @@
   }
 
   .submitButton {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
     color: white;
     border: none;
     padding: 12px 32px;
@@ -363,11 +363,11 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.3);
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+      box-shadow: 0 20px 25px -5px rgba(225, 29, 72, 0.4);
     }
 
     &:disabled {
@@ -419,8 +419,8 @@
   --m-field-border: rgba(148, 163, 184, 0.18);
   --m-field-text: #e5e7eb;
   --m-placeholder: rgba(203, 213, 225, 0.55);
-  --m-focus: rgba(99, 102, 241, 0.90);
-  --m-focusRing: rgba(99, 102, 241, 0.20);
+  --m-focus: rgba(225, 29, 72, 0.90);
+  --m-focusRing: rgba(225, 29, 72, 0.20);
 }
 
 /* =========================================================
@@ -638,7 +638,7 @@
 }
 
 .edBtn:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(225, 29, 72, 0.08);
   color: var(--m-focus);
 }
 
@@ -677,13 +677,13 @@
 }
 
 .edItem:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(225, 29, 72, 0.08);
   color: var(--m-text);
 }
 
 .edItemActive {
-  background: rgba(99, 102, 241, 0.12);
-  color: #4f46e5;
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
   font-weight: 700;
 }
 
@@ -831,7 +831,7 @@
 :global(html[data-theme="dark"]) .edItem:hover,
 :global(body[data-theme="dark"]) .edItem:hover,
 :global([data-theme="dark"]) .edItem:hover {
-  background: rgba(99, 102, 241, 0.14) !important;
+  background: rgba(225, 29, 72, 0.14) !important;
   color: #ffffff !important;
 }
 
@@ -842,8 +842,8 @@
 :global(html[data-theme="dark"]) .edItemActive,
 :global(body[data-theme="dark"]) .edItemActive,
 :global([data-theme="dark"]) .edItemActive {
-  background: rgba(99, 102, 241, 0.2) !important;
-  color: #a5b4fc !important;
+  background: rgba(225, 29, 72, 0.2) !important;
+  color: #fda4af !important;
 }
 
 :global(html.dark) .edTip,
@@ -866,5 +866,57 @@
 :global(body[data-theme="dark"]) .edEmpty,
 :global([data-theme="dark"]) .edEmpty {
   color: #cbd5e1 !important;
+}
+
+/* =========================================================
+   OVERRIDE GLOBAL FORM INPUTS INSIDE THE MODAL TO BRAND ROSE/RED
+   ========================================================= */
+.modal input,
+.modal select,
+.modal textarea {
+  transition: all 0.2s ease;
+  
+  &:hover:not(:focus) {
+    border-color: rgba(225, 29, 72, 0.35) !important;
+  }
+  
+  &:focus {
+    border-color: var(--m-focus) !important;
+    box-shadow: 0 0 0 4px var(--m-focusRing) !important;
+    outline: none !important;
+  }
+}
+
+/* Scoped overrides for custom DropdownSelect inside the modal */
+.modal :global(.custom-dropdown-select) {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: rgba(225, 29, 72, 0.35) !important;
+  }
+  
+  &[class*="open_"], &:global(.custom-dropdown-open) {
+    border-color: var(--m-focus) !important;
+    box-shadow: 0 0 0 4px var(--m-focusRing) !important;
+    outline: none !important;
+  }
+}
+
+.modal :global(.custom-dropdown-option) {
+  transition: all 0.15s ease;
+  
+  &[class*="selected_"], &:global(.custom-dropdown-selected) {
+    background-color: var(--m-primary) !important;
+    color: white !important;
+    
+    &:hover {
+      background-color: var(--m-primary-hover, #be123c) !important;
+    }
+  }
+  
+  &:hover:not([class*="selected_"]):not(:global(.custom-dropdown-selected)) {
+    background-color: rgba(225, 29, 72, 0.08) !important;
+    color: var(--m-primary) !important;
+  }
 }
 

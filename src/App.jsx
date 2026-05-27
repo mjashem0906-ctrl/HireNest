@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import './styles/global.scss';
+import { initializeGlobalEffects } from './utils/globalEffects';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Members from './pages/Members/Members';
@@ -39,9 +40,10 @@ import JobSeekersPage from './pages/JobSeeker/JobSeekersPage';
 
 function App() {
 
-  // ✅ THIS IS THE FIX (DARK THEME ACTIVATION)
+  // ✅ THIS IS THE FIX (DARK THEME ACTIVATION) & GLOBAL EFFECTS INJECTION
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
+    initializeGlobalEffects();
   }, []);
 
   return (

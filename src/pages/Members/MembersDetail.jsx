@@ -259,7 +259,7 @@ function MembersDetail() {
               </div>
               <div className={styles.detailsGrid}>
                 <div className={styles.item}>
-                  <label>Desired Role</label>
+                  <label>Preferred Job Role</label>
                   <div className={styles.value}>
                     {member.careerProfile?.role ||
                       member.preferredJobRole_Sector ||
@@ -556,18 +556,17 @@ function MembersDetail() {
             {(member.resume || member.resumeLink) && (
               <section
                 className={styles.card}
-                style={{ background: "var(--p-blue)", border: "none" }}
               >
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    color: "white",
+                    color: "var(--p-text)",
                     marginBottom: 20,
                   }}
                 >
-                  <FileText size={22} />
+                  <FileText size={22} className={styles.icon} />
                   <h3 style={{ margin: 0, fontSize: 18 }}>Resume</h3>
                 </div>
 
@@ -578,12 +577,13 @@ function MembersDetail() {
                   style={{
                     display: "block",
                     textAlign: "center",
-                    background: "white",
-                    color: "var(--p-blue)",
+                    background: "linear-gradient(135deg, #e11d48, #be123c)",
+                    color: "white",
                     padding: 12,
                     borderRadius: 12,
                     fontWeight: 700,
                     textDecoration: "none",
+                    boxShadow: "0 4px 12px rgba(225, 29, 72, 0.2)",
                   }}
                 >
                   View CV

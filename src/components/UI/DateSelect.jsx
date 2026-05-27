@@ -58,7 +58,11 @@ export default function DateSelect({
                   backgroundColor: "var(--bg-secondary)",
                 },
                 "& .MuiPickersDay-root.Mui-selected": {
-                  backgroundColor: "#2563eb",
+                  backgroundColor: "var(--m-primary)",
+                  color: "#fff",
+                },
+                "& .MuiPickersDay-root.Mui-selected:hover": {
+                  backgroundColor: "var(--m-primary-hover, #be123c)",
                   color: "#fff",
                 },
                 "& .MuiDayCalendar-weekDayLabel": {
@@ -98,7 +102,7 @@ export default function DateSelect({
                   borderColor: "var(--text-muted)",
                 },
                 "& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#2563eb",
+                  borderColor: "var(--m-primary)",
                   borderWidth: "2px",
                 },
               },

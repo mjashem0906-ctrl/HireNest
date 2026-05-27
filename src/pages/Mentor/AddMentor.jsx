@@ -293,7 +293,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
         <button
           onClick={toggleModal}
           style={{
-            background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+            background: "linear-gradient(135deg, #e11d48 0%, #be123c 100%)",
             color: "white",
             border: "none",
             padding: "10px 20px",
@@ -303,7 +303,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
             gap: "10px",
             fontWeight: "700",
             cursor: "pointer",
-            boxShadow: "0 10px 15px -3px rgba(79, 70, 229, 0.2)",
+            boxShadow: "0 10px 15px -3px rgba(225, 29, 72, 0.2)",
           }}
         >
           <UserPlus size={18} />

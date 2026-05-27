@@ -35,10 +35,13 @@ import {
   Zap,
   Star,
   ChevronDown,
+  Bookmark,
+  MoreVertical,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import classNames from "classnames";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import API from "../../axios";
 import { useData } from "../../context/DataContext";
 import * as XLSX from "xlsx";
@@ -537,7 +540,7 @@ const BulkCSVReviewModal = ({
                     <tr
                       style={{
                         background: isEditing
-                          ? "rgba(37,99,235,0.03)"
+                          ? "rgba(190,18,60,0.03)"
                           : "transparent",
                       }}
                     >
@@ -1746,6 +1749,7 @@ ProvidedForm.propTypes = {
 // ResumeChoiceModal — shown when user already has a resume in profile
 // =========================================================================================
 const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTitle, existingResumeUrl, isDarkTheme }) => {
+  console.log("ResumeChoiceModal - isDarkTheme prop received:", isDarkTheme);
   if (!isOpen) return null;
 
   const getResumeName = (url) => {
@@ -1951,6 +1955,7 @@ const ResumeUploadModal = ({
   jobTitle,
   user,
   onGoogleLogin,
+  isDarkTheme,
 }) => {
   const [resumeFile, setResumeFile] = useState(null);
   const [fileName, setFileName] = useState("");
@@ -2043,8 +2048,8 @@ const ResumeUploadModal = ({
         <div className={styles.resumeModalHeader}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <h3 style={{ margin: 0 }}>Upload Resume</h3>
-            <div style={{ fontSize: 12, fontWeight: 900, color: "#64748b" }}>
-              Applying for: <strong style={{ color: "#2563eb" }}>{jobTitle}</strong>
+            <div style={{ fontSize: 12, fontWeight: 900, color: isDarkTheme ? "#94a3b8" : "#64748b" }}>
+              Applying for: <strong style={{ color: isDarkTheme ? "#60a5fa" : "#2563eb" }}>{jobTitle}</strong>
             </div>
           </div>
           <button
@@ -2060,7 +2065,7 @@ const ResumeUploadModal = ({
         <div className={styles.resumeModalBody}>
           {showGoogleLogin ? (
             <div className={styles.resumeLoginSection}>
-              <p>Please login to apply for this position</p>
+              <p style={{ color: isDarkTheme ? "#e5e7eb" : "#0f172a" }}>Please login to apply for this position</p>
               <div className={styles.resumeLoginOptions}>
                 <GoogleLoginButton
                   onLoginSuccess={() => {
@@ -2125,6 +2130,7 @@ const ResumeUploadModal = ({
                           whiteSpace: "nowrap",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
+                          color: isDarkTheme ? "#e5e7eb" : "#0f172a",
                         }}
                       >
                         {fileName}
@@ -2133,7 +2139,7 @@ const ResumeUploadModal = ({
                         style={{
                           fontSize: 11,
                           fontWeight: 800,
-                          color: "#64748b",
+                          color: isDarkTheme ? "#94a3b8" : "#64748b",
                         }}
                       >
                         {fileSize}
@@ -2187,34 +2193,35 @@ ResumeUploadModal.propTypes = {
 // =========================================================================================
 const EnhancedStatusPipeline = ({ status }) => {
   const steps = [
-    { key: "Submitted", label: "Applied", icon: "📝" },
-    { key: "Review", label: "Under Review", icon: "🔍" },
-    { key: "Interview", label: "Interview", icon: "💼" },
-    { key: "Offer", label: "Offer", icon: "📄" },
-    { key: "Hired", label: "Hired", icon: "🎉" },
+    { key: "Submitted", label: "Applied", icon: <FileText size={18} /> },
+    { key: "Review", label: "Under Review", icon: <Search size={18} /> },
+    { key: "Interview", label: "Interview", icon: <BriefcaseBusiness size={18} /> },
+    { key: "Offer", label: "Offer", icon: <Award size={18} /> },
+    { key: "Hired", label: "Hired", icon: <Sparkles size={18} /> },
   ];
 
   const currentIndex = steps.findIndex((step) => step.key === status);
 
   return (
     <div className={styles.statusPipeline}>
-      {steps.map((step, index) => (
-        <div
-          key={step.key}
-          className={`${styles.statusStep} ${
-            index < currentIndex
-              ? styles.completed
-              : index === currentIndex
-              ? styles.active
-              : ""
-          }`}
-        >
-          <div className={styles.stepIcon}>
-            <span>{step.icon}</span>
+      {steps.map((step, index) => {
+        const isCompleted = index < currentIndex;
+        const isActive = index === currentIndex;
+        return (
+          <div
+            key={step.key}
+            className={classNames(styles.statusStep, {
+              [styles.completed]: isCompleted,
+              [styles.active]: isActive,
+            })}
+          >
+            <div className={styles.stepIcon}>
+              {step.icon}
+            </div>
+            <div className={styles.stepLabel}>{step.label}</div>
           </div>
-          <div className={styles.stepLabel}>{step.label}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
@@ -2286,7 +2293,9 @@ function Jobs() {
 
   const [refereesList, setRefereesList] = useState([]);
   const [recruitersList, setRecruitersList] = useState([]);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { theme } = useTheme();
+  const isDarkTheme = theme === "dark";
+  console.log("Jobs Theme State:", theme, "isDarkTheme:", isDarkTheme);
   const [showGoogleLoginModal, setShowGoogleLoginModal] = useState(false);
 
   const BACKEND_URL =
@@ -2295,23 +2304,6 @@ function Jobs() {
       ? "http://localhost:5000"
       : "https://jobbridgenode.com");
   const JOBS_PER_PAGE = 10;
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const theme = document.documentElement.getAttribute("data-theme");
-      setIsDarkTheme(theme === "dark");
-    };
-
-    checkTheme();
-
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (memberContext) {
@@ -2718,22 +2710,22 @@ function Jobs() {
       backgroundColor: isDarkTheme ? "#1e293b" : "#ffffff",
       borderColor: state.isFocused
         ? isDarkTheme
-          ? "#6366f1"
-          : "#4f46e5"
+          ? "#be123c"
+          : "#e11d48"
         : isDarkTheme
         ? "rgba(148, 163, 184, 0.25)"
         : "#d1d5db",
       borderRadius: "10px",
       boxShadow: state.isFocused
         ? isDarkTheme
-          ? "0 0 0 2px rgba(99, 102, 241, 0.2)"
-          : "0 0 0 2px rgba(79, 70, 229, 0.12)"
+          ? "0 0 0 2px rgba(225, 29, 72, 0.2)"
+          : "0 0 0 2px rgba(225, 29, 72, 0.12)"
         : "none",
       "&:hover": {
         borderColor: state.isFocused
           ? isDarkTheme
-            ? "#6366f1"
-            : "#4f46e5"
+            ? "#be123c"
+            : "#e11d48"
           : isDarkTheme
           ? "rgba(148, 163, 184, 0.4)"
           : "#9ca3af",
@@ -2811,12 +2803,12 @@ function Jobs() {
       fontWeight: 500,
       backgroundColor: state.isSelected
         ? isDarkTheme
-          ? "rgba(99, 102, 241, 0.4)"
-          : "#4f46e5"
+          ? "rgba(225, 29, 72, 0.4)"
+          : "#e11d48"
         : state.isFocused
         ? isDarkTheme
-          ? "rgba(99, 102, 241, 0.2)"
-          : "#f3f4f6"
+          ? "rgba(225, 29, 72, 0.2)"
+          : "rgba(225, 29, 72, 0.08)"
         : isDarkTheme
         ? "#1e293b"
         : "#ffffff",
@@ -2826,11 +2818,11 @@ function Jobs() {
       "&:hover": {
         backgroundColor: state.isSelected
           ? isDarkTheme
-            ? "rgba(99, 102, 241, 0.4)"
-            : "#4f46e5"
+            ? "rgba(225, 29, 72, 0.4)"
+            : "#e11d48"
           : isDarkTheme
-          ? "rgba(99, 102, 241, 0.2)"
-          : "#f3f4f6",
+          ? "rgba(225, 29, 72, 0.2)"
+          : "rgba(225, 29, 72, 0.08)",
       },
     }),
   };
@@ -3136,57 +3128,22 @@ function Jobs() {
   };
 
   const renderStatusBadge = (status) => {
-    let stylesObj = {
-      bg: "#e0f2fe",
-      color: "#0369a1",
-      icon: "📝",
-      text: "Applied",
+    const statusMap = {
+      Applied:     { icon: "📝", text: "Applied",      key: "applied"     },
+      Review:      { icon: "🔍", text: "Under Review", key: "review"      },
+      Shortlisted: { icon: "⭐", text: "Shortlisted",  key: "shortlisted" },
+      Offer:       { icon: "📄", text: "Offer Sent",   key: "offer"       },
+      Accepted:    { icon: "✅", text: "Accepted",     key: "accepted"    },
+      Rejected:    { icon: "❌", text: "Rejected",     key: "rejected"    },
     };
-    if (status === "Review")
-      stylesObj = {
-        bg: "#f3e8ff",
-        color: "#7e22ce",
-        icon: "🔍",
-        text: "Under Review",
-      };
-    else if (status === "Shortlisted")
-      stylesObj = {
-        bg: "#fef3c7",
-        color: "#d97706",
-        icon: "⭐",
-        text: "Shortlisted",
-      };
-    else if (status === "Offer")
-      stylesObj = {
-        bg: "#ccfbf1",
-        color: "#0f766e",
-        icon: "📄",
-        text: "Offer Sent",
-      };
-    else if (status === "Accepted")
-      stylesObj = {
-        bg: "#dcfce7",
-        color: "#166534",
-        icon: "✅",
-        text: "Accepted",
-      };
-    else if (status === "Rejected")
-      stylesObj = {
-        bg: "#fee2e2",
-        color: "#991b1b",
-        icon: "❌",
-        text: "Rejected",
-      };
-
+    const s = statusMap[status] || statusMap.Applied;
     return (
-      <div
-        className={styles.statusBadge}
-        style={{ backgroundColor: stylesObj.bg, color: stylesObj.color }}
-      >
-        <span>{stylesObj.icon}</span> <span>{stylesObj.text}</span>
+      <div className={styles.statusBadge} data-status={s.key}>
+        <span>{s.icon}</span> <span>{s.text}</span>
       </div>
     );
   };
+
 
   const handleStatusChange = async (jobId, memberId, newStatus) => {
     try {
@@ -3202,6 +3159,14 @@ function Jobs() {
   const totalJobs = view === "myPost" ? filteredMyPost.length : filteredJobPosts.length;
   const totalAllJobs = view === "myPost" ? myPost.length : jobPosts.length;
 
+  const companiesCount = useMemo(() => {
+    return new Set(jobPosts.map((j) => j.companyName?.toLowerCase().trim()).filter(Boolean)).size || 0;
+  }, [jobPosts]);
+
+  const totalApplicants = useMemo(() => {
+    return jobPosts.reduce((acc, job) => acc + (job.appliedMembers?.length || 0), 0);
+  }, [jobPosts]);
+
   return (
     <div className={styles.jobs}>
       <div
@@ -3214,97 +3179,99 @@ function Jobs() {
           width: `calc(100% - ${sidebarWidth}px)`,
         }}
       >
-        <div className={styles.topSearchBar}>
-          <div className={styles.cardSearch}>
-            <div className={styles.searchIcon}>
-              <Search size={20} />
-            </div>
-            <input
-              type="text"
-              placeholder="Search job ID, jobs, companies, or skills..."
-              defaultValue={globalFilter || ""}
-              onChange={handleSearchChange}
-              aria-label="Search jobs"
-            />
-          </div>
-
-          <div className={styles.searchActions}>
-            <select
-              className={styles.locationSelect}
-              value={getDisplayValue("location") || ""}
-              onChange={(e) => handleFilterChange("location", e.target.value)}
-            >
-              <option value="">All Locations</option>
-              {locationOptions.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-
-            <button
-              type="button"
-              className={styles.searchButton}
-              onClick={applyPendingFilters}
-            >
-              Search Jobs
-            </button>
-          </div>
-
-          <div className={styles.tabsContainer}>
-            <div
-              className={classNames(styles.tab, {
-                [styles.active]: view === "request",
-              })}
-              onClick={() => setView("request")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && setView("request")}
-            >
-              <div className={styles.tabIcon}>
-                <NotebookPen size={22} />
+        <div className={styles.headerInner}>
+          <div className={styles.topSearchBar}>
+            <div className={styles.cardSearch}>
+              <div className={styles.searchIcon}>
+                <Search size={20} />
               </div>
-              <button type="button" className={styles.tabLabel}>
-                Job Posts
+              <input
+                type="text"
+                placeholder="Search job ID, jobs, companies, or skills..."
+                defaultValue={globalFilter || ""}
+                onChange={handleSearchChange}
+                aria-label="Search jobs"
+              />
+            </div>
+
+            <div className={styles.searchActions}>
+              <select
+                className={styles.locationSelect}
+                value={getDisplayValue("location") || ""}
+                onChange={(e) => handleFilterChange("location", e.target.value)}
+              >
+                <option value="">All Locations</option>
+                {locationOptions.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                className={styles.searchButton}
+                onClick={applyPendingFilters}
+              >
+                Search Jobs
               </button>
             </div>
 
-            <div
-              className={classNames(styles.tab, {
-                [styles.active]: view === "myPost",
-              })}
-              onClick={() => setView("myPost")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && setView("myPost")}
-            >
-              <div className={styles.tabIcon}>
-                <BriefcaseBusiness size={22} />
+            <div className={styles.tabsContainer}>
+              <div
+                className={classNames(styles.tab, {
+                  [styles.active]: view === "request",
+                })}
+                onClick={() => setView("request")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setView("request")}
+              >
+                <div className={styles.tabIcon}>
+                  <NotebookPen size={22} />
+                </div>
+                <button type="button" className={styles.tabLabel}>
+                  Job Posts
+                </button>
               </div>
-              <button type="button" className={styles.tabLabel}>
-                {user?.role === "Admin" ? "Applicants" : "My Jobs"}
-              </button>
-            </div>
-          </div>
 
-          {user?.role === "Admin" && (
-            <div className={styles.exportButtons}>
-              <button
-                onClick={exportJobsToExcel}
-                className={styles.excelButton}
-                type="button"
+              <div
+                className={classNames(styles.tab, {
+                  [styles.active]: view === "myPost",
+                })}
+                onClick={() => setView("myPost")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === "Enter" && setView("myPost")}
               >
-                Export Excel
-              </button>
-              <button
-                onClick={exportJobsToCSV}
-                className={styles.csvButton}
-                type="button"
-              >
-                Export CSV
-              </button>
+                <div className={styles.tabIcon}>
+                  <BriefcaseBusiness size={22} />
+                </div>
+                <button type="button" className={styles.tabLabel}>
+                  {user?.role === "Admin" ? "Applicants" : "My Jobs"}
+                </button>
+              </div>
             </div>
-          )}
+
+            {user?.role === "Admin" && (
+              <div className={styles.exportButtons}>
+                <button
+                  onClick={exportJobsToExcel}
+                  className={styles.excelButton}
+                  type="button"
+                >
+                  Export Excel
+                </button>
+                <button
+                  onClick={exportJobsToCSV}
+                  className={styles.csvButton}
+                  type="button"
+                >
+                  Export CSV
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -3329,33 +3296,104 @@ function Jobs() {
         </div>
       )}
 
-      <div className={styles.filterActionRow}>
-        <div className={styles.statsOverview}>
-          <div className={styles.miniStat}>
-            <span className={styles.miniStatValue}>{totalJobs}</span>
-            <span className={styles.miniStatLabel}>JOBS FOUND</span>
+      <div className={styles.premiumStatsGrid}>
+        {/* Stat Card 1: Jobs Found */}
+        <div className={styles.premiumStatCard}>
+          <div className={classNames(styles.statIconWrapper, styles.pinkIcon)}>
+            <BriefcaseBusiness size={24} />
           </div>
-          <div className={styles.miniStat}>
-            <span className={styles.miniStatValue}>{totalAllJobs}</span>
-            <span className={styles.miniStatLabel}>TOTAL JOBS</span>
+          <div className={styles.statText}>
+            <span className={styles.statCardLabel}>Jobs Found</span>
+            <h3 className={styles.statCardValue}>{totalJobs}</h3>
+            <span className={styles.statTrendGreen}>↑ from last month</span>
+          </div>
+          <div className={classNames(styles.sparklineChart, styles.pinkSparkline)}>
+            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="pinkGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,25 Q15,5 30,20 T60,5 T90,15 T100,5 L100,30 L0,30 Z" fill="url(#pinkGrad)" />
+              <path d="M0,25 Q15,5 30,20 T60,5 T90,15 T100,5" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
+            </svg>
           </div>
         </div>
 
-        <button
-          className={styles.toggleFiltersBtn}
-          onClick={() => setShowFilters(!showFilters)}
-          type="button"
-        >
-          {showFilters ? (
-            <>
-              <EyeOff size={18} /> Hide Filters
-            </>
-          ) : (
-            <>
-              <Filter size={18} /> Show Filters
-            </>
-          )}
-        </button>
+        {/* Stat Card 2: Total Jobs */}
+        <div className={styles.premiumStatCard}>
+          <div className={classNames(styles.statIconWrapper, styles.goldIcon)}>
+            <NotebookPen size={24} />
+          </div>
+          <div className={styles.statText}>
+            <span className={styles.statCardLabel}>Total Jobs</span>
+            <h3 className={styles.statCardValue}>{totalAllJobs}</h3>
+            <span className={styles.statTrendGreen}>↑ from last month</span>
+          </div>
+          <div className={classNames(styles.sparklineChart, styles.goldSparkline)}>
+            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,25 Q20,15 40,25 T70,10 T100,5 L100,30 L0,30 Z" fill="url(#goldGrad)" />
+              <path d="M0,25 Q20,15 40,25 T70,10 T100,5" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Stat Card 3: Companies */}
+        <div className={styles.premiumStatCard}>
+          <div className={classNames(styles.statIconWrapper, styles.blueIcon)}>
+            <Building size={24} />
+          </div>
+          <div className={styles.statText}>
+            <span className={styles.statCardLabel}>Companies</span>
+            <h3 className={styles.statCardValue}>{companiesCount}</h3>
+            <span className={styles.statTrendGreen}>↑ from last month</span>
+          </div>
+          <div className={classNames(styles.sparklineChart, styles.blueSparkline)}>
+            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,20 Q15,25 35,10 T70,20 T100,5 L100,30 L0,30 Z" fill="url(#blueGrad)" />
+              <path d="M0,20 Q15,25 35,10 T70,20 T100,5" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Stat Card 4: Applicants */}
+        {user?.role === "Admin" && (
+          <div className={styles.premiumStatCard}>
+            <div className={classNames(styles.statIconWrapper, styles.greenIcon)}>
+              <Users size={24} />
+            </div>
+            <div className={styles.statText}>
+              <span className={styles.statCardLabel}>Applicants</span>
+              <h3 className={styles.statCardValue}>{totalApplicants}</h3>
+              <span className={styles.statTrendGreen}>↑ from last month</span>
+            </div>
+            <div className={classNames(styles.sparklineChart, styles.greenSparkline)}>
+              <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path d="M0,25 Q15,20 30,10 T60,25 T90,5 T100,10 L100,30 L0,30 Z" fill="url(#greenGrad)" />
+                <path d="M0,25 Q15,20 30,10 T60,25 T90,5 T100,10" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
 
       <div
@@ -3524,7 +3562,7 @@ function Jobs() {
               <Select
                 options={[
                   { value: "", label: "All Types" },
-                  ...EMPLOYMENT_TYPES.map((t) => ({ value: t, label: t })),
+                  ...EMPLOYMENT_TYPES.map((type) => ({ value: type, label: type })),
                 ]}
                 value={
                   getDisplayValue("employmentType")
@@ -3537,7 +3575,7 @@ function Jobs() {
                 onChange={(selected) =>
                   handleFilterChange("employmentType", selected?.value || "")
                 }
-                isSearchable
+                isSearchable={false}
                 isClearable
                 placeholder="All Types"
                 styles={customSelectStyles}
@@ -3733,9 +3771,26 @@ function Jobs() {
             <>
               {view === "request" && (
                 <div className={styles.jobsList}>
-                  <h2 className={styles.sectionTitle}>
-                    <NotebookPen size={24} /> Available Job Posts
-                  </h2>
+                  <div className={styles.mainContentHeader}>
+                    <h2 className={styles.sectionTitle}>
+                      <NotebookPen size={24} /> Available Job Posts
+                    </h2>
+                    <button
+                      className={styles.toggleFiltersBtn}
+                      onClick={() => setShowFilters(!showFilters)}
+                      type="button"
+                    >
+                      {showFilters ? (
+                        <>
+                          <EyeOff size={18} /> Hide Filters
+                        </>
+                      ) : (
+                        <>
+                          <Filter size={18} /> Show Filters
+                        </>
+                      )}
+                    </button>
+                  </div>
 
                   {paginatedJobs.length === 0 ? (
                     <div className={styles.noResults}>
@@ -3767,61 +3822,66 @@ function Jobs() {
                               />
                             ) : (
                               <div className={styles.avatarCircle}>
-                                {(job.title || "J").slice(0, 1).toUpperCase()}
+                                {(job.companyName || job.title || "J").slice(0, 2).toUpperCase()}
                               </div>
                             )}
                             <div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4, flexWrap: "wrap" }}>
                                 <h3 style={{ margin: 0 }}>{job.title}</h3>
-                                {job.jobId && (
-                                  <span style={{
-                                    fontSize: 11,
-                                    fontWeight: 900,
-                                    backgroundColor: "#e0f2fe",
-                                    color: "#0369a1",
-                                    padding: "3px 8px",
-                                    borderRadius: 4,
-                                    whiteSpace: "nowrap"
-                                  }}>
-                                    ID: {job.jobId}
+                                {job.employmentType && (
+                                  <span className={styles.jobTypeBadge}>
+                                    {job.employmentType}
                                   </span>
                                 )}
                               </div>
                               <div className={styles.jobRowSub}>
-                                <span>
-                                  <Building size={14} />{" "}
-                                  {job.companyName || "Company"}
+                                <span className={styles.companyName}>
+                                  <strong className={styles.companyNameText}>{job.companyName || "Company"}</strong>
+                                  <span className={styles.verifiedBadge} title="Verified Company">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: "9px", height: "9px" }}>
+                                      <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                  </span>
                                 </span>
                                 {job.location && (
                                   <span>
                                     <MapPin size={14} /> {job.location}
                                   </span>
                                 )}
-                                {job.experience && (
+                                <span>
+                                  <Calendar size={14} />
+                                  {job.createdAt && !isNaN(new Date(job.createdAt))
+                                    ? new Date(job.createdAt).toLocaleString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })
+                                    : "Just Now"}
+                                </span>
+                                {job.jobId && (
                                   <span>
-                                    <TrendingUp size={14} /> {job.experience}
-                                  </span>
-                                )}
-                                {job.salary && (
-                                  <span>
-                                    <IndianRupee size={14} /> {job.salary}
+                                    ID: {job.jobId}
                                   </span>
                                 )}
                               </div>
                             </div>
                           </div>
 
-                          <div className={styles.jobRowRightBadges}>
-                            {job?.refereedBy && (
-                              <span className={styles.referredPill}>
-                                <User size={14} /> Referred
+                          <div className={styles.jobRowRightCol}>
+                            <div className={styles.statusColActiveRow}>
+                              <span className={styles.activeStatusBadge}>
+                                <span className={styles.greenPulseDot}></span>
+                                Active
                               </span>
-                            )}
-                            {job?.jobPosted && (
-                              <span className={styles.referredPill} style={{ backgroundColor: '#eef2ff', color: '#4f46e5', border: '1px solid #c7d2fe', fontWeight: '600' }}>
-                                <User size={14} /> Recruited By: {job.jobPosted?.fullName || "Recruiter"}
-                              </span>
-                            )}
+                              {user?.role === "Admin" && (
+                                <span className={styles.applicantsCountLabel}>
+                                  {job.appliedMembers?.length || 0} Applicants
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -3838,19 +3898,39 @@ function Jobs() {
                           </div>
                         )}
 
+                        {/* Premium info chips: salary, experience, education */}
+                        {(job.salary || job.experience || job.education) && (
+                          <div className={styles.jobMetaChips}>
+                            {job.salary && (
+                              <span className={styles.chipSalary}>
+                                <IndianRupee size={12} /> {job.salary}
+                              </span>
+                            )}
+                            {job.experience && (
+                              <span className={styles.chipExperience}>
+                                <TrendingUp size={12} /> {job.experience}
+                              </span>
+                            )}
+                            {job.education && (
+                              <span className={styles.chipEducation}>
+                                <GraduationCap size={12} /> {job.education}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         <div className={styles.jobRowFooter}>
-                          <div className={styles.jobRowTime}>
-                            <Calendar size={14} />
-                            <span>
-                              {job.createdAt && !isNaN(new Date(job.createdAt))
-                                ? `${new Date(job.createdAt).toLocaleDateString()} • ${formatDistanceToNow(
-                                    new Date(job.createdAt),
-                                    {
-                                      addSuffix: true,
-                                    }
-                                  )}`
-                                : "Just Now"}
-                            </span>
+                          <div className={styles.referredBadgesContainer}>
+                            {job?.refereedBy && (
+                              <span className={styles.referredPill}>
+                                <User size={14} /> Referred
+                              </span>
+                            )}
+                            {job?.jobPosted && (
+                              <span className={styles.referredPill} style={{ backgroundColor: '#eef2ff', color: '#4f46e5', border: '1px solid #c7d2fe', fontWeight: '600' }}>
+                                <User size={14} /> Recruited By: {job.jobPosted?.fullName || "Recruiter"}
+                              </span>
+                            )}
                           </div>
 
                           <div
@@ -3875,7 +3955,7 @@ function Jobs() {
                               type="button"
                               onClick={() => handleClick(job)}
                             >
-                              View Details
+                              View
                             </button>
 
                             {user?.role === "Admin" &&
@@ -3890,17 +3970,34 @@ function Jobs() {
 
               {view === "myPost" && (
                 <div className={styles.jobsContainer}>
-                  <h2 className={styles.sectionTitle}>
-                    {user?.role === "Admin" ? (
-                      <>
-                        <BriefcaseBusiness size={24} /> Manage Applications
-                      </>
-                    ) : (
-                      <>
-                        <Star size={24} /> My Applications
-                      </>
-                    )}
-                  </h2>
+                  <div className={styles.mainContentHeader}>
+                    <h2 className={styles.sectionTitle}>
+                      {user?.role === "Admin" ? (
+                        <>
+                          <BriefcaseBusiness size={24} /> Manage Applications
+                        </>
+                      ) : (
+                        <>
+                          <Star size={24} /> My Applications
+                        </>
+                      )}
+                    </h2>
+                    <button
+                      className={styles.toggleFiltersBtn}
+                      onClick={() => setShowFilters(!showFilters)}
+                      type="button"
+                    >
+                      {showFilters ? (
+                        <>
+                          <EyeOff size={18} /> Hide Filters
+                        </>
+                      ) : (
+                        <>
+                          <Filter size={18} /> Show Filters
+                        </>
+                      )}
+                    </button>
+                  </div>
 
                   {filteredMyPost.length === 0 ? (
                     <div className={styles.noResults}>
@@ -3944,44 +4041,36 @@ function Jobs() {
                                 onClick={() => handleClick(request)}
                               >
                                 <div className={styles.myJobCardTitle}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                                    <h3 style={{ margin: 0 }}>{request.title}</h3>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                                    <h3 style={{ margin: 0, fontSize: "22px", fontWeight: "800" }}>{request.title}</h3>
                                     {request.jobId && (
-                                      <span style={{
-                                        fontSize: 11,
-                                        fontWeight: 900,
-                                        backgroundColor: "#e0f2fe",
-                                        color: "#0369a1",
-                                        padding: "3px 8px",
-                                        borderRadius: 4,
-                                        whiteSpace: "nowrap"
-                                      }}>
+                                      <span className={styles.myJobCardIdBadge}>
                                         ID: {request.jobId}
                                       </span>
                                     )}
-                                  </div>
-                                  <div className={styles.myJobCardMeta}>
-                                    {request?.companyName && (
-                                      <span className={styles.companyName}>
-                                        <Building size={14} />{" "}
-                                        {request.companyName}
-                                      </span>
-                                    )}
-                                    {request?.location && (
-                                      <span className={styles.location}>
-                                        <MapPin size={14} /> {request.location}
-                                      </span>
-                                    )}
-                                    {request?.employmentType && (
-                                      <span className={styles.jobType}>
-                                        {request.employmentType}
-                                      </span>
-                                    )}
+                                    <div className={styles.myJobCardMetaInline}>
+                                      {request?.companyName && (
+                                        <span className={styles.companyName}>
+                                          <Building size={16} />{" "}
+                                          {request.companyName}
+                                        </span>
+                                      )}
+                                      {request?.location && (
+                                        <span className={styles.location}>
+                                          <MapPin size={16} /> {request.location}
+                                        </span>
+                                      )}
+                                      {request?.employmentType && (
+                                        <span className={styles.jobTypeInline}>
+                                          {request.employmentType}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
 
                                 <div className={styles.myJobCardDate}>
-                                  <Calendar size={12} />
+                                  <Calendar size={14} />
                                   <span>
                                     Posted on:{" "}
                                     {new Date(request.createdAt).toLocaleDateString()}
@@ -4196,6 +4285,7 @@ function Jobs() {
         jobTitle={selectedJob?.title}
         user={user}
         onGoogleLogin={handleGoogleLogin}
+        isDarkTheme={isDarkTheme}
       />
 
       {showGoogleLoginModal && (

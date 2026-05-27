@@ -7,12 +7,86 @@ import DropdownSelect from "../../components/UI/DropdownSelect";
 import DateSelect from "../../components/UI/DateSelect";
 import styles from "./ProfileSetup.module.scss";
 
+const KARNATAKA_DISTRICTS = [
+  "Bagalkote", "Ballari (Bellary)", "Belagavi (Belgaum)", "Bengaluru Rural", "Bengaluru Urban",
+  "Bidar", "Chamarajanagar", "Chikballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
+  "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi (Gulbarga)", "Kodagu",
+  "Kolar", "Koppal", "Mandya", "Mysuru (Mysore)", "Raichur", "Ramanagara", "Shivamogga (Shimoga)",
+  "Tumakuru (Tumkur)", "Udupi", "Uttara Kannada (Karwar)", "Vijayanagara", "Vijayapura (Bijapur)", "Yadgir",
+];
+
+const TAMIL_NADU_DISTRICTS = [
+  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul",
+  "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur", "Krishnagiri", "Madurai",
+  "Mayiladuthurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
+  "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni",
+  "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur",
+  "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar",
+];
+
+const KERALA_DISTRICTS = [
+  "Alappuzha", "Ernakulam", "Idukki", "Kannur", "Kasaragod", "Kollam", "Kottayam", "Kozhikode",
+  "Malappuram", "Palakkad", "Pathanamthitta", "Thiruvananthapuram", "Thrissur", "Wayanad",
+];
+
 const DEGREE_OPTIONS = [
   "SSLC / 10th", "PUC / 12th", "ITI", "Diploma (Polytechnic)", "B.A", "B.Com", "B.Sc",
   "B.B.A", "B.C.A", "B.S.W", "B.Voc", "B.E", "B.Tech", "B.Arch", "LLB", "BBA LLB",
   "BA LLB", "B.Pharm", "D.Pharm", "BPT", "BDS", "MBBS", "BAMS", "BHMS", "M.A",
   "M.Com", "M.Sc", "M.S.W", "M.B.A", "M.C.A", "M.Tech", "M.E", "LLM", "M.Pharm",
   "MPT", "MD", "MS", "PhD", "Post Graduate Diploma (PGD)", "Certification Course",
+];
+
+const JOB_ROLE_OPTIONS = [
+  "Accountant",
+  "Administrative Assistant",
+  "Android Developer",
+  "Architect",
+  "Artificial Intelligence Engineer",
+  "Automobile Engineer",
+  "Back Office Executive",
+  "Backend Developer",
+  "Biomedical Engineer",
+  "Business Analyst",
+  "Business Development Executive (BDE)",
+  "Chartered Accountant (CA)",
+  "Chemical Engineer",
+  "Civil Engineer",
+  "Content Creator",
+  "Content Writer",
+  "Customer Support Executive",
+  "Data Analyst",
+  "Data Entry Operator",
+  "Data Scientist",
+  "Delivery Partner",
+  "DevOps Engineer",
+  "Digital Marketing Specialist",
+  "Electrical Engineer",
+  "Electronics Engineer",
+  "Financial Analyst",
+  "Frontend Developer",
+  "Full Stack Developer",
+  "Graphic Designer",
+  "Graduate Trainee",
+  "HR Generalist",
+  "HR Recruiter",
+  "IT Support / Helpdesk",
+  "Mechanical Engineer",
+  "Mobile App Developer",
+  "Network Engineer",
+  "Office Administrator",
+  "Operations Executive",
+  "Product Manager",
+  "Project Manager",
+  "QA / Testing Engineer",
+  "Sales Executive",
+  "Software Engineer",
+  "System Administrator",
+  "Teacher / Lecturer",
+  "Telecaller",
+  "Trainer",
+  "UI/UX Designer",
+  "Web Designer"
 ];
 
 function EducationDropdown({ value, onChange }) {
@@ -97,6 +171,88 @@ function EducationDropdown({ value, onChange }) {
   );
 }
 
+function JobRoleDropdown({ value, onChange }) {
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value || "");
+
+  useEffect(() => setQuery(value || ""), [value]);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const norm = (s) => String(s || "").toLowerCase().trim();
+  const filtered = JOB_ROLE_OPTIONS.filter((opt) => norm(opt).includes(norm(query)));
+
+  const commit = (val) => {
+    const v = String(val || "").trim();
+    onChange(v);
+    setQuery(v);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={wrapRef} className={styles.edWrap}>
+      <label className={styles.fieldLabel}>Preferred Job Role</label>
+      <div
+        className={styles.edField}
+        onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+      >
+        <span className={styles.edIcon}>💼</span>
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); onChange(e.target.value); }}
+          placeholder="Type to search or select job role..."
+          className={styles.edInput}
+          onFocus={() => setOpen(true)}
+          onBlur={() => { const v = query.trim(); if (v && v !== value) commit(v); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); commit(query); }
+            if (e.key === "Escape") setOpen(false);
+          }}
+        />
+        <button
+          type="button"
+          className={styles.edBtn}
+          onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); setTimeout(() => inputRef.current?.focus(), 0); }}
+        >
+          ▾
+        </button>
+      </div>
+      {open && (
+        <div className={styles.edMenu}>
+          {filtered.length === 0 ? (
+            <div className={styles.edEmpty}>No matches — press <b>Enter</b> to use: "{query}"</div>
+          ) : (
+            <div className={styles.edMenuList}>
+              {filtered.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""}`}
+                  onClick={() => commit(opt)}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className={styles.edTip}>Tip: Type to search. If custom, type it and press <b>Enter</b>.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const ProfileSetup = () => {
     const { user, login, fetchUser } = useAuth();
     const navigate = useNavigate();
@@ -106,6 +262,7 @@ const ProfileSetup = () => {
         mobileNumber: "",
         gender: "",
         dateOfBirth: null,
+        district: "",
         currentInstitutionOrCompany: "",
         designation: "",
         fieldofStudy_Interest: "",
@@ -121,6 +278,30 @@ const ProfileSetup = () => {
     const [photoPreview, setPhotoPreview] = useState(null);
     const [resumeFile, setResumeFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
+
+    const [dynamicDistricts, setDynamicDistricts] = useState([]);
+
+    useEffect(() => {
+        const fetchDistricts = async () => {
+            try {
+                const res = await API.get("/dropdown?category=locationPreferences");
+                const fetchedLocs = Array.isArray(res.data) 
+                  ? res.data.map((item) => typeof item === 'object' ? item.value : item) 
+                  : [];
+                setDynamicDistricts(fetchedLocs);
+            } catch (err) {
+                console.error("Failed to fetch locations:", err);
+            }
+        };
+        fetchDistricts();
+    }, []);
+
+    const combinedDistricts = [...new Set([
+        ...KARNATAKA_DISTRICTS,
+        ...TAMIL_NADU_DISTRICTS,
+        ...KERALA_DISTRICTS,
+        ...dynamicDistricts
+    ])].sort().map(d => ({ value: d, label: d }));
 
     // Server upload function (replaces Cloudinary)
     const uploadToServer = async (file) => {
@@ -177,8 +358,8 @@ const ProfileSetup = () => {
 
     const calculateCompletion = () => {
         if (!role) return 0;
-        const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
-        const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'employmentType', 'noticePeriod', 'workExp', 'photoUrl', 'resumeLink'];
+        const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
+        const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'employmentType', 'noticePeriod', 'workExp', 'photoUrl', 'resumeLink'];
         const fieldsToTrack = role === 'Mentor' ? mentorFields : jobFields;
         const completedFields = fieldsToTrack.filter(field => {
             if (field === 'photoUrl') return !!photoFile;
@@ -227,6 +408,7 @@ const ProfileSetup = () => {
         <div className={styles.container}>
             <div className={styles.box}>
                 <h1>Complete Your Profile</h1>
+                <div className={styles.titleAccent}></div>
                 <p>Please provide your details to continue</p>
 
                 <div className={styles.progressContainer}>
@@ -281,6 +463,15 @@ const ProfileSetup = () => {
                                 value={formData.dateOfBirth}
                                 onChange={(v) => setFormData({ ...formData, dateOfBirth: v })}
                             />
+                            <DropdownSelect
+                                label="District"
+                                value={formData.district}
+                                options={combinedDistricts}
+                                placeholder="Select your district"
+                                searchable={true}
+                                required={true}
+                                onChange={(v) => setFormData({ ...formData, district: v })}
+                            />
 
                             {role === 'Mentor' ? (
                                 <>
@@ -301,8 +492,7 @@ const ProfileSetup = () => {
                                         value={formData.highest_education}
                                         onChange={(v) => setFormData({ ...formData, highest_education: v })}
                                     />
-                                    <FormInput
-                                        label="Preferred Job Role"
+                                    <JobRoleDropdown
                                         value={formData.preferredJobRole_Sector}
                                         onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: v })}
                                     />
@@ -422,7 +612,7 @@ const ProfileSetup = () => {
                             </div>
                         </div>
 
-                        {uploadProgress > 0 && <p style={{ textAlign: "center", color: "#555", marginTop: "10px", fontWeight: "bold" }}>Uploading: {uploadProgress}%</p>}
+                        {uploadProgress > 0 && <p style={{ textAlign: "center", color: "var(--ps-primary)", marginTop: "10px", fontWeight: "800", fontSize: "0.9rem", letterSpacing: "0.02em" }}>Uploading: {uploadProgress}%</p>}
 
                         <button
                             className={styles.saveBtn}
