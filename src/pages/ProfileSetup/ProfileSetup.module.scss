@@ -484,12 +484,14 @@ $rx: 24px;
 .edField {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
   border: 1.5px solid var(--ps-border);
   border-radius: 12px;
   background: var(--ps-soft);
-  height: 48px;
+  min-height: 48px;
+  padding: 6px 8px 6px 0;
   cursor: text;
-  overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
@@ -499,20 +501,23 @@ $rx: 24px;
 }
 
 .edIcon {
-  padding: 0 10px 0 12px;
+  padding: 0 6px 0 12px;
   font-size: 1rem;
   flex-shrink: 0;
+  align-self: center;
 }
 
 .edInput {
   flex: 1;
+  min-width: 120px;
   border: none;
   outline: none;
   background: transparent;
   font-size: 0.92rem;
   color: var(--ps-text);
   font-family: inherit;
-  padding: 0;
+  padding: 4px 0;
+  align-self: center;
 
   &::placeholder {
     color: var(--ps-muted);
@@ -521,8 +526,9 @@ $rx: 24px;
 
 .edBtn {
   flex-shrink: 0;
-  width: 38px;
-  height: 100%;
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
   border: none;
   background: transparent;
   color: var(--ps-muted);
@@ -532,6 +538,7 @@ $rx: 24px;
   align-items: center;
   justify-content: center;
   transition: color 0.15s;
+  align-self: center;
 
   &:hover {
     color: var(--ps-primary);
@@ -604,6 +611,353 @@ $rx: 24px;
   font-size: 0.75rem;
   color: var(--ps-muted);
 }
+
+// ─── Professional Multi-Select Job Role ─────────────────────────
+.jrWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// Count badge on the label
+.jrBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, $red, $red2);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.35);
+}
+
+// The main bordered control
+.jrBox {
+  border: 1.5px solid var(--ps-border);
+  border-radius: 12px;
+  background: var(--ps-soft);
+  cursor: text;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+
+  &:focus-within,
+  &.jrBoxOpen {
+    border-color: rgba(225, 29, 72, 0.55);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.09);
+  }
+}
+
+// Tags area (inside the box, flows with search row)
+.jrTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 8px 0 8px;
+}
+
+.jrTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px 4px 10px;
+  background: rgba(225, 29, 72, 0.07);
+  border: 1px solid rgba(225, 29, 72, 0.22);
+  border-radius: 6px;
+  font-family: inherit;
+  animation: jrTagIn 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:hover {
+    background: rgba(225, 29, 72, 0.12);
+    border-color: rgba(225, 29, 72, 0.4);
+  }
+}
+
+@keyframes jrTagIn {
+  from { opacity: 0; transform: scale(0.8) translateY(4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.jrTagText {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ps-primary);
+  line-height: 1.2;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jrTagX {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--ps-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(225, 29, 72, 0.18);
+    color: $red;
+  }
+}
+
+// Search input row
+.jrInputRow {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 4px 0 0;
+}
+
+.jrIcon {
+  padding: 0 8px 0 12px;
+  font-size: 1rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.jrInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--ps-text);
+  font-family: inherit;
+  padding: 0;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  &::placeholder {
+    color: var(--ps-muted);
+    font-weight: 400;
+  }
+}
+
+.jrChevron {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ps-muted);
+  font-size: 0.95rem;
+  border-radius: 8px;
+  transition: transform 0.2s ease, color 0.15s;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover { color: var(--ps-primary); }
+}
+
+.jrChevronUp {
+  transform: rotate(180deg);
+  color: var(--ps-primary);
+}
+
+// Dropdown panel
+.jrMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: var(--ps-card);
+  border: 1.5px solid var(--ps-border);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07),
+    0 20px 40px -8px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  animation: jrMenuIn 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes jrMenuIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.jrSearchHint {
+  padding: 7px 14px;
+  font-size: 0.75rem;
+  color: var(--ps-muted);
+  border-bottom: 1px solid var(--ps-border);
+  background: var(--ps-soft);
+
+  strong { color: var(--ps-text2); }
+}
+
+.jrList {
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 6px;
+
+  // Custom scrollbar
+  scrollbar-width: thin;
+  scrollbar-color: rgba(225, 29, 72, 0.25) transparent;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(225, 29, 72, 0.25);
+    border-radius: 999px;
+  }
+}
+
+.jrItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 0.875rem;
+  color: var(--ps-text2);
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.1s;
+
+  &:hover {
+    background: rgba(225, 29, 72, 0.06);
+  }
+}
+
+.jrItemOn {
+  background: rgba(225, 29, 72, 0.07);
+  color: var(--ps-text);
+  font-weight: 600;
+
+  &:hover { background: rgba(225, 29, 72, 0.11); }
+}
+
+.jrCheckbox {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--ps-border);
+  background: var(--ps-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.jrCheckboxOn {
+  border-color: $red;
+  background: linear-gradient(135deg, $red, $red2);
+}
+
+.jrTick {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.jrItemLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jrItemBadge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--ps-primary);
+  background: rgba(225, 29, 72, 0.1);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  border-radius: 999px;
+  padding: 2px 7px;
+  letter-spacing: 0.03em;
+}
+
+.jrEmpty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 0.85rem;
+  color: var(--ps-muted);
+  font-style: italic;
+
+  strong { color: var(--ps-text2); font-style: normal; }
+}
+
+// Footer bar
+.jrFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid var(--ps-border);
+  background: var(--ps-soft);
+}
+
+.jrFooterCount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ps-success);
+  letter-spacing: 0.02em;
+}
+
+.jrFooterHint {
+  font-size: 0.75rem;
+  color: var(--ps-muted);
+}
+
+.jrClearAll {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ps-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.12s, color 0.12s;
+  letter-spacing: 0.02em;
+
+  &:hover {
+    background: rgba(225, 29, 72, 0.08);
+    color: $red;
+  }
+}
+
 
 // ─── Combo input (datalist) ──────────────────────────────────────
 .comboWrapper {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../axios"; 
+import API from "../../axios";
 import {
   Users,
   BookOpen,
@@ -9,8 +9,8 @@ import {
   User,
   Building2,
   TrendingUp,
-  GraduationCap,   
-  Star 
+  GraduationCap,
+  Star
 } from "lucide-react";
 
 import DonutOverviewChart from "../../components/UI/DonutOverviewChart";
@@ -51,12 +51,12 @@ function MemberDashboard() {
   function getTopSkills(membersList) {
     const counts = {};
     membersList.forEach(m => {
-      let userSkills = m.skills || []; 
-      
+      let userSkills = m.skills || [];
+
       if (typeof userSkills === 'string') {
         userSkills = userSkills.split(',').map(s => s.trim());
       }
-      
+
       if (Array.isArray(userSkills)) {
         userSkills.forEach(skill => {
           const cleanSkill = skill?.trim();
@@ -65,7 +65,7 @@ function MemberDashboard() {
           }
         });
       } else if (!userSkills || userSkills.length === 0) {
-         counts["Unknown"] = (counts["Unknown"] || 0) + 1;
+        counts["Unknown"] = (counts["Unknown"] || 0) + 1;
       }
     });
 
@@ -77,7 +77,7 @@ function MemberDashboard() {
 
   // ✅ Handle Member Type card clicks
   const handleMemberTypeClick = (type) => {
-    switch(type) {
+    switch (type) {
       case 'Seeker':
         navigate('/job-seekers');
         break;
@@ -117,7 +117,7 @@ function MemberDashboard() {
         setMembers([]);
         setErrorMsg(
           e?.response?.data?.message ||
-            "Failed to load members. Please check your connection."
+          "Failed to load members. Please check your connection."
         );
       } finally {
         setLoadingMembers(false);
@@ -139,7 +139,7 @@ function MemberDashboard() {
     const fetchRecruitersCount = async () => {
       try {
         const res = await API.get("/api/recruiters");
-        
+
         if (res.data && Array.isArray(res.data)) {
           setRecruitersCount(res.data.length);
         } else if (res.data && typeof res.data.total === 'number') {
@@ -272,9 +272,9 @@ function MemberDashboard() {
 
         <div className={styles.statsGrid}>
           {stats.map((stat, i) => (
-            <div 
-              key={i} 
-              className={styles.statCard} 
+            <div
+              key={i}
+              className={styles.statCard}
               onClick={() => navigate(stat.path, { state: stat.state || {} })}
             >
               <div className={styles.statIconContainer} style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
@@ -294,12 +294,12 @@ function MemberDashboard() {
               <div className={styles.cardHeader}>
                 <h3>Member Types</h3>
               </div>
-              <DonutOverviewChart 
-                data={memberTypeData} 
+              <DonutOverviewChart
+                data={memberTypeData}
                 onSliceClick={handleMemberTypeClick}
               />
-              <StatusTextView 
-                data={memberTypeData} 
+              <StatusTextView
+                data={memberTypeData}
                 onClick={handleMemberTypeClick}
               />
             </div>
@@ -331,8 +331,8 @@ function MemberDashboard() {
               </div>
               <div className={styles.rankingList}>
                 {topExperiences.map((item, i) => (
-                  <div 
-                    key={i} 
+                  <div
+                    key={i}
                     className={styles.rankingItem}
                     style={{ cursor: "pointer", transition: "background 0.2s", borderRadius: "8px" }}
                     onClick={() => navigate("/members", { state: { exactExp: item.name } })}
@@ -356,8 +356,8 @@ function MemberDashboard() {
             </div>
             <div className={styles.rankingList}>
               {topEducations.map((item, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={styles.rankingItem}
                   style={{ cursor: "pointer", transition: "background 0.2s", borderRadius: "8px" }}
                   onClick={() => navigate("/members", { state: { exactEdu: item.name } })}
@@ -380,8 +380,8 @@ function MemberDashboard() {
             </div>
             <div className={styles.rankingList}>
               {topSkills.map((item, i) => (
-                <div 
-                  key={i} 
+                <div
+                  key={i}
                   className={styles.rankingItem}
                   style={{ cursor: "pointer", transition: "background 0.2s", borderRadius: "8px" }}
                   onClick={() => navigate("/members", { state: { exactSkill: item.name } })}

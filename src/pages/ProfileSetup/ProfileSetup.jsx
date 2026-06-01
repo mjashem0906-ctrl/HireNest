@@ -171,18 +171,22 @@ function EducationDropdown({ value, onChange }) {
   );
 }
 
-function JobRoleDropdown({ value, options = [], onChange }) {
+function JobRoleDropdown({ value = [], options = [], onChange }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState(value || "");
+  const [query, setQuery] = useState("");
 
-  useEffect(() => setQuery(value || ""), [value]);
+  const selected = Array.isArray(value)
+    ? value.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
+    : value
+    ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
 
   useEffect(() => {
     const onDocClick = (e) => {
       if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target)) setOpen(false);
+      if (!wrapRef.current.contains(e.target)) { setOpen(false); setQuery(""); }
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -191,67 +195,140 @@ function JobRoleDropdown({ value, options = [], onChange }) {
   const norm = (s) => String(s || "").toLowerCase().trim();
   const filtered = options.filter((opt) => norm(opt).includes(norm(query)));
 
-  const commit = (val) => {
-    const v = String(val || "").trim();
-    onChange(v);
-    setQuery(v);
-    setOpen(false);
+  const toggleOption = (opt) => {
+    const already = selected.some((s) => norm(s) === norm(opt));
+    const next = already
+      ? selected.filter((s) => norm(s) !== norm(opt))
+      : [...selected, opt];
+    onChange(next);
+    setQuery("");
+    inputRef.current?.focus();
+  };
+
+  const removeTag = (opt, e) => {
+    e.stopPropagation();
+    onChange(selected.filter((s) => norm(s) !== norm(opt)));
   };
 
   return (
-    <div ref={wrapRef} className={styles.edWrap}>
-      <label className={styles.fieldLabel}>Preferred Job Role</label>
+    <div ref={wrapRef} className={styles.jrWrap}>
+      <label className={styles.fieldLabel}>
+        Preferred Job Role
+        {selected.length > 0 && (
+          <span className={styles.jrBadge}>{selected.length}</span>
+        )}
+      </label>
+
+      {/* Main control box */}
       <div
-        className={styles.edField}
+        className={`${styles.jrBox} ${open ? styles.jrBoxOpen : ""}`}
         onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
       >
-        <span className={styles.edIcon}>💼</span>
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); onChange(e.target.value); }}
-          placeholder="Type to search or select job role..."
-          className={styles.edInput}
-          onFocus={() => setOpen(true)}
-          onBlur={() => { const v = query.trim(); if (v && v !== value) commit(v); }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") { e.preventDefault(); commit(query); }
-            if (e.key === "Escape") setOpen(false);
-          }}
-        />
-        <button
-          type="button"
-          className={styles.edBtn}
-          onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); setTimeout(() => inputRef.current?.focus(), 0); }}
-        >
-          ▾
-        </button>
-      </div>
-      {open && (
-        <div className={styles.edMenu}>
-          {filtered.length === 0 ? (
-            <div className={styles.edEmpty}>No matches — press <b>Enter</b> to use: "{query}"</div>
-          ) : (
-            <div className={styles.edMenuList}>
-              {filtered.map((opt) => (
+        {/* Tags row */}
+        {selected.length > 0 && (
+          <div className={styles.jrTags}>
+            {selected.map((tag) => (
+              <span key={tag} className={styles.jrTag}>
+                <span className={styles.jrTagText}>{tag}</span>
                 <button
-                  key={opt}
                   type="button"
-                  className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""}`}
-                  onClick={() => commit(opt)}
-                  onMouseDown={(e) => e.preventDefault()}
+                  className={styles.jrTagX}
+                  onClick={(e) => removeTag(tag, e)}
+                  aria-label={`Remove ${tag}`}
                 >
-                  {opt}
+                  ×
                 </button>
-              ))}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Search row */}
+        <div className={styles.jrInputRow}>
+          <span className={styles.jrIcon}>💼</span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+            placeholder={selected.length === 0 ? "Search or select job roles…" : "Add more roles…"}
+            className={styles.jrInput}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") { setOpen(false); setQuery(""); }
+              if (e.key === "Backspace" && query === "" && selected.length > 0) {
+                onChange(selected.slice(0, -1));
+              }
+            }}
+          />
+          <span className={`${styles.jrChevron} ${open ? styles.jrChevronUp : ""}`}>
+            ▾
+          </span>
+        </div>
+      </div>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className={styles.jrMenu}>
+          {/* Search summary */}
+          {query && (
+            <div className={styles.jrSearchHint}>
+              Searching: <strong>{query}</strong> — {filtered.length} result{filtered.length !== 1 ? "s" : ""}
             </div>
           )}
-          <div className={styles.edTip}>Tip: Type to search. If custom, type it and press <b>Enter</b>.</div>
+
+          {filtered.length === 0 ? (
+            <div className={styles.jrEmpty}>
+              <span>🔍</span>
+              <span>No roles found for "<strong>{query}</strong>"</span>
+            </div>
+          ) : (
+            <div className={styles.jrList}>
+              {filtered.map((opt) => {
+                const isSelected = selected.some((s) => norm(s) === norm(opt));
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    className={`${styles.jrItem} ${isSelected ? styles.jrItemOn : ""}`}
+                    onClick={() => toggleOption(opt)}
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <span className={`${styles.jrCheckbox} ${isSelected ? styles.jrCheckboxOn : ""}`}>
+                      {isSelected && <span className={styles.jrTick}>✓</span>}
+                    </span>
+                    <span className={styles.jrItemLabel}>{opt}</span>
+                    {isSelected && <span className={styles.jrItemBadge}>Selected</span>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className={styles.jrFooter}>
+            {selected.length > 0 ? (
+              <>
+                <span className={styles.jrFooterCount}>
+                  ✔ {selected.length} role{selected.length > 1 ? "s" : ""} selected
+                </span>
+                <button
+                  type="button"
+                  className={styles.jrClearAll}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => onChange([])}
+                >
+                  Clear all
+                </button>
+              </>
+            ) : (
+              <span className={styles.jrFooterHint}>Click a role to select it</span>
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
+
 
 const ProfileSetup = () => {
     const { user, login, fetchUser } = useAuth();
@@ -268,7 +345,7 @@ const ProfileSetup = () => {
         fieldofStudy_Interest: "",
         workExp: "",
         highest_education: "",
-        preferredJobRole_Sector: "",
+        preferredJobRole_Sector: [],
         employmentType: "",
         noticePeriod: "",
         linkedinUrl: ""
@@ -380,6 +457,7 @@ const ProfileSetup = () => {
         const completedFields = fieldsToTrack.filter(field => {
             if (field === 'photoUrl') return !!photoFile;
             if (field === 'resumeLink') return !!resumeFile;
+            if (Array.isArray(formData[field])) return formData[field].length > 0;
             return formData[field] && String(formData[field]).length > 0;
         });
         return Math.round((completedFields.length / fieldsToTrack.length) * 100);
@@ -511,7 +589,7 @@ const ProfileSetup = () => {
                                     <JobRoleDropdown
                                         value={formData.preferredJobRole_Sector}
                                         options={combinedRoles}
-                                        onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: v })}
+                                        onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: Array.isArray(v) ? v : [v] })}
                                     />
                                 </>
                             )}

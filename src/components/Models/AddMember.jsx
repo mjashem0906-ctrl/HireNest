@@ -42,7 +42,7 @@ const initialState = {
   resumeLink: "",
   careerProfile: {
     location: "",
-    role: "",
+    role: [],
     industry: "",
     department: "",
     employmentType: "",
@@ -732,6 +732,130 @@ function TagInputField({
   );
 }
 
+function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], options = [], required = false, error = "", onChange, category = null, onCustomAdded = () => {} }) {
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const selected = Array.isArray(value)
+    ? value.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
+    : value
+    ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target)) { setOpen(false); setQuery(""); }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const norm = (s) => String(s || "").toLowerCase().trim();
+  const filtered = options.filter(Boolean).filter((opt) => norm(opt).includes(norm(query)));
+
+  const toggleOption = (opt) => {
+    const already = selected.some((s) => norm(s) === norm(opt));
+    const next = already ? selected.filter((s) => norm(s) !== norm(opt)) : [...selected, opt];
+    onChange(next);
+    setQuery("");
+    inputRef.current?.focus();
+  };
+
+  const removeTag = (opt, e) => {
+    e.stopPropagation();
+    onChange(selected.filter((s) => norm(s) !== norm(opt)));
+  };
+
+  return (
+    <div ref={wrapRef} className={styles.edWrap}>
+      <label className={styles.edLabel}>
+        {label}{required && <span className={styles.edReq}>*</span>}
+        {selected.length > 0 && (
+          <span style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 999, background: "var(--am-primary)", color: "#fff", fontSize: "0.7rem", fontWeight: 800, verticalAlign: "middle" }}>
+            {selected.length}
+          </span>
+        )}
+      </label>
+
+      <div className={styles.edControl}>
+        <div
+          className={`${styles.edField} ${error ? styles.edFieldError : ""}`}
+          style={{ height: "auto", minHeight: 48, flexWrap: "wrap", alignItems: "center", gap: 6, paddingTop: 6, paddingBottom: 6, cursor: "text" }}
+          onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+        >
+          {/* Selected tags */}
+          {selected.map((tag) => (
+            <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 6px 3px 10px", background: "var(--am-primary-soft)", border: "1px solid rgba(225,29,72,0.22)", borderRadius: 6, fontSize: "0.78rem", fontWeight: 600, color: "var(--am-primary)", whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tag}</span>
+              <button type="button" onClick={(e) => removeTag(tag, e)} style={{ border: "none", background: "transparent", color: "var(--am-muted)", fontSize: "1rem", cursor: "pointer", padding: 0, lineHeight: 1, display: "flex", alignItems: "center" }} aria-label={`Remove ${tag}`}>×</button>
+            </span>
+          ))}
+
+          <span className={styles.edIcon} style={{ alignSelf: "center" }}><Search size={16} /></span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+            placeholder={selected.length === 0 ? "Search or select job roles…" : "Add more…"}
+            className={styles.edInput}
+            style={{ flex: 1, minWidth: 120, border: "none", outline: "none", background: "transparent", boxShadow: "none" }}
+            onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") { setOpen(false); setQuery(""); }
+              if (e.key === "Backspace" && query === "" && selected.length > 0) onChange(selected.slice(0, -1));
+            }}
+          />
+          <button type="button" className={styles.edBtn} onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); setTimeout(() => inputRef.current?.focus(), 0); }}>
+            <ChevronDown size={18} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+          </button>
+        </div>
+
+        {open && (
+          <div className={styles.edMenu}>
+            {filtered.length === 0 ? (
+              <div className={styles.edEmpty}>No roles found for "{query}"</div>
+            ) : (
+              <div className={styles.edMenuList} style={{ maxHeight: 220 }}>
+                {filtered.map((opt) => {
+                  const isSel = selected.some((s) => norm(s) === norm(opt));
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`${styles.edItem} ${isSel ? styles.edItemActive : ""}`}
+                      style={{ display: "flex", alignItems: "center", gap: 10 }}
+                      onClick={() => toggleOption(opt)}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      <span style={{ flexShrink: 0, width: 18, height: 18, borderRadius: 5, border: isSel ? "1.5px solid var(--am-primary)" : "1.5px solid var(--am-border)", background: isSel ? "var(--am-primary)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+                        {isSel && <span style={{ fontSize: "0.65rem", fontWeight: 900, color: "#fff", lineHeight: 1 }}>✓</span>}
+                      </span>
+                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opt}</span>
+                      {isSel && <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--am-primary)", background: "var(--am-primary-soft)", border: "1px solid rgba(225,29,72,0.2)", borderRadius: 999, padding: "2px 7px" }}>Selected</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div className={styles.edTip} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>{selected.length > 0 ? `✔ ${selected.length} role${selected.length > 1 ? "s" : ""} selected` : "Click a role to select"}</span>
+              {selected.length > 0 && (
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onChange([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, color: "var(--am-muted)", fontFamily: "inherit" }}>Clear all</button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      {error && <p className={styles.edErrorText}>{error}</p>}
+    </div>
+  );
+}
+
+
 function AddMember({
   isOpen,
   onClose,
@@ -803,6 +927,11 @@ function AddMember({
         careerProfile: {
           ...initialState.careerProfile,
           ...(editMember.careerProfile || {}),
+          role: Array.isArray(editMember.careerProfile?.role)
+            ? editMember.careerProfile.role
+            : editMember.careerProfile?.role
+            ? [editMember.careerProfile.role]
+            : [],
           noticePeriod: editMember.careerProfile?.noticePeriod || editMember.noticePeriod || "",
         },
         experienceDetails: editMember.experienceDetails || [],
@@ -918,7 +1047,8 @@ function AddMember({
       nextErrors.workExp = "Experience is required.";
       hasError = true;
     }
-    if (!String(formData.careerProfile?.role || "").trim()) {
+    const roleVal = formData.careerProfile?.role;
+    if (!roleVal || (Array.isArray(roleVal) ? roleVal.length === 0 : !String(roleVal).trim())) {
       nextErrors.role = "Preferred Job Role is required.";
       hasError = true;
     }
@@ -1337,16 +1467,19 @@ function AddMember({
                 placeholder="0" 
               />
 
-              <EditableDropdown
+              <MultiJobRoleDropdown
                 label="Preferred Job Role"
                 required
                 error={errors.role}
                 value={formData.careerProfile.role}
                 options={combinedRoles}
-                placeholder="Select or type preferred job role..."
                 category="desiredRoles"
                 onCustomAdded={fetchDynamicDropdowns}
-                onChange={(v) => { setFormData({ ...formData, preferredJobRole_Sector: v, careerProfile: { ...formData.careerProfile, role: v }}); setErrors(p => ({ ...p, role: "" })); }}
+                onChange={(v) => {
+                  const arr = Array.isArray(v) ? v : (v ? [v] : []);
+                  setFormData({ ...formData, preferredJobRole_Sector: arr, careerProfile: { ...formData.careerProfile, role: arr } });
+                  setErrors(p => ({ ...p, role: "" }));
+                }}
               />
 
               <EditableDropdown

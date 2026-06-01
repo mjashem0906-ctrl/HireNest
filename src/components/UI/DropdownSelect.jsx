@@ -90,99 +90,101 @@ const DropdownSelect = ({
         {required && <span className={styles.required}>*</span>}
       </label>
 
-      {/* Selected Value */}
-      <div
-        className={`${styles.select} ${isOpen ? `${styles.open} custom-dropdown-open` : ""} ${
-          error ? styles.error : ""
-        } custom-dropdown-select`}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className={`${styles.chosenValue} custom-dropdown-value`}>
-          {multiple ? (
-            selectedValues.length > 0 ? (
-              <div className={styles.multiChosen}>
-                {selectedValues.map((sel) => (
-                  <span key={sel.value} className={styles.chip}>
-                    {renderIcon(sel)}
-                    {sel.label}
-                    <X
-                      size={14}
-                      className={styles.removeIcon}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemove(sel.value);
-                      }}
-                    />
-                  </span>
-                ))}
-              </div>
+      <div className={styles.selectWrap}>
+        {/* Selected Value */}
+        <div
+          className={`${styles.select} ${isOpen ? `${styles.open} custom-dropdown-open` : ""} ${
+            error ? styles.error : ""
+          } custom-dropdown-select`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className={`${styles.chosenValue} custom-dropdown-value`}>
+            {multiple ? (
+              selectedValues.length > 0 ? (
+                <div className={styles.multiChosen}>
+                  {selectedValues.map((sel) => (
+                    <span key={sel.value} className={styles.chip}>
+                      {renderIcon(sel)}
+                      {sel.label}
+                      <X
+                        size={14}
+                        className={styles.removeIcon}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(sel.value);
+                        }}
+                      />
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                placeholder
+              )
+            ) : selectedValues ? (
+              <span className={`${styles.optionContent} custom-dropdown-content`}>
+                {renderIcon(selectedValues)}
+                {selectedValues.label}
+                <X
+                        size={14}
+                        className={styles.removeIcon}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(selectedValues.value);
+                        }}
+                      />
+              </span>
             ) : (
               placeholder
-            )
-          ) : selectedValues ? (
-            <span className={`${styles.optionContent} custom-dropdown-content`}>
-              {renderIcon(selectedValues)}
-              {selectedValues.label}
-              <X
-                      size={14}
-                      className={styles.removeIcon}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemove(selectedValues.value);
-                      }}
-                    />
-            </span>
-          ) : (
-            placeholder
-          )}
-        </span>
-        <ChevronDown
-          className={`${styles.chevron} ${isOpen ? styles.rotated : ""} custom-dropdown-chevron`}
-          size={16}
-        />
-      </div>
+            )}
+          </span>
+          <ChevronDown
+            className={`${styles.chevron} ${isOpen ? styles.rotated : ""} custom-dropdown-chevron`}
+            size={16}
+          />
+        </div>
 
-      {/* Options */}
-      {isOpen && (
-        <div className={`${styles.options} custom-dropdown-options`}>
-          {searchable && (
-            <div className={`${styles.searchBox} custom-dropdown-search`}>
-              <Search size={16} />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          )}
+        {/* Options */}
+        {isOpen && (
+          <div className={`${styles.options} custom-dropdown-options`}>
+            {searchable && (
+              <div className={`${styles.searchBox} custom-dropdown-search`}>
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            )}
 
-          <div className={styles.optionsList}>
-            {filteredOptions.map((option) => (
-              <div
-                key={option.value}
-                className={`${styles.option} ${
-                  multiple
-                    ? value.includes(option.value)
+            <div className={styles.optionsList}>
+              {filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={`${styles.option} ${
+                    multiple
+                      ? value.includes(option.value)
+                        ? `${styles.selected} custom-dropdown-selected`
+                        : ""
+                      : option.value === value
                       ? `${styles.selected} custom-dropdown-selected`
                       : ""
-                    : option.value === value
-                    ? `${styles.selected} custom-dropdown-selected`
-                    : ""
-                } custom-dropdown-option`}
-                onClick={() => handleSelect(option.value)}
-              >
-                {renderIcon(option)}
-                {option.label}
-                {multiple && value.includes(option.value) && (
-                  <Check className={styles.checkIcon} size={14} />
-                )}
-              </div>
-            ))}
+                  } custom-dropdown-option`}
+                  onClick={() => handleSelect(option.value)}
+                >
+                  {renderIcon(option)}
+                  {option.label}
+                  {multiple && value.includes(option.value) && (
+                    <Check className={styles.checkIcon} size={14} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {error && <span className={styles.errorText}>{error}</span>}
     </div>

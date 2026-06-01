@@ -261,9 +261,15 @@ function MembersDetail() {
                 <div className={styles.item}>
                   <label>Preferred Job Role</label>
                   <div className={styles.value}>
-                    {member.careerProfile?.role ||
-                      member.preferredJobRole_Sector ||
-                      "Not specified"}
+                    {(() => {
+                      const raw = member.careerProfile?.role || member.preferredJobRole_Sector;
+                      const roles = Array.isArray(raw)
+                        ? raw.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
+                        : raw
+                        ? String(raw).split(",").map((s) => s.trim()).filter(Boolean)
+                        : [];
+                      return roles.length > 0 ? roles.join(", ") : "Not specified";
+                    })()}
                   </div>
                 </div>
 
