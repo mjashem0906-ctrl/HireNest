@@ -25,7 +25,7 @@ const memberSchema = new mongoose.Schema(
     // --- NEW: Professional Details (Naukri Style) ---
     careerProfile: {
       location: String,
-      role: String,
+      role: [String],
       industry: String,
       department: String,
       employmentType: String,
@@ -80,7 +80,7 @@ const memberSchema = new mongoose.Schema(
     highestEducationPassedOutYear: String,
 
     fieldofStudy_Interest: String,
-    preferredJobRole_Sector: String,
+    preferredJobRole_Sector: { type: [String], default: [] },
     employmentType: String,
     noticePeriod: String,
     workExp: String,
@@ -156,18 +156,26 @@ memberSchema.pre("save", function (next) {
     }
   }
 
-  // Sync preferredJobRole_Sector and careerProfile.role
+  // Sync preferredJobRole_Sector <-> careerProfile.role (both are arrays)
+  const toArr = (v) => {
+    if (Array.isArray(v)) return v;
+    if (v && typeof v === 'string' && v.trim()) return [v.trim()];
+    return [];
+  };
+
   if (this.isModified("careerProfile.role")) {
-    this.preferredJobRole_Sector = this.careerProfile.role;
+    this.preferredJobRole_Sector = toArr(this.careerProfile.role);
   } else if (this.isModified("preferredJobRole_Sector")) {
     if (!this.careerProfile) this.careerProfile = {};
-    this.careerProfile.role = this.preferredJobRole_Sector;
+    this.careerProfile.role = toArr(this.preferredJobRole_Sector);
   } else {
-    if (this.preferredJobRole_Sector && (!this.careerProfile || !this.careerProfile.role)) {
+    const pref = toArr(this.preferredJobRole_Sector);
+    const role = toArr(this.careerProfile?.role);
+    if (pref.length > 0 && role.length === 0) {
       if (!this.careerProfile) this.careerProfile = {};
-      this.careerProfile.role = this.preferredJobRole_Sector;
-    } else if (this.careerProfile?.role && !this.preferredJobRole_Sector) {
-      this.preferredJobRole_Sector = this.careerProfile.role;
+      this.careerProfile.role = pref;
+    } else if (role.length > 0 && pref.length === 0) {
+      this.preferredJobRole_Sector = role;
     }
   }
 
