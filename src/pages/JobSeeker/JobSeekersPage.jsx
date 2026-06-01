@@ -195,7 +195,18 @@ const JobSeekersPage = () => {
 
   const districts = unique(seekers.map((m) => m.district));
   const highestEducationOptions = unique(seekers.map((m) => m.highest_education));
-  const preferredJobRoleOptions = unique(seekers.map((m) => m.preferredJobRole_Sector));
+  const preferredJobRoleOptions = unique(
+    seekers.flatMap((m) => {
+      let r = m.preferredJobRole_Sector || [];
+      if (typeof r === 'string') {
+        return r.split(',').map(item => item.trim());
+      }
+      if (Array.isArray(r)) {
+        return r.map(item => String(item).trim());
+      }
+      return [];
+    })
+  );
   const relocationStatusOptions = unique(seekers.map((m) => m.relocationStatus));
   const referrerStatusOptions = unique(seekers.map((m) => m.referrerStatus));
 
@@ -291,7 +302,9 @@ const JobSeekersPage = () => {
       const matchesSearch = (
         m.name?.toLowerCase().includes(search) ||
         m.email?.toLowerCase().includes(search) ||
-        m.preferredJobRole_Sector?.toLowerCase().includes(search) ||
+        (Array.isArray(m.preferredJobRole_Sector)
+          ? m.preferredJobRole_Sector.some(r => r?.toLowerCase().includes(search))
+          : m.preferredJobRole_Sector?.toLowerCase().includes(search)) ||
         m.highest_education?.toLowerCase().includes(search) ||
         m.district?.toLowerCase().includes(search)
       );
@@ -342,7 +355,14 @@ const JobSeekersPage = () => {
 
     if (filterValues.highest_education && m.highest_education !== filterValues.highest_education) return false;
 
-    if (filterValues.preferredJobRole_Sector && m.preferredJobRole_Sector !== filterValues.preferredJobRole_Sector) return false;
+    if (filterValues.preferredJobRole_Sector) {
+      const roles = m.preferredJobRole_Sector || [];
+      if (Array.isArray(roles)) {
+        if (!roles.includes(filterValues.preferredJobRole_Sector)) return false;
+      } else {
+        if (roles !== filterValues.preferredJobRole_Sector) return false;
+      }
+    }
 
     if (filterValues.relocationStatus && m.relocationStatus !== filterValues.relocationStatus) return false;
 
@@ -364,7 +384,7 @@ const JobSeekersPage = () => {
       Education: m.highest_education || '',
       Branch: m.branch || m.highestEducationSpecialization || '',
       'Passout Year': m.passOutYear || m.highestEducationPassedOutYear || '',
-      'Preferred Job Role / Sector': m.preferredJobRole_Sector || '',
+      'Preferred Job Role / Sector': Array.isArray(m.preferredJobRole_Sector) ? m.preferredJobRole_Sector.join(", ") : (m.preferredJobRole_Sector || ''),
       'Work Experience (Years)': isFresher(m) ? 'Fresher' : (m.workExp || 'Experienced'),
       'Relocation Preference': m.relocationStatus || '',
       'Preferred Job Location': m.preferredJobLocation || '',
@@ -705,7 +725,7 @@ const JobSeekersPage = () => {
                     
                     <div className={styles.infoItem}>
                       <Briefcase size={14} /> 
-                      <strong>Preferred Role:</strong> {member.preferredJobRole_Sector || "Not Specified"}
+                      <strong>Preferred Role:</strong> {Array.isArray(member.preferredJobRole_Sector) ? member.preferredJobRole_Sector.join(", ") : (member.preferredJobRole_Sector || "Not Specified")}
                     </div>
 
                     {member.preferredJobLocation && (

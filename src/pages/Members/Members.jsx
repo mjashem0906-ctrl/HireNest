@@ -235,7 +235,7 @@ function Members() {
       SeekerNeed: (m.seekerNeed || []).join(", "),
       Education: m.highest_education || "",
       FieldOfStudy: m.fieldofStudy_Interest || "",
-      PreferredRole: m.preferredJobRole_Sector || "",
+      PreferredRole: Array.isArray(m.preferredJobRole_Sector) ? m.preferredJobRole_Sector.join(", ") : (m.preferredJobRole_Sector || ""),
       EmploymentType: m.employmentType || m.careerProfile?.employmentType || "",
       Experience: m.workExp || "",
       Relocation: m.relocationStatus || "",
@@ -329,6 +329,14 @@ function Members() {
       if (filters[key]) {
         if (key === 'memberType') {
           filtered = filtered.filter(p => (p.memberType || "").includes(filters[key]));
+        } else if (key === 'preferredJobRole_Sector') {
+          filtered = filtered.filter(p => {
+            const role = p.preferredJobRole_Sector || [];
+            if (Array.isArray(role)) {
+              return role.includes(filters[key]);
+            }
+            return String(role) === filters[key];
+          });
         } else {
           filtered = filtered.filter(p => p[key] === filters[key]);
         }
@@ -466,7 +474,18 @@ function Members() {
   const districts = unique(allMembers.map((m) => m.district));
   const memberTypes = unique(allMembers.map((m) => m.memberType));
   const highestEducationOptions = unique(allMembers.map((m) => m.highest_education));
-  const preferredJobRoleOptions = unique(allMembers.map((m) => m.preferredJobRole_Sector));
+  const preferredJobRoleOptions = unique(
+    allMembers.flatMap((m) => {
+      let r = m.preferredJobRole_Sector || [];
+      if (typeof r === 'string') {
+        return r.split(',').map(item => item.trim());
+      }
+      if (Array.isArray(r)) {
+        return r.map(item => String(item).trim());
+      }
+      return [];
+    })
+  );
   const relocationStatusOptions = unique(allMembers.map((m) => m.relocationStatus));
   const referrerStatusOptions = unique(allMembers.map((m) => m.referrerStatus));
 
