@@ -36,6 +36,15 @@
   z-index: 1000;
   background-color: var(--bg-primary);
   padding: 40px 32px;
+
+  // Rose Theme Variables
+  --accent-primary: #e11d48;
+  --accent-hover: #be123c;
+  --border-light-rose: #ffe4e6;
+  --focus-ring-color: rgba(225, 29, 72, 0.15);
+  --accent-primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  --accent-hover-gradient: linear-gradient(135deg, #be123c 0%, #a21132 100%);
+  --shadow-rose: rgba(225, 29, 72, 0.35);
 }
 
 // ── Page Header ─────────────────────────────────────────
@@ -129,7 +138,7 @@
   text-transform: uppercase;
   color: var(--accent-primary);
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light-rose);
   margin-top: 8px;
 }
 
@@ -166,7 +175,7 @@
 
     &:focus {
       border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+      box-shadow: 0 0 0 3px var(--focus-ring-color);
       outline: none;
     }
 
@@ -205,7 +214,7 @@
 }
 
 .submitBtn {
-  background: var(--accent-primary);
+  background: var(--accent-primary-gradient, var(--accent-primary));
   border: none;
   color: #fff;
   padding: 10px 26px;
@@ -216,13 +225,28 @@
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background: var(--accent-hover);
+    background: var(--accent-hover-gradient, var(--accent-hover));
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.35);
+    box-shadow: 0 4px 12px var(--shadow-rose, rgba(225, 29, 72, 0.35));
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
+}
+
+/* Dark Mode Overrides for AddRecruiterPage */
+:global(html.dark) .pageWrapper,
+:global(body.dark) .pageWrapper,
+:global(#root.dark) .pageWrapper,
+:global(.dark) .pageWrapper,
+:global([data-theme="dark"]) .pageWrapper {
+  --accent-primary: #fda4af;
+  --accent-hover: #f43f5e;
+  --border-light-rose: rgba(225, 29, 72, 0.22);
+  --focus-ring-color: rgba(225, 29, 72, 0.18);
+  --accent-primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  --accent-hover-gradient: linear-gradient(135deg, #be123c 0%, #a21132 100%);
+  --shadow-rose: rgba(225, 29, 72, 0.55);
 }

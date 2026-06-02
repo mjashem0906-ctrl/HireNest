@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useLocation } from "react-router-dom";
 import styles from "./Jobs.module.scss";
 import {
   BriefcaseBusiness,
@@ -2260,6 +2260,7 @@ function Jobs() {
   const { user } = useAuth();
   const { jobContext, memberContext } = useData();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { sidebarCollapsed } = useOutletContext();
   const sidebarWidth = sidebarCollapsed ? 90 : 280;
@@ -2852,6 +2853,15 @@ function Jobs() {
   useEffect(() => {
     fetchJobPosts();
   }, [user, jobContext]);
+
+  useEffect(() => {
+    if (location.state && location.state.openAddModal) {
+      setEditingJob(null);
+      setShowProvidedModal(true);
+      // Clear location state to avoid re-opening modal on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleClick = (job) => navigate(`/jobs/${job._id}`);
 

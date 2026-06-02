@@ -26,8 +26,11 @@
   top: 100px;
   max-height: 600px;
   overflow-y: auto;
-  border-radius: var(--radius-md);
-  box-shadow: 0 1px 3px var(--shadow-medium);
+  border-radius: 16px;
+  border: 1px solid rgba(225, 29, 72, 0.15);
+  box-shadow: 
+    0 8px 24px rgba(225, 29, 72, 0.1),
+    0 2px 8px rgba(225, 29, 72, 0.04);
 
   @media (max-width: 769px) {
     max-height: 500px;
@@ -38,44 +41,43 @@
   width: 100%;
   border-collapse: collapse;
   background-color: var(--surface-elevated);
-  /* ✅ theme */
   min-width: 600px;
 
   thead th {
     position: sticky;
     top: 0;
-    background-color: var(--bg-tertiary);
-    /* ✅ theme */
+    background: linear-gradient(135deg, rgba(225, 29, 72, 0.06) 0%, rgba(190, 18, 60, 0.04) 100%);
+    border-bottom: 2px solid rgba(225, 29, 72, 0.2);
     z-index: 1;
+    backdrop-filter: blur(8px);
   }
 
   th,
   td {
     padding: var(--spacing-md);
     text-align: left;
-    border-bottom: 1px solid var(--border-light);
-    /* ✅ theme */
+    border-bottom: 1px solid rgba(225, 29, 72, 0.1);
   }
 
   th {
-    font-weight: 600;
-    color: var(--text-secondary);
-    /* ✅ theme */
+    font-weight: 700;
+    color: #e11d48;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.85rem;
   }
 
   th:hover {
-    background-color: var(--bg-secondary);
-    /* ✅ theme */
+    background: rgba(225, 29, 72, 0.08);
   }
 
   tr:hover {
-    background-color: var(--bg-tertiary);
-    /* ✅ theme */
+    background-color: rgba(225, 29, 72, 0.04);
   }
 
   tr {
     background-color: var(--bg-secondary);
-    /* ✅ theme */
+    transition: all 0.2s ease;
   }
 
 }
@@ -111,22 +113,22 @@
 
   height: 40px;
   padding: 0 var(--spacing-md);
-  border-radius: var(--radius-xl);
+  border-radius: 12px;
 
-  /* ✅ THEME AWARE */
-  background-color: var(--surface-elevated);
-  border: 1px solid var(--border-light);
-
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, var(--surface-elevated) 0%, rgba(225, 29, 72, 0.02) 100%);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  box-shadow: 
+    0 4px 16px rgba(225, 29, 72, 0.12),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
   transition: 
     background-color 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
   svg {
-    color: var(--text-muted);
+    color: #e11d48;
     margin-right: var(--spacing-sm);
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
   }
 
   input {
@@ -137,6 +139,7 @@
 
     color: var(--text-primary);
     font-size: 0.875rem;
+    font-weight: 500;
 
     &::placeholder {
       color: var(--text-muted);
@@ -144,11 +147,15 @@
   }
 
   &:focus-within {
-    border-color: rgba(79, 70, 229, 0.6);
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.18);
+    border-color: #e11d48;
+    box-shadow: 
+      0 0 0 4px rgba(225, 29, 72, 0.2),
+      0 8px 24px rgba(225, 29, 72, 0.18),
+      inset 0 1px 3px rgba(255, 255, 255, 0.6);
 
     svg {
-      color: #6366f1;
+      color: #be123c;
+      transform: scale(1.1);
     }
   }
 }
@@ -178,16 +185,16 @@
   right: 0;
   z-index: 30;
 
-  background-color: var(--surface-elevated);
-  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(225, 29, 72, 0.02) 100%);
+  border-bottom: 1px solid rgba(225, 29, 72, 0.15);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md); // Optional: ensure spacing
-  transition: left 0.3s ease; // <-- smooth move when sidebar toggles
-  width: calc(100% - 280px); // <-- prevent right side gap
+  padding: var(--spacing-md);
+  transition: left 0.3s ease;
+  width: calc(100% - 280px);
+  backdrop-filter: blur(8px);
 
-  // When sidebar is collapsed
   .collapsed & {
     left: 90px;
     width: calc(100% - 90px);
@@ -204,16 +211,23 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  background-color: #4f46e5;
-  /* ✅ theme */
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
   color: white;
   border-radius: var(--radius-lg);
-  font-weight: bold;
-  transition: var(--transition-fast);
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 16px rgba(225, 29, 72, 0.2);
+  letter-spacing: 0.02em;
 
   &:hover {
-    background-color: #6366f1;
-    /* ✅ theme */
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(225, 29, 72, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(225, 29, 72, 0.2);
   }
 }

@@ -96,6 +96,10 @@ const JobSeekersPage = () => {
         initialActiveFilters.skills = location.state.exactSkill;
       }
 
+      if (location.state.openAddModal) {
+        setShowModal(true);
+      }
+
       if (Object.keys(initialFilterValues).length > 0) {
         setFilterValues(initialFilterValues);
         setActiveFilters(initialActiveFilters);

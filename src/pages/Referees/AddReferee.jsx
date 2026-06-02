@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, UserPlus, ChevronDown, Search } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import FormInput from "../../components/UI/FormInput";
 import DropdownSelect from "../../components/UI/DropdownSelect";
 import API from "../../axios";
@@ -197,6 +198,14 @@ function AddReferee({ onSuccess }) {
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState(initialState);
   const [btnLoading, setBtnLoading] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setIsOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
@@ -247,7 +256,7 @@ function AddReferee({ onSuccess }) {
       <button
         onClick={toggleModal}
         style={{
-          background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+          background: "linear-gradient(135deg, #e11d48 0%, #be123c 100%)",
           color: "white",
           border: "none",
           padding: "12px 24px",
@@ -416,25 +425,25 @@ function AddReferee({ onSuccess }) {
                   />
                 </div>
               </div>
-            </form>
 
-            <div className={styles.actions}>
-              <button
-                type="button"
-                onClick={toggleModal}
-                className={styles.cancelButton}
-              >
-                Discard
-              </button>
-              <button
-                type="submit"
-                onClick={handleSubmit}
-                disabled={btnLoading}
-                className={styles.submitButton}
-              >
-                {btnLoading ? "Processing..." : "Confirm & Save Referee"}
-              </button>
-            </div>
+              <div className={styles.actions}>
+                <button
+                  type="button"
+                  onClick={toggleModal}
+                  className={styles.cancelButton}
+                >
+                  Discard
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={btnLoading}
+                  className={styles.submitButton}
+                >
+                  {btnLoading ? "Processing..." : "Confirm & Save Referee"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

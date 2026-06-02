@@ -227,12 +227,12 @@
   grid-column: span 2;
   font-size: 11px;
   font-weight: 800;
-  color: #6366f1;
+  color: #e11d48;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 30px 0 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eef2ff;
+  border-bottom: 1px solid #ffe4e6;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -275,8 +275,8 @@
 
     &:focus {
       background: white;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+      border-color: #e11d48;
+      box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
     }
 
     &::placeholder { color: #94a3b8; }
@@ -308,14 +308,14 @@
   }
 
   .submitBtn {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
     border: none;
     color: white;
-    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.3);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 15px 25px -5px rgba(79, 70, 229, 0.4);
+      box-shadow: 0 15px 25px -5px rgba(225, 29, 72, 0.4);
     }
   }
 }
@@ -391,8 +391,8 @@
 :global(#root.dark) .sectionTitle,
 :global(.dark) .sectionTitle,
 :global([data-theme="dark"]) .sectionTitle {
-  color: #a78bfa;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.22);
+  color: #fda4af;
+  border-bottom: 1px solid rgba(225, 29, 72, 0.22);
 }
 
 :global(html.dark) .sectionTitle::after,
@@ -446,8 +446,8 @@
 :global(#root.dark) .inputGroup select:focus,
 :global(.dark) .inputGroup select:focus,
 :global([data-theme="dark"]) .inputGroup select:focus {
-  border-color: rgba(99, 102, 241, 0.85);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+  border-color: rgba(225, 29, 72, 0.85);
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.18);
   outline: none;
 }
 
@@ -485,7 +485,7 @@
 :global(#root.dark) .submitBtn,
 :global(.dark) .submitBtn,
 :global([data-theme="dark"]) .submitBtn {
-  box-shadow: 0 14px 24px -10px rgba(99, 102, 241, 0.55);
+  box-shadow: 0 14px 24px -10px rgba(225, 29, 72, 0.55);
 }
 /* =========================================================
    FIX: Native <select> dropdown popup in DARK MODE
@@ -524,7 +524,7 @@
 :global(#root.dark) .inputGroup select option:checked,
 :global(.dark) .inputGroup select option:checked,
 :global([data-theme="dark"]) .inputGroup select option:checked {
-  background: rgba(99, 102, 241, 0.35) !important;
+  background: rgba(225, 29, 72, 0.35) !important;
   color: #ffffff !important;
 }
 
@@ -535,6 +535,6 @@
 :global(.dark) .inputGroup select:focus,
 :global([data-theme="dark"]) .inputGroup select:focus {
   outline: none !important;
-  border-color: rgba(99, 102, 241, 0.85) !important;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18) !important;
+  border-color: rgba(225, 29, 72, 0.85) !important;
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.18) !important;
 }

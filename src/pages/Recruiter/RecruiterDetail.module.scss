@@ -185,7 +185,7 @@
 /* 1. Header & Banner */
 .banner {
   height: 260px;
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 45%, #7c3aed 100%);
   width: 100%;
   position: relative;
 }
@@ -225,7 +225,7 @@
 
   .editButton {
     background: white;
-    color: #6366f1;
+    color: #e11d48;
     padding: 10px 24px;
     border-radius: 12px;
     border: none;
@@ -311,7 +311,7 @@
     position: absolute;
     bottom: -8px;
     right: -8px;
-    background: #6366f1;
+    background: #e11d48;
     color: white;
     padding: 6px 16px;
     border-radius: 12px;
@@ -332,7 +332,7 @@
   }
   .designationText {
     font-size: 1.2rem;
-    color: #6366f1;
+    color: #e11d48;
     font-weight: 600;
     margin: 8px 0;
   }
@@ -355,7 +355,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  svg { color: #6366f1; }
+  svg { color: #e11d48; }
 }
 
 /* Self-registered via shareable link badge */
@@ -406,7 +406,7 @@
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 1px dashed #e2e8f0;
-    svg { color: #6366f1; }
+    svg { color: #e11d48; }
   }
 }
 
@@ -455,7 +455,7 @@
   .spinner {
     width: 48px; height: 48px;
     border: 5px solid #f1f5f9;
-    border-top: 5px solid #6366f1;
+    border-top: 5px solid #e11d48;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -506,7 +506,7 @@
 :global(#root.dark) .designationText,
 :global(.dark) .designationText,
 :global([data-theme="dark"]) .designationText {
-  color: #a78bfa;
+  color: #fda4af;
 }
 
 :global(html.dark) .infoBadge,
@@ -523,7 +523,7 @@
 :global(#root.dark) .infoBadge svg,
 :global(.dark) .infoBadge svg,
 :global([data-theme="dark"]) .infoBadge svg {
-  color: #a78bfa;
+  color: #fda4af;
 }
 
 :global(html.dark) .detailCard .cardHeader,
@@ -540,7 +540,15 @@
 :global(#root.dark) .detailCard .cardHeader svg,
 :global(.dark) .detailCard .cardHeader svg,
 :global([data-theme="dark"]) .detailCard .cardHeader svg {
-  color: #a78bfa;
+  color: #fda4af;
+}
+
+:global(html.dark) .editButton,
+:global(body.dark) .editButton,
+:global(#root.dark) .editButton,
+:global(.dark) .editButton,
+:global([data-theme="dark"]) .editButton {
+  color: #fda4af;
 }
 
 :global(html.dark) .infoList .item label,

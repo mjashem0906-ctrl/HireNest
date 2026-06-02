@@ -37,7 +37,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
       { path: '/recruiters', icon: Building, label: 'Job Recruiter' },
       { path: '/referees', icon: UserCheck, label: 'Job Referee' },
-      { path: '/createUser', icon: User, label: 'Create new user' },
+      { path: '/createUser', icon: User, label: 'Create new user', hidden: true },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
     ];
   } else if (["Member", "Mentor", "Job", "Candidate"].includes(user.role)) {
@@ -82,7 +82,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       </div>
 
       <nav className={styles.nav}>
-        {menuItems.map((item) => (
+        {menuItems.filter(item => !item.hidden).map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

@@ -23,6 +23,9 @@ function Layout({ children }) {
     '/memberComments': 'About Members',
     '/mentors': 'Mentors',
     '/referees': 'Job Referees',
+    '/recruiters': 'Job Recruiter',
+    '/job-seekers': 'Job Seekers',
+    '/createUser': 'Create new user',
   };
 
   const getPageTitle = () => {
@@ -41,6 +44,9 @@ function Layout({ children }) {
     if (path.startsWith('/membersWorking')) return 'Members Working in Tasks';
     if (path.startsWith('/mentors')) return 'Mentors';
     if (path.startsWith('/referees')) return 'Job Referees';
+    if (path.startsWith('/recruiters')) return 'Job Recruiter';
+    if (path.startsWith('/job-seekers')) return 'Job Seekers';
+    if (path.startsWith('/createUser')) return 'Create new user';
 
     // 3. Fallback
     return 'Dashboard';

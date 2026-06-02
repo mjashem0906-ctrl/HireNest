@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { X, UserPlus, ChevronDown, Search } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import DateSelect from "../../components/UI/DateSelect";
 import API from "../../axios";
 import FormInput from "../../components/UI/FormInput";
@@ -190,6 +191,14 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
   const [errors, setErrors] = useState({});
   const [btnLoading, setBtnLoading] = useState(false);
   const { user } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setIsOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (isEditing && editData) {

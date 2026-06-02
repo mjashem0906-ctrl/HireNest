@@ -72,13 +72,13 @@ const RecruiterDetail = () => {
             {recruiter.profilePicture ? (
               <img src={recruiter.profilePicture} alt="" className={styles.avatar} />
             ) : (
-              <div className={styles.avatar} style={{display:'flex', alignItems:'center', justifyContent:'center', background:'#eef2ff'}}>
-                <User size={64} color="#6366f1" />
+              <div className={styles.avatar} style={{display:'flex', alignItems:'center', justifyContent:'center', background:'#fff5f5'}}>
+                <User size={64} color="#e11d48" />
               </div>
             )}
             <div className={styles.roleBadge}>RECRUITER</div>
           </div>
-
+ 
           <div className={styles.heroText}>
             <h1>{recruiter.fullName}</h1>
             <p className={styles.designationText}>{recruiter.designation}</p>
@@ -90,7 +90,7 @@ const RecruiterDetail = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* 3. Animated Content Sections */}
       <div className={styles.contentGrid}>
         <div className={styles.leftColumn}>
@@ -116,7 +116,7 @@ const RecruiterDetail = () => {
               </div>
             </div>
           </section>
-
+ 
           {/* Section 2 */}
           <section className={styles.detailCard} style={{animationDelay: '0.2s'}}>
             <div className={styles.cardHeader}><Briefcase size={20} /> Professional Scope</div>
@@ -143,7 +143,7 @@ const RecruiterDetail = () => {
               </div>
               <div className={styles.item} style={{gridColumn: 'span 2'}}>
                 <label>Specialized Industries</label>
-                <div className={styles.value} style={{color: '#6366f1'}}>
+                <div className={styles.value} style={{color: '#e11d48'}}>
                   {Array.isArray(recruiter.industries) && recruiter.industries.length > 0 
                     ? recruiter.industries.join(" • ") 
                     : "General Recruitment"}
