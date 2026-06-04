@@ -21,6 +21,7 @@ import {
   Grid,
   List,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axios";
@@ -236,6 +237,24 @@ const MentorsPage = () => {
     memberType === "candidate" ||
     memberType === "member" ||
     (user?.role && !["Admin", "IT_Member"].includes(user.role));
+
+  const isAdminOrIt =
+    role === "admin" ||
+    role === "it_member" ||
+    (user?.role && ["Admin", "IT_Member"].includes(user.role));
+
+  const handleDeleteMentor = async (id) => {
+    if (window.confirm("Are you sure you want to PERMANENTLY delete this mentor?")) {
+      try {
+        await API.delete(`/member/${id}`);
+        alert("Mentor deleted successfully");
+        setMentors((prev) => prev.filter((m) => m._id !== id));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete mentor.");
+      }
+    }
+  };
 
   // Dynamic filter lists
   const allDomains = React.useMemo(() => {
@@ -916,9 +935,9 @@ const MentorsPage = () => {
                       </tr>
                     ) : (
                       currentMentors.map((m) => (
-                        <tr key={m._id}>
+                        <tr key={m._id} onClick={() => navigate(`/mentors/${m._id}`)}>
                           {/* Column 1: Profile & Email */}
-                          <td>
+                          <td data-label="Mentor">
                             <div className={styles.mentorProfileCell}>
                               <div className={styles.avatarInitialCircle}>
                                 {getInitials(m.name)}
@@ -931,7 +950,7 @@ const MentorsPage = () => {
                           </td>
 
                           {/* Column 2: Expertise / Designation */}
-                          <td>
+                          <td data-label="Expertise">
                             {m.designation ? (
                               <span className={styles.roleText}>{m.designation}</span>
                             ) : (
@@ -942,21 +961,21 @@ const MentorsPage = () => {
                           </td>
 
                           {/* Column 3: Domain */}
-                          <td>
+                          <td data-label="Domain">
                             <span className={styles.domainCell}>
                               {m.fieldofStudy_Interest ? m.fieldofStudy_Interest.split(",")[0].trim() : "General"}
                             </span>
                           </td>
 
                           {/* Column 4: Experience */}
-                          <td>
+                          <td data-label="Experience">
                             <span className={styles.experienceCell}>
                               {m.workExp ? `${m.workExp} Years` : "Experience N/A"}
                             </span>
                           </td>
 
                           {/* Column 5: Location */}
-                          <td>
+                          <td data-label="Location">
                             <div className={styles.locationCell}>
                               <MapPin size={13} />
                               <span>{m.district || "Remote"}</span>
@@ -964,14 +983,14 @@ const MentorsPage = () => {
                           </td>
 
                           {/* Column 6: Status Pill */}
-                          <td>
+                          <td data-label="Status">
                             <span className={`${styles.statusBadge} ${styles.available}`}>
                               Available
                             </span>
                           </td>
 
                           {/* Column 7: Actions */}
-                          <td>
+                          <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
                             <div className={styles.actionsCell}>
                               {/* View details eye button */}
                               <button
@@ -1020,6 +1039,17 @@ const MentorsPage = () => {
                                   </button>
                                 );
                               })()}
+
+                              {/* Admin/IT Delete button */}
+                              {isAdminOrIt && (
+                                <button
+                                  onClick={() => handleDeleteMentor(m._id)}
+                                  className={`${styles.actionCircleBtn} ${styles.deleteBtn}`}
+                                  title="Delete Mentor"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
 
                             </div>
                           </td>
@@ -1142,6 +1172,20 @@ const MentorsPage = () => {
                               </button>
                             );
                           })()}
+
+                          {/* Admin/IT Delete button */}
+                          {isAdminOrIt && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMentor(m._id);
+                              }}
+                              className={styles.cardDeleteBtn}
+                              title="Delete Mentor"
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          )}
                         </div>
                       </div>
                     );

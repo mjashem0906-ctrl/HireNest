@@ -1546,12 +1546,14 @@ $radius-xl: 22px;
   margin-top: 12px;
   border: 1px solid var(--jb-border);
   border-radius: 18px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   background: var(--jb-white);
   box-shadow: $shadow-sm;
 
   table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
     table-layout: fixed;
     font-size: 13px;
@@ -1897,9 +1899,35 @@ $radius-xl: 22px;
 }
 
 @media (max-width: 600px) {
+  .modalHeader h2 {
+    font-size: 20px !important;
+    letter-spacing: -0.4px !important;
+  }
+
+  .csvTemplateRow {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    align-items: stretch;
+    margin-bottom: 12px;
+
+    .downloadTemplateBtn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
   .csvUploadCard {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
+  }
+
+  .csvText p {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
   }
 
   .csvAction {
@@ -4009,6 +4037,7 @@ $radius-xl: 22px;
 .statusColActiveRow {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .activeStatusBadge {
@@ -4994,6 +5023,36 @@ $radius-xl: 22px;
     background: rgba(153, 27, 27, 0.2);
     color: #f87171;
     border-color: rgba(248, 113, 113, 0.25);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE OVERRIDES FOR JOB ROWS
+============================================================ */
+@media (max-width: 768px) {
+  .jobRow {
+    padding: 16px 16px 16px 20px !important;
+
+    &::before {
+      left: 6px !important;
+      top: 12px !important;
+      bottom: 12px !important;
+    }
+  }
+
+  .jobRowTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .jobRowTitle {
+    width: 100%;
+  }
+
+  .jobRowRightCol {
+    align-items: flex-start;
+    margin-top: 4px;
   }
 }
 

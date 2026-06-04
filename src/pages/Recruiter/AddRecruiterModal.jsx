@@ -34,11 +34,19 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   }, [isOpen, isEditMode, recruiterToEdit]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    if (name === 'phone') {
+      value = value.replace(/\D/g, '').slice(0, 10);
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.phone && formData.phone.length !== 10) {
+      alert("Mobile Number must be exactly 10 digits.");
+      return;
+    }
     try {
       const dataToSend = {
         ...formData,
@@ -91,7 +99,7 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
 
             <div className={styles.inputGroup}>
               <label>Mobile Number *</label>
-              <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 98765 43210" required />
+              <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="9876543210" required />
             </div>
 
             <div className={styles.inputGroup}>

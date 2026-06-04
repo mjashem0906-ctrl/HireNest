@@ -3,7 +3,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   Search, Mail, Phone, Briefcase, Building2,
   Download, FileSpreadsheet, MapPin, Users,
-  ChevronRight, UserCheck, Filter, X, ChevronLeft,
+  ChevronRight, UserCheck, Filter, X, ChevronLeft, Trash2,
 } from 'lucide-react';
 import { useNavigate, useOutletContext } from "react-router-dom";
 import * as XLSX from 'xlsx';
@@ -13,6 +13,8 @@ import styles from './RefereePage.module.scss';
 import { useData } from '../../context/DataContext';
 import AddReferee from './AddReferee';
 import FilterStatus from '../../components/Filter/FIlterStatus';
+import API from '../../axios';
+import { useAuth } from '../../context/AuthContext';
 
 // ── Pagination config ──────────────────────────────────────
 const ITEMS_PER_PAGE = 12;
@@ -30,6 +32,17 @@ const STATUS_MAP = {
 const getStatus = (raw = "") => {
   const key = raw.toLowerCase().trim();
   return STATUS_MAP[key] || { label: raw.toUpperCase() || "REFEREE", bg: "#fecdd3", color: "#be123c" };
+};
+
+const getDirectImageUrl = (driveUrl) => {
+  if (!driveUrl) return null;
+  let fileId = null;
+  let match = driveUrl.match(/[?&]id=([^&]+)/);
+  if (match) fileId = match[1];
+  if (!fileId) { match = driveUrl.match(/\/d\/([^/]+)/); if (match) fileId = match[1]; }
+  if (!fileId) { match = driveUrl.match(/uc\?id=([^&]+)/); if (match) fileId = match[1]; }
+  if (!fileId && /^[a-zA-Z0-9_-]{25,}$/.test(driveUrl)) fileId = driveUrl;
+  return fileId ? `https://drive.google.com/thumbnail?id=${fileId}` : driveUrl;
 };
 
 // ── Avatar initials fallback (RED THEME) ────────────────────────────────
@@ -69,8 +82,11 @@ const StatCard = ({ icon, label, value, color, bg }) => (
 );
 
 // ── Memoized referee card component for performance ──────
-const RefereeCard = React.memo(({ member, isHovered, onHover, onLeave, onNavigate }) => {
+const RefereeCard = React.memo(({ member, isHovered, onHover, onLeave, onNavigate, onDelete, showDelete }) => {
   const status = getStatus(member.referrerStatus || "verified referee");
+  const [imgErr, setImgErr] = useState(false);
+  const imageUrl = getDirectImageUrl(member.photoUrl);
+
   return (
     <div
       className={`${styles.refereeCard} ${isHovered ? styles.cardHovered : ""}`}
@@ -79,20 +95,31 @@ const RefereeCard = React.memo(({ member, isHovered, onHover, onLeave, onNavigat
       onClick={() => onNavigate(`/referee/${member._id}`)}
       style={{ cursor: 'pointer' }}
     >
+      {showDelete && (
+        <button
+          className={styles.deleteBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(member._id);
+          }}
+          title="Delete Referee"
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
+
       <div className={styles.avatarWrap}>
-        {member.photoUrl ? (
+        {imageUrl && !imgErr ? (
           <img
-            src={member.photoUrl}
+            src={imageUrl}
             alt={member.name}
             className={styles.avatarImg}
             loading="lazy"
-            onError={(e) => {
-              e.target.style.display = "none";
-              if (e.target.nextSibling) e.target.nextSibling.style.display = "flex";
-            }}
+            onError={() => setImgErr(true)}
           />
-        ) : null}
-        <AvatarFallback name={member.name} size={80} />
+        ) : (
+          <AvatarFallback name={member.name} size={80} />
+        )}
       </div>
 
       <div className={styles.cardBody}>
@@ -140,6 +167,26 @@ const RefereePage = () => {
 
   const { memberContext, refreshData } = useData();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const role = user?.role?.toLowerCase?.() || "";
+  const isAdminOrIt =
+    role === "admin" ||
+    role === "it_member" ||
+    (user?.role && ["Admin", "IT_Member"].includes(user.role));
+
+  const handleDeleteReferee = async (id) => {
+    if (window.confirm("Are you sure you want to PERMANENTLY delete this referee?")) {
+      try {
+        await API.delete(`/member/${id}`);
+        alert("Referee deleted successfully");
+        refreshData();
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete referee.");
+      }
+    }
+  };
 
   // ── Debounced search for better performance ──────────────
   useEffect(() => {
@@ -466,6 +513,8 @@ const RefereePage = () => {
                   onHover={() => setHoveredId(member._id)}
                   onLeave={() => setHoveredId(null)}
                   onNavigate={navigate}
+                  onDelete={handleDeleteReferee}
+                  showDelete={isAdminOrIt}
                 />
               ))}
             </div>

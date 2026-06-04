@@ -888,6 +888,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   /* Table Body Rows */
   tbody tr {
+    cursor: pointer;
     transition: background-color 0.15s ease;
 
     &:hover {
@@ -1088,6 +1089,18 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   }
 
   &.rejected {
+    color: var(--m-red);
+    border-color: var(--m-red-border);
+    background-color: var(--m-red-soft);
+
+    &:hover {
+      background-color: var(--m-red);
+      color: white;
+      border-color: var(--m-red);
+    }
+  }
+
+  &.deleteBtn {
     color: var(--m-red);
     border-color: var(--m-red-border);
     background-color: var(--m-red-soft);
@@ -1746,6 +1759,259 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
       background: var(--m-orange);
       color: white;
       border-color: var(--m-orange);
+    }
+  }
+}
+
+.cardDeleteBtn {
+  flex: 1;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-in-out);
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: none;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE OVERRIDES FOR MOBILE DEVICES (<= 768px)
+============================================================ */
+@media (max-width: 768px) {
+  .mentorsContainer {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+
+  .topToolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+
+    // Expand AddMentor button wrapper if necessary
+    & > :global(div), & > button {
+      width: 100%;
+    }
+  }
+
+  .searchAndFilterArea {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .searchWrapper {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .filterToggleButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .horizontalFilterContainer {
+    padding: 1rem;
+    border-left: 3.5px solid var(--m-primary);
+  }
+
+  .filterRowContent {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .filterField {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .customDropdownWrapper {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .clearAllButton {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .directoryHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0;
+  }
+
+  .toggleGroupContainer {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .toggleBtn {
+    flex: 1;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .guidanceInner {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  .guidanceHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .guidanceActions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  // Convert Mentors Table into beautiful detached responsive cards
+  .responsiveTableWrap {
+    overflow-x: visible;
+  }
+
+  .mentorsTable {
+    display: block;
+    width: 100%;
+
+    thead {
+      display: none; // Hide original headers on mobile
+    }
+
+    tbody {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      display: block;
+      width: 100%;
+      background-color: var(--m-surface);
+      border: 1.5px solid var(--m-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--m-shadow-sm);
+      box-sizing: border-box;
+
+      &:hover {
+        background-color: var(--m-surface-hover) !important;
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 !important;
+      border-bottom: 1px solid var(--m-border-light) !important;
+      font-size: 0.85rem;
+      width: 100%;
+      box-sizing: border-box;
+
+      &:last-child {
+        border-bottom: none !important;
+      }
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 750;
+        color: var(--m-text-muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      &[data-label="Mentor"] {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        border-bottom: 1.5px solid var(--m-border) !important;
+        padding-bottom: 14px !important;
+        margin-bottom: 6px;
+
+        &::before {
+          display: none; // Hide data-label for profile
+        }
+
+        .mentorProfileCell {
+          width: 100%;
+        }
+      }
+
+      &[data-label="Actions"] {
+        justify-content: flex-end;
+        padding-top: 12px !important;
+
+        &::before {
+          display: none; // Hide data-label for actions
+        }
+      }
+    }
+  }
+
+  // Adjust pagination footer
+  .paginationFooter {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .paginationStats {
+    order: 1;
+    text-align: center;
+  }
+
+  .paginationControls {
+    order: 2;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .pageSizeSelector {
+    order: 3;
+    justify-content: center;
+    width: 100%;
+    
+    select {
+      width: 100%;
+      text-align: center;
     }
   }
 }

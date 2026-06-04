@@ -337,3 +337,25 @@ body.custom-cursor-hidden {
   box-shadow: 0 0 12px var(--accent-primary);
 }
 
+@media (max-width: 768px) {
+  body.custom-cursor-active {
+    cursor: default !important;
+
+    a, button, [role="button"], .clickable, .job-card, [onclick], .viewAllBtn, .lp-signin-btn, .lp-google-btn {
+      cursor: pointer !important;
+    }
+
+    input, select, textarea {
+      cursor: auto !important;
+    }
+  }
+
+  .custom-cursor-dot,
+  .custom-cursor-ring,
+  .custom-cursor-glow {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+}
+

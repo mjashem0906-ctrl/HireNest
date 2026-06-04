@@ -1545,13 +1545,6 @@
   }
 }
 
-.checkbox {
-  width: 15px;
-  height: 15px;
-  accent-color: var(--rec-primary);
-  cursor: pointer;
-}
-
 .tableRow {
   transition: background 0.15s;
   cursor: pointer;
@@ -1559,10 +1552,6 @@
   &:hover { background: var(--rec-soft); }
   &:hover .recruiterName { color: var(--rec-primary); }
   &:last-child td { border-bottom: none; }
-}
-
-.tableRowSelected {
-  background: rgba(37,99,235,0.05) !important;
 }
 
 .recruiterCell {
@@ -1985,11 +1974,221 @@
 }
 
 @media (max-width: 768px) {
-  .content { padding: 0.9rem; }
-  .topbar  { flex-wrap: wrap; padding: 0.75rem 0.9rem; }
-  .topbarCenter { order: 3; flex: 0 0 100%; max-width: 100%; }
-  .table { font-size: 0.72rem; }
-  .table th, .table td { padding: 0.55rem 0.6rem; }
+  .content {
+    padding: 0.85rem;
+    gap: 1rem;
+  }
+  
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+    gap: 0.85rem;
+  }
+
+  .topbarCenter {
+    max-width: 100%;
+    width: 100%;
+    order: 1;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .topbarRight {
+    width: 100%;
+    order: 2;
+  }
+
+  .topbarActions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.6rem;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .horizontalFilterContainer {
+    padding: 1rem 1.25rem !important;
+  }
+
+  .filterRowContent {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+  }
+
+  .filterField {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .clearAllButton {
+    width: 100% !important;
+  }
+
+  .countInfo {
+    padding: 10px 14px;
+  }
+
+  // Mid Row grids
+  .midRow {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  .donutSection {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .donutLegend {
+    width: 100%;
+  }
+
+  .directoryHeaderRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0;
+  }
+
+  .tableControls {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .toggleGroupContainer {
+    margin-right: 0;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .toggleBtn {
+    flex: 1;
+  }
+
+  .sortSelect {
+    flex: 1.5;
+    select {
+      width: 100%;
+    }
+  }
+
+  // Convert Recruiters Table into beautiful detached responsive cards
+  .tableCard {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .table {
+    display: block;
+    width: 100%;
+
+    thead {
+      display: none; // Hide original headers on mobile
+    }
+
+    tbody {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      display: block;
+      width: 100%;
+      background-color: var(--rec-card);
+      border: 1.5px solid var(--rec-border);
+      border-radius: var(--rec-radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--rec-shadow-sm);
+      box-sizing: border-box;
+
+      &:hover {
+        background-color: var(--rec-soft) !important;
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 !important;
+      border-bottom: 1px solid var(--rec-border) !important;
+      font-size: 0.85rem;
+      width: 100%;
+      box-sizing: border-box;
+
+      &:last-child {
+        border-bottom: none !important;
+      }
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 750;
+        color: var(--rec-muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      &[data-label="Recruiter"] {
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        border-bottom: 1.5px solid var(--rec-border) !important;
+        padding-bottom: 14px !important;
+        margin-bottom: 6px;
+
+        &::before {
+          display: none; // Hide data-label for profile
+        }
+
+        .recruiterCell {
+          width: 100%;
+        }
+      }
+
+      &[data-label="Actions"] {
+        justify-content: flex-end;
+        padding-top: 12px !important;
+
+        &::before {
+          display: none; // Hide data-label for actions
+        }
+      }
+    }
+  }
+
+  // Adjust pagination
+  .pagination {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .paginationInfo {
+    text-align: center;
+  }
+
+  .paginationControls {
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap;
+  }
 }
 
 /* ============================================================
@@ -2331,4 +2530,62 @@
   color: var(--rec-muted);
   font-weight: 700;
   font-size: 1.05rem;
+}
+
+/* Action Buttons Circle Style */
+.actionsCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.actionCircleBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--rec-border);
+  background-color: var(--rec-card);
+  color: var(--rec-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  outline: none;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    border-color: #e11d48;
+    color: #e11d48;
+    background-color: rgba(225, 29, 72, 0.08);
+  }
+
+  &.viewDetails {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.25);
+    background-color: rgba(249, 115, 22, 0.08);
+
+    &:hover {
+      background-color: #f97316;
+      color: white;
+      border-color: #f97316;
+    }
+  }
+
+  &.deleteBtn {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+    background-color: rgba(239, 68, 68, 0.08);
+
+    &:hover {
+      background-color: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+  }
 }

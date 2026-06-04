@@ -188,6 +188,12 @@
   background: linear-gradient(135deg, #e11d48 0%, #be123c 45%, #7c3aed 100%);
   width: 100%;
   position: relative;
+
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 180px;
+    padding-bottom: 40px;
+  }
 }
 
 .topNav {
@@ -263,6 +269,32 @@
       box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.3);
     }
   }
+
+  @media (max-width: 768px) {
+    position: relative;
+    padding: 16px;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+
+    .backButton {
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    > div {
+      flex-direction: column !important;
+      width: 100%;
+      gap: 10px !important;
+
+      .editButton,
+      .deleteButton {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
 }
 
 /* 2. Overlapping Hero Card */
@@ -287,13 +319,22 @@
     margin: -80px 20px 0;
     gap: 24px;
   }
+
+  @media (max-width: 768px) {
+    margin: -40px 16px 0;
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
 }
 
 .heroMain {
   display: flex;
   gap: 32px;
   align-items: center;
-  @media (max-width: 650px) { flex-direction: column; }
+  @media (max-width: 768px) { 
+    flex-direction: column; 
+    text-align: center;
+  }
 }
 
 .avatarWrapper {
@@ -306,6 +347,13 @@
     background: #f1f5f9;
     border: 6px solid white;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+
+    @media (max-width: 768px) {
+      width: 100px;
+      height: 100px;
+      border-radius: 20px;
+      border-width: 4px;
+    }
   }
   .roleBadge {
     position: absolute;
@@ -319,6 +367,14 @@
     font-weight: 800;
     letter-spacing: 0.05em;
     border: 4px solid white;
+
+    @media (max-width: 768px) {
+      padding: 4px 10px;
+      font-size: 9px;
+      bottom: -6px;
+      right: -6px;
+      border-width: 2px;
+    }
   }
 }
 
@@ -329,19 +385,28 @@
     color: #0f172a;
     margin: 0;
     letter-spacing: -0.02em;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+      text-align: center;
+    }
   }
   .designationText {
     font-size: 1.2rem;
     color: #e11d48;
     font-weight: 600;
     margin: 8px 0;
+
+    @media (max-width: 768px) {
+      text-align: center;
+    }
   }
   .badgesRow {
     display: flex;
     gap: 12px;
     margin-top: 15px;
     flex-wrap: wrap;
-    @media (max-width: 650px) { justify-content: center; }
+    @media (max-width: 768px) { justify-content: center; }
   }
 }
 
@@ -384,6 +449,12 @@
   padding: 0 20px;
 
   @media (max-width: 1000px) { grid-template-columns: 1fr; }
+
+  @media (max-width: 768px) {
+    padding: 0 16px;
+    gap: 16px;
+    margin: 24px auto;
+  }
 }
 
 .detailCard {
@@ -408,6 +479,12 @@
     border-bottom: 1px dashed #e2e8f0;
     svg { color: #e11d48; }
   }
+
+  @media (max-width: 600px) {
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
 }
 
 .infoList {
@@ -430,8 +507,13 @@
       font-weight: 600;
       color: #334155;
     }
+    @media (max-width: 600px) {
+      label {
+        margin-bottom: 4px;
+      }
+    }
   }
-  @media (max-width: 500px) { grid-template-columns: 1fr; }
+  @media (max-width: 768px) { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* Animations */

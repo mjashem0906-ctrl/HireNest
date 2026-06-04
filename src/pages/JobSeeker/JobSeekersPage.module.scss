@@ -812,17 +812,53 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     gap: 1.25rem;
   }
 
+  .topToolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .searchWrapper {
+    max-width: 100%;
+  }
+
+  .actionGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+
+    .btn, .filterToggleButton {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+
   .horizontalFilterContainer {
     padding: 1rem 1.25rem;
   }
 
+  .filterRowContent {
+    flex-wrap: wrap;
+    min-width: 100% !important;
+    gap: 0.75rem;
+  }
+
   .filterField {
-    min-width: 140px;
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 130px;
 
     select,
     input {
-      min-width: 140px;
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 100%;
     }
+  }
+
+  .clearAllButton {
+    width: 100%;
+    justify-content: center;
   }
 
   .seekerGrid {
@@ -834,5 +870,73 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
       display: none;
     }
     padding: 10px 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .seekerCard {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .avatarWrapper {
+    width: 100px;
+    height: 100px;
+  }
+
+  .content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    h3 {
+      text-align: center;
+      white-space: normal;
+    }
+  }
+
+  .badgeRow {
+    justify-content: center;
+  }
+
+  .infoList {
+    width: 100%;
+  }
+
+  .infoItem {
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .cardActions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+
+    .resumeLink {
+      justify-content: center;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .adminTools {
+      margin-left: 0;
+      justify-content: flex-end;
+      gap: 8px;
+
+      .actionBtn {
+        width: 36px;
+        height: 36px;
+        flex: none;
+        border-radius: 10px;
+      }
+    }
   }
 }

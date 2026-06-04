@@ -224,6 +224,18 @@ function AddReferee({ onSuccess }) {
       alert("Mobile Number is required.");
       return;
     }
+    if (formData.mobileNumber.replace(/\D/g, '').length !== 10) {
+      alert("Mobile Number must be exactly 10 digits.");
+      return;
+    }
+    if (!formData.email?.trim()) {
+      alert("Email ID is required.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      alert("Please enter a valid Email ID.");
+      return;
+    }
     if (!formData.referringSector?.trim()) {
       alert("Referring Sector is required.");
       return;
@@ -294,14 +306,20 @@ function AddReferee({ onSuccess }) {
                   required
                 />
                 <FormInput
-                  label="Email ID"
+                  label="Email ID "
+                  type="email"
                   value={formData.email}
                   onChange={(v) => setFormData({ ...formData, email: v })}
+                  required
                 />
                 <FormInput
                   label="Mobile Number "
                   value={formData.mobileNumber}
-                  onChange={(v) => setFormData({ ...formData, mobileNumber: v })}
+                  onChange={(v) => {
+                    const cleaned = v.replace(/\D/g, '').slice(0, 10);
+                    setFormData({ ...formData, mobileNumber: cleaned });
+                  }}
+                  placeholder="9876543210"
                   required
                 />
 

@@ -233,11 +233,13 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
 
     if (!formData.mobileNumber?.trim()) {
       newErrors.mobileNumber = "Mobile Number is required";
-    } else if (!/^[0-9+\s()-]{7,20}$/.test(formData.mobileNumber.trim())) {
-      newErrors.mobileNumber = "Please enter a valid mobile number";
+    } else if (formData.mobileNumber.replace(/\D/g, '').length !== 10) {
+      newErrors.mobileNumber = "Mobile Number must be exactly 10 digits";
     }
 
-    if (formData.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    if (!formData.email?.trim()) {
+      newErrors.email = "Email Address is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = "Please enter a valid email address";
     }
 
@@ -344,12 +346,14 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                 />
 
                 <FormInput
-                  label="Email Address"
+                  label="Email Address "
+                  type="email"
                   value={formData.email}
                   onChange={(v) => {
                     setFormData({ ...formData, email: v });
                     if (errors.email) setErrors({ ...errors, email: "" });
                   }}
+                  required
                   error={errors.email}
                 />
 
@@ -357,9 +361,11 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                   label="Mobile Number"
                   value={formData.mobileNumber}
                   onChange={(v) => {
-                    setFormData({ ...formData, mobileNumber: v });
+                    const cleaned = v.replace(/\D/g, '').slice(0, 10);
+                    setFormData({ ...formData, mobileNumber: cleaned });
                     if (errors.mobileNumber) setErrors({ ...errors, mobileNumber: "" });
                   }}
+                  placeholder="9876543210"
                   required
                   error={errors.mobileNumber}
                 />

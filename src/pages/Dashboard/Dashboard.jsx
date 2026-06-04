@@ -410,7 +410,7 @@
 
 // export default MemberDashboard;
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axios";
 import {
@@ -430,14 +430,12 @@ import {
   MoreHorizontal,
   LayoutDashboard,
   UserPlus,
-  FileText,
   Settings,
   HelpCircle,
   Briefcase as BriefcaseIcon,
   Shield,
   ArrowUpRight,
   ChevronDown,
-  Folder,
   BarChart2,
   BookOpen,
 } from "lucide-react";
@@ -751,61 +749,99 @@ function MemberDashboard() {
   const [errorMsg, setErrorMsg] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [hoveredSlice, setHoveredSlice] = useState(null);
+  const [growthPeriod, setGrowthPeriod] = useState("year"); // "year" | "month" | "week"
+  const [showGrowthDropdown, setShowGrowthDropdown] = useState(false);
+  const growthDropdownRef = React.useRef(null);
 
-  // Dynamic, 100% database-driven monthly growth data
-  const getMonthlyGrowth = useCallback((membersList) => {
-    if (!Array.isArray(membersList) || membersList.length === 0) {
-      return [
-        { label: "Jan", value: 0 },
-        { label: "Feb", value: 0 },
-        { label: "Mar", value: 0 },
-        { label: "Apr", value: 0 },
-        { label: "May", value: 0 },
-        { label: "Jun", value: 0 },
-      ];
-    }
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (growthDropdownRef.current && !growthDropdownRef.current.contains(e.target)) {
+        setShowGrowthDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
+  // ── Growth chart data builders ──────────────────────────────────────────────
+  const getYearData = useCallback((membersList) => {
+    if (!Array.isArray(membersList) || membersList.length === 0)
+      return ["Jan","Feb","Mar","Apr","May","Jun"].map(l => ({ label: l, value: 0 }));
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-indexed (e.g. 5 for June)
-
-    // Generate the last 6 months dynamically up to the current month
     const months = [];
     for (let i = 5; i >= 0; i--) {
-      const d = new Date(currentYear, currentMonth - i, 1);
-      months.push({
-        name: d.toLocaleString("default", { month: "short" }),
-        year: d.getFullYear(),
-        monthIndex: d.getMonth(),
-      });
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({ name: d.toLocaleString("default", { month: "short" }), year: d.getFullYear(), monthIndex: d.getMonth() });
     }
-
     return months.map((m) => {
-      // Find the last day of this month
-      const lastDayOfMonth = new Date(m.year, m.monthIndex + 1, 0, 23, 59, 59, 999);
-      
-      const count = membersList.filter((member) => {
-        if (!member.createdAt) return true; // Legacy members included in baseline
-        return new Date(member.createdAt) <= lastDayOfMonth;
-      }).length;
-
+      const last = new Date(m.year, m.monthIndex + 1, 0, 23, 59, 59, 999);
+      const count = membersList.filter(mb => !mb.createdAt || new Date(mb.createdAt) <= last).length;
       return { label: m.name, value: count };
     });
   }, []);
 
-  const growthData = getMonthlyGrowth(members);
+  const getMonthData = useCallback((membersList) => {
+    if (!Array.isArray(membersList) || membersList.length === 0)
+      return Array.from({ length: 4 }, (_, i) => ({ label: `Wk ${i + 1}`, value: 0 }));
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    return Array.from({ length: 4 }, (_, i) => {
+      const weekStart = new Date(year, month, i * 7 + 1);
+      const weekEnd   = new Date(year, month, i * 7 + 7, 23, 59, 59, 999);
+      const count = membersList.filter(mb => {
+        if (!mb.createdAt) return i === 0;
+        const d = new Date(mb.createdAt);
+        return d >= weekStart && d <= weekEnd;
+      }).length;
+      return { label: `Wk ${i + 1}`, value: count };
+    });
+  }, []);
 
-  // Dynamic growth percentage calculation over the 6-month period
-  const getYearlyGrowthPct = useCallback(() => {
+  const getWeekData = useCallback((membersList) => {
+    if (!Array.isArray(membersList) || membersList.length === 0)
+      return ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(l => ({ label: l, value: 0 }));
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Sun
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((dayOfWeek + 6) % 7)); // Monday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    return days.map((label, i) => {
+      const dayStart = new Date(startOfWeek);
+      dayStart.setDate(startOfWeek.getDate() + i);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+      const count = membersList.filter(mb => {
+        if (!mb.createdAt) return false;
+        const d = new Date(mb.createdAt);
+        return d >= dayStart && d <= dayEnd;
+      }).length;
+      return { label, value: count };
+    });
+  }, []);
+
+  const growthData = useMemo(() => {
+    if (growthPeriod === "month") return getMonthData(members);
+    if (growthPeriod === "week")  return getWeekData(members);
+    return getYearData(members);
+  }, [growthPeriod, members, getYearData, getMonthData, getWeekData]);
+
+  const dynamicGrowthPct = useMemo(() => {
     if (growthData.length < 2) return "0";
     const firstVal = growthData[0].value;
-    const lastVal = growthData[growthData.length - 1].value;
-    if (firstVal <= 0) return "100";
-    const pct = ((lastVal - firstVal) / firstVal) * 100;
-    return pct.toFixed(0);
+    const lastVal  = growthData[growthData.length - 1].value;
+    if (firstVal <= 0) return lastVal > 0 ? "100" : "0";
+    return (((lastVal - firstVal) / firstVal) * 100).toFixed(0);
   }, [growthData]);
 
-  const dynamicGrowthPct = getYearlyGrowthPct();
+  const GROWTH_OPTIONS = [
+    { key: "year",  label: "This Year"  },
+    { key: "month", label: "This Month" },
+    { key: "week",  label: "This Week"  },
+  ];
+  const selectedGrowthLabel = GROWTH_OPTIONS.find(o => o.key === growthPeriod)?.label ?? "This Year";
 
   // ── dark mode toggle ──
   const toggleDark = useCallback(() => {
@@ -1036,8 +1072,6 @@ function MemberDashboard() {
 
   const totalJobsCount = jobs.length;
   const activeJobsCount = jobs.filter(j => j.isActive !== false).length;
-  const closedJobsCount = jobs.filter(j => j.isActive === false).length;
-  const draftJobsCount = jobs.filter(j => j.status === "draft" || j.isDraft === true).length;
 
   const getJobCategoryBreakdown = (jobsList) => {
     let itCount = 0;
@@ -1430,8 +1464,6 @@ function MemberDashboard() {
               {[
                 { label: "Total Jobs", val: totalJobsCount, icon: BriefcaseIcon, color: "#6b7280", bg: "#f3f4f6", onClick: () => navigate("/jobs") },
                 { label: "Active Jobs", val: activeJobsCount, icon: TrendingUp, color: "#16a34a", bg: "#f0fdf4", onClick: () => navigate("/jobs", { state: { status: "active" } }) },
-                { label: "Closed Jobs", val: closedJobsCount, icon: FileText, color: "#d97706", bg: "#fffbeb", onClick: () => navigate("/jobs", { state: { status: "closed" } }) },
-                { label: "Draft Jobs", val: draftJobsCount, icon: Folder, color: "#2563eb", bg: "#eff6ff", onClick: () => navigate("/jobs", { state: { status: "draft" } }) },
               ].map((j, i) => (
                 <div
                   key={i}
@@ -1497,32 +1529,54 @@ function MemberDashboard() {
           <div className={styles.card}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Member Growth</span>
-              <button
-                className={styles.viewAllLink}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 3,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  color: "var(--text-muted)",
-                  fontSize: "0.72rem",
-                  fontWeight: 600,
-                }}
-              >
-                This Year <ChevronDown size={12} />
-              </button>
+              {/* Period picker dropdown */}
+              <div ref={growthDropdownRef} style={{ position: "relative" }}>
+                <button
+                  onClick={() => setShowGrowthDropdown(p => !p)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    background: "var(--soft-bg)", border: "1px solid var(--border)",
+                    borderRadius: 8, cursor: "pointer", padding: "4px 10px",
+                    color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 700,
+                    transition: "border-color 0.15s",
+                  }}
+                >
+                  {selectedGrowthLabel} <ChevronDown size={12} />
+                </button>
+                {showGrowthDropdown && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 6px)", right: 0,
+                    background: "var(--card-bg)", border: "1px solid var(--border)",
+                    borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    zIndex: 100, overflow: "hidden", minWidth: 130,
+                  }}>
+                    {GROWTH_OPTIONS.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setGrowthPeriod(opt.key); setShowGrowthDropdown(false); }}
+                        style={{
+                          display: "block", width: "100%", textAlign: "left",
+                          padding: "9px 14px", border: "none", background: growthPeriod === opt.key ? "var(--primary)" : "transparent",
+                          color: growthPeriod === opt.key ? "#fff" : "var(--text-main)",
+                          fontWeight: 700, fontSize: "0.78rem", cursor: "pointer",
+                          transition: "background 0.12s",
+                          fontFamily: "inherit",
+                        }}
+                        onMouseEnter={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "var(--soft-bg)"; }}
+                        onMouseLeave={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "transparent"; }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <GrowthChart data={growthData} />
             <div className={styles.growthFooter}>
               <span className={styles.growthBadge}>
                 <TrendingUp size={13} /> {dynamicGrowthPct}% growth this period
               </span>
-              <button className={styles.detailedBtn} onClick={() => navigate("/reports")}>
-                Detailed Report <ChevronRight size={12} />
-              </button>
             </div>
           </div>
 

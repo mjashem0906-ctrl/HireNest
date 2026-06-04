@@ -1388,11 +1388,8 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onMouseDown={onClose}>
-      <div
-        className={styles.modalContent}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+    <div className={styles.modalOverlay} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
           <h2>{initialData ? "Edit Job Post" : "Create Job Post"}</h2>
           <button
@@ -1771,10 +1768,9 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "20px",
       }}
-      onMouseDown={onClose}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        onMouseDown={(e) => e.stopPropagation()}
         style={{
           background: isDarkTheme ? "#0f172a" : "#fff",
           borderRadius: "20px", padding: "32px 28px 28px",
@@ -2040,11 +2036,8 @@ const ResumeUploadModal = ({
   };
 
   return (
-    <div className={styles.resumeModalOverlay} onMouseDown={handleClose}>
-      <div
-        className={styles.resumeModal}
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+    <div className={styles.resumeModalOverlay} onMouseDown={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+      <div className={styles.resumeModal}>
         <div className={styles.resumeModalHeader}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <h3 style={{ margin: 0 }}>Upload Resume</h3>

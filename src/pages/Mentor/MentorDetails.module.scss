@@ -1126,6 +1126,34 @@ $rx: 24px;
     grid-template-columns: 1fr;
   }
 
+  .profileHero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .heroText {
+    width: 100%;
+    text-align: center;
+  }
+
+  .cardBtns {
+    width: 100%;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .connectBtn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
   .requestTop {
     flex-direction: column;
     align-items: flex-start;
@@ -1149,15 +1177,33 @@ $rx: 24px;
 
   .quickMeta {
     gap: 10px;
+    justify-content: center;
 
     span {
-      width: 100%;
-      justify-content: flex-start;
+      width: auto;
+      justify-content: center;
     }
   }
 
   .requestsHeader {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .mainProfileCard,
+  .infoCard,
+  .requestsCard {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .detailsGrid {
+    gap: 10px;
+
+    .item {
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
   }
 }

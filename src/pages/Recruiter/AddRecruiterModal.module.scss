@@ -538,3 +538,57 @@
   border-color: rgba(225, 29, 72, 0.85) !important;
   box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.18) !important;
 }
+
+@media (max-width: 600px) {
+  .overlay {
+    padding: 10px;
+  }
+
+  .modalContainer {
+    max-height: calc(100vh - 20px);
+    border-radius: 16px;
+    animation: none;
+  }
+
+  .header {
+    padding: 16px 20px;
+
+    h2 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .formBody {
+    padding: 16px 20px;
+  }
+
+  .sectionTitle {
+    grid-column: 1 / -1;
+    margin: 20px 0 10px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .footer {
+    padding: 16px 20px;
+    gap: 10px;
+
+    .cancelBtn,
+    .submitBtn {
+      flex: 1;
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 10px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+}

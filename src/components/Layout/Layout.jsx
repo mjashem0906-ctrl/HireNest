@@ -5,11 +5,13 @@ import { Outlet, useLocation } from 'react-router-dom';
 import styles from './Layout.module.scss';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useAuth } from '../../context/AuthContext';
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   // Define static titles for exact path matches
   const staticTitles = {
@@ -34,7 +36,16 @@ function Layout({ children }) {
     if (staticTitles[path]) return staticTitles[path];
 
     // 2. Check for dynamic/nested routes
-    if (path.startsWith('/member/')) return 'Member';
+    if (path.startsWith('/member/')) {
+      if (
+        path === '/member/me' || 
+        (user?.memberId && path === `/member/${user.memberId}`) || 
+        ['Member', 'Mentor', 'Job', 'Candidate'].includes(user?.role)
+      ) {
+        return 'Profile';
+      }
+      return 'Member';
+    }
     if (path.startsWith('/project/')) return 'Project';
     if (path.startsWith('/task/')) return 'Task';
     if (path.startsWith('/subtask/')) return 'SubTask';

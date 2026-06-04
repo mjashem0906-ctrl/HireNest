@@ -57,6 +57,12 @@ function initCursorGlow() {
     return;
   }
 
+  // Prevent initialization on touch devices or small screens to avoid stuck/floating cursor dots/rings on mobile
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || window.innerWidth <= 768;
+  if (isTouchDevice) {
+    return;
+  }
+
   if (document.querySelector('.custom-cursor-dot')) return;
 
   const dot = document.createElement('div');

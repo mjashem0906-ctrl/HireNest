@@ -630,40 +630,32 @@ function Members() {
   return (
     <div className={styles.membersPage}>
 
-      {/* ── TOPBAR ── */}
-      <header className={styles.pageHeader} style={{ left: sidebarWidth }}>
-        <div className={styles.pageHeaderInner}>
+      <div className={styles.pageBody}>
 
-
-          <div className={styles.topSearchBar}>
-            <Search size={16} />
+        {/* ── topToolbar ── */}
+        <div className={styles.topToolbar}>
+          <div className={styles.searchWrapper}>
+            <Search size={18} className={styles.searchIcon} />
             <input
               type="text"
               placeholder="Search members by name, email, phone or location..."
               value={globalFilter || ''}
               onChange={(e) => { setGlobalFilter(e.target.value); setPage(1); }}
             />
-            <span className={styles.searchHint}>⌘ K</span>
           </div>
 
-
-        </div>
-      </header>
-
-      <div className={styles.pageBody}>
-
-        {/* ── action row ── */}
-        <div className={styles.actionsRow}>
-          <button className={`${styles.actionBtn} ${showFilters ? styles.actionBtnActive : ''}`}
-            onClick={() => setShowFilters(!showFilters)} type="button">
-            {showFilters ? <X size={15} /> : <Filter size={15} />} Filters
-          </button>
-          <button onClick={exportToExcel} className={`${styles.actionBtn} ${styles.actionBtnExcel}`} type="button">
-            <Download size={15} /> Export Excel
-          </button>
-          <button onClick={exportToCSV} className={`${styles.actionBtn} ${styles.actionBtnCsv}`} type="button">
-            <Download size={15} /> Export CSV
-          </button>
+          <div className={styles.actionGroup}>
+            <button className={`${styles.actionBtn} ${showFilters ? styles.actionBtnActive : ''}`}
+              onClick={() => setShowFilters(!showFilters)} type="button">
+              {showFilters ? <X size={15} /> : <Filter size={15} />} Filters
+            </button>
+            <button onClick={exportToExcel} className={`${styles.actionBtn} ${styles.actionBtnExcel}`} type="button">
+              <Download size={15} /> Export Excel
+            </button>
+            <button onClick={exportToCSV} className={`${styles.actionBtn} ${styles.actionBtnCsv}`} type="button">
+              <Download size={15} /> Export CSV
+            </button>
+          </div>
         </div>
 
         {/* ── stat cards ── */}
@@ -1010,7 +1002,7 @@ function Members() {
                     {pageData.map((member) => (
                       <tr key={member._id} className={styles.tableRow}>
 
-                        <td>
+                        <td data-label="Member">
                           <div className={styles.memberCell} onClick={() => handleRowClick(member)}>
                             <AvatarCircle
                               name={member.name}
@@ -1023,30 +1015,30 @@ function Members() {
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Role">
                           <span className={styles.roleBadge}>{member.memberType || 'Member'}</span>
                         </td>
-                        <td className={styles.cellMuted}>{member.email || '—'}</td>
-                        <td>
+                        <td data-label="Email" className={styles.cellMuted}>{member.email || '—'}</td>
+                        <td data-label="Phone">
                           <div className={styles.inlineIconText}>
                             <Phone size={13} />
                             <span>{member.mobileNumber || '—'}</span>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Location">
                           <div className={styles.inlineIconText}>
                             <MapPin size={13} />
                             <span>{member.district || '—'}</span>
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <span className={styles.statusBadge}>
                             <span className={styles.statusDot} />
                             {member.symMemberStatus || 'Active'}
                           </span>
                         </td>
-                        <td className={styles.cellMuted}>{formatJoinedDate(member.timestamp, member.createdAt)}</td>
-                        <td>
+                        <td data-label="Joined On" className={styles.cellMuted}>{formatJoinedDate(member.timestamp, member.createdAt)}</td>
+                        <td data-label="Actions">
                           <div className={styles.actionButtons}>
                             <button className={styles.actionIconBtn} title="View"
                               onClick={() => navigate(`/member/${member._id}`)} type="button">

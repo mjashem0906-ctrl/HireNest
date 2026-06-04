@@ -1218,7 +1218,7 @@ function AddMember({
           {activeTab === "basic" && (
             <div className={styles.formGrid}>
               <div style={{ gridColumn: "1 / -1" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <h3 style={{ margin: 0 }}>
                     Profile Photo <span style={{ color: "#ef4444" }}>*</span>
                   </h3>

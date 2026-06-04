@@ -701,7 +701,6 @@ const RecruitersPage = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage] = useState(5);
   const [actionMenuOpen, setActionMenuOpen] = useState(null);
-  const [selectedRows, setSelectedRows] = useState(new Set());
   const [viewType, setViewType] = useState('list');
 
   const navigate = useNavigate();
@@ -910,18 +909,6 @@ const RecruitersPage = () => {
 
   const totalPages = Math.ceil(sortedRecruiters.length / rowsPerPage) || 1;
   const pageData = sortedRecruiters.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-
-  const toggleRow = (id) => {
-    setSelectedRows(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-  const toggleAll = () => {
-    if (selectedRows.size === pageData.length) setSelectedRows(new Set());
-    else setSelectedRows(new Set(pageData.map(r => r._id)));
-  };
 
   const formatDate = (d) => {
     if (!d) return '—';
@@ -1214,7 +1201,6 @@ const RecruitersPage = () => {
                 <table className={styles.table}>
                   <thead>
                     <tr>
-                      <th><input type="checkbox" checked={selectedRows.size === pageData.length && pageData.length > 0} onChange={toggleAll} className={styles.checkbox} /></th>
                       <th>Recruiter / Company</th>
                       <th>Contact Person</th>
                       <th>Email</th>
@@ -1226,35 +1212,45 @@ const RecruitersPage = () => {
                   </thead>
                   <tbody>
                     {pageData.map(r => {
-                      const isSelected = selectedRows.has(r._id);
                       return (
-                        <tr key={r._id} className={`${styles.tableRow} ${isSelected ? styles.tableRowSelected : ''}`} onClick={() => navigate(`/recruiters/${r._id}`)}>
-                          <td onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={isSelected} onChange={() => toggleRow(r._id)} className={styles.checkbox} /></td>
-                          <td>
+                        <tr key={r._id} className={styles.tableRow} onClick={() => navigate(`/recruiters/${r._id}`)}>
+                          <td data-label="Recruiter">
                             <div className={styles.recruiterCell}>
                               <AvatarBadge name={r.fullName} size={32} />
-                              <span className={styles.recruiterName}>{r.fullName}</span>
-                              {r.registeredVia && r.registeredVia !== 'admin' && (
-                                <span className={styles.selfRegBadge}>Via Form Link</span>
-                              )}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span className={styles.recruiterName}>{r.fullName}</span>
+                                  {r.registeredVia && r.registeredVia !== 'admin' && (
+                                    <span className={styles.selfRegBadge}>Via Form Link</span>
+                                  )}
+                                </div>
+                                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>
+                                  {r.companyName || 'JobBridge Karnataka'}
+                                </span>
+                              </div>
                             </div>
                           </td>
-                          <td className={styles.cellMuted}>{r.designation || r.contactPerson || '—'}</td>
-                          <td className={styles.cellMuted}>{r.email}</td>
-                          <td className={styles.cellMuted}>{r.department || 'General'}</td>
-                          <td><span className={`${styles.statusBadge} ${styles.status_active}`}>Active</span></td>
-                          <td className={styles.cellMuted}>{formatDate(r.createdAt)}</td>
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <div style={{ position: 'relative' }}>
-                              <button className={styles.actionDotBtn} onClick={(e) => { e.stopPropagation(); setActionMenuOpen(actionMenuOpen === r._id ? null : r._id); }}>
-                                <MoreVertical size={16} />
+                          <td data-label="Role" className={styles.cellMuted}>{r.designation || r.contactPerson || '—'}</td>
+                          <td data-label="Email" className={styles.cellMuted}>{r.email}</td>
+                          <td data-label="Industry" className={styles.cellMuted}>{r.department || 'General'}</td>
+                          <td data-label="Status"><span className={`${styles.statusBadge} ${styles.status_active}`}>Active</span></td>
+                          <td data-label="Joined" className={styles.cellMuted}>{formatDate(r.createdAt)}</td>
+                          <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
+                            <div className={styles.actionsCell}>
+                              <button
+                                onClick={() => navigate(`/recruiters/${r._id}`)}
+                                className={`${styles.actionCircleBtn} ${styles.viewDetails}`}
+                                title="View Profile"
+                              >
+                                <Eye size={14} />
                               </button>
-                              {actionMenuOpen === r._id && (
-                                <div className={styles.actionMenu}>
-                                  <button onClick={() => navigate(`/recruiters/${r._id}`)}>View Profile</button>
-                                  <button onClick={(e) => handleDelete(e, r._id)} style={{ color: '#ef4444' }}>Delete</button>
-                                </div>
-                              )}
+                              <button
+                                onClick={(e) => handleDelete(e, r._id)}
+                                className={`${styles.actionCircleBtn} ${styles.deleteBtn}`}
+                                title="Delete Recruiter"
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </div>
                           </td>
                         </tr>
