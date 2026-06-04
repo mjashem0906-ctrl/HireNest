@@ -123,18 +123,11 @@ $radius-xl: 22px;
    FIXED GRADIENT HEADER
 ============================================================ */
 .headerWrapper {
-  position: fixed;
-  top: 64px;
-  right: 0;
-  z-index: 1100;
+  position: relative;
+  z-index: 10;
   padding: 16px;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.14);
-
-  @media (max-width: 768px) {
-    left: 0 !important;
-    width: 100% !important;
-  }
 }
 
 .topSearchBar {

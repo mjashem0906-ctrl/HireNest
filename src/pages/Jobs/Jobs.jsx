@@ -3177,10 +3177,6 @@ function Jobs() {
         className={classNames(styles.headerWrapper, {
           [styles.sidebarCollapsed]: sidebarCollapsed,
         })}
-        style={{
-          left: sidebarWidth + "px",
-          width: `calc(100% - ${sidebarWidth}px)`,
-        }}
       >
         <div className={styles.headerInner}>
           <div className={styles.topSearchBar}>
@@ -3278,10 +3274,7 @@ function Jobs() {
         </div>
       </div>
 
-      <div
-        className={styles.headerSpacer}
-        style={{ height: `${headerHeight}px` }}
-      />
+
 
       {error && (
         <div className={styles.errorAlert}>
