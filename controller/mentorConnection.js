@@ -158,6 +158,28 @@ exports.updateMentorConnection = async (req, res) => {
       return res.status(404).json({ error: "Connection not found" });
     }
 
+    // Trigger notification to candidate when request is accepted
+    if (status === "accepted") {
+      try {
+        const { triggerNotification } = require("../utils/notificationHelper");
+        await triggerNotification({
+          type: "mentor_acceptance",
+          recipientId: connection.userId, // target user account
+          title: "Mentor Request Accepted",
+          message: `Mentor "${connection.mentorDetails.name}" has accepted your connection request.`,
+          relatedId: connection.mentorId,
+          relatedModel: "Mentor",
+          data: {
+            mentorName: connection.mentorDetails.name,
+            mentorEmail: connection.mentorDetails.email,
+            mentorPhone: connection.mentorDetails.phone
+          }
+        });
+      } catch (err) {
+        console.error("Failed to trigger mentor acceptance notification:", err);
+      }
+    }
+
     res.json({
       message: `Connection ${status} successfully`,
       connection,

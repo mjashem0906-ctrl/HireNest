@@ -1,9 +1,10 @@
 const StatusChangeRequest = require("../models/StatusChangeRequest");
+const { triggerNotification } = require("../utils/notificationHelper");
+const Member = require("../models/member");
 
 // POST /status-request
-const statusUpdatedByMember= async (req, res) => {
-  const { subTaskId, requestedStatus,requestedBy } = req.body;
-  // const userId = req.user.id; // from auth middleware
+const statusUpdatedByMember = async (req, res) => {
+  const { subTaskId, requestedStatus, requestedBy } = req.body;
 
   const request = new StatusChangeRequest({
     subTaskId,
@@ -13,6 +14,22 @@ const statusUpdatedByMember= async (req, res) => {
   });
 
   await request.save();
+
+  // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+  try {
+    const member = await Member.findById(requestedBy);
+    await triggerNotification({
+      type: "pending_action",
+      recipientId: null, // Broadcast to Admin
+      title: "Pending Action: Status Change Request",
+      message: `Member "${member ? member.name : "A member"}" has requested a status update to "${requestedStatus}".`,
+      relatedId: request._id,
+      relatedModel: "StatusChangeRequest"
+    });
+  } catch (notificationError) {
+    console.error("Failed to trigger pending action notification:", notificationError);
+  }
+
   res.json({ message: 'Request submitted' });
 }
 //Get all pending requests (Admin only)
@@ -45,6 +62,26 @@ const statusApproved= async (req, res) => {
   }
 
   await request.save();
+
+  // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+  try {
+    const LoginUser = require("../models/login");
+    const user = await LoginUser.findOne({ memberId: request.requestedBy });
+    
+    if (user) {
+      await triggerNotification({
+        type: "system_notification",
+        recipientId: user._id,
+        title: `Status Request ${action === "approve" ? "Approved" : "Rejected"}`,
+        message: `Your status change request to "${request.requestedStatus}" has been ${action === "approve" ? "approved" : "rejected"} by the Admin.`,
+        relatedId: request.subTaskId?._id,
+        relatedModel: "SubTask"
+      });
+    }
+  } catch (notificationError) {
+    console.error("Failed to trigger status request approval notification:", notificationError);
+  }
+
   res.json({ message: `Request ${action}d successfully` });
 }
 

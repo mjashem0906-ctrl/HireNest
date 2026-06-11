@@ -5,6 +5,7 @@ const Candidate = require("../models/candidate");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const { triggerNotification } = require("../utils/notificationHelper");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -127,6 +128,20 @@ exports.registerCandidate = async (req, res) => {
       } else if (candidate.resume.storageType === "cloudinary") {
         candidateResponse.resumeUrl = candidate.resume.cloudinaryUrl;
       }
+    }
+
+    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+    try {
+      await triggerNotification({
+        type: "system_notification",
+        recipientId: null, // Broadcast to Admin
+        title: "New Candidate Registration",
+        message: `A new candidate "${firstName} ${lastName}" has registered and is pending approval.`,
+        relatedId: candidate._id,
+        relatedModel: "Candidate"
+      });
+    } catch (notificationError) {
+      console.error("Failed to trigger candidate registration notification:", notificationError);
     }
 
     res.status(201).json({

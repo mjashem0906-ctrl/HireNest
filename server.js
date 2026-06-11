@@ -57,6 +57,7 @@ app.use("/api/recruiters", require("./routes/recruiterRoutes"));
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/mentor-connections", require("./routes/mentorConnection"));
 app.use("/referee", require("./routes/refereeRoutes"));
+app.use("/api/notifications", require("./routes/notification"));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -72,5 +73,13 @@ app.listen(PORT, async() => {
     await syncDropdowns();
   } catch (err) {
     console.error("Failed to run syncDropdowns on startup:", err);
+  }
+
+  // Seed default notification workflows
+  try {
+    const seedNotificationWorkflows = require("./utils/seedNotificationWorkflows");
+    await seedNotificationWorkflows();
+  } catch (err) {
+    console.error("Failed to run seedNotificationWorkflows on startup:", err);
   }
 });

@@ -5,6 +5,7 @@ const {
   sendStatusUpdateNotification,
   sendAdminApplicationNotification
 } = require("../utils/emailService");
+const { triggerNotification } = require("../utils/notificationHelper");
 
 // Helper function to generate Job ID in YYMMXXX format
 const generateJobId = async () => {
@@ -97,6 +98,25 @@ const addServicePost = async (req, res) => {
       .populate("memberId", "name email photoUrl")
       .populate("refereedBy", "name email")
       .populate("jobPosted", "fullName email");
+
+    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+    try {
+      await triggerNotification({
+        type: "new_job_post",
+        recipientId: null, // Broadcast to all candidates
+        title: "New Job Posted",
+        message: `A new job "${title}" at "${companyName || 'Verified Employer'}" has been posted.`,
+        relatedId: service._id,
+        relatedModel: "Service",
+        data: {
+          jobTitle: title,
+          companyName: companyName,
+          location: location
+        }
+      });
+    } catch (notificationError) {
+      console.error("Failed to trigger new job post notification:", notificationError);
+    }
 
     res.status(201).json({
       success: true,
@@ -382,46 +402,37 @@ const applyToService = async (req, res) => {
       }
     }
 
-    // --- EMAIL NOTIFICATION ---
+    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
     try {
-      const candidateData = {
-        name: applicant.name || 'Applicant',
-        email: applicant.email || 'No email provided',
-        resumeLink: finalResumeLink
-      };
+      // 1. Trigger Candidate Submission Confirmation
+      await triggerNotification({
+        type: "submission_confirmation",
+        recipientId: req.user?.userId,
+        title: "Application Submitted",
+        message: `Your application for "${service.title}" has been successfully submitted.`,
+        relatedId: service._id,
+        relatedModel: "Service",
+        data: {
+          jobTitle: service.title
+        }
+      });
 
-      console.log('Candidate data for email:', candidateData);
-
-      // Send email to Admin only if admin email is configured
-      const adminEmail = process.env.ADMIN_EMAIL || "jobbridgekarnataka@gmail.com";
-      if (adminEmail) {
-        console.log('Sending email to admin:', adminEmail);
-        await sendAdminApplicationNotification(
-          adminEmail,
-          candidateData,
-          service.title
-        );
-        console.log('Admin email sent');
-      } else {
-        console.log('No admin email configured');
-      }
-
-      // Optionally send confirmation to applicant (only if they have email)
-      if (applicant.email) {
-        console.log('Sending confirmation to applicant:', applicant.email);
-        await sendStatusUpdateNotification(
-          applicant.email,
-          applicant.name || 'Applicant',
-          service.title,
-          'Applied'
-        );
-        console.log('Applicant email sent');
-      } else {
-        console.log('No applicant email available for confirmation');
-      }
-    } catch (emailError) {
-      console.error("Email notification failed:", emailError);
-      // Don't fail the request if email fails
+      // 2. Trigger Admin New Application Alert
+      await triggerNotification({
+        type: "new_application",
+        recipientId: null, // Broadcast to role Admin
+        title: "New Application Received",
+        message: `Candidate "${applicant.name || 'Applicant'}" has applied for "${service.title}".`,
+        relatedId: service._id,
+        relatedModel: "Service",
+        data: {
+          candidateName: applicant.name || 'Applicant',
+          candidateEmail: applicant.email || 'No email provided',
+          jobTitle: service.title
+        }
+      });
+    } catch (notificationError) {
+      console.error("Notification trigger failed:", notificationError);
     }
 
     // Get updated service with populated data
@@ -511,23 +522,32 @@ const updateStatus = async (req, res) => {
       data: updatedJob
     });
 
-    // --- EMAIL NOTIFICATION ---
+    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
     try {
-      // Find the specific applicant to get their email
-      const applicant = updatedJob.appliedMembers.find(
-        (a) => String(a.memberId?._id || a.memberId) === String(memberId)
-      );
-
-      if (applicant?.memberId?.email) {
-        await sendStatusUpdateNotification(
-          applicant.memberId.email,
-          applicant.memberId.name,
-          updatedJob.title,
-          status
-        );
+      const LoginUser = require("../models/login");
+      // Find the user associated with this member
+      const user = await LoginUser.findOne({ memberId: memberId });
+      
+      if (user) {
+        const isInterview = status === "Shortlisted";
+        
+        await triggerNotification({
+          type: isInterview ? "interview_notification" : "status_update",
+          recipientId: user._id,
+          title: isInterview ? "Interview Scheduled" : "Application Status Update",
+          message: isInterview
+            ? `You have been scheduled for an interview for the job post "${updatedJob.title}".`
+            : `Your application status for "${updatedJob.title}" has been updated to "${status}".`,
+          relatedId: updatedJob._id,
+          relatedModel: "Service",
+          data: {
+            jobTitle: updatedJob.title,
+            newStatus: status
+          }
+        });
       }
-    } catch (emailError) {
-      console.error("Failed to send status update notification:", emailError);
+    } catch (notificationError) {
+      console.error("Failed to trigger status update notification:", notificationError);
     }
 
   } catch (error) {
@@ -705,6 +725,30 @@ const bulkCreateServices = async (req, res) => {
       });
 
       createdServices.push(service);
+    }
+
+    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+    try {
+      if (createdServices.length > 0) {
+        const jobsCount = createdServices.length;
+        const mainJob = createdServices[0];
+        await triggerNotification({
+          type: "new_job_post",
+          recipientId: null, // Broadcast to all candidates
+          title: "New Jobs Posted",
+          message: jobsCount === 1 
+            ? `A new job "${mainJob.title}" has been posted.`
+            : `${jobsCount} new jobs have been posted, including "${mainJob.title}".`,
+          relatedId: mainJob._id,
+          relatedModel: "Service",
+          data: {
+            jobTitle: jobsCount === 1 ? mainJob.title : `${jobsCount} New Jobs`,
+            companyName: mainJob.companyName || "Multiple Companies"
+          }
+        });
+      }
+    } catch (notificationError) {
+      console.error("Failed to trigger bulk new job post notification:", notificationError);
     }
 
     res.status(201).json({
