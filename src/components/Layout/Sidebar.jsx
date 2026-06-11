@@ -15,7 +15,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Building
+  Building,
+  Settings
 } from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
@@ -39,6 +40,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/referees', icon: UserCheck, label: 'Job Referee' },
       { path: '/createUser', icon: User, label: 'Create new user', hidden: true },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
+      { path: '/settings', icon: Settings, label: 'Settings' },
     ];
   } else if (["Member", "Mentor", "Job", "Candidate"].includes(user.role)) {
     // Ensure memberId is valid before using it in the path

@@ -5049,3 +5049,21 @@ $radius-xl: 22px;
   }
 }
 
+.highlightedCard {
+  animation: cardHighlightGlow 3s ease !important;
+}
+
+@keyframes cardHighlightGlow {
+  0% {
+    box-shadow: 0 0 0 3px var(--primary, #e11d48), 0 12px 40px rgba(225, 29, 72, 0.45) !important;
+    transform: scale(1.02);
+  }
+  70% {
+    box-shadow: 0 0 0 3px var(--primary, #e11d48), 0 12px 40px rgba(225, 29, 72, 0.45) !important;
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+

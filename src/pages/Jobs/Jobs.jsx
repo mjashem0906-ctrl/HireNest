@@ -2848,11 +2848,27 @@ function Jobs() {
   }, [user, jobContext]);
 
   useEffect(() => {
-    if (location.state && location.state.openAddModal) {
-      setEditingJob(null);
-      setShowProvidedModal(true);
-      // Clear location state to avoid re-opening modal on refresh
-      window.history.replaceState({}, document.title);
+    if (location.state) {
+      if (location.state.openAddModal) {
+        setEditingJob(null);
+        setShowProvidedModal(true);
+        window.history.replaceState({}, document.title);
+      } else if (location.state.view) {
+        setView(location.state.view);
+        if (location.state.jobId) {
+          setTimeout(() => {
+            const element = document.getElementById(`job-card-${location.state.jobId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              element.classList.add(styles.highlightedCard);
+              setTimeout(() => {
+                element.classList.remove(styles.highlightedCard);
+              }, 3000);
+            }
+          }, 300);
+        }
+        window.history.replaceState({}, document.title);
+      }
     }
   }, [location.state]);
 
@@ -4030,7 +4046,7 @@ function Jobs() {
                         const pipelineStatus = getPipelineStatus(myStatus);
 
                         return (
-                          <div key={request._id} className={styles.myJobCard}>
+                          <div key={request._id} id={`job-card-${request._id}`} className={styles.myJobCard}>
                             <div className={styles.myJobCardHeader}>
                               <div
                                 className={styles.myJobCardContent}

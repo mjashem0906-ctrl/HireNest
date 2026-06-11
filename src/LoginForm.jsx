@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./index.css";
-import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
@@ -206,6 +206,18 @@ const LoginForm = () => {
               <span className="lp-footer-label">Mobile</span>
               <a href="tel:6366234200" className="lp-footer-link">
                 6366234200
+              </a>
+            </div>
+          </div>
+
+          <div className="lp-footer-item">
+            <div className="lp-footer-icon-wrap">
+              <FaEnvelope className="lp-footer-icon" />
+            </div>
+            <div className="lp-footer-text">
+              <span className="lp-footer-label">Email</span>
+              <a href="mailto:Info.jobbridge@solidaritykarnataka.org" className="lp-footer-link">
+                Info.jobbridge@solidaritykarnataka.org
               </a>
             </div>
           </div>

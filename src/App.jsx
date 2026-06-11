@@ -34,6 +34,7 @@ import MentorConnectionsAdmin from './pages/Mentor/MentorConnectionsAdmin';
 import RecruitersPage from './pages/Recruiter/RecruitersPage';
 import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
 import AddRecruiterPage from './pages/Recruiter/AddRecruiterPage';
+import Settings from './pages/Settings/Settings';
 
 // ✅ Job Seekers
 import JobSeekersPage from './pages/JobSeeker/JobSeekersPage';
@@ -152,6 +153,16 @@ function App() {
             {/* Jobs */}
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/:id" element={<JobDetail />} />
+
+            {/* Settings */}
+            <Route
+              path="settings"
+              element={
+                <PrivateRoute roles={['Admin']}>
+                  <Settings />
+                </PrivateRoute>
+              }
+            />
 
             {/* Errors */}
             <Route path="unauthorized" element={<Unauthorized />} />

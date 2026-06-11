@@ -528,7 +528,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   Briefcase, Users, Clock, MapPin, Building,
   TrendingUp, CheckCircle2, ShieldCheck, GraduationCap,
-  ChevronRight, Star,
+  ChevronRight, Star, Bell,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import styles from "./CandidateDashboard.module.scss";
@@ -758,6 +758,7 @@ const CandidateDashboard = () => {
             </h1>
             <p>Track your progress and discover new opportunities.</p>
           </div>
+
           
           <div className={styles.welcomeIllustration} aria-hidden="true">
             <svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.illustSvg}>

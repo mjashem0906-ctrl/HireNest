@@ -1247,6 +1247,7 @@ function MemberDashboard() {
     { icon: Star, label: "Add Mentor", color: "#d97706", bg: "#fffbeb", onClick: () => navigate("/mentors", { state: { openAddModal: true } }) },
     { icon: BriefcaseIcon, label: "View Jobs", color: "#d97706", bg: "#fffbeb", onClick: () => navigate("/jobs") },
     { icon: UserPlus, label: "Add Recruiter", color: "#8b5cf6", bg: "#f5f3ff", onClick: () => navigate("/recruiters", { state: { openAddModal: true } }) },
+    { icon: Settings, label: "Settings", color: "#e11d48", bg: "rgba(225, 29, 72, 0.08)", onClick: () => navigate("/settings") },
   ];
 
   const donutCenter = hoveredSlice
