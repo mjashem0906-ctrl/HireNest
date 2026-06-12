@@ -27,9 +27,14 @@ export default function DateSelect({
   };
   return (
     <div className={styles.datePickerWrapper}>
+      {label && (
+        <label className={styles.label}>
+          {label}
+          {required && <span className={styles.required}>*</span>}
+        </label>
+      )}
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={enGB} >
         <DatePicker
-          label={label === undefined ? "Select Date" : label}
           value={dateValue}
           onChange={handleDateChange}
           minDate={min}
@@ -41,69 +46,90 @@ export default function DateSelect({
             popper: {
               sx: {
                 "& .MuiPaper-root": {
-                  backgroundColor: "var(--surface-elevated)",
-                  color: "var(--text-primary)",
-                  borderRadius: "12px",
-                  border: "1px solid var(--border-medium)",
-                  backgroundImage: "none",
+                  backgroundColor: "var(--ps-card, var(--surface-elevated)) !important",
+                  color: "var(--ps-text, var(--text-primary)) !important",
+                  borderRadius: "16px",
+                  border: "1px solid var(--ps-border, var(--border-medium)) !important",
+                  backgroundImage: "none !important",
+                  boxShadow: "0 10px 40px rgba(0, 0, 0, 0.4) !important",
                 },
                 "& .MuiPickersCalendarHeader-root": {
-                  color: "var(--text-primary)",
+                  color: "var(--ps-text, var(--text-primary)) !important",
+                },
+                "& .MuiPickersCalendarHeader-labelContainer": {
+                  color: "var(--ps-text, var(--text-primary)) !important",
                 },
                 "& .MuiPickersDay-root": {
-                  color: "var(--text-primary)",
+                  color: "var(--ps-text, var(--text-primary)) !important",
                   backgroundColor: "transparent",
                 },
                 "& .MuiPickersDay-root:hover": {
-                  backgroundColor: "var(--bg-secondary)",
+                  backgroundColor: "var(--ps-soft, var(--bg-secondary)) !important",
                 },
                 "& .MuiPickersDay-root.Mui-selected": {
-                  backgroundColor: "var(--m-primary)",
-                  color: "#fff",
+                  backgroundColor: "var(--ps-primary, var(--m-primary)) !important",
+                  color: "#fff !important",
                 },
                 "& .MuiPickersDay-root.Mui-selected:hover": {
-                  backgroundColor: "var(--m-primary-hover, #be123c)",
-                  color: "#fff",
+                  backgroundColor: "var(--ps-primary-dark, var(--m-primary-hover, #be123c)) !important",
+                  color: "#fff !important",
                 },
                 "& .MuiDayCalendar-weekDayLabel": {
-                  color: "var(--text-muted)",
+                  color: "var(--ps-muted, var(--text-muted)) !important",
                 },
                 "& .MuiIconButton-root": {
-                  color: "var(--text-primary)",
+                  color: "var(--ps-text, var(--text-primary)) !important",
+                },
+                "& .MuiPickersYear-yearButton": {
+                  color: "var(--ps-text, var(--text-primary)) !important",
+                },
+                "& .MuiPickersYear-yearButton.Mui-selected": {
+                  backgroundColor: "var(--ps-primary, var(--m-primary)) !important",
+                  color: "#fff !important",
                 },
               }
             },
             textField: {
-              error: false,
+              error: !!error,
               sx: {
                 width: "100%",
-                // Target the input element directly with high specificity
-                "& .MuiInputBase-input": {
-                  color: "var(--text-primary) !important",
-                  WebkitTextFillColor: "var(--text-primary) !important",
-                  fill: "var(--text-primary) !important",
+                // Universal override for all inner text/input tags to prevent color inheritance issues
+                "& *": {
+                  color: "var(--ps-text, var(--text-primary)) !important",
+                  "-webkit-text-fill-color": "var(--ps-text, var(--text-primary)) !important",
                 },
                 "& .MuiInputBase-root": {
                   borderRadius: "12px",
+                  height: "52px",
                   minHeight: "52px",
-                  backgroundColor: "var(--surface-elevated)",
-                  color: "var(--text-primary)",
+                  backgroundColor: "var(--ps-soft, var(--surface-elevated))",
+                  border: "1.5px solid var(--ps-border, var(--border-medium))",
+                  fontFamily: "inherit",
+                  fontSize: "0.875rem",
+                  transition: "border-color 0.2s, box-shadow 0.2s",
+                  paddingRight: "8px",
+
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "none !important", // Hide default MUI outline
+                  },
+
+                  "&:hover": {
+                    borderColor: "var(--ps-primary, var(--accent-primary))",
+                  },
+
+                  "&.Mui-focused": {
+                    borderColor: "var(--ps-primary, var(--accent-primary))",
+                    boxShadow: "0 0 0 3px rgba(225, 29, 72, 0.1)",
+                  },
                 },
-                "& .MuiInputLabel-root": {
-                  color: "var(--text-secondary)",
+                "& input": {
+                  padding: "0 16px",
+                  fontSize: "0.875rem",
+                  height: "100%",
                 },
                 "& .MuiSvgIcon-root": {
-                  color: "var(--icon-color)",
-                },
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--border-medium)",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--text-muted)",
-                },
-                "& .MuiInputBase-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "var(--m-primary)",
-                  borderWidth: "2px",
+                  color: "var(--ps-muted, var(--icon-color)) !important",
+                  "-webkit-text-fill-color": "var(--ps-muted, var(--icon-color)) !important",
                 },
               },
             },

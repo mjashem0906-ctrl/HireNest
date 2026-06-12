@@ -359,3 +359,22 @@ body.custom-cursor-hidden {
   }
 }
 
+/* ─── Global Material UI Inputs / DatePicker Dark Mode Contrast Fix ─── */
+[data-theme="dark"],
+body.dark,
+html.dark,
+.dark {
+  .MuiInputBase-root {
+    color: #f1f5f9 !important;
+
+    .MuiInputBase-input,
+    input,
+    input.MuiInputBase-input {
+      color: #f1f5f9 !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      fill: #f1f5f9 !important;
+    }
+  }
+}
+
+

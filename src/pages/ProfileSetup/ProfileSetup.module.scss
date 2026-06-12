@@ -45,6 +45,37 @@ $rx: 24px;
     radial-gradient(circle at top right, rgba(34, 197, 94, 0.04),  transparent 22%),
     linear-gradient(180deg, var(--ps-bg) 0%, var(--ps-soft) 100%);
   transition: background 0.3s;
+
+  // ─── Material UI DatePicker / DOB Theme Fixes ──────────────────
+  :global(.MuiInputBase-root) {
+    background-color: var(--ps-soft) !important;
+    color: var(--ps-text) !important;
+
+    :global(.MuiInputBase-input) {
+      color: var(--ps-text) !important;
+      -webkit-text-fill-color: var(--ps-text) !important;
+    }
+
+    :global(.MuiOutlinedInput-notchedOutline) {
+      border-color: var(--ps-border) !important;
+      border-width: 1.5px !important;
+    }
+
+    &:hover :global(.MuiOutlinedInput-notchedOutline) {
+      border-color: var(--ps-primary) !important;
+    }
+
+    &.Mui-focused :global(.MuiOutlinedInput-notchedOutline) {
+      border-color: var(--ps-primary) !important;
+      border-width: 2px !important;
+    }
+  }
+
+  // General inputs under container fallback
+  :global(.MuiInputBase-input), input {
+    color: var(--ps-text) !important;
+    -webkit-text-fill-color: var(--ps-text) !important;
+  }
 }
 
 // ─── Dark mode overrides ─────────────────────────────────────────
@@ -987,4 +1018,256 @@ $rx: 24px;
     border-color: rgba(225, 29, 72, 0.6);
     box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
   }
+}
+
+// ─── WhatsApp Group Invitation Modal ─────────────────────────────
+.waOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: waFadeIn 300ms ease;
+  padding: 20px;
+}
+
+@keyframes waFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.waModal {
+  position: relative;
+  background: var(--ps-card, #ffffff);
+  border: 1.5px solid var(--ps-border, #e2e8f0);
+  border-radius: 28px;
+  padding: 40px 36px 32px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(37, 211, 102, 0.08);
+  overflow: hidden;
+  animation: waSlideUp 400ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 480px) {
+    padding: 32px 24px 24px;
+    border-radius: 22px;
+  }
+}
+
+@keyframes waSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Decorative green glow behind the modal
+.waGlow {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 211, 102, 0.15), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.waIconWrap {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(37, 211, 102, 0.12), rgba(37, 211, 102, 0.04));
+  border: 2px solid rgba(37, 211, 102, 0.2);
+  margin-bottom: 20px;
+  animation: waPulse 2s ease-in-out infinite;
+}
+
+@keyframes waPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.25); }
+  50%      { box-shadow: 0 0 0 12px rgba(37, 211, 102, 0); }
+}
+
+.waIcon {
+  width: 36px;
+  height: 36px;
+}
+
+.waTitle {
+  position: relative;
+  z-index: 1;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--ps-text, #0f172a);
+  margin: 0 0 10px;
+  letter-spacing: -0.4px;
+}
+
+.waSubtitle {
+  position: relative;
+  z-index: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ps-muted, #64748b);
+  margin: 0 0 24px;
+  line-height: 1.55;
+}
+
+.waGroupInfo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(37, 211, 102, 0.06);
+  border: 1.5px solid rgba(37, 211, 102, 0.18);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.waGroupIcon {
+  font-size: 1.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.waGroupText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.waGroupName {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--ps-text, #0f172a);
+  letter-spacing: -0.2px;
+}
+
+.waGroupDesc {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ps-muted, #64748b);
+  line-height: 1.4;
+}
+
+.waJoinBtn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+  transition: all 0.22s ease;
+  overflow: hidden;
+
+  // Shine sweep
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(37, 211, 102, 0.45);
+
+    &::after { left: 160%; }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.waSkipBtn {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ps-muted, #64748b);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.01em;
+
+  &:hover {
+    color: var(--ps-text, #0f172a);
+    background: var(--ps-soft, #f8fafc);
+  }
+}
+
+// ─── Dark-mode overrides for WhatsApp modal ──────────────────────
+:global(body.dark) .waModal,
+:global(html.dark) .waModal,
+:global([data-theme="dark"]) .waModal {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(37, 211, 102, 0.15);
+}
+
+:global(body.dark) .waGroupInfo,
+:global(html.dark) .waGroupInfo,
+:global([data-theme="dark"]) .waGroupInfo {
+  background: rgba(37, 211, 102, 0.08);
+  border-color: rgba(37, 211, 102, 0.22);
+}
+
+:global(body.dark) .waGlow,
+:global(html.dark) .waGlow,
+:global([data-theme="dark"]) .waGlow {
+  background: radial-gradient(circle, rgba(37, 211, 102, 0.2), transparent 70%);
 }

@@ -180,8 +180,8 @@ function JobRoleDropdown({ value = [], options = [], onChange }) {
   const selected = Array.isArray(value)
     ? value.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
     : value
-    ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+      ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -331,396 +331,458 @@ function JobRoleDropdown({ value = [], options = [], onChange }) {
 
 
 const ProfileSetup = () => {
-    const { user, login, fetchUser } = useAuth();
-    const navigate = useNavigate();
-    const [role, setRole] = useState("Job"); // Default to Job Seeker — skip role selection for Google users
-    const [formData, setFormData] = useState({
-        name: "",
-        mobileNumber: "",
-        gender: "",
-        dateOfBirth: null,
-        district: "",
-        currentInstitutionOrCompany: "",
-        designation: "",
-        fieldofStudy_Interest: "",
-        workExp: "",
-        highest_education: "",
-        preferredJobRole_Sector: [],
-        employmentType: "",
-        noticePeriod: "",
-        linkedinUrl: ""
+  const { user, login, fetchUser } = useAuth();
+  const navigate = useNavigate();
+  const [role, setRole] = useState("Job"); // Default to Job Seeker — skip role selection for Google users
+  const [formData, setFormData] = useState({
+    name: "",
+    mobileNumber: "",
+    gender: "",
+    dateOfBirth: null,
+    district: "",
+    currentInstitutionOrCompany: "",
+    designation: "",
+    fieldofStudy_Interest: "",
+    workExp: "",
+    highest_education: "",
+    preferredJobRole_Sector: [],
+    employmentType: "",
+    noticePeriod: "",
+    linkedinUrl: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [resumeFile, setResumeFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+
+  const [dynamicDistricts, setDynamicDistricts] = useState([]);
+  const [dynamicRoles, setDynamicRoles] = useState([]);
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        const res = await API.get("/dropdown?category=locationPreferences");
+        const fetchedLocs = Array.isArray(res.data)
+          ? res.data.map((item) => typeof item === 'object' ? item.value : item)
+          : [];
+        setDynamicDistricts(fetchedLocs);
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      }
+
+      try {
+        const res = await API.get("/dropdown?category=desiredRoles");
+        const fetchedRoles = Array.isArray(res.data)
+          ? res.data.map((item) => typeof item === 'object' ? item.value : item)
+          : [];
+        setDynamicRoles(fetchedRoles);
+      } catch (err) {
+        console.error("Failed to fetch preferred job roles:", err);
+      }
+    };
+    fetchDropdownData();
+  }, []);
+
+  const combinedDistricts = [...new Set([
+    ...KARNATAKA_DISTRICTS,
+    ...TAMIL_NADU_DISTRICTS,
+    ...KERALA_DISTRICTS,
+    ...dynamicDistricts
+  ])].sort().map(d => ({ value: d, label: d }));
+
+  const combinedRoles = [...new Set([
+    ...JOB_ROLE_OPTIONS,
+    ...dynamicRoles
+  ])].sort();
+
+  // Server upload function (replaces Cloudinary)
+  const uploadToServer = async (file) => {
+    if (!file) return null;
+    const data = new FormData();
+    data.append("file", file);
+    const res = await API.post("/api/upload", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (progressEvent) => {
+        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(progress);
+      },
     });
-    const [loading, setLoading] = useState(false);
-    const [photoFile, setPhotoFile] = useState(null);
-    const [photoPreview, setPhotoPreview] = useState(null);
-    const [resumeFile, setResumeFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
+    return res.data.url;
+  };
 
-    const [dynamicDistricts, setDynamicDistricts] = useState([]);
-    const [dynamicRoles, setDynamicRoles] = useState([]);
+  const handleMobileChange = (v) => {
+    // Allow only digits, max 10
+    const digits = v.replace(/\D/g, '').slice(0, 10);
+    setFormData({ ...formData, mobileNumber: digits });
+  };
 
-    useEffect(() => {
-        const fetchDropdownData = async () => {
-            try {
-                const res = await API.get("/dropdown?category=locationPreferences");
-                const fetchedLocs = Array.isArray(res.data) 
-                  ? res.data.map((item) => typeof item === 'object' ? item.value : item) 
-                  : [];
-                setDynamicDistricts(fetchedLocs);
-            } catch (err) {
-                console.error("Failed to fetch locations:", err);
-            }
+  const handleWorkExpChange = (delta) => {
+    if (formData.workExp === "") {
+      if (delta > 0) {
+        setFormData({ ...formData, workExp: "1" });
+      } else {
+        setFormData({ ...formData, workExp: "0" });
+      }
+      return;
+    }
+    const current = parseInt(formData.workExp) || 0;
+    const next = Math.max(0, Math.min(50, current + delta));
+    setFormData({ ...formData, workExp: String(next) });
+  };
 
-            try {
-                const res = await API.get("/dropdown?category=desiredRoles");
-                const fetchedRoles = Array.isArray(res.data) 
-                  ? res.data.map((item) => typeof item === 'object' ? item.value : item) 
-                  : [];
-                setDynamicRoles(fetchedRoles);
-            } catch (err) {
-                console.error("Failed to fetch preferred job roles:", err);
-            }
-        };
-        fetchDropdownData();
-    }, []);
+  const handleFileChange = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) {
+      if (type === 'photo') { setPhotoFile(null); setPhotoPreview(null); }
+      if (type === 'resume') setResumeFile(null);
+      return;
+    }
 
-    const combinedDistricts = [...new Set([
-        ...KARNATAKA_DISTRICTS,
-        ...TAMIL_NADU_DISTRICTS,
-        ...KERALA_DISTRICTS,
-        ...dynamicDistricts
-    ])].sort().map(d => ({ value: d, label: d }));
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      e.target.value = null;
+      if (type === 'photo') { setPhotoFile(null); setPhotoPreview(null); }
+      if (type === 'resume') setResumeFile(null);
+      return;
+    }
 
-    const combinedRoles = [...new Set([
-        ...JOB_ROLE_OPTIONS,
-        ...dynamicRoles
-    ])].sort();
+    if (type === 'photo') {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setPhotoPreview(ev.target.result);
+      reader.readAsDataURL(file);
+    } else if (type === 'resume') {
+      setResumeFile(file);
+    }
+  };
 
-    // Server upload function (replaces Cloudinary)
-    const uploadToServer = async (file) => {
-        if (!file) return null;
-        const data = new FormData();
-        data.append("file", file);
-        const res = await API.post("/api/upload", data, {
-            headers: { "Content-Type": "multipart/form-data" },
-            onUploadProgress: (progressEvent) => {
-                const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                setUploadProgress(progress);
-            },
-        });
-        return res.data.url;
-    };
+  const calculateCompletion = () => {
+    if (!role) return 0;
+    const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink', 'linkedinUrl'];
+    const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'employmentType', 'noticePeriod', 'workExp', 'photoUrl', 'resumeLink', 'linkedinUrl'];
+    const fieldsToTrack = role === 'Mentor' ? mentorFields : jobFields;
+    const completedFields = fieldsToTrack.filter(field => {
+      if (field === 'photoUrl') return !!photoFile;
+      if (field === 'resumeLink') return !!resumeFile;
+      if (Array.isArray(formData[field])) return formData[field].length > 0;
+      return formData[field] && String(formData[field]).length > 0;
+    });
+    return Math.round((completedFields.length / fieldsToTrack.length) * 100);
+  };
 
-    const handleMobileChange = (v) => {
-        // Allow only digits, max 10
-        const digits = v.replace(/\D/g, '').slice(0, 10);
-        setFormData({ ...formData, mobileNumber: digits });
-    };
+  const completion = calculateCompletion();
 
-    const handleWorkExpChange = (delta) => {
-        const current = parseInt(formData.workExp) || 0;
-        const next = Math.max(0, Math.min(50, current + delta));
-        setFormData({ ...formData, workExp: String(next) });
-    };
+  const handleSave = async () => {
+    if (!photoFile || !resumeFile) {
+      alert("Profile Photo and Resume are mandatory. Please upload them.");
+      return;
+    }
 
-    const handleFileChange = (e, type) => {
-        const file = e.target.files[0];
-        if (!file) {
-            if (type === 'photo') { setPhotoFile(null); setPhotoPreview(null); }
-            if (type === 'resume') setResumeFile(null);
-            return;
+    setLoading(true);
+    try {
+      let photoUrl = "";
+      let resumeLink = "";
+
+      if (photoFile) photoUrl = await uploadToServer(photoFile);
+      if (resumeFile) resumeLink = await uploadToServer(resumeFile);
+
+      const res = await API.post("/auth/update-profile", {
+        role,
+        profileData: {
+          ...formData,
+          photoUrl,
+          resumeLink
         }
+      });
+      await fetchUser(); // Re-fetch fresh user data from server (new memberId, profileCompleted)
+      setShowWhatsAppModal(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile");
+    } finally {
+      setLoading(false);
+      setUploadProgress(0);
+    }
+  };
 
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File size must be less than 5MB");
-            e.target.value = null;
-            if (type === 'photo') { setPhotoFile(null); setPhotoPreview(null); }
-            if (type === 'resume') setResumeFile(null);
-            return;
-        }
+  const isFresher = !formData.workExp || parseInt(formData.workExp) === 0;
+  const whatsappLink = isFresher
+    ? "https://chat.whatsapp.com/LPe6kC4RVjFFqX25uWCKA5"
+    : "https://chat.whatsapp.com/G29SZJqIJzY1J8lAste193";
 
-        if (type === 'photo') {
-            setPhotoFile(file);
-            const reader = new FileReader();
-            reader.onload = (ev) => setPhotoPreview(ev.target.result);
-            reader.readAsDataURL(file);
-        } else if (type === 'resume') {
-            setResumeFile(file);
-        }
-    };
+  const handleWhatsAppJoin = () => {
+    window.open(whatsappLink, "_blank");
+    navigate("/", { state: { isNew: true } });
+  };
 
-    const calculateCompletion = () => {
-        if (!role) return 0;
-        const mentorFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'currentInstitutionOrCompany', 'designation', 'fieldofStudy_Interest', 'workExp', 'photoUrl', 'resumeLink'];
-        const jobFields = ['name', 'mobileNumber', 'gender', 'dateOfBirth', 'district', 'highest_education', 'fieldofStudy_Interest', 'preferredJobRole_Sector', 'employmentType', 'noticePeriod', 'workExp', 'photoUrl', 'resumeLink'];
-        const fieldsToTrack = role === 'Mentor' ? mentorFields : jobFields;
-        const completedFields = fieldsToTrack.filter(field => {
-            if (field === 'photoUrl') return !!photoFile;
-            if (field === 'resumeLink') return !!resumeFile;
-            if (Array.isArray(formData[field])) return formData[field].length > 0;
-            return formData[field] && String(formData[field]).length > 0;
-        });
-        return Math.round((completedFields.length / fieldsToTrack.length) * 100);
-    };
+  const handleSkipWhatsApp = () => {
+    setShowWhatsAppModal(false);
+    navigate("/", { state: { isNew: true } });
+  };
 
-    const completion = calculateCompletion();
+  return (
+    <div className={styles.container}>
+      <div className={styles.box}>
+        <h1>Complete Your Profile</h1>
+        <div className={styles.titleAccent}></div>
+        <p>Please provide your details to continue</p>
 
-    const handleSave = async () => {
-        if (!photoFile || !resumeFile) {
-            alert("Profile Photo and Resume are mandatory. Please upload them.");
-            return;
-        }
-
-        setLoading(true);
-        try {
-            let photoUrl = "";
-            let resumeLink = "";
-            
-            if (photoFile) photoUrl = await uploadToServer(photoFile);
-            if (resumeFile) resumeLink = await uploadToServer(resumeFile);
-
-            const res = await API.post("/auth/update-profile", {
-                role,
-                profileData: {
-                    ...formData,
-                    photoUrl,
-                    resumeLink
-                }
-            });
-            await fetchUser(); // Re-fetch fresh user data from server (new memberId, profileCompleted)
-            navigate("/", { state: { isNew: true } });
-        } catch (err) {
-            console.error(err);
-            alert("Failed to update profile");
-        } finally {
-            setLoading(false);
-            setUploadProgress(0);
-        }
-    };
-
-    return (
-        <div className={styles.container}>
-            <div className={styles.box}>
-                <h1>Complete Your Profile</h1>
-                <div className={styles.titleAccent}></div>
-                <p>Please provide your details to continue</p>
-
-                <div className={styles.progressContainer}>
-                    <div className={styles.progressBar}>
-                        <div
-                            className={styles.progressFill}
-                            style={{ width: `${completion}%` }}
-                        ></div>
-                    </div>
-                    <span>{completion}% Complete</span>
-                </div>
-
-                {!role ? (
-                    <div className={styles.roleSelection}>
-                        <h3>What is your role?</h3>
-                        <div className={styles.roleButtons}>
-                            <button onClick={() => setRole("Mentor")}>Mentor</button>
-                            <button onClick={() => setRole("Job")}>Job Seeker</button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className={styles.form}>
-
-                        <div className={styles.formGrid}>
-                            <FormInput
-                                label="Full Name"
-                                value={formData.name}
-                                onChange={(v) => setFormData({ ...formData, name: v })}
-                            />
-                            <FormInput
-                                label="Mobile Number"
-                                value={formData.mobileNumber}
-                                onChange={handleMobileChange}
-                                type="tel"
-                                maxLength={10}
-                                pattern="[0-9]*"
-                                inputMode="numeric"
-                                placeholder="10-digit number"
-                            />
-                            <DropdownSelect
-                                label="Gender"
-                                value={formData.gender}
-                                options={[
-                                    { value: "Male", label: "Male" },
-                                    { value: "Female", label: "Female" },
-                                    { value: "Other", label: "Other" },
-                                ]}
-                                onChange={(v) => setFormData({ ...formData, gender: v })}
-                            />
-                            <DateSelect
-                                label="Date of Birth"
-                                value={formData.dateOfBirth}
-                                onChange={(v) => setFormData({ ...formData, dateOfBirth: v })}
-                            />
-                            <DropdownSelect
-                                label="District"
-                                value={formData.district}
-                                options={combinedDistricts}
-                                placeholder="Select your district"
-                                searchable={true}
-                                required={true}
-                                onChange={(v) => setFormData({ ...formData, district: v })}
-                            />
-
-                            {role === 'Mentor' ? (
-                                <>
-                                    <FormInput
-                                        label="Current Company / Institution"
-                                        value={formData.currentInstitutionOrCompany}
-                                        onChange={(v) => setFormData({ ...formData, currentInstitutionOrCompany: v })}
-                                    />
-                                    <FormInput
-                                        label="Designation"
-                                        value={formData.designation}
-                                        onChange={(v) => setFormData({ ...formData, designation: v })}
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <EducationDropdown
-                                        value={formData.highest_education}
-                                        onChange={(v) => setFormData({ ...formData, highest_education: v })}
-                                    />
-                                    <JobRoleDropdown
-                                        value={formData.preferredJobRole_Sector}
-                                        options={combinedRoles}
-                                        onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: Array.isArray(v) ? v : [v] })}
-                                    />
-                                </>
-                            )}
-
-                            <DropdownSelect
-                                label="Employment Type"
-                                value={formData.employmentType}
-                                options={[
-                                    { value: "Full-time", label: "Full-time" },
-                                    { value: "Part-time", label: "Part-time" },
-                                    { value: "Freelance", label: "Freelance" },
-                                    { value: "Internship", label: "Internship" },
-                                    { value: "Remote", label: "Remote" },
-                                    { value: "Contract", label: "Contract" },
-                                ]}
-                                onChange={(v) => setFormData({ ...formData, employmentType: v })}
-                            />
-                            <DropdownSelect
-                                label="Notice Period"
-                                value={formData.noticePeriod}
-                                options={[
-                                    { value: "Immediate", label: "Immediate" },
-                                    { value: "15 days", label: "15 days" },
-                                    { value: "30 days", label: "30 days" },
-                                    { value: "45 days", label: "45 days" },
-                                    { value: "60 days", label: "60 days" },
-                                    { value: "90 days", label: "90 days" },
-                                ]}
-                                onChange={(v) => setFormData({ ...formData, noticePeriod: v })}
-                            />
-                            <FormInput
-                                label="LinkedIn Profile URL"
-                                value={formData.linkedinUrl}
-                                onChange={(v) => setFormData({ ...formData, linkedinUrl: v })}
-                                placeholder="https://linkedin.com/in/your-profile"
-                            />
-
-                            <FormInput
-                                label="Field of Interest / Study"
-                                value={formData.fieldofStudy_Interest}
-                                onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })}
-                            />
-                            {/* Years of Experience — number spinner */}
-                            <div className={styles.fieldGroup}>
-                                <label className={styles.fieldLabel}>Years of Experience</label>
-                                <div className={styles.spinnerWrapper}>
-                                    <button
-                                        type="button"
-                                        className={styles.spinBtn}
-                                        onClick={() => handleWorkExpChange(-1)}
-                                        disabled={parseInt(formData.workExp) <= 0}
-                                    >−</button>
-                                    <span className={styles.spinnerValue}>
-                                        {formData.workExp !== '' ? formData.workExp : '0'}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className={styles.spinBtn}
-                                        onClick={() => handleWorkExpChange(1)}
-                                        disabled={parseInt(formData.workExp) >= 50}
-                                    >+</button>
-                                </div>
-                            </div>
-
-                            {/* Profile Photo Upload Card */}
-                            <div className={styles.uploadCard}>
-                                <label className={styles.fieldLabel}>Profile Photo <span className={styles.required}>*</span></label>
-                                <label className={styles.uploadZone} htmlFor="photoInput">
-                                    {photoPreview ? (
-                                        <img src={photoPreview} alt="Preview" className={styles.photoPreview} />
-                                    ) : (
-                                        <div className={styles.uploadPlaceholder}>
-                                            <span className={styles.uploadIcon}>📷</span>
-                                            <span className={styles.uploadText}>Click to upload photo</span>
-                                            <span className={styles.uploadHint}>JPG, PNG up to 5MB</span>
-                                        </div>
-                                    )}
-                                </label>
-                                <input
-                                    id="photoInput"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => handleFileChange(e, 'photo')}
-                                    style={{ display: 'none' }}
-                                />
-                                {photoFile && (
-                                    <p className={styles.fileName}>✅ {photoFile.name}</p>
-                                )}
-                            </div>
-
-                            {/* Resume Upload Card */}
-                            <div className={styles.uploadCard}>
-                                <label className={styles.fieldLabel}>Resume (PDF/DOC) <span className={styles.required}>*</span></label>
-                                <label className={styles.uploadZone} htmlFor="resumeInput">
-                                    {resumeFile ? (
-                                        <div className={styles.resumePreview}>
-                                            <span className={styles.resumeIcon}>📄</span>
-                                            <span className={styles.resumeName}>{resumeFile.name}</span>
-                                        </div>
-                                    ) : (
-                                        <div className={styles.uploadPlaceholder}>
-                                            <span className={styles.uploadIcon}>📎</span>
-                                            <span className={styles.uploadText}>Click to upload resume</span>
-                                            <span className={styles.uploadHint}>PDF, DOC, DOCX up to 5MB</span>
-                                        </div>
-                                    )}
-                                </label>
-                                <input
-                                    id="resumeInput"
-                                    type="file"
-                                    accept=".pdf,.doc,.docx"
-                                    onChange={(e) => handleFileChange(e, 'resume')}
-                                    style={{ display: 'none' }}
-                                />
-                            </div>
-                        </div>
-
-                        {uploadProgress > 0 && <p style={{ textAlign: "center", color: "var(--ps-primary)", marginTop: "10px", fontWeight: "800", fontSize: "0.9rem", letterSpacing: "0.02em" }}>Uploading: {uploadProgress}%</p>}
-
-                        <button
-                            className={styles.saveBtn}
-                            onClick={handleSave}
-                            disabled={loading}
-                        >
-                            {loading ? "Saving..." : "Save & Continue"}
-                        </button>
-                    </div>
-                )}
-            </div>
+        <div className={styles.progressContainer}>
+          <div className={styles.progressBar}>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${completion}%` }}
+            ></div>
+          </div>
+          <span>{completion}% Complete</span>
         </div>
-    );
+
+        {!role ? (
+          <div className={styles.roleSelection}>
+            <h3>What is your role?</h3>
+            <div className={styles.roleButtons}>
+              <button onClick={() => setRole("Mentor")}>Mentor</button>
+              <button onClick={() => setRole("Job")}>Job Seeker</button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.form}>
+
+            <div className={styles.formGrid}>
+              <FormInput
+                label="Full Name"
+                value={formData.name}
+                onChange={(v) => setFormData({ ...formData, name: v })}
+              />
+              <FormInput
+                label="Mobile Number"
+                value={formData.mobileNumber}
+                onChange={handleMobileChange}
+                type="tel"
+                maxLength={10}
+                pattern="[0-9]*"
+                inputMode="numeric"
+                placeholder="10-digit number"
+              />
+              <DropdownSelect
+                label="Gender"
+                value={formData.gender}
+                options={[
+                  { value: "Male", label: "Male" },
+                  { value: "Female", label: "Female" },
+                  { value: "Other", label: "Other" },
+                ]}
+                onChange={(v) => setFormData({ ...formData, gender: v })}
+              />
+              <DateSelect
+                label="Date of Birth"
+                value={formData.dateOfBirth}
+                onChange={(v) => setFormData({ ...formData, dateOfBirth: v })}
+              />
+              <DropdownSelect
+                label="District"
+                value={formData.district}
+                options={combinedDistricts}
+                placeholder="Select your district"
+                searchable={true}
+                required={true}
+                onChange={(v) => setFormData({ ...formData, district: v })}
+              />
+
+              {role === 'Mentor' ? (
+                <>
+                  <FormInput
+                    label="Current Company / Institution"
+                    value={formData.currentInstitutionOrCompany}
+                    onChange={(v) => setFormData({ ...formData, currentInstitutionOrCompany: v })}
+                  />
+                  <FormInput
+                    label="Designation"
+                    value={formData.designation}
+                    onChange={(v) => setFormData({ ...formData, designation: v })}
+                  />
+                </>
+              ) : (
+                <>
+                  <EducationDropdown
+                    value={formData.highest_education}
+                    onChange={(v) => setFormData({ ...formData, highest_education: v })}
+                  />
+                  <JobRoleDropdown
+                    value={formData.preferredJobRole_Sector}
+                    options={combinedRoles}
+                    onChange={(v) => setFormData({ ...formData, preferredJobRole_Sector: Array.isArray(v) ? v : [v] })}
+                  />
+                </>
+              )}
+
+              <DropdownSelect
+                label="Employment Type"
+                value={formData.employmentType}
+                options={[
+                  { value: "Full-time", label: "Full-time" },
+                  { value: "Part-time", label: "Part-time" },
+                  { value: "Freelance", label: "Freelance" },
+                  { value: "Internship", label: "Internship" },
+                  { value: "Remote", label: "Remote" },
+                  { value: "Contract", label: "Contract" },
+                ]}
+                onChange={(v) => setFormData({ ...formData, employmentType: v })}
+              />
+              <DropdownSelect
+                label="Notice Period"
+                value={formData.noticePeriod}
+                options={[
+                  { value: "Immediate", label: "Immediate" },
+                  { value: "15 days", label: "15 days" },
+                  { value: "30 days", label: "30 days" },
+                  { value: "45 days", label: "45 days" },
+                  { value: "60 days", label: "60 days" },
+                  { value: "90 days", label: "90 days" },
+                ]}
+                onChange={(v) => setFormData({ ...formData, noticePeriod: v })}
+              />
+              <FormInput
+                label="LinkedIn Profile URL"
+                value={formData.linkedinUrl}
+                onChange={(v) => setFormData({ ...formData, linkedinUrl: v })}
+                placeholder="https://linkedin.com/in/your-profile"
+              />
+
+              <FormInput
+                label="Field of Interest / Study"
+                value={formData.fieldofStudy_Interest}
+                onChange={(v) => setFormData({ ...formData, fieldofStudy_Interest: v })}
+              />
+              {/* Years of Experience — number spinner */}
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Years of Experience</label>
+                <div className={styles.spinnerWrapper}>
+                  <button
+                    type="button"
+                    className={styles.spinBtn}
+                    onClick={() => handleWorkExpChange(-1)}
+                    disabled={formData.workExp !== "" && parseInt(formData.workExp) <= 0}
+                  >−</button>
+                  <span className={styles.spinnerValue}>
+                    {formData.workExp !== '' ? formData.workExp : '-'}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.spinBtn}
+                    onClick={() => handleWorkExpChange(1)}
+                    disabled={formData.workExp !== "" && parseInt(formData.workExp) >= 50}
+                  >+</button>
+                </div>
+              </div>
+
+              {/* Profile Photo Upload Card */}
+              <div className={styles.uploadCard}>
+                <label className={styles.fieldLabel}>Profile Photo <span className={styles.required}>*</span></label>
+                <label className={styles.uploadZone} htmlFor="photoInput">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Preview" className={styles.photoPreview} />
+                  ) : (
+                    <div className={styles.uploadPlaceholder}>
+                      <span className={styles.uploadIcon}>📷</span>
+                      <span className={styles.uploadText}>Click to upload photo</span>
+                      <span className={styles.uploadHint}>JPG, PNG up to 5MB</span>
+                    </div>
+                  )}
+                </label>
+                <input
+                  id="photoInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'photo')}
+                  style={{ display: 'none' }}
+                />
+                {photoFile && (
+                  <p className={styles.fileName}>✅ {photoFile.name}</p>
+                )}
+              </div>
+
+              {/* Resume Upload Card */}
+              <div className={styles.uploadCard}>
+                <label className={styles.fieldLabel}>Resume (PDF/DOC) <span className={styles.required}>*</span></label>
+                <label className={styles.uploadZone} htmlFor="resumeInput">
+                  {resumeFile ? (
+                    <div className={styles.resumePreview}>
+                      <span className={styles.resumeIcon}>📄</span>
+                      <span className={styles.resumeName}>{resumeFile.name}</span>
+                    </div>
+                  ) : (
+                    <div className={styles.uploadPlaceholder}>
+                      <span className={styles.uploadIcon}>📎</span>
+                      <span className={styles.uploadText}>Click to upload resume</span>
+                      <span className={styles.uploadHint}>PDF, DOC, DOCX up to 5MB</span>
+                    </div>
+                  )}
+                </label>
+                <input
+                  id="resumeInput"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => handleFileChange(e, 'resume')}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </div>
+
+            {uploadProgress > 0 && <p style={{ textAlign: "center", color: "var(--ps-primary)", marginTop: "10px", fontWeight: "800", fontSize: "0.9rem", letterSpacing: "0.02em" }}>Uploading: {uploadProgress}%</p>}
+
+            <button
+              className={styles.saveBtn}
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save & Continue"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* WhatsApp Group Invitation Modal */}
+      {showWhatsAppModal && (
+        <div className={styles.waOverlay} onClick={handleSkipWhatsApp}>
+          <div className={styles.waModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.waGlow}></div>
+            <div className={styles.waIconWrap}>
+              <svg className={styles.waIcon} viewBox="0 0 24 24" fill="none">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" fill="#25D366" />
+              </svg>
+            </div>
+            <h2 className={styles.waTitle}>🎉 Profile Created!</h2>
+            <p className={styles.waSubtitle}>
+              Join our WhatsApp community for {isFresher ? "freshers" : "experienced professionals"} to get job updates, tips & networking opportunities.
+            </p>
+            <div className={styles.waGroupInfo}>
+              <span className={styles.waGroupIcon}>👥</span>
+              <div className={styles.waGroupText}>
+                <span className={styles.waGroupName}>
+                  {isFresher ? "JBNK Freshers Community" : "JBNK Experienced Professionals"}
+                </span>
+                <span className={styles.waGroupDesc}>
+                  {isFresher ? "Entry-level jobs, career guidance & mentorship" : "Senior roles, referrals & industry insights"}
+                </span>
+              </div>
+            </div>
+            <button className={styles.waJoinBtn} onClick={handleWhatsAppJoin}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              Join WhatsApp Group
+            </button>
+            <button className={styles.waSkipBtn} onClick={handleSkipWhatsApp}>
+              Skip for now →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ProfileSetup;

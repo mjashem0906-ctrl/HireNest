@@ -10,13 +10,17 @@
 }
 
 .label {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 0.78rem;
+  font-weight: 850;
+  color: var(--ps-muted, var(--text-secondary));
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .required {
-  color: var(--error);
+  color: var(--ps-primary, var(--error));
   margin-left: 2px;
 }
 
@@ -65,9 +69,12 @@
 }
 
 .datePickerWrapper {
-  :global(.MuiInputBase-root) :global(.MuiInputBase-input) {
-    color: var(--text-primary) !important;
-    -webkit-text-fill-color: var(--text-primary) !important;
+  input,
+  :global(input),
+  :global(.MuiInputBase-root) :global(.MuiInputBase-input),
+  :global(.MuiInputBase-root.Mui-disabled) :global(.MuiInputBase-input) {
+    color: var(--ps-text, var(--text-primary)) !important;
+    -webkit-text-fill-color: var(--ps-text, var(--text-primary)) !important;
   }
 }
 
