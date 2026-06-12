@@ -69,7 +69,7 @@ const triggerNotification = async ({
             <h2 style="color: #4f46e5; margin-bottom: 20px;">Application Confirmed</h2>
             <p>Dear ${recipientName},</p>
             <p>Thank you for applying. We have successfully received your application for <strong>${data.jobTitle || "the position"}</strong>.</p>
-            <p>You can track the status of your application directly from your dashboard.</p>
+            <p>You can visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to track the status of your application directly from your dashboard.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
             <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
           </div>
@@ -84,6 +84,7 @@ const triggerNotification = async ({
             <p>Dear ${recipientName},</p>
             <p>We are pleased to inform you that mentor <strong>${data.mentorName || "Your Mentor"}</strong> has accepted your connection request.</p>
             <p style="margin-top: 10px;">You can now reach out to them at <strong>${data.mentorEmail || ""}</strong> ${data.mentorPhone ? `or call them at <strong>${data.mentorPhone}</strong>` : ''}.</p>
+            <p>Please visit <a href="https://jobbridgenode.com" style="color: #10b981; text-decoration: underline;">jobbridgenode.com</a> to view details.</p>
             <p>We wish you a productive mentoring relationship!</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
             <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
@@ -107,7 +108,7 @@ const triggerNotification = async ({
             <p>Dear ${recipientName},</p>
             <p>Great news! You have been scheduled for an interview for the <strong>${data.jobTitle || "Job Position"}</strong> role.</p>
             ${data.interviewDetails ? `<p><strong>Details:</strong> ${data.interviewDetails}</p>` : ''}
-            <p>Please log in to your dashboard to review further instructions.</p>
+            <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to check your dashboard and review further instructions.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
             <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
           </div>
@@ -142,7 +143,7 @@ const triggerNotification = async ({
                 <p style="margin: 5px 0;"><strong>Company:</strong> ${data.companyName || "N/A"}</p>
                 <p style="margin: 5px 0;"><strong>Location:</strong> ${data.location || "N/A"}</p>
               </div>
-              <p>Log in to your dashboard to apply!</p>
+              <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to log in to your dashboard and apply!</p>
               <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
               <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
             </div>
@@ -181,7 +182,7 @@ const triggerNotification = async ({
               <p style="margin: 0; font-weight: bold;">${title}</p>
               <p style="margin: 10px 0 0 0; color: #475569;">${message}</p>
             </div>
-            <p>Log in to your Admin Dashboard to complete the action.</p>
+            <p>Please visit <a href="https://jobbridgenode.com" style="color: #e11d48; text-decoration: underline;">jobbridgenode.com</a> and log in to your Admin Dashboard to complete the action.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
             <p style="font-size: 12px; color: #64748b;">Job Bridge Karnataka System</p>
           </div>

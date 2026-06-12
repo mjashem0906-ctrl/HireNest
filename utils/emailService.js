@@ -96,8 +96,8 @@ const sendStatusUpdateNotification = async (memberEmail, memberName, jobTitle, n
     <h1>Application Status Update</h1>
     <p>Dear ${memberName},</p>
     <p>The status of your application for <strong>${jobTitle}</strong> has been updated to: <strong>${newStatus}</strong>.</p>
-    <p>Please check your dashboard for more details.</p>
-    <p>Best regards,<br>Job Bridge Karnataka Team</p>
+    <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to check your dashboard for more details.</p>
+    <p>Best regards,<br>Job Bridge Node Karnataka Team</p>
   `;
 
   await sendEmail(memberEmail, subject, htmlContent);
@@ -119,7 +119,7 @@ const sendAdminApplicationNotification = async (adminEmail, candidateInfo, jobTi
       <li><strong>Job Title:</strong> ${jobTitle}</li>
       <li><strong>Applied On:</strong> ${new Date().toLocaleDateString('en-GB')}</li>
     </ul>
-    <p>Please log in to the admin panel to review the application.</p>
+    <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> and log in to the admin panel to review the application.</p>
   `;
 
   await sendEmail(adminEmail, subject, htmlContent);
