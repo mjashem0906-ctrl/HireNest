@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { parseCv } = require("../utils/cvParser");
 
 // ── Allowed MIME types ─────────────────────────────────────────────────────────
 const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -79,6 +80,45 @@ router.post("/", upload.single("file"), (req, res) => {
     url: fileUrl,
     folder: subFolder,   // "photos" | "resumes"
   });
+});
+
+// ── POST /api/upload/parse-cv ─────────────────────────────────────────────────
+// Body : multipart/form-data  field: "file"  (PDF or DOCX only)
+// Returns: { url, folder, parsedData: { name, mobileNumber, email, ... } }
+router.post("/parse-cv", upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "No file uploaded" });
+  }
+
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  const host     = req.headers["x-forwarded-host"]  || req.get("host");
+  const baseUrl  = `${protocol}://${host}`;
+  const fileUrl  = `${baseUrl}/uploads/resumes/${req.file.filename}`;
+
+  // Read the saved file back as a buffer for parsing
+  try {
+    const filePath = req.file.path;
+    const buffer   = fs.readFileSync(filePath);
+    const result   = await parseCv(buffer, req.file.mimetype);
+
+    return res.status(200).json({
+      success: true,
+      url: fileUrl,
+      folder: "resumes",
+      parsedData: result.parsedData || {},
+      parseWarning: result.error || null,
+    });
+  } catch (parseErr) {
+    console.error("[parse-cv] Parsing failed:", parseErr.message);
+    // Still return the URL — parsing failure must not block the user
+    return res.status(200).json({
+      success: true,
+      url: fileUrl,
+      folder: "resumes",
+      parsedData: {},
+      parseWarning: "Parsing failed — please fill details manually.",
+    });
+  }
 });
 
 // ── Error handler (multer errors) ──────────────────────────────────────────────
