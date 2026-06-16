@@ -877,6 +877,9 @@ function AddMember({
   const [uploadProgress, setUploadProgress] = useState({ photo: 0, resume: 0 });
   const [errors, setErrors] = useState({ resume: "", degree: "", branch: "", photo: "", designation: "", workExp: "", role: "", industry: "", location: "" });
 
+  const [isParsingCv, setIsParsingCv] = useState(false);
+  const [autoFilledCount, setAutoFilledCount] = useState(0);
+
   const resumeInputRef = useRef(null);
   const photoInputRef = useRef(null);
 
@@ -948,6 +951,8 @@ function AddMember({
     setResumeFile(null);
     setUploadProgress({ photo: 0, resume: 0 });
     setErrors({ resume: "", degree: "", branch: "", photo: "" });
+    setAutoFilledCount(0);
+    setIsParsingCv(false);
   }, [editMember, isOpen, preSelectedMemberType]);
 
   const photoPreviewUrl = useMemo(() => {
@@ -964,6 +969,172 @@ function AddMember({
   const combinedDistricts = [...new Set([...KARNATAKA_DISTRICTS, ...TAMIL_NADU_DISTRICTS, ...dynamicDistricts])].sort();
   const combinedRoles = [...new Set([...DESIRED_ROLES_OPTIONS, ...dynamicRoles])].sort();
   const combinedIndustries = [...new Set([...INDUSTRY_OPTIONS, ...dynamicIndustries])].sort();
+
+  const handleResumeUploadAndParse = async (file) => {
+    if (!file) return;
+    setIsParsingCv(true);
+    setErrors((p) => ({ ...p, resume: "" }));
+    setAutoFilledCount(0);
+
+    const uploadData = new FormData();
+    uploadData.append("file", file);
+
+    try {
+      const res = await API.post("/api/upload/parse-cv", uploadData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const parsedData = res.data.parsedData || {};
+      const resumeUrl = res.data.url || "";
+
+      setResumeFile(file);
+
+      let filledCount = 0;
+      const nextFormData = { ...formData };
+
+      if (resumeUrl) {
+        nextFormData.resumeLink = resumeUrl;
+      }
+
+      if (parsedData.name) {
+        nextFormData.name = parsedData.name;
+        filledCount++;
+      }
+      if (parsedData.mobileNumber) {
+        nextFormData.mobileNumber = parsedData.mobileNumber;
+        filledCount++;
+      }
+      if (parsedData.email) {
+        nextFormData.email = parsedData.email;
+        filledCount++;
+      }
+      if (parsedData.gender) {
+        nextFormData.gender = parsedData.gender;
+        filledCount++;
+      }
+      if (parsedData.highest_education) {
+        nextFormData.highest_education = parsedData.highest_education;
+        filledCount++;
+      }
+      if (parsedData.fieldofStudy_Interest) {
+        nextFormData.branch = parsedData.fieldofStudy_Interest;
+        filledCount++;
+      }
+      if (parsedData.designation) {
+        nextFormData.designation = parsedData.designation;
+        filledCount++;
+      }
+      if (parsedData.workExp) {
+        nextFormData.workExp = parsedData.workExp;
+        filledCount++;
+      }
+      if (parsedData.passOutYear) {
+        nextFormData.passOutYear = parsedData.passOutYear;
+        filledCount++;
+      }
+      if (parsedData.linkedinUrl) {
+        nextFormData.linkedinUrl = parsedData.linkedinUrl;
+        filledCount++;
+      }
+      if (Array.isArray(parsedData.skills) && parsedData.skills.length > 0) {
+        nextFormData.skills = [...new Set(parsedData.skills)];
+        filledCount++;
+      }
+      if (Array.isArray(parsedData.languages) && parsedData.languages.length > 0) {
+        nextFormData.languages = [...new Set(parsedData.languages)];
+        filledCount++;
+      }
+      if (parsedData.fatherName || parsedData.fathersName) {
+        const fName = parsedData.fatherName || parsedData.fathersName;
+        nextFormData.fatherName = fName;
+        nextFormData.fathersName = fName;
+        filledCount++;
+      }
+      if (parsedData.motherName) {
+        nextFormData.motherName = parsedData.motherName;
+        filledCount++;
+      }
+      if (parsedData.dateOfBirth) {
+        const parsedDob = new Date(parsedData.dateOfBirth);
+        nextFormData.dateOfBirth = isNaN(parsedDob.getTime()) ? null : parsedDob;
+        filledCount++;
+      }
+      if (parsedData.maritalStatus) {
+        nextFormData.maritalStatus = parsedData.maritalStatus;
+        filledCount++;
+      }
+      if (parsedData.hometown) {
+        nextFormData.hometown = parsedData.hometown;
+        filledCount++;
+      }
+      if (parsedData.pincode) {
+        nextFormData.pincode = parsedData.pincode;
+        filledCount++;
+      }
+      if (parsedData.address) {
+        nextFormData.address = parsedData.address;
+        filledCount++;
+      }
+      if (parsedData.district) {
+        nextFormData.district = parsedData.district;
+        filledCount++;
+      }
+      if (parsedData.careerProfile) {
+        nextFormData.careerProfile = {
+          ...nextFormData.careerProfile,
+          location: parsedData.careerProfile.location || nextFormData.careerProfile.location || "",
+          role: Array.isArray(parsedData.careerProfile.role) && parsedData.careerProfile.role.length > 0
+            ? parsedData.careerProfile.role
+            : nextFormData.careerProfile.role || [],
+          industry: parsedData.careerProfile.industry || nextFormData.careerProfile.industry || "",
+          employmentType: parsedData.careerProfile.employmentType || nextFormData.careerProfile.employmentType || "",
+          expectedSalary: parsedData.careerProfile.expectedSalary || nextFormData.careerProfile.expectedSalary || "",
+          noticePeriod: parsedData.careerProfile.noticePeriod || nextFormData.careerProfile.noticePeriod || "",
+        };
+        if (Array.isArray(parsedData.careerProfile.role) && parsedData.careerProfile.role.length > 0) {
+          nextFormData.preferredJobRole_Sector = parsedData.careerProfile.role;
+        }
+        filledCount++;
+      }
+      if (Array.isArray(parsedData.certifications) && parsedData.certifications.length > 0) {
+        nextFormData.certifications = parsedData.certifications;
+        filledCount++;
+      }
+
+      if (Array.isArray(parsedData.experienceDetails) && parsedData.experienceDetails.length > 0) {
+        nextFormData.experienceDetails = parsedData.experienceDetails;
+        filledCount++;
+      } else if (parsedData.designation || parsedData.currentInstitutionOrCompany) {
+        nextFormData.experienceDetails = [
+          {
+            companyName: parsedData.currentInstitutionOrCompany || "",
+            designation: parsedData.designation || "",
+            startDate: "",
+            endDate: "",
+            currentlyWorking: true,
+            description: "",
+          }
+        ];
+        filledCount++;
+      }
+
+      setFormData(nextFormData);
+      setAutoFilledCount(filledCount);
+
+      if (res.data.parseWarning) {
+        setErrors((p) => ({ ...p, resume: res.data.parseWarning }));
+      }
+    } catch (err) {
+      console.error("[AddMember] CV parsing failed:", err);
+      setErrors((p) => ({
+        ...p,
+        resume: "Failed to parse resume automatically. File was uploaded, but fields could not be extracted.",
+      }));
+      setResumeFile(file);
+    } finally {
+      setIsParsingCv(false);
+    }
+  };
 
   const uploadToServer = async (file, fileType) => {
     if (!file) return null;
@@ -1215,6 +1386,25 @@ function AddMember({
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          {autoFilledCount > 0 && (
+            <div className={styles.autofillBanner} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <span className={styles.autofillIcon}>✨</span>
+                <div>
+                  <strong>{autoFilledCount} fields</strong> were auto-filled from your CV. 
+                  Please review the tabs (Basic Info, Career Profile, Education, Advanced Personal) to verify details.
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setAutoFilledCount(0)} 
+                style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 16, fontWeight: "bold", padding: "0 4px" }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
           {activeTab === "basic" && (
             <div className={styles.formGrid}>
               <div style={{ gridColumn: "1 / -1" }}>
@@ -1730,18 +1920,26 @@ function AddMember({
                         borderRadius: 14,
                         display: "grid",
                         placeItems: "center",
-                        background: resumeFile
+                        background: isParsingCv
+                          ? "rgba(225,29,72,0.12)"
+                          : resumeFile
                           ? "rgba(34,197,94,0.12)"
                           : "var(--am-primary-soft)",
-                        border: resumeFile
+                        border: isParsingCv
+                          ? "1px solid rgba(225,29,72,0.25)"
+                          : resumeFile
                           ? "1px solid rgba(34,197,94,0.25)"
                           : "1.5px solid var(--am-primary)",
-                        color: resumeFile
+                        color: isParsingCv
+                          ? "var(--am-primary)"
+                          : resumeFile
                           ? "#15803d"
                           : "var(--am-primary)",
                       }}
                     >
-                      {resumeFile ? (
+                      {isParsingCv ? (
+                        <div className={styles.cvMiniSpinner} />
+                      ) : resumeFile ? (
                         <CheckCircle2 size={20} />
                       ) : (
                         <UploadCloud size={20} />
@@ -1750,7 +1948,7 @@ function AddMember({
 
                     <div>
                       <div style={{ fontWeight: 800, fontSize: 14 }}>
-                        {resumeFile ? "Resume selected" : "Upload your resume"}
+                        {isParsingCv ? "Reading and parsing your CV..." : resumeFile ? "Resume selected" : "Upload your resume"}
                       </div>
 
                       <div
@@ -1760,7 +1958,9 @@ function AddMember({
                           marginTop: 4,
                         }}
                       >
-                        {resumeFile
+                        {isParsingCv
+                          ? "Extracting details to auto-fill the profile form..."
+                          : resumeFile
                           ? `${selectedResumeName} • ${selectedResumeSizeMB} MB`
                           : "Click upload button to choose a file"}
                       </div>
@@ -1794,7 +1994,7 @@ function AddMember({
                       type="file"
                       accept=".pdf,.doc,.docx"
                       style={{ display: "none" }}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0] || null;
                         if (!file) return;
 
@@ -1808,9 +2008,7 @@ function AddMember({
                           return;
                         }
 
-                        setResumeFile(file);
-                        setErrors((p) => ({ ...p, resume: "" }));
-                        setUploadProgress((p) => ({ ...p, resume: 0 }));
+                        await handleResumeUploadAndParse(file);
                       }}
                     />
 
@@ -2030,8 +2228,8 @@ function AddMember({
 
               <FormInput
                 label="Father's Name"
-                value={formData.fatherName || formData.fathersName}
-                onChange={(v) => setFormData({ ...formData, fatherName: v })}
+                value={formData.fatherName}
+                onChange={(v) => setFormData({ ...formData, fatherName: v, fathersName: v })}
               />
 
               <FormInput
