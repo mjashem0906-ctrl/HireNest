@@ -62,6 +62,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const deleteNotification = async (id) => {
+    try {
+      await API.delete(`/api/notifications/${id}`);
+      const notif = notifications.find((n) => n._id === id);
+      if (notif && notif.isUnread) {
+        setNotificationCount((prev) => Math.max(0, prev - 1));
+      }
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
   const dismissAllNotifications = async () => {
     try {
       await API.patch("/api/notifications/dismiss-all");
@@ -149,6 +162,7 @@ export const AuthProvider = ({ children }) => {
         markAllAsRead,
         dismissNotification,
         dismissAllNotifications,
+        deleteNotification,
       }}
     >
       {children}

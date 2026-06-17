@@ -129,7 +129,8 @@ function Header({ title, onMenuClick }) {
     markAsRead,
     markAllAsRead,
     dismissNotification,
-    dismissAllNotifications
+    dismissAllNotifications,
+    deleteNotification
   } = useAuth();
   
   const { theme, toggleTheme } = useTheme();
@@ -185,7 +186,8 @@ function Header({ title, onMenuClick }) {
   };
 
   const handleDismiss = async (notif) => {
-    await dismissNotification(notif._id);
+    // Use permanent delete so notification is fully removed from DB
+    await deleteNotification(notif._id);
   };
 
   const visibleNotifications = notifications;
