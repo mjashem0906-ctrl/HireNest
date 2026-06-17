@@ -12,7 +12,8 @@ const getNotifications = async (req, res) => {
       $or: [
         { recipient: userId },
         { recipientRole: role }
-      ]
+      ],
+      dismissedBy: { $ne: userId }
     }).sort({ createdAt: -1 }).limit(100);
 
     // Calculate unread status for each notification
@@ -139,10 +140,81 @@ const updateWorkflowSettings = async (req, res) => {
   }
 };
 
+// PATCH /api/notifications/:id/dismiss
+const dismissNotification = async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+    const userId = req.user.userId;
+
+    const notification = await Notification.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
+
+    if (!notification.dismissedBy.includes(userId)) {
+      notification.dismissedBy.push(userId);
+    }
+
+    // Also mark as read if it was unread to keep count accurate
+    if (notification.recipient) {
+      notification.isRead = true;
+    } else {
+      if (!notification.readBy.includes(userId)) {
+        notification.readBy.push(userId);
+      }
+    }
+
+    await notification.save();
+    res.status(200).json({ success: true, message: "Notification dismissed successfully" });
+  } catch (error) {
+    console.error("dismissNotification error:", error);
+    res.status(500).json({ success: false, message: "Failed to dismiss notification" });
+  }
+};
+
+// PATCH /api/notifications/dismiss-all
+const dismissAllNotifications = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const role = req.user.role;
+
+    await Promise.all([
+      // Dismiss individual notifications and mark as read
+      Notification.updateMany(
+        { 
+          recipient: userId, 
+          dismissedBy: { $ne: userId } 
+        },
+        { 
+          $addToSet: { dismissedBy: userId },
+          $set: { isRead: true }
+        }
+      ),
+      // Dismiss role-based notifications and mark as read
+      Notification.updateMany(
+        { 
+          recipientRole: role, 
+          dismissedBy: { $ne: userId } 
+        },
+        { 
+          $addToSet: { dismissedBy: userId, readBy: userId }
+        }
+      )
+    ]);
+
+    res.status(200).json({ success: true, message: "All notifications dismissed successfully" });
+  } catch (error) {
+    console.error("dismissAllNotifications error:", error);
+    res.status(500).json({ success: false, message: "Failed to dismiss all notifications" });
+  }
+};
+
 module.exports = {
   getNotifications,
   markAsRead,
   markAllAsRead,
   getWorkflowSettings,
-  updateWorkflowSettings
+  updateWorkflowSettings,
+  dismissNotification,
+  dismissAllNotifications
 };

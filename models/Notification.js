@@ -47,6 +47,10 @@ const notificationSchema = new mongoose.Schema({
   readBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
+  }],
+  dismissedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
   }]
 }, { timestamps: true });
 
