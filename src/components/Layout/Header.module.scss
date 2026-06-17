@@ -374,7 +374,29 @@
   }
 }
 
+.headerActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .markAllBtn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--primary, #e11d48);
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+  transition: opacity 0.2s;
+
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+  }
+}
+
+.clearAllBtn {
   background: none;
   border: none;
   font-size: 12px;

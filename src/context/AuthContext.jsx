@@ -49,6 +49,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const dismissNotification = async (id) => {
+    try {
+      await API.patch(`/api/notifications/${id}/dismiss`);
+      const notif = notifications.find((n) => n._id === id);
+      if (notif && notif.isUnread) {
+        setNotificationCount((prev) => Math.max(0, prev - 1));
+      }
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error("Failed to dismiss notification:", err);
+    }
+  };
+
+  const dismissAllNotifications = async () => {
+    try {
+      await API.patch("/api/notifications/dismiss-all");
+      setNotifications([]);
+      setNotificationCount(0);
+    } catch (err) {
+      console.error("Failed to dismiss all notifications:", err);
+    }
+  };
+
   const markAllAsRead = async () => {
     try {
       await API.patch("/api/notifications/read-all");
@@ -124,6 +147,8 @@ export const AuthProvider = ({ children }) => {
         fetchNotifications,
         markAsRead,
         markAllAsRead,
+        dismissNotification,
+        dismissAllNotifications,
       }}
     >
       {children}

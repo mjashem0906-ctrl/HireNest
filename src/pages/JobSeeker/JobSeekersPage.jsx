@@ -191,7 +191,7 @@ const JobSeekersPage = () => {
   // Helper to determine if a member is a fresher or experienced
   const isFresher = (m) => {
     const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp === "0" || exp === "fresher" || exp === "0 years" || exp === "0 yr" || exp === "";
+    return exp === "0" || exp === "fresher" || exp === "0 years" || exp === "0 yr" || exp === "" || parseFloat(exp) === 0;
   };
 
   // --- HELPERS FOR UNIQUE OPTION EXTRACATION ---

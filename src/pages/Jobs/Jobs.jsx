@@ -142,7 +142,7 @@ const ApplyButton = ({
         onClick={handleClick}
         type="button"
       >
-        <Zap size={16} /> {loadingState.applying ? "Applying..." : "Apply"}
+        <Zap size={16} /> {loadingState.applying ? "Applying..." : "Easy Apply"}
       </button>
 
       {showLoginPrompt && (
@@ -429,12 +429,39 @@ const BulkCSVReviewModal = ({
   onBulkSubmit,
   refereesList = [],
   recruitersList = [],
+  getFileUrl,
 }) => {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editedJobs, setEditedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [expandedRows, setExpandedRows] = useState({});
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
   const jobsPerPage = 5;
+
+  const handleLogoUpload = async (e, index) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Logo image size should be less than 5MB");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("file", file);
+    try {
+      setIsLogoUploading(true);
+      const res = await API.post("/api/upload", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      handleFieldChange(index, "companyLogo", res.data.url);
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      alert("Failed to upload company logo");
+    } finally {
+      setIsLogoUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && jobsData) {
@@ -544,9 +571,9 @@ const BulkCSVReviewModal = ({
                           : "transparent",
                       }}
                     >
-                      <td>{startIndex + index + 1}</td>
+                      <td data-label="#">{startIndex + index + 1}</td>
 
-                      <td>
+                      <td data-label="Job Title">
                         {isEditing ? (
                           <input
                             value={job.title || ""}
@@ -563,7 +590,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Company">
                         {isEditing ? (
                           <input
                             value={job.companyName || ""}
@@ -578,7 +605,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Job Role">
                         {isEditing ? (
                           <input
                             value={job.role || ""}
@@ -593,7 +620,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Type">
                         {isEditing ? (
                           <select
                             value={job.employmentType || "Full-time"}
@@ -617,7 +644,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Location">
                         {isEditing ? (
                           <input
                             value={job.location || ""}
@@ -632,7 +659,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Experience">
                         {isEditing ? (
                           <input
                             value={job.experience || ""}
@@ -647,7 +674,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Salary">
                         {isEditing ? (
                           <input
                             value={job.salary || ""}
@@ -662,7 +689,7 @@ const BulkCSVReviewModal = ({
                         )}
                       </td>
 
-                      <td>
+                      <td data-label="Actions">
                         <div className={styles.bulkActions}>
                           <div className={styles.bulkActionButtons}>
                             {isEditing ? (
@@ -881,6 +908,75 @@ const BulkCSVReviewModal = ({
                                         (r) => r._id === job.jobPosted
                                       )?.fullName || "Recruiter Selected"
                                     : "None"}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className={styles.bulkFieldGroup}>
+                              <label>Company Logo</label>
+                              {isEditing ? (
+                                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                                  <input
+                                    type="file"
+                                    id={`bulk-logo-upload-${actualIndex}`}
+                                    accept="image/*"
+                                    onChange={(e) => handleLogoUpload(e, index)}
+                                    style={{ display: "none" }}
+                                  />
+                                  <label
+                                    htmlFor={`bulk-logo-upload-${actualIndex}`}
+                                    style={{
+                                      padding: "8px 12px",
+                                      border: "1.5px solid rgba(148, 163, 184, 0.22)",
+                                      borderRadius: "12px",
+                                      fontSize: "13px",
+                                      fontWeight: "900",
+                                      cursor: "pointer",
+                                      background: "var(--jb-white, #fff)",
+                                      color: "var(--jb-text, #0f172a)",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {isLogoUploading ? "Uploading..." : "Choose Image"}
+                                  </label>
+                                  {job.companyLogo && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                      <img
+                                        src={job.companyLogo.startsWith("uploads") || job.companyLogo.includes("\\") || job.companyLogo.startsWith("http") ? getFileUrl(job.companyLogo) : job.companyLogo}
+                                        alt="Logo Preview"
+                                        style={{ width: "32px", height: "32px", borderRadius: "6px", objectFit: "cover" }}
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => handleFieldChange(index, "companyLogo", "")}
+                                        style={{
+                                          border: "none",
+                                          background: "none",
+                                          color: "#ef4444",
+                                          cursor: "pointer",
+                                          fontSize: "12px",
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        Remove
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {job.companyLogo ? (
+                                    <>
+                                      <img
+                                        src={job.companyLogo.startsWith("uploads") || job.companyLogo.includes("\\") || job.companyLogo.startsWith("http") ? getFileUrl(job.companyLogo) : job.companyLogo}
+                                        alt="Company Logo"
+                                        style={{ width: "32px", height: "32px", borderRadius: "6px", objectFit: "cover" }}
+                                      />
+                                      <span style={{ fontSize: "13px", color: "var(--jb-text2, #475569)" }}>Logo Selected</span>
+                                    </>
+                                  ) : (
+                                    <span style={{ fontSize: "13px", color: "var(--jb-muted, #64748b)" }}>No logo selected</span>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -4272,6 +4368,7 @@ function Jobs() {
         onBulkSubmit={handleSubmitBulkJobs}
         refereesList={refereesList}
         recruitersList={recruitersList}
+        getFileUrl={getFileUrl}
       />
 
       <ResumeChoiceModal

@@ -369,7 +369,7 @@ const MentorsPage = () => {
       // 5. Experience filter check
       let matchesExperience = true;
       if (filterValues.experience) {
-        const expVal = parseInt(m.workExp, 10);
+        const expVal = parseFloat(m.workExp);
         const isExpValid = !isNaN(expVal);
         
         switch (filterValues.experience) {

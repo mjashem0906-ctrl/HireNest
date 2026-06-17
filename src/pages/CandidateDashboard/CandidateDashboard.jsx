@@ -1154,7 +1154,7 @@ const CandidateDashboard = () => {
             </div>
 
             <div className={styles.waGroupCards}>
-              {(!ownMember?.workExp || parseInt(ownMember?.workExp) === 0) ? (
+              {!(parseFloat(ownMember?.workExp) > 0) ? (
                 /* Fresher Group */
                 <div className={`${styles.waGroupCard} ${styles.waGroupCardActive}`}>
                   <div className={styles.waGroupCardIcon}>🎓</div>

@@ -203,14 +203,14 @@ function Members() {
       if (location.state.expFilter === 'fresher') {
         initialDisplayData = initialDisplayData.filter(m => {
           const exp = String(m.workExp || '').toLowerCase().trim();
-          return exp === '0' || exp === 'fresher' || exp === '0 years';
+          return exp === '0' || exp === 'fresher' || exp === '0 years' || parseFloat(exp) === 0;
         });
         dashboardFilterValues = { workExp: 'fresher' };
         dashboardActiveFilters = { workExp: 'fresher' };
       } else if (location.state.expFilter === 'experienced') {
         initialDisplayData = initialDisplayData.filter(m => {
           const exp = String(m.workExp || '').toLowerCase().trim();
-          return exp !== '' && exp !== '0' && exp !== 'fresher' && exp !== '0 years' && exp !== 'unknown' && exp !== 'null';
+          return exp !== '' && exp !== 'unknown' && exp !== 'null' && parseFloat(exp) > 0;
         });
         dashboardFilterValues = { workExp: 'experienced' };
         dashboardActiveFilters = { workExp: 'experienced' };

@@ -925,7 +925,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     if (formData.workExp === "") {
       nextVal = delta > 0 ? "1" : "0";
     } else {
-      const current = parseInt(formData.workExp) || 0;
+      const current = parseFloat(formData.workExp) || 0;
       nextVal = String(Math.max(0, Math.min(50, current + delta)));
     }
     setFormData({ ...formData, workExp: nextVal });
@@ -1467,7 +1467,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                   type="button"
                   className={styles.spinBtn}
                   onClick={() => handleWorkExpChange(-1)}
-                  disabled={formData.workExp !== "" && parseInt(formData.workExp) <= 0}
+                  disabled={formData.workExp !== "" && parseFloat(formData.workExp) <= 0}
                 >
                   −
                 </button>
@@ -1475,7 +1475,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                   type="number"
                   value={formData.workExp}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
+                    const val = e.target.value.replace(/[^0-9.]/g, "");
                     setFormData({ ...formData, workExp: val });
                     setErrors((p) => ({ ...p, workExp: "" }));
                     sessionStorage.setItem("onboarding_workExp", val);
@@ -1490,7 +1490,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                   type="button"
                   className={styles.spinBtn}
                   onClick={() => handleWorkExpChange(1)}
-                  disabled={formData.workExp !== "" && parseInt(formData.workExp) >= 50}
+                  disabled={formData.workExp !== "" && parseFloat(formData.workExp) >= 50}
                 >
                   +
                 </button>

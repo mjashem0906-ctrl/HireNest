@@ -1000,14 +1000,14 @@ function MemberDashboard() {
 
   const freshersList = members.filter((m) => {
     const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp === "0" || exp === "fresher" || exp === "0 years";
+    return exp === "0" || exp === "fresher" || exp === "0 years" || parseFloat(exp) === 0;
   });
   const freshersCount = freshersList.length;
   const freshersGrowth = getGrowthRate(freshersList);
 
   const experiencedList = members.filter((m) => {
     const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp !== "" && exp !== "0" && exp !== "fresher" && exp !== "0 years" && exp !== "unknown";
+    return exp !== "" && exp !== "unknown" && parseFloat(exp) > 0;
   });
   const experiencedCount = experiencedList.length;
   const experiencedGrowth = getGrowthRate(experiencedList);

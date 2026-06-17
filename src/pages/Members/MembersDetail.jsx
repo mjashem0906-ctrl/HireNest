@@ -32,7 +32,7 @@ function MembersDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { memberContext } = useData();
+  const { memberContext, setMemberContext } = useData();
 
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -884,6 +884,11 @@ function MembersDetail() {
         editMember={editingMember}
         onSuccess={(updated) => {
           setMember(updated);
+          if (setMemberContext) {
+            setMemberContext((prev) =>
+              prev.map((m) => (m._id === updated._id ? updated : m))
+            );
+          }
           setShowModal(false);
         }}
       />

@@ -127,12 +127,13 @@ function Header({ title, onMenuClick }) {
     notifications,
     notificationCount,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    dismissNotification,
+    dismissAllNotifications
   } = useAuth();
   
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [dismissedIds, setDismissedIds] = useState([]);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -146,13 +147,6 @@ function Header({ title, onMenuClick }) {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
-  // Reset dismissed notification states when toggled closed
-  useEffect(() => {
-    if (!showNotifications) {
-      setDismissedIds([]);
-    }
-  }, [showNotifications]);
 
   const handleNotificationClick = async (notif) => {
     await markAsRead(notif._id);
@@ -191,15 +185,10 @@ function Header({ title, onMenuClick }) {
   };
 
   const handleDismiss = async (notif) => {
-    if (notif.isUnread) {
-      await markAsRead(notif._id);
-    }
-    setDismissedIds((prev) => [...prev, notif._id]);
+    await dismissNotification(notif._id);
   };
 
-  const visibleNotifications = notifications.filter(
-    (notif) => !dismissedIds.includes(notif._id)
-  );
+  const visibleNotifications = notifications;
 
   return (
     <header className={styles.header}>
@@ -245,16 +234,29 @@ function Header({ title, onMenuClick }) {
               <div className={styles.notificationDropdown}>
                 <div className={styles.dropdownHeader}>
                   <h3>Notifications</h3>
-                  {notificationCount > 0 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        markAllAsRead();
-                      }}
-                      className={styles.markAllBtn}
-                    >
-                      Mark all read
-                    </button>
+                  {visibleNotifications.length > 0 && (
+                    <div className={styles.headerActionGroup}>
+                      {notificationCount > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAllAsRead();
+                          }}
+                          className={styles.markAllBtn}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dismissAllNotifications();
+                        }}
+                        className={styles.clearAllBtn}
+                      >
+                        Clear all
+                      </button>
+                    </div>
                   )}
                 </div>
 

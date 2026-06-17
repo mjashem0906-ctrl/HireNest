@@ -65,7 +65,7 @@ const ProfileSetup = () => {
   
   const parseWorkExp = (val) => {
     if (!val || val === "undefined" || val === "null") return 0;
-    const parsed = parseInt(val, 10);
+    const parsed = parseFloat(val);
     return isNaN(parsed) ? 0 : parsed;
   };
 
