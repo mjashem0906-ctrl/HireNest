@@ -172,6 +172,34 @@ const dismissNotification = async (req, res) => {
   }
 };
 
+// DELETE /api/notifications/:id
+const deleteNotification = async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+    const userId = req.user.userId;
+
+    const notification = await Notification.findById(notificationId);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
+
+    // Only allow if this is a personal notification OR the user is Admin
+    if (
+      notification.recipient &&
+      notification.recipient.toString() !== userId &&
+      req.user.role !== "Admin"
+    ) {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this notification" });
+    }
+
+    await Notification.findByIdAndDelete(notificationId);
+    res.status(200).json({ success: true, message: "Notification deleted successfully" });
+  } catch (error) {
+    console.error("deleteNotification error:", error);
+    res.status(500).json({ success: false, message: "Failed to delete notification" });
+  }
+};
+
 // PATCH /api/notifications/dismiss-all
 const dismissAllNotifications = async (req, res) => {
   try {
@@ -216,5 +244,6 @@ module.exports = {
   getWorkflowSettings,
   updateWorkflowSettings,
   dismissNotification,
-  dismissAllNotifications
+  dismissAllNotifications,
+  deleteNotification
 };
