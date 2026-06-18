@@ -507,6 +507,7 @@ const SP = {
   yellow: [40, 38, 42, 45, 43, 48, 50, 52, 55, 58],
   cyan: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20],
   pink: [8, 10, 9, 12, 11, 14, 13, 16, 15, 18],
+  green: [12, 15, 13, 18, 16, 20, 18, 22, 21, 25],
 };
 
 function Sparkline({ points, color }) {
@@ -1049,7 +1050,7 @@ function MemberDashboard() {
     { title: "Experienced", count: experiencedCount, icon: Star, color: "#d97706", path: "/job-seekers", state: { expFilter: "experienced" } },
     { title: "Recruiters", count: recruiters, icon: Building2, color: "#8b5cf6", path: "/recruiters" },
     { title: "Job Referee", count: referees, icon: User, color: "#ec4899", path: "/referees" },
-    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#f97316", path: "/members", state: { exactMemberType: "In need of Upskilling" } },
+    { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#16a34a", path: "/members", state: { exactMemberType: "In need of Upskilling" } },
   ];
 
   // Member type data for donut (preserved)
@@ -1065,7 +1066,7 @@ function MemberDashboard() {
     { name: "Recruiters", value: recruiters, color: "#7c3aed", nav: () => navigate("/recruiters") },
     { name: "Referees", value: referees, color: "#d97706", nav: () => navigate("/referees") },
     { name: "Mentors", value: mentors, color: "#0891b2", nav: () => navigate("/mentors") },
-    { name: "Upskillers", value: upskillers, color: "#ec4899", nav: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }) },
+    { name: "Upskillers", value: upskillers, color: "#16a34a", nav: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }) },
   ];
 
 
@@ -1222,8 +1223,8 @@ function MemberDashboard() {
       label: "Upskillers",
       value: upskillers,
       icon: BookOpen,
-      color: "#f97316",
-      spark: SP.pink,
+      color: "#16a34a",
+      spark: SP.green,
       growth: upskillersGrowth,
       onClick: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }),
     },
@@ -1272,7 +1273,16 @@ function MemberDashboard() {
         {/* ── STAT CARDS ── */}
         <div className={styles.statRow}>
           {statCards.map((s, i) => (
-            <div key={i} className={styles.statCard} onClick={s.onClick} title={`View ${s.label}`}>
+            <div 
+              key={i} 
+              className={styles.statCard} 
+              onClick={s.onClick} 
+              title={`View ${s.label}`}
+              style={{
+                "--theme-color": s.color,
+                "--glow-color": `${s.color}26`,
+              }}
+            >
               <div className={styles.statCardTop}>
                 <div className={styles.statNumbers}>
                   <div className={styles.statLabel}>{s.label}</div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, Settings as SettingsIcon } from "lucide-react";
+import { Bell, Settings as SettingsIcon, ChevronDown } from "lucide-react";
 import CustomCard from "../../components/UI/CustomCard";
 import ToggleSwitch from "../../components/UI/ToggleSwitch";
 import { useAuth } from "../../context/AuthContext";
@@ -10,6 +10,7 @@ function Settings() {
   const { user } = useAuth();
   const [workflows, setWorkflows] = useState([]);
   const [loadingWorkflows, setLoadingWorkflows] = useState(true);
+  const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
   // Load notification workflow settings (Admin only)
   useEffect(() => {
@@ -56,53 +57,65 @@ function Settings() {
         {/* Notification Workflow Configuration (Admin Only) */}
         {user?.role === "Admin" && (
           <CustomCard className={`${styles.settingsCard} ${styles.workflowCard}`}>
-            <div className={styles.cardHeader}>
-              <Bell size={24} />
-              <h3>Notification Workflow Manager</h3>
-            </div>
-            <p className={styles.workflowIntro}>
-              Configure system notification flows. Toggle In-App and Email alerts for system events.
-            </p>
-
-            {loadingWorkflows ? (
-              <div className={styles.loaderSpinner}>Loading workflows...</div>
-            ) : (
-              <div className={styles.workflowList}>
-                {workflows.map((wf, idx) => (
-                  <div key={wf.notificationType} className={styles.workflowItem}>
-                    <div className={styles.workflowInfo}>
-                      <h4>{wf.displayName}</h4>
-                      <p>{wf.description}</p>
-                      <span className={styles.roleTag}>Recipient: {wf.recipientRole}</span>
-                    </div>
-                    <div className={styles.workflowToggles}>
-                      <ToggleSwitch
-                        label="In-App Database Alert"
-                        checked={wf.inAppEnabled}
-                        onChange={(checked) => {
-                          const updated = [...workflows];
-                          updated[idx].inAppEnabled = checked;
-                          setWorkflows(updated);
-                        }}
-                      />
-                      <ToggleSwitch
-                        label="Email Dispatch"
-                        checked={wf.emailEnabled}
-                        onChange={(checked) => {
-                          const updated = [...workflows];
-                          updated[idx].emailEnabled = checked;
-                          setWorkflows(updated);
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-
-                <button className={styles.saveWorkflowsBtn} onClick={handleSaveWorkflows}>
-                  Save Workflow Configuration
-                </button>
+            <div 
+              className={styles.cardHeader} 
+              onClick={() => setIsWorkflowOpen(!isWorkflowOpen)}
+            >
+              <div className={styles.headerLeft}>
+                <Bell size={24} />
+                <h3>Notification Workflow Manager</h3>
               </div>
-            )}
+              <ChevronDown 
+                size={20} 
+                className={`${styles.chevronIcon} ${isWorkflowOpen ? styles.rotated : ""}`} 
+              />
+            </div>
+            
+            <div className={`${styles.workflowContent} ${isWorkflowOpen ? styles.expanded : styles.collapsed}`}>
+              <p className={styles.workflowIntro}>
+                Configure system notification flows. Toggle In-App and Email alerts for system events.
+              </p>
+
+              {loadingWorkflows ? (
+                <div className={styles.loaderSpinner}>Loading workflows...</div>
+              ) : (
+                <div className={styles.workflowList}>
+                  {workflows.map((wf, idx) => (
+                    <div key={wf.notificationType} className={styles.workflowItem}>
+                      <div className={styles.workflowInfo}>
+                        <h4>{wf.displayName}</h4>
+                        <p>{wf.description}</p>
+                        <span className={styles.roleTag}>Recipient: {wf.recipientRole}</span>
+                      </div>
+                      <div className={styles.workflowToggles}>
+                        <ToggleSwitch
+                          label="In-App Database Alert"
+                          checked={wf.inAppEnabled}
+                          onChange={(checked) => {
+                            const updated = [...workflows];
+                            updated[idx].inAppEnabled = checked;
+                            setWorkflows(updated);
+                          }}
+                        />
+                        <ToggleSwitch
+                          label="Email Dispatch"
+                          checked={wf.emailEnabled}
+                          onChange={(checked) => {
+                            const updated = [...workflows];
+                            updated[idx].emailEnabled = checked;
+                            setWorkflows(updated);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <button className={styles.saveWorkflowsBtn} onClick={handleSaveWorkflows}>
+                    Save Workflow Configuration
+                  </button>
+                </div>
+              )}
+            </div>
           </CustomCard>
         )}
       </div>

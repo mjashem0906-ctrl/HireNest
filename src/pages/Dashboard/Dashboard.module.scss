@@ -659,16 +659,19 @@
   box-shadow: var(--card-shadow);
   padding: 0.85rem 1rem 0.7rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
 .statCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
-  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  border-color: var(--theme-color);
+  box-shadow: 0 12px 24px var(--glow-color), 
+              0 0 15px var(--glow-color);
 }
 
 .statCardTop {
@@ -1359,6 +1362,12 @@
 :global(:root[data-theme="dark"]) .statCard {
   background: var(--card-bg);
   border-color: var(--border);
+}
+
+:global(:root[data-theme="dark"]) .statCard:hover {
+  border-color: var(--theme-color);
+  box-shadow: 0 12px 28px var(--glow-color), 
+              0 0 18px var(--glow-color);
 }
 
 /* dark: topbar */

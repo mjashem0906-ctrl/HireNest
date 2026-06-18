@@ -20,11 +20,11 @@ import styles from './Members.module.scss';
 
 // ── sparkline ────────────────────────────────────────────────────────────────
 const SP = {
-  blue:   [30,35,28,40,38,45,42,50,48,55],
-  green:  [20,25,22,28,30,27,35,32,38,40],
-  purple: [15,18,14,20,19,22,20,25,23,28],
-  orange: [40,38,42,45,43,48,50,52,55,58],
-  pink:   [8,10,9,12,11,14,13,16,15,18],
+  blue: [30, 35, 28, 40, 38, 45, 42, 50, 48, 55],
+  green: [20, 25, 22, 28, 30, 27, 35, 32, 38, 40],
+  purple: [15, 18, 14, 20, 19, 22, 20, 25, 23, 28],
+  orange: [40, 38, 42, 45, 43, 48, 50, 52, 55, 58],
+  pink: [8, 10, 9, 12, 11, 14, 13, 16, 15, 18],
 };
 
 function Sparkline({ points, color }) {
@@ -51,7 +51,7 @@ function Sparkline({ points, color }) {
 
 // ── avatar helpers ───────────────────────────────────────────────────────────
 const AVATAR_PALETTE = [
-  '#6366f1','#2563eb','#0891b2','#16a34a','#d97706','#c0392b','#7c3aed','#ec4899','#0d9488','#78716c',
+  '#6366f1', '#2563eb', '#0891b2', '#16a34a', '#d97706', '#c0392b', '#7c3aed', '#ec4899', '#0d9488', '#78716c',
 ];
 
 function getInitials(name) {
@@ -97,22 +97,22 @@ function Members() {
   const { memberContext, setMemberContext } = useData();
   const { user } = useAuth();
 
-  const [allMembers, setAllMembers]       = useState([]);
-  const [membersData, setMembersData]     = useState([]);
-  const [view, setView]                   = useState('table');
-  const [globalFilter, setGlobalFilter]   = useState('');
-  const [editMember, setEditMember]       = useState(null);
-  const [showModal, setShowModal]         = useState(false);
-  const [loading, setLoading]             = useState(true);
+  const [allMembers, setAllMembers] = useState([]);
+  const [membersData, setMembersData] = useState([]);
+  const [view, setView] = useState('table');
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [editMember, setEditMember] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState({});
-  const [filterValues, setFilterValues]   = useState({});
-  const [showFilters, setShowFilters]     = useState(false);
-  const [activeTab, setActiveTab]         = useState('All Members');
-  const [darkMode, setDarkMode]           = useState(false);
-  const [page, setPage]                   = useState(1);
-  const [perPage, setPerPage]             = useState(12);
-  const [selectedRows, setSelectedRows]   = useState(new Set());
-  const [recruiters, setRecruiters]       = useState([]);
+  const [filterValues, setFilterValues] = useState({});
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState('All Members');
+  const [darkMode, setDarkMode] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(12);
+  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [recruiters, setRecruiters] = useState([]);
 
   // dark mode toggle
   const toggleDark = () => {
@@ -173,19 +173,19 @@ function Members() {
   };
 
   const normalizeRecruiter = (r) => ({
-    _id:              r._id,
-    name:             r.fullName || r.name || '',
-    email:            r.email || '',
-    mobileNumber:     r.phone || r.mobileNumber || '',
-    memberType:       'Recruiter',
-    symMemberStatus:  'Active',
-    district:         r.location || '',
-    profession:       r.designation || '',
-    timestamp:        r.createdAt || r.timestamp || '',
-    createdAt:        r.createdAt || '',
-    photoUrl:         r.profilePicture || '',
+    _id: r._id,
+    name: r.fullName || r.name || '',
+    email: r.email || '',
+    mobileNumber: r.phone || r.mobileNumber || '',
+    memberType: 'Recruiter',
+    symMemberStatus: 'Active',
+    district: r.location || '',
+    profession: r.designation || '',
+    timestamp: r.createdAt || r.timestamp || '',
+    createdAt: r.createdAt || '',
+    photoUrl: r.profilePicture || '',
     memberReferenceNumber: r.memberReferenceNumber || null,
-    _isRecruiter:     true,
+    _isRecruiter: true,
   });
 
   const fetchData = () => {
@@ -315,7 +315,7 @@ function Members() {
     }
     let filtered = [...allMembers];
     const newActiveFilters = {};
-    const exactFilters = ['name','district','memberType','gender','symMemberStatus','profession','highest_education','preferredJobRole_Sector','workExp','relocationStatus','referrerStatus','interest_SkillBuildingProgram'];
+    const exactFilters = ['name', 'district', 'memberType', 'gender', 'symMemberStatus', 'profession', 'highest_education', 'preferredJobRole_Sector', 'workExp', 'relocationStatus', 'referrerStatus', 'interest_SkillBuildingProgram'];
     exactFilters.forEach(key => {
       if (filters[key]) {
         if (key === 'memberType') {
@@ -360,7 +360,7 @@ function Members() {
       newActiveFilters.skills = filters.skills;
     }
 
-    const arrayFilters = ['seekerNeed','jobOfferType','offeringSector','levelOfSupport','forGrouping'];
+    const arrayFilters = ['seekerNeed', 'jobOfferType', 'offeringSector', 'levelOfSupport', 'forGrouping'];
     arrayFilters.forEach(key => {
       if (filters[key]?.length) {
         filtered = filtered.filter(p => { const arr = p[key] || []; return filters[key].some(v => arr.includes(v)); });
@@ -409,7 +409,16 @@ function Members() {
   };
 
   const handleEdit = (member) => { setEditMember({ ...member }); setShowModal(true); };
-  const handleRowClick = (row) => { navigate(`/member/${row._id}`); };
+  // Returns the correct detail route based on memberType
+  const getDetailRoute = (member) => {
+    const type = String(member.memberType || '').toLowerCase();
+    if (type.includes('mentor')) return `/mentors/${member._id}`;
+    if (type.includes('recruiter')) return `/recruiters/${member._id}`;
+    if (type.includes('referee')) return `/referee/${member._id}`;
+    return `/member/${member._id}`;
+  };
+
+  const handleRowClick = (row) => { navigate(getDetailRoute(row)); };
 
   const formatJoinedDate = (timestamp, createdAt) => {
     const raw = timestamp || createdAt;
@@ -423,11 +432,11 @@ function Members() {
     const type = String(member.memberType || '').toLowerCase();
     switch (activeTab) {
       case 'Job Seekers': return type.includes('seeker');
-      case 'Providers':   return type.includes('provider');
-      case 'Mentors':     return type.includes('mentor');
-      case 'Recruiters':  return type.includes('recruiter');
-      case 'Referees':    return type.includes('referee');
-      default:            return true;
+      case 'Providers': return type.includes('provider');
+      case 'Mentors': return type.includes('mentor');
+      case 'Recruiters': return type.includes('recruiter');
+      case 'Referees': return type.includes('referee');
+      default: return true;
     }
   };
 
@@ -459,16 +468,16 @@ function Members() {
   };
 
   // stats
-  const totalMembers  = allMembers.length;
+  const totalMembers = allMembers.length;
   const activeMembers = allMembers.filter(m => String(m.symMemberStatus || '').toLowerCase() === 'active').length || allMembers.length;
-  const newThisMonth  = allMembers.filter(m => {
+  const newThisMonth = allMembers.filter(m => {
     const raw = m.createdAt || m.timestamp;
     if (!raw) return false;
     const d = new Date(raw), now = new Date();
     return !isNaN(d.getTime()) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }).length;
   const jobSeekers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('seeker')).length;
-  const providers  = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('provider')).length;
+  const providers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('provider')).length;
 
   // Calculate dynamic 6-month trends for sparklines
   const pastMonths = useMemo(() => {
@@ -562,10 +571,10 @@ function Members() {
     return Math.round(((current - previous) / previous) * 100);
   }, [seekerTrend]);
 
-  const districts             = unique(allMembers.map(m => m.district));
-  const memberTypes           = unique(allMembers.map(m => m.memberType));
-  const highestEducationOpts  = unique(allMembers.map(m => m.highest_education));
-  const preferredJobRoleOpts  = unique(
+  const districts = unique(allMembers.map(m => m.district));
+  const memberTypes = unique(allMembers.map(m => m.memberType));
+  const highestEducationOpts = unique(allMembers.map(m => m.highest_education));
+  const preferredJobRoleOpts = unique(
     allMembers.flatMap((m) => {
       let r = m.preferredJobRole_Sector || [];
       if (typeof r === 'string') return r.split(',').map(item => item.trim());
@@ -573,8 +582,8 @@ function Members() {
       return [];
     })
   );
-  const relocationStatusOpts  = unique(allMembers.map(m => m.relocationStatus));
-  const referrerStatusOpts    = unique(allMembers.map(m => m.referrerStatus));
+  const relocationStatusOpts = unique(allMembers.map(m => m.relocationStatus));
+  const referrerStatusOpts = unique(allMembers.map(m => m.referrerStatus));
 
   const skillsOptions = unique(
     allMembers.flatMap(m => {
@@ -588,22 +597,22 @@ function Members() {
   const membersFilterConfig = {
     labels: {
       name: 'Name', initialNumber: 'Min Age', finalNumber: 'Max Age', district: 'District',
-      nDistrict: 'Native District', profession: 'Profession', memberType: 'Member Type', gender: 'Gender', 
-      symMemberStatus: 'Solidarity Member Status', seekerNeed: 'Seeker Need', highest_education: 'Highest Education', 
-      preferredJobRole_Sector: 'Preferred Job Role', workExp: 'Work Experience', relocationStatus: 'Relocation Status', 
-      jobOfferType: 'Job Offer Type', offeringSector: 'Offering Sector', referrerStatus: 'Referrer Status', 
+      nDistrict: 'Native District', profession: 'Profession', memberType: 'Member Type', gender: 'Gender',
+      symMemberStatus: 'Solidarity Member Status', seekerNeed: 'Seeker Need', highest_education: 'Highest Education',
+      preferredJobRole_Sector: 'Preferred Job Role', workExp: 'Work Experience', relocationStatus: 'Relocation Status',
+      jobOfferType: 'Job Offer Type', offeringSector: 'Offering Sector', referrerStatus: 'Referrer Status',
       levelOfSupport: 'Level Of Support', interest_SkillBuildingProgram: 'Skill Program', forGrouping: 'Group Tags',
       startDate: 'Member Since From', endDate: 'Member Since To', skills: 'Skills'
     },
     fieldTypes: {
       name: 'string', initialNumber: 'number', finalNumber: 'number', district: 'string',
-      nDistrict: 'string', profession: 'string', memberType: 'string', gender: 'string', symMemberStatus: 'string', 
+      nDistrict: 'string', profession: 'string', memberType: 'string', gender: 'string', symMemberStatus: 'string',
       seekerNeed: 'array', highest_education: 'string', preferredJobRole_Sector: 'string', workExp: 'string',
-      relocationStatus: 'string', jobOfferType: 'array', offeringSector: 'array', referrerStatus: 'string', 
+      relocationStatus: 'string', jobOfferType: 'array', offeringSector: 'array', referrerStatus: 'string',
       levelOfSupport: 'array', interest_SkillBuildingProgram: 'string', forGrouping: 'array',
       startDate: 'date', endDate: 'date', skills: 'string'
     },
-    formatters: { array:(v) => Array.isArray(v) ? v.join(', ') : v, number:(v) => v ? v.toString() : '' },
+    formatters: { array: (v) => Array.isArray(v) ? v.join(', ') : v, number: (v) => v ? v.toString() : '' },
   };
 
   if (loading) return (
@@ -611,20 +620,20 @@ function Members() {
   );
 
   const statCards = [
-    { label:'Total Members',   value:totalMembers,  icon:User,      color:'#2563eb', spark:totalTrend,   growth:totalGrowth },
-    { label:'Active Members',  value:activeMembers, icon:Briefcase, color:'#16a34a', spark:activeTrend,  growth:activeGrowth },
-    { label:'New This Month',  value:newThisMonth,  icon:User,      color:'#7c3aed', spark:newTrend,     growth:newGrowth },
-    { label:'Job Seekers',     value:jobSeekers,    icon:Star,      color:'#d97706', spark:seekerTrend,  growth:seekerGrowth },
+    { label: 'Total Members', value: totalMembers, icon: User, color: '#2563eb', spark: totalTrend, growth: totalGrowth },
+    { label: 'Active Members', value: activeMembers, icon: Briefcase, color: '#16a34a', spark: activeTrend, growth: activeGrowth },
+    { label: 'New This Month', value: newThisMonth, icon: User, color: '#7c3aed', spark: newTrend, growth: newGrowth },
+    { label: 'Job Seekers', value: jobSeekers, icon: Star, color: '#d97706', spark: seekerTrend, growth: seekerGrowth },
   ];
 
-  const TABS = ['All Members','Job Seekers','Providers','Mentors','Recruiters','Referees'];
+  const TABS = ['All Members', 'Job Seekers', 'Providers', 'Mentors', 'Recruiters', 'Referees'];
 
   // page number list
   const getPageNums = () => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (page <= 4) return [1,2,3,4,5,'...',totalPages];
-    if (page >= totalPages - 3) return [1,'...',totalPages-4,totalPages-3,totalPages-2,totalPages-1,totalPages];
-    return [1,'...',page-1,page,page+1,'...',totalPages];
+    if (page <= 4) return [1, 2, 3, 4, 5, '...', totalPages];
+    if (page >= totalPages - 3) return [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, '...', page - 1, page, page + 1, '...', totalPages];
   };
 
   return (
@@ -686,7 +695,7 @@ function Members() {
           <div className={styles.horizontalFilterContainer}>
             <div className={styles.filterRowWithScroll}>
               <div className={styles.filterRowContent}>
-                
+
                 <div className={styles.filterField}>
                   <label>NAME</label>
                   <select
@@ -929,7 +938,7 @@ function Members() {
                   </select>
                 </div>
 
-                <button 
+                <button
                   className={styles.clearAllButton}
                   onClick={clearAllFilters}
                   type="button"
@@ -1016,7 +1025,14 @@ function Members() {
                           </div>
                         </td>
                         <td data-label="Role">
-                          <span className={styles.roleBadge}>{member.memberType || 'Member'}</span>
+                          <span
+                            className={styles.roleBadge}
+                            onClick={(e) => { e.stopPropagation(); navigate(getDetailRoute(member)); }}
+                            style={{ cursor: 'pointer' }}
+                            title={`View ${member.memberType || 'Member'} profile`}
+                          >
+                            {member.memberType || 'Member'}
+                          </span>
                         </td>
                         <td data-label="Email" className={styles.cellMuted}>{member.email || '—'}</td>
                         <td data-label="Phone">
@@ -1041,7 +1057,7 @@ function Members() {
                         <td data-label="Actions">
                           <div className={styles.actionButtons}>
                             <button className={styles.actionIconBtn} title="View"
-                              onClick={() => navigate(`/member/${member._id}`)} type="button">
+                              onClick={() => navigate(getDetailRoute(member))} type="button">
                               <Eye size={14} />
                             </button>
                             {user?.role === 'Admin' && (
@@ -1080,7 +1096,7 @@ function Members() {
                     n === '...'
                       ? <span key={`d${i}`} className={styles.pageDots}>...</span>
                       : <button key={n} className={`${styles.pageBtn} ${page === n ? styles.pageBtnActive : ''}`}
-                          onClick={() => setPage(n)}>{n}</button>
+                        onClick={() => setPage(n)}>{n}</button>
                   )}
                   <button className={styles.pageBtn} disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
                     <ChevronRight size={14} />
@@ -1107,7 +1123,7 @@ function Members() {
                 {pageData.map((member) => (
                   <div key={member._id} className={styles.memberCard}>
                     <div className={styles.memberCardTop}>
-                      <div className={styles.memberCardIdentity} onClick={() => handleRowClick(member)}>
+                      <div className={styles.memberCardIdentity} onClick={() => navigate(getDetailRoute(member))}>
                         <AvatarCircle
                           name={member.name}
                           photo={member.photoUrl ? getDirectImageUrl(member.photoUrl) : null}
@@ -1129,7 +1145,7 @@ function Members() {
                         </div>
                       )}
                     </div>
-                    <div className={styles.cardDetails} onClick={() => handleRowClick(member)}>
+                    <div className={styles.cardDetails} onClick={() => navigate(getDetailRoute(member))}>
                       <div><Mail size={14} /> <span>{member.email || '—'}</span></div>
                       <div><Phone size={14} /> <span>{member.mobileNumber || '—'}</span></div>
                       <div><Calendar size={14} /> <span>{member.age || formatAge(member.dob)}</span></div>
@@ -1153,7 +1169,7 @@ function Members() {
                     n === '...'
                       ? <span key={`d${i}`} className={styles.pageDots}>...</span>
                       : <button key={n} className={`${styles.pageBtn} ${page === n ? styles.pageBtnActive : ''}`}
-                          onClick={() => setPage(n)}>{n}</button>
+                        onClick={() => setPage(n)}>{n}</button>
                   )}
                   <button className={styles.pageBtn} disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
                     <ChevronRight size={14} />
