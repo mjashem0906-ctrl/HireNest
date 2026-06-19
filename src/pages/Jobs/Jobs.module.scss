@@ -336,6 +336,94 @@ $radius-xl: 22px;
   background: linear-gradient(135deg, #7c3aed, #a855f7);
 }
 
+/* Filter toggle button in header — styled like the Members page filters button with red branding */
+.filterToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 52px;
+  padding: 0 18px;
+  border-radius: $radius-xl;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  color: #475569; /* Slate grey */
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #c0392b;
+    color: #c0392b;
+    background: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    color: #475569;
+    transition: color 0.2s ease;
+  }
+
+  &:hover svg {
+    color: #c0392b;
+  }
+}
+
+:global([data-theme="dark"]) .filterToggleBtn {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+
+  &:hover {
+    background: #0f172a;
+    border-color: #f87171;
+    color: #f87171;
+  }
+
+  svg {
+    color: #94a3b8;
+  }
+
+  &:hover svg {
+    color: #f87171;
+  }
+}
+
+/* Active state — solid red with white text when filters are open */
+.filterToggleBtnActive {
+  background: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #fff !important;
+
+  svg {
+    color: #fff !important;
+  }
+
+  &:hover {
+    background: #a93226 !important;
+    border-color: #a93226 !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+  }
+}
+
+:global([data-theme="dark"]) .filterToggleBtnActive {
+  background: #f87171 !important;
+  border-color: #f87171 !important;
+
+  &:hover {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+  }
+}
+
+
 /* ============================================================
    FILTER ACTION ROW
 ============================================================ */

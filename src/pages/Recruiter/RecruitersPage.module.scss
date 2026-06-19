@@ -1059,11 +1059,21 @@
     border-color: #e11d48;
     color: #e11d48;
     transform: translateY(-1px);
+  }
+  &:active { transform: translateY(0); }
+}
 
-    :global([data-theme="dark"]) & {
-      border-color: #fda4af;
-      color: #fda4af;
-    }
+/* Active state — filled red when filters are open */
+.filterBtnActive {
+  background: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #fff !important;
+
+  &:hover {
+    background: #be123c !important;
+    border-color: #be123c !important;
+    color: #fff !important;
+    transform: translateY(-1px);
   }
 }
 
@@ -1792,57 +1802,55 @@
    ============================================================ */
 .horizontalFilterContainer {
   width: 100% !important;
-  max-width: 1400px !important;
   margin: 0 auto 24px !important;
-  background: linear-gradient(145deg, rgba(225, 29, 72, 0.01) 0%, var(--rec-card) 100%) !important;
-  border: 1.5px solid var(--rec-border) !important;
+  background: var(--rec-card) !important;
+  border: 1px solid var(--rec-border) !important;
   border-left: 4.5px solid #e11d48 !important;
-  border-radius: 16px !important;
-  padding: 1.25rem 1.5rem !important;
+  border-radius: var(--rec-radius) !important;
+  padding: 1.1rem 1.25rem !important;
   box-shadow: var(--rec-shadow-sm) !important;
   overflow: visible !important;
   animation: slideDown 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .filterRowWithScroll {
   width: 100% !important;
-  overflow: visible !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
   padding-bottom: 6px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--rec-border) transparent !important;
+
+  &::-webkit-scrollbar { height: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background-color: var(--rec-border); border-radius: 3px; }
 }
 
 .filterRowContent {
   display: flex !important;
   align-items: flex-end !important;
   gap: 1.25rem !important;
-  flex-wrap: wrap !important;
+  min-width: fit-content !important;
 }
 
 .filterField {
   display: flex !important;
   flex-direction: column !important;
-  width: 175px !important;
-  min-width: 175px !important;
+  min-width: 155px !important;
   flex-shrink: 0 !important;
+  gap: 5px !important;
 
   label {
-    font-size: 0.68rem !important;
+    font-size: 0.65rem !important;
     font-weight: 800 !important;
     color: #e11d48 !important;
-    opacity: 0.85 !important;
-    margin-bottom: 6px !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.06em !important;
     white-space: nowrap !important;
   }
 
@@ -1850,30 +1858,24 @@
     width: 100% !important;
     appearance: none !important;
     -webkit-appearance: none !important;
-    padding: 10px 36px 10px 14px !important;
-    border-radius: 12px !important;
-    border: 1.5px solid var(--rec-border) !important;
+    height: 38px !important;
+    border: 1px solid var(--rec-border) !important;
+    border-radius: var(--rec-radius-sm) !important;
     background-color: var(--rec-card) !important;
     color: var(--rec-text) !important;
-    font-size: 0.9rem !important;
+    font-size: 0.78rem !important;
     font-family: inherit !important;
-    font-weight: 700 !important;
+    font-weight: 650 !important;
     outline: none !important;
     cursor: pointer !important;
+    padding: 0 30px 0 12px !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
-    background-position: right 12px center !important;
-    transition: all 0.2s ease !important;
+    background-position: right 10px center !important;
+    transition: border-color 0.15s !important;
 
-    &:focus {
-      border-color: #e11d48 !important;
-      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12) !important;
-    }
-
-    &:hover {
-      border-color: rgba(225, 29, 72, 0.35) !important;
-      background-color: rgba(225, 29, 72, 0.02) !important;
-    }
+    &:focus { border-color: #e11d48 !important; }
+    &:hover { border-color: rgba(225, 29, 72, 0.4) !important; }
 
     option {
       background-color: var(--rec-card) !important;
@@ -1883,32 +1885,30 @@
 }
 
 .clearAllButton {
-  padding: 10px 18px !important;
-  border-radius: 12px !important;
-  border: 1.5px solid rgba(225, 29, 72, 0.28) !important;
-  background-color: rgba(225, 29, 72, 0.05) !important;
+  padding: 0 18px !important;
+  border-radius: var(--rec-radius-sm) !important;
+  border: 1.5px solid #e11d48 !important;
+  background-color: transparent !important;
   color: #e11d48 !important;
-  font-size: 0.82rem !important;
+  font-size: 0.74rem !important;
   font-weight: 800 !important;
   cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-family: inherit !important;
+  transition: all 0.15s !important;
   height: 38px !important;
   white-space: nowrap !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   flex-shrink: 0 !important;
+  outline: none !important;
 
   &:hover {
-    border-color: #e11d48 !important;
+    background-color: #e11d48 !important;
     color: #fff !important;
-    background: linear-gradient(135deg, #e11d48, #be123c) !important;
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.22) !important;
     transform: translateY(-1px) !important;
   }
 
-  &:active {
-    transform: translateY(0) !important;
-  }
+  &:active { transform: translateY(0) !important; }
 }
 
 /* Dark mode overrides for filter panel */

@@ -368,6 +368,13 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   min-width: 280px;
 }
 
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .searchWrapper {
   position: relative;
   flex: 1;
@@ -443,30 +450,25 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid rgba(225, 29, 72, 0.28);
-  background-color: rgba(225, 29, 72, 0.05);
-  color: var(--m-primary);
-  font-size: 0.88rem;
-  font-weight: 800;
+  gap: 6px;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--m-border);
+  background: var(--m-surface);
+  color: var(--m-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s var(--ease-in-out);
-  height: 42px;
+  transition: all 0.18s var(--ease-in-out);
+  height: 36px;
   white-space: nowrap;
   outline: none;
 
   &:hover {
     border-color: var(--m-primary);
-    color: #fff;
-    background: linear-gradient(135deg, var(--m-primary), var(--m-primary-hover));
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.22);
+    color: var(--m-primary);
     transform: translateY(-1px);
-    
-    svg {
-      color: #fff;
-    }
   }
 
   &:active {
@@ -474,8 +476,25 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   }
 
   svg {
-    color: var(--m-primary);
-    transition: color 0.2s ease;
+    transition: color 0.18s ease;
+  }
+}
+
+/* Active state — filled red, like Members page */
+.filterToggleButtonActive {
+  background: var(--m-primary) !important;
+  border-color: var(--m-primary) !important;
+  color: #fff !important;
+
+  svg {
+    color: #fff !important;
+  }
+
+  &:hover {
+    background: var(--m-primary-hover) !important;
+    border-color: var(--m-primary-hover) !important;
+    color: #fff !important;
+    transform: translateY(-1px);
   }
 }
 
@@ -483,11 +502,11 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  background: linear-gradient(145deg, rgba(225, 29, 72, 0.01) 0%, var(--m-surface) 100%);
-  border: 1.5px solid var(--m-border);
+  background: var(--m-surface);
+  border: 1px solid var(--m-border);
   border-left: 4.5px solid var(--m-primary);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.25rem;
   box-shadow: var(--m-shadow-sm);
   overflow: visible;
   animation: slideDown 0.22s var(--ease-in-out);
@@ -496,7 +515,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-12px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -506,57 +525,72 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
 .filterRowWithScroll {
   width: 100%;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
   padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--m-border) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--m-border);
+    border-radius: 3px;
+  }
 }
 
 .filterRowContent {
   display: flex;
   align-items: flex-end;
   gap: 1.25rem;
-  flex-wrap: wrap;
+  min-width: fit-content;
 }
 
 .filterField {
   display: flex;
   flex-direction: column;
-  min-width: 170px;
+  min-width: 160px;
   flex-shrink: 0;
+  gap: 5px;
 
   label {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     font-weight: 800;
     color: var(--m-primary);
-    opacity: 0.85;
-    margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
   }
 
   select {
     appearance: none;
     -webkit-appearance: none;
-    padding: 10px 36px 10px 14px;
-    border-radius: var(--radius-md);
-    border: 1.5px solid var(--m-border);
-    font-size: 0.9rem;
+    height: 38px;
+    border: 1px solid var(--m-border);
+    border-radius: var(--radius-sm);
+    background: var(--m-surface)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
+      no-repeat right 10px center;
+    padding: 0 30px 0 12px;
+    color: var(--m-text-primary);
+    font-size: 0.78rem;
     font-family: inherit;
-    font-weight: 700;
+    font-weight: 650;
     outline: none;
     cursor: pointer;
-    background: var(--m-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;
-    color: var(--m-text-primary);
-    transition: all 0.2s ease;
+    transition: border-color 0.15s;
+    width: 100%;
 
     &:focus {
       border-color: var(--m-primary);
-      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
     }
 
     &:hover {
-      border-color: rgba(225, 29, 72, 0.35);
-      background-color: rgba(225, 29, 72, 0.02);
+      border-color: rgba(225, 29, 72, 0.4);
     }
 
     option {
@@ -687,26 +721,26 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 }
 
 .clearAllButton {
-  padding: 10px 18px;
-  border-radius: var(--radius-md);
-  border: 1.5px solid rgba(225, 29, 72, 0.28);
-  background-color: rgba(225, 29, 72, 0.05);
+  padding: 0 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--m-primary);
+  background-color: transparent;
   color: var(--m-primary);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 800;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s var(--ease-in-out);
+  transition: all 0.15s;
   height: 38px;
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
+  outline: none;
 
   &:hover {
-    border-color: var(--m-primary);
+    background-color: var(--m-primary);
     color: #fff;
-    background: linear-gradient(135deg, var(--m-primary), var(--m-primary-hover));
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.22);
     transform: translateY(-1px);
   }
 

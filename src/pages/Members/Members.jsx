@@ -656,7 +656,7 @@ function Members() {
           <div className={styles.actionGroup}>
             <button className={`${styles.actionBtn} ${showFilters ? styles.actionBtnActive : ''}`}
               onClick={() => setShowFilters(!showFilters)} type="button">
-              {showFilters ? <X size={15} /> : <Filter size={15} />} Filters
+              {showFilters ? <X size={15} /> : <Filter size={15} />} {showFilters ? "Hide Filters" : "Show Filters"}
             </button>
             <button onClick={exportToExcel} className={`${styles.actionBtn} ${styles.actionBtnExcel}`} type="button">
               <Download size={15} /> Export Excel

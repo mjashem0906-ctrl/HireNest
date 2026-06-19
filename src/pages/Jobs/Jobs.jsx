@@ -2320,7 +2320,7 @@ const EnhancedStatusPipeline = ({ status }) => {
 // =========================================================================================
 function Jobs() {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [jobPosts, setJobPosts] = useState([]);
   const [myPost, setMyPost] = useState([]);
   const [view, setView] = useState("request");
@@ -3333,10 +3333,18 @@ function Jobs() {
                 className={classNames(styles.tab, {
                   [styles.active]: view === "request",
                 })}
-                onClick={() => setView("request")}
+                onClick={() => {
+                  setView("request");
+                  setShowFilters(false);
+                }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && setView("request")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setView("request");
+                    setShowFilters(false);
+                  }
+                }}
               >
                 <div className={styles.tabIcon}>
                   <NotebookPen size={22} />
@@ -3350,10 +3358,18 @@ function Jobs() {
                 className={classNames(styles.tab, {
                   [styles.active]: view === "myPost",
                 })}
-                onClick={() => setView("myPost")}
+                onClick={() => {
+                  setView("myPost");
+                  setShowFilters(false);
+                }}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && setView("myPost")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setView("myPost");
+                    setShowFilters(false);
+                  }
+                }}
               >
                 <div className={styles.tabIcon}>
                   <BriefcaseBusiness size={22} />
@@ -3364,24 +3380,37 @@ function Jobs() {
               </div>
             </div>
 
-            {user?.role === "Admin" && (
-              <div className={styles.exportButtons}>
-                <button
-                  onClick={exportJobsToExcel}
-                  className={styles.excelButton}
-                  type="button"
-                >
-                  Export Excel
-                </button>
-                <button
-                  onClick={exportJobsToCSV}
-                  className={styles.csvButton}
-                  type="button"
-                >
-                  Export CSV
-                </button>
-              </div>
-            )}
+            <div className={styles.exportButtons}>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`${styles.filterToggleBtn} ${showFilters ? styles.filterToggleBtnActive : ''}`}
+                type="button"
+              >
+                {showFilters ? (
+                  <><EyeOff size={15} /> Hide Filters</>
+                ) : (
+                  <><Filter size={15} /> Show Filters</>
+                )}
+              </button>
+              {user?.role === "Admin" && (
+                <>
+                  <button
+                    onClick={exportJobsToExcel}
+                    className={styles.excelButton}
+                    type="button"
+                  >
+                    Export Excel
+                  </button>
+                  <button
+                    onClick={exportJobsToCSV}
+                    className={styles.csvButton}
+                    type="button"
+                  >
+                    Export CSV
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -3883,21 +3912,6 @@ function Jobs() {
                     <h2 className={styles.sectionTitle}>
                       <NotebookPen size={24} /> Available Job Posts
                     </h2>
-                    <button
-                      className={styles.toggleFiltersBtn}
-                      onClick={() => setShowFilters(!showFilters)}
-                      type="button"
-                    >
-                      {showFilters ? (
-                        <>
-                          <EyeOff size={18} /> Hide Filters
-                        </>
-                      ) : (
-                        <>
-                          <Filter size={18} /> Show Filters
-                        </>
-                      )}
-                    </button>
                   </div>
 
                   {paginatedJobs.length === 0 ? (
@@ -4090,21 +4104,6 @@ function Jobs() {
                         </>
                       )}
                     </h2>
-                    <button
-                      className={styles.toggleFiltersBtn}
-                      onClick={() => setShowFilters(!showFilters)}
-                      type="button"
-                    >
-                      {showFilters ? (
-                        <>
-                          <EyeOff size={18} /> Hide Filters
-                        </>
-                      ) : (
-                        <>
-                          <Filter size={18} /> Show Filters
-                        </>
-                      )}
-                    </button>
                   </div>
 
                   {filteredMyPost.length === 0 ? (

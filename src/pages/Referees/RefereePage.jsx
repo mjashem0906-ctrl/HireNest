@@ -154,7 +154,7 @@ const RefereePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [filterValues, setFilterValues] = useState({
     occupation: '',
     district: '',
@@ -369,6 +369,14 @@ const RefereePage = () => {
           </div>
 
           <div className={styles.toolbarRight}>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
+              title={showFilters ? "Hide Filters" : "Show Filters"}
+            >
+              {showFilters ? <X size={15} /> : <Filter size={15} />}
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
             <button onClick={() => exportData('excel')} className={`${styles.btn} ${styles.excelBtn}`}>
               <FileSpreadsheet size={16} /> Excel
             </button>
@@ -406,17 +414,7 @@ const RefereePage = () => {
           />
         </div>
 
-        {/* ── FILTER TOGGLE & PANEL (fully preserved) ── */}
-        <div className={styles.filterSection}>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={styles.filterToggleButton}
-            title={showFilters ? "Hide Filters" : "Show Filters"}
-          >
-            {showFilters ? <X size={18} /> : <Filter size={18} />}
-            {showFilters ? 'Hide Filters' : 'Filters'}
-          </button>
-        </div>
+
 
         {showFilters && (
           <div className={styles.horizontalFilterContainer}>

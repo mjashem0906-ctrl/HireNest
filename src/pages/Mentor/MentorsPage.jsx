@@ -18,6 +18,7 @@ import {
   MoreVertical,
   Minus,
   Filter,
+  X,
   Grid,
   List,
   ChevronDown,
@@ -75,7 +76,7 @@ const Sparkline = ({ color }) => {
 const MentorsPage = () => {
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [viewType, setViewType] = useState("list"); // 'list' or 'card'
   const [filterValues, setFilterValues] = useState({
     domain: "",
@@ -477,17 +478,19 @@ const MentorsPage = () => {
               onChange={handleSearchChange}
             />
           </div>
-
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={styles.filterToggleButton}
-          >
-            <Filter size={16} />
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </button>
         </div>
 
-        <AddMentor onSuccess={fetchMentors} />
+        <div className={styles.actionGroup}>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
+          >
+            {showFilters ? <X size={15} /> : <Filter size={15} />}
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
+
+          <AddMentor onSuccess={fetchMentors} />
+        </div>
       </div>
 
       {/* ==========================================================================
@@ -497,169 +500,69 @@ const MentorsPage = () => {
         <div className={styles.horizontalFilterContainer}>
           <div className={styles.filterRowWithScroll}>
             <div className={styles.filterRowContent}>
-              
+
               {/* Domain / Expertise */}
               <div className={styles.filterField}>
-                <label>Expertise / Domain</label>
-                <div className={styles.customDropdownWrapper}>
-                  <button
-                    type="button"
-                    onClick={(e) => toggleDropdown(e, "domain")}
-                    className={styles.dropdownTrigger}
-                  >
-                    <span>{filterValues.domain || "All Domains"}</span>
-                    <ChevronDown size={14} />
-                  </button>
-                  {openDropdown === "domain" && (
-                    <div className={styles.dropdownMenu} onClick={(e) => e.stopPropagation()}>
-                      <div
-                        onClick={() => { handleFilterChange("domain", ""); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${!filterValues.domain ? styles.activeOption : ""}`}
-                      >
-                        All Domains
-                      </div>
-                      {allDomains.map((d) => (
-                        <div
-                          key={d}
-                          onClick={() => { handleFilterChange("domain", d); setOpenDropdown(null); }}
-                          className={`${styles.dropdownOption} ${filterValues.domain === d ? styles.activeOption : ""}`}
-                        >
-                          {d}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <label>EXPERTISE / DOMAIN</label>
+                <select
+                  value={filterValues.domain}
+                  onChange={(e) => handleFilterChange('domain', e.target.value)}
+                >
+                  <option value="">All Domains</option>
+                  {allDomains.map((d) => (
+                    <option key={d} value={d}>{d.length > 22 ? `${d.substring(0, 22)}...` : d}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Location (District) */}
               <div className={styles.filterField}>
-                <label>Location (District)</label>
-                <div className={styles.customDropdownWrapper}>
-                  <button
-                    type="button"
-                    onClick={(e) => toggleDropdown(e, "district")}
-                    className={styles.dropdownTrigger}
-                  >
-                    <span>{filterValues.district || "All Districts"}</span>
-                    <ChevronDown size={14} />
-                  </button>
-                  {openDropdown === "district" && (
-                    <div className={styles.dropdownMenu} onClick={(e) => e.stopPropagation()}>
-                      <div
-                        onClick={() => { handleFilterChange("district", ""); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${!filterValues.district ? styles.activeOption : ""}`}
-                      >
-                        All Districts
-                      </div>
-                      {allDistricts.map((d) => (
-                        <div
-                          key={d}
-                          onClick={() => { handleFilterChange("district", d); setOpenDropdown(null); }}
-                          className={`${styles.dropdownOption} ${filterValues.district === d ? styles.activeOption : ""}`}
-                        >
-                          {d}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <label>LOCATION (DISTRICT)</label>
+                <select
+                  value={filterValues.district}
+                  onChange={(e) => handleFilterChange('district', e.target.value)}
+                >
+                  <option value="">All Districts</option>
+                  {allDistricts.map((d) => (
+                    <option key={d} value={d}>{d.length > 18 ? `${d.substring(0, 18)}...` : d}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Experience Level */}
               <div className={styles.filterField}>
-                <label>Experience Level</label>
-                <div className={styles.customDropdownWrapper}>
-                  <button
-                    type="button"
-                    onClick={(e) => toggleDropdown(e, "experience")}
-                    className={styles.dropdownTrigger}
-                  >
-                    <span>
-                      {filterValues.experience === "<1" ? "< 1 Year" :
-                       filterValues.experience === "1-3" ? "1-3 Years" :
-                       filterValues.experience === "3-5" ? "3-5 Years" :
-                       filterValues.experience === "5+" ? "5+ Years" :
-                       "All Experience"}
-                    </span>
-                    <ChevronDown size={14} />
-                  </button>
-                  {openDropdown === "experience" && (
-                    <div className={styles.dropdownMenu} onClick={(e) => e.stopPropagation()}>
-                      <div
-                        onClick={() => { handleFilterChange("experience", ""); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${!filterValues.experience ? styles.activeOption : ""}`}
-                      >
-                        All Experience
-                      </div>
-                      <div
-                        onClick={() => { handleFilterChange("experience", "<1"); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${filterValues.experience === "<1" ? styles.activeOption : ""}`}
-                      >
-                        &lt; 1 Year
-                      </div>
-                      <div
-                        onClick={() => { handleFilterChange("experience", "1-3"); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${filterValues.experience === "1-3" ? styles.activeOption : ""}`}
-                      >
-                        1-3 Years
-                      </div>
-                      <div
-                        onClick={() => { handleFilterChange("experience", "3-5"); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${filterValues.experience === "3-5" ? styles.activeOption : ""}`}
-                      >
-                        3-5 Years
-                      </div>
-                      <div
-                        onClick={() => { handleFilterChange("experience", "5+"); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${filterValues.experience === "5+" ? styles.activeOption : ""}`}
-                      >
-                        5+ Years
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <label>EXPERIENCE LEVEL</label>
+                <select
+                  value={filterValues.experience}
+                  onChange={(e) => handleFilterChange('experience', e.target.value)}
+                >
+                  <option value="">All Experience</option>
+                  <option value="<1">&lt; 1 Year</option>
+                  <option value="1-3">1–3 Years</option>
+                  <option value="3-5">3–5 Years</option>
+                  <option value="5+">5+ Years</option>
+                </select>
               </div>
 
               {/* Gender */}
               <div className={styles.filterField}>
-                <label>Gender</label>
-                <div className={styles.customDropdownWrapper}>
-                  <button
-                    type="button"
-                    onClick={(e) => toggleDropdown(e, "gender")}
-                    className={styles.dropdownTrigger}
-                  >
-                    <span>{filterValues.gender || "All Genders"}</span>
-                    <ChevronDown size={14} />
-                  </button>
-                  {openDropdown === "gender" && (
-                    <div className={styles.dropdownMenu} onClick={(e) => e.stopPropagation()}>
-                      <div
-                        onClick={() => { handleFilterChange("gender", ""); setOpenDropdown(null); }}
-                        className={`${styles.dropdownOption} ${!filterValues.gender ? styles.activeOption : ""}`}
-                      >
-                        All Genders
-                      </div>
-                      {allGenders.map((g) => (
-                        <div
-                          key={g}
-                          onClick={() => { handleFilterChange("gender", g); setOpenDropdown(null); }}
-                          className={`${styles.dropdownOption} ${filterValues.gender === g ? styles.activeOption : ""}`}
-                        >
-                          {g}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <label>GENDER</label>
+                <select
+                  value={filterValues.gender}
+                  onChange={(e) => handleFilterChange('gender', e.target.value)}
+                >
+                  <option value="">All Genders</option>
+                  {allGenders.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
               </div>
 
               <button
                 className={styles.clearAllButton}
                 onClick={clearAllFilters}
               >
-                Clear All
+                CLEAR ALL
               </button>
 
             </div>

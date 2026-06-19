@@ -47,7 +47,7 @@ const JobSeekersPage = () => {
   const [editMember, setEditMember] = useState(null);
 
   // Filter States
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState({});
   const [filterValues, setFilterValues] = useState({});
 
@@ -426,11 +426,11 @@ const JobSeekersPage = () => {
         
         <div className={styles.actionGroup}>
           <button 
-            className={styles.filterToggleButton}
+            className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
             onClick={() => setShowFilters(!showFilters)}
             title={showFilters ? "Hide Filters" : "Show Filters"}
           >
-            {showFilters ? <X size={18} /> : <Filter size={18} />}
+            {showFilters ? <X size={15} /> : <Filter size={15} />}
             <span>{showFilters ? "Hide Filters" : "Show Filters"}</span>
           </button>
 

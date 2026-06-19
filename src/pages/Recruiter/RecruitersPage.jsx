@@ -688,7 +688,7 @@ const RecruitersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [filterValues, setFilterValues] = useState({
     department: '',
     designation: '',
@@ -965,8 +965,8 @@ const RecruitersPage = () => {
 
         <div className={styles.topbarRight}>
           <div className={styles.topbarActions}>
-            <button className={styles.filterBtn} onClick={() => setShowFilters(!showFilters)} title="Filter recruiters">
-              {showFilters ? <X size={15} /> : <Filter size={15} />} {showFilters ? 'Hide Filters' : 'Filters'}
+            <button className={`${styles.filterBtn} ${showFilters ? styles.filterBtnActive : ''}`} onClick={() => setShowFilters(!showFilters)} title="Filter recruiters">
+              {showFilters ? <X size={15} /> : <Filter size={15} />} {showFilters ? 'Hide Filters' : 'Show Filters'}
             </button>
             <button className={styles.exportBtn} onClick={() => exportToCSV('Excel')}><Download size={15} /> Excel</button>
             <button className={styles.exportBtn} onClick={() => exportToCSV('CSV')}><Download size={15} /> CSV</button>
