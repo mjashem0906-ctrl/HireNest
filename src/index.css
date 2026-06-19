@@ -669,3 +669,93 @@ html, body {
     align-items: center;
   }
 }
+
+/* =========================
+   SOCIAL MEDIA LINKS
+   ========================= */
+.lp-social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.lp-social-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b8fa8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.lp-social-icons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.lp-social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer overlay on hover */
+.lp-social-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.lp-social-icon:hover::after {
+  opacity: 1;
+}
+
+.lp-social-icon:hover {
+  transform: translateY(-4px) scale(1.1);
+  filter: brightness(1.15);
+}
+
+/* Facebook — blue */
+.lp-social-fb {
+  background: linear-gradient(135deg, #1877f2, #0c5fcb);
+  box-shadow: 0 4px 14px rgba(24, 119, 242, 0.4);
+}
+
+.lp-social-fb:hover {
+  box-shadow: 0 8px 24px rgba(24, 119, 242, 0.6);
+}
+
+/* Instagram — gradient */
+.lp-social-ig {
+  background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+  box-shadow: 0 4px 14px rgba(221, 42, 123, 0.4);
+}
+
+.lp-social-ig:hover {
+  box-shadow: 0 8px 24px rgba(221, 42, 123, 0.6);
+}
+
+/* X / Twitter — dark */
+.lp-social-x {
+  background: linear-gradient(135deg, #14171a, #333);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.lp-social-x:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}

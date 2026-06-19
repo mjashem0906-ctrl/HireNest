@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./index.css";
-import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
@@ -98,6 +99,39 @@ const LoginForm = () => {
             </li>
           </ul>
 
+          {/* ── Social Media Links ── */}
+          <div className="lp-social-links">
+            <span className="lp-social-label">Follow us on</span>
+            <div className="lp-social-icons">
+              <a
+                href="https://www.facebook.com/profile.php?id=61591040098250"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-social-icon lp-social-fb"
+                aria-label="Facebook"
+              >
+                <FaFacebookF />
+              </a>
+              <a
+                href="https://www.instagram.com/jobbridgenode/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-social-icon lp-social-ig"
+                aria-label="Instagram"
+              >
+                <FaInstagram />
+              </a>
+              <a
+                href="https://x.com/JobBridgeNode"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lp-social-icon lp-social-x"
+                aria-label="X (Twitter)"
+              >
+                <FaXTwitter />
+              </a>
+            </div>
+          </div>
 
         </div>
 
