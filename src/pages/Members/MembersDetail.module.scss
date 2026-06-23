@@ -585,7 +585,7 @@ $r:  14px;
     label {
       display: block;
       margin-bottom: 7px;
-      color: var(--p-muted2);
+      color: var(--p-primary);
       font-size: 0.72rem;
       font-weight: 850;
       text-transform: uppercase;
@@ -598,15 +598,6 @@ $r:  14px;
       font-weight: 700;
       color: var(--p-text2);
       word-break: break-word;
-    }
-
-    &:hover {
-      background: var(--p-card);
-      border-color: rgba(225, 29, 72, 0.20);
-      box-shadow: 0 8px 24px rgba(225, 29, 72, 0.05);
-      transform: translateY(-2px);
-
-      label { color: var(--p-primary); }
     }
   }
 

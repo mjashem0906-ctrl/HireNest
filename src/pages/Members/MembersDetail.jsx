@@ -392,7 +392,7 @@ function MembersDetail() {
                     <label
                       style={{
                         fontSize: 12,
-                        color: "var(--p-muted2)",
+                        color: "var(--p-primary)",
                         fontWeight: 700,
                       }}
                     >
@@ -410,7 +410,7 @@ function MembersDetail() {
                     <label
                       style={{
                         fontSize: 12,
-                        color: "var(--p-muted2)",
+                        color: "var(--p-primary)",
                         fontWeight: 700,
                       }}
                     >
@@ -430,12 +430,12 @@ function MembersDetail() {
 
                 {member.linkedinUrl && (
                   <div style={{ display: "flex", gap: 15, alignItems: "center" }}>
-                    <Linkedin size={20} />
+                     <Linkedin size={20} />
                     <div>
                       <label
                         style={{
                           fontSize: 12,
-                          color: "var(--p-muted2)",
+                          color: "var(--p-primary)",
                           fontWeight: 700,
                         }}
                       >

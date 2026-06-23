@@ -568,23 +568,12 @@ $rx: 24px;
   label {
     display: block;
     margin-bottom: 7px;
-    color: var(--md-muted);
+    color: var(--md-primary);
     font-size: 0.74rem;
     font-weight: 850;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     transition: color 0.25s ease;
-  }
-
-  &:hover {
-    background: var(--md-card-solid);
-    border-color: rgba(225, 29, 72, 0.2);
-    box-shadow: 0 8px 24px rgba(225, 29, 72, 0.05);
-    transform: translateY(-2px);
-
-    label {
-      color: var(--md-primary);
-    }
   }
 }
 

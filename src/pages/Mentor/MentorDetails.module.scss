@@ -633,23 +633,12 @@ $rx: 24px;
   label {
     display: block;
     margin-bottom: 7px;
-    color: var(--md-muted);
+    color: var(--md-primary);
     font-size: 0.74rem;
     font-weight: 850;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     transition: color 0.25s ease;
-  }
-
-  &:hover {
-    background: var(--md-card-solid);
-    border-color: rgba(225, 29, 72, 0.2);
-    box-shadow: 0 8px 24px rgba(225, 29, 72, 0.05);
-    transform: translateY(-2px);
-
-    label {
-      color: var(--md-primary);
-    }
   }
 }
 
@@ -658,6 +647,47 @@ $rx: 24px;
   font-size: 0.96rem;
   font-weight: 700;
   word-break: break-word;
+}
+
+.hiddenContactItem {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--md-soft),
+    var(--md-soft) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  border-style: dashed;
+  border-color: var(--md-border-strong);
+  cursor: default;
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--md-border-strong);
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--md-soft),
+      var(--md-soft) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  }
+}
+
+.hiddenContact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--md-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-style: italic;
+
+  svg {
+    color: var(--md-muted);
+    opacity: 0.7;
+  }
 }
 
 .fullWidth {
