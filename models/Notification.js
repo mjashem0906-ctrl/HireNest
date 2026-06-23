@@ -28,7 +28,8 @@ const notificationSchema = new mongoose.Schema({
       "interview_notification",
       "new_application",
       "pending_action",
-      "system_notification"
+      "system_notification",
+      "mentor_acceptance"
     ],
     required: true
   },

@@ -68,6 +68,25 @@ exports.createMentorConnection = async (req, res) => {
 
     await connection.save();
 
+    // Trigger notification to Admin for new mentor connection request
+    try {
+      const { triggerNotification } = require("../utils/notificationHelper");
+      await triggerNotification({
+        type: "pending_action",
+        recipientId: null, // Broadcast to Admin
+        title: "New Mentor Connection Request",
+        message: `Candidate "${user.name}" has requested to connect with Mentor "${mentor.name}".`,
+        relatedId: connection._id,
+        relatedModel: "MentorConnection",
+        data: {
+          candidateName: user.name,
+          mentorName: mentor.name
+        }
+      });
+    } catch (err) {
+      console.error("Failed to trigger admin notification for new mentor connection request:", err);
+    }
+
     res.status(201).json({
       message: "Connection request sent successfully",
       connection,
