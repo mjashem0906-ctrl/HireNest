@@ -37,7 +37,9 @@ import {
   ChevronDown,
   Bookmark,
   MoreVertical,
+  Mail,
 } from "lucide-react";
+import SendToRecruiterModal from "./SendToRecruiterModal";
 import { formatDistanceToNow } from "date-fns";
 import classNames from "classnames";
 import { useAuth } from "../../context/AuthContext";
@@ -2336,6 +2338,9 @@ function Jobs() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [editingJob, setEditingJob] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSendToRecruiterModal, setShowSendToRecruiterModal] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [selectedJobForRecruiter, setSelectedJobForRecruiter] = useState(null);
 
   const [loadingState, setLoadingState] = useState({
     fetching: false,
@@ -4242,7 +4247,8 @@ function Jobs() {
                                           <th>Name</th>
                                           <th>Resume</th>
                                           <th>Status</th>
-                                          <th>Action</th>
+                                          <th>Change Status</th>
+                                          <th>Email To Recruiter</th>
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -4277,7 +4283,7 @@ function Jobs() {
                                                 app.status || "Applied"
                                               )}
                                             </td>
-                                            <td className={styles.applicantActions}>
+                                            <td className={styles.applicantChangeStatus}>
                                               <select
                                                 className={styles.statusSelect}
                                                 value={app.status || "Applied"}
@@ -4289,23 +4295,28 @@ function Jobs() {
                                                   )
                                                 }
                                               >
-                                                <option value="Applied">
-                                                  Applied
-                                                </option>
-                                                <option value="Review">
-                                                  Review
-                                                </option>
-                                                <option value="Shortlisted">
-                                                  Shortlisted
-                                                </option>
+                                                <option value="Applied">Applied</option>
+                                                <option value="Review">Review</option>
+                                                <option value="Shortlisted">Shortlisted</option>
                                                 <option value="Offer">Offer</option>
-                                                <option value="Accepted">
-                                                  Accepted
-                                                </option>
-                                                <option value="Rejected">
-                                                  Rejected
-                                                </option>
+                                                <option value="Accepted">Accepted</option>
+                                                <option value="Rejected">Rejected</option>
                                               </select>
+                                            </td>
+                                            <td className={styles.applicantEmailAction}>
+                                              <button
+                                                className={styles.sendRecruiterBtn}
+                                                onClick={() => {
+                                                  setSelectedApplicant(app);
+                                                  setSelectedJobForRecruiter(request);
+                                                  setShowSendToRecruiterModal(true);
+                                                }}
+                                                title="Send to Recruiter"
+                                                type="button"
+                                              >
+                                                <Mail size={14} />
+                                                <span>Send</span>
+                                              </button>
                                             </td>
                                           </tr>
                                         ))}
@@ -4394,6 +4405,13 @@ function Jobs() {
         user={user}
         onGoogleLogin={handleGoogleLogin}
         isDarkTheme={isDarkTheme}
+      />
+
+      <SendToRecruiterModal
+        isOpen={showSendToRecruiterModal}
+        onClose={() => setShowSendToRecruiterModal(false)}
+        applicant={selectedApplicant}
+        job={selectedJobForRecruiter}
       />
 
       {showGoogleLoginModal && (

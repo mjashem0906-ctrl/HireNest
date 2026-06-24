@@ -460,6 +460,7 @@ const MentorDetails = () => {
           onMouseMove={(e) => handleCardMouseMove(e, personalCardRef, "personal")}
           onMouseLeave={() => handleCardMouseLeave(personalCardRef, "personal")}
           className={styles.infoCard}
+          style={{ order: !isAdmin ? 2 : 1 }}
         >
           <div className={styles.cardGlow} />
           <div className={styles.cardShine} />
@@ -468,19 +469,21 @@ const MentorDetails = () => {
             <div className={styles.iconBox}>
               <User size={20} />
             </div>
-            <h2>Personal Details</h2>
+            <h2>{isAdmin ? "Personal Details" : "Contact Details"}</h2>
           </div>
 
           <div className={styles.detailsGrid}>
-            <div className={styles.item}>
+            <div className={`${styles.item} ${!isAdmin ? styles.fullWidth : ''}`}>
               <label>Full Name</label>
               <div className={styles.value}>{mentor?.name || "—"}</div>
             </div>
 
-            <div className={styles.item}>
-              <label>Gender</label>
-              <div className={styles.value}>{mentor?.gender || "Not Specified"}</div>
-            </div>
+            {isAdmin && (
+              <div className={styles.item}>
+                <label>Gender</label>
+                <div className={styles.value}>{mentor?.gender || "Not Specified"}</div>
+              </div>
+            )}
 
             <div className={`${styles.item} ${!canSeeContact ? styles.hiddenContactItem : ''}`}>
               <label>Email Address</label>
@@ -506,19 +509,23 @@ const MentorDetails = () => {
               )}
             </div>
 
-            <div className={styles.item}>
-              <label>Age</label>
-              <div className={styles.value}>
-                {mentor?.dateOfBirth
-                  ? `${calculateAge(mentor.dateOfBirth)} Years`
-                  : "—"}
-              </div>
-            </div>
+            {isAdmin && (
+              <>
+                <div className={styles.item}>
+                  <label>Age</label>
+                  <div className={styles.value}>
+                    {mentor?.dateOfBirth
+                      ? `${calculateAge(mentor.dateOfBirth)} Years`
+                      : "—"}
+                  </div>
+                </div>
 
-            <div className={styles.item}>
-              <label>Location</label>
-              <div className={styles.value}>{mentor?.district || "Remote"}</div>
-            </div>
+                <div className={styles.item}>
+                  <label>Location</label>
+                  <div className={styles.value}>{mentor?.district || "Remote"}</div>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -527,6 +534,7 @@ const MentorDetails = () => {
           onMouseMove={(e) => handleCardMouseMove(e, professionalCardRef, "professional")}
           onMouseLeave={() => handleCardMouseLeave(professionalCardRef, "professional")}
           className={styles.infoCard}
+          style={{ order: !isAdmin ? 1 : 2 }}
         >
           <div className={styles.cardGlow} />
           <div className={styles.cardShine} />
@@ -577,6 +585,19 @@ const MentorDetails = () => {
                 )}
               </div>
             </div>
+
+            {mentor?.skills && mentor.skills.length > 0 && (
+              <div className={`${styles.item} ${styles.fullWidth}`}>
+                <label>Skills</label>
+                <div className={styles.expertiseTags}>
+                  {mentor.skills.map((skill, index) => (
+                    <span key={`skill-${index}`} className={styles.tag}>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       </div>

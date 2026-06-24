@@ -1666,28 +1666,34 @@ $radius-xl: 22px;
     border-bottom: none;
   }
 
-  /* Column widths */
+  /* Column widths — 5 columns */
   thead th:nth-child(1),
   tbody td:nth-child(1) {
-    width: 34%;
+    width: 24%;
   }
 
   thead th:nth-child(2),
   tbody td:nth-child(2) {
-    width: 22%;
+    width: 18%;
     text-align: center;
   }
 
   thead th:nth-child(3),
   tbody td:nth-child(3) {
-    width: 22%;
+    width: 18%;
     text-align: center;
   }
 
   thead th:nth-child(4),
   tbody td:nth-child(4) {
-    width: 22%;
-    text-align: right;
+    width: 26%;
+    text-align: center;
+  }
+
+  thead th:nth-child(5),
+  tbody td:nth-child(5) {
+    width: 14%;
+    text-align: center;
   }
 }
 
@@ -1705,8 +1711,66 @@ $radius-xl: 22px;
   text-align: center;
 }
 
-.applicantActions {
-  text-align: right;
+.applicantChangeStatus {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.applicantEmailAction {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sendRecruiterBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(190, 18, 60, 0.3);
+  background: rgba(190, 18, 60, 0.07);
+  color: #be123c;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+
+  span {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  &:hover {
+    background: rgba(190, 18, 60, 0.14);
+    border-color: #be123c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(190, 18, 60, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+:global([data-theme="dark"]) .sendRecruiterBtn {
+  border-color: rgba(253, 164, 175, 0.3);
+  background: rgba(190, 18, 60, 0.12);
+  color: #fda4af;
+
+  &:hover {
+    background: rgba(190, 18, 60, 0.2);
+    border-color: #fda4af;
+    box-shadow: 0 4px 12px rgba(190, 18, 60, 0.25);
+  }
 }
 
 .resumeLink {
@@ -1741,17 +1805,19 @@ $radius-xl: 22px;
 }
 
 .statusSelect {
-  height: 40px;
-  width: 160px;
-  max-width: 100%;
+  height: 38px;
+  width: 100%;
+  max-width: 180px;
   padding: 0 12px;
-  border-radius: 14px;
-  border: 2px solid var(--jb-border);
+  border-radius: 20px;
+  border: 1.5px solid var(--jb-border);
   background: var(--jb-white);
-  font-weight: 1000;
+  font-weight: 900;
+  font-size: 13px;
   cursor: pointer;
   color: var(--jb-text);
   transition: all 0.3s ease;
+  appearance: auto;
 
   &:focus {
     @include focusRing;

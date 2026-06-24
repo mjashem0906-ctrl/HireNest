@@ -20,6 +20,7 @@ const initialState = {
   fieldofStudy_Interest: "",
   workExp: "",
   district: "",
+  skills: [],
 };
 
 const KARNATAKA_DISTRICTS = [
@@ -180,6 +181,57 @@ function EditableDropdown({
         )}
       </div>
 
+      {error && <p className={styles.edErrorText}>{error}</p>}
+    </div>
+  );
+}
+
+function MultiValueInput({ label, value = [], onChange, placeholder = "Type and press Enter", required = false, error = "" }) {
+  const [inputValue, setInputValue] = useState("");
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const val = inputValue.trim();
+      if (val && !value.includes(val)) {
+        onChange([...value, val]);
+      }
+      setInputValue("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    onChange(value.filter(tag => tag !== tagToRemove));
+  };
+
+  return (
+    <div className={styles.edWrap}>
+      <label className={styles.edLabel}>
+        {label} {required && <span className={styles.edReq}>*</span>}
+      </label>
+      <div className={styles.edControl}>
+        <div 
+          className={`${styles.edField} ${error ? styles.edFieldError : ""}`} 
+          style={{ height: 'auto', minHeight: '48px', flexWrap: 'wrap', padding: '6px 16px', gap: '8px', alignItems: 'center' }}
+        >
+          {value.map((tag, index) => (
+            <span key={index} style={{ background: '#f1f5f9', color: '#334155', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '500' }}>
+              {tag}
+              <button type="button" onClick={() => removeTag(tag)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, color: '#64748b' }}>
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+          <input
+            className={styles.edInput}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={value.length === 0 ? placeholder : ""}
+            style={{ flex: 1, minWidth: '120px', padding: '0', height: 'auto' }}
+          />
+        </div>
+      </div>
       {error && <p className={styles.edErrorText}>{error}</p>}
     </div>
   );
@@ -418,17 +470,18 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                   error={errors.designation}
                 />
 
-                <FormInput
+                <MultiValueInput
                   label="Domain"
-                  value={formData.fieldofStudy_Interest}
+                  value={formData.fieldofStudy_Interest ? formData.fieldofStudy_Interest.split(",").map(s => s.trim()).filter(Boolean) : []}
                   onChange={(v) => {
-                    setFormData({ ...formData, fieldofStudy_Interest: v });
+                    setFormData({ ...formData, fieldofStudy_Interest: v.join(", ") });
                     if (errors.fieldofStudy_Interest) {
                       setErrors({ ...errors, fieldofStudy_Interest: "" });
                     }
                   }}
                   required
                   error={errors.fieldofStudy_Interest}
+                  placeholder="e.g. Technology, AI (press Enter)"
                 />
 
                 <FormInput
@@ -440,6 +493,13 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                   }}
                   required
                   error={errors.workExp}
+                />
+
+                <MultiValueInput
+                  label="Skills"
+                  value={formData.skills || []}
+                  onChange={(v) => setFormData({ ...formData, skills: v })}
+                  placeholder="e.g. React, Node.js (press Enter)"
                 />
               </div>
 
