@@ -195,7 +195,7 @@ const getServicePost = async (req, res) => {
       .populate("jobPosted", "fullName email")
       .populate({
         path: "appliedMembers.memberId",
-        select: "name email role resumeLink photoUrl"
+        select: "name email role resumeLink photoUrl mobileNumber highest_education highestEducationSpecialization careerProfile workExp district address"
       })
       .sort({ createdAt: -1 });
 
@@ -255,7 +255,7 @@ const getSingleServicePost = async (req, res) => {
       .populate("memberId", "name email photoUrl")
       .populate("refereedBy", "name email")
       .populate("jobPosted", "fullName email")
-      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl mobileNumber highest_education highestEducationSpecialization careerProfile workExp district address");
 
     if (!service) {
       return res.status(404).json({
@@ -439,7 +439,7 @@ const applyToService = async (req, res) => {
     const updatedService = await Service.findById(serviceId)
       .populate("memberId", "name email role photoUrl")
       .populate("refereedBy", "name email")
-      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl mobileNumber highest_education highestEducationSpecialization careerProfile workExp district address");
 
     console.log('=== APPLY JOB REQUEST COMPLETE ===');
 
@@ -507,7 +507,7 @@ const updateStatus = async (req, res) => {
       { new: true }
     )
       .populate("memberId", "name email photoUrl")
-      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl");
+      .populate("appliedMembers.memberId", "name email role resumeLink photoUrl mobileNumber highest_education highestEducationSpecialization careerProfile workExp district address");
 
     if (!updatedJob) {
       return res.status(404).json({
@@ -656,7 +656,7 @@ const getServiceApplications = async (req, res) => {
     const service = await Service.findById(id)
       .populate({
         path: "appliedMembers.memberId",
-        select: "name email phone mobileNumber role photoUrl resumeLink experience skills"
+        select: "name email phone mobileNumber role photoUrl resumeLink experience skills highest_education highestEducationSpecialization careerProfile workExp district address"
       })
       .select("title appliedMembers");
 

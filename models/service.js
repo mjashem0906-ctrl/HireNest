@@ -358,7 +358,7 @@ serviceSchema.statics.findWithFilters = async function(filters = {}) {
     const services = await this.find(query)
         .populate('memberId', 'name email photoUrl')
         .populate('refereedBy', 'name email')
-        .populate('appliedMembers.memberId', 'name email photoUrl resumeLink')
+        .populate('appliedMembers.memberId', 'name email photoUrl resumeLink mobileNumber highest_education workExp district address')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
