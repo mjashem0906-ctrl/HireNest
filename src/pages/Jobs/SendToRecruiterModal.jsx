@@ -65,7 +65,9 @@ const SendToRecruiterModal = ({ isOpen, onClose, applicant, job }) => {
 
   useEffect(() => {
     if (isOpen && applicant && job) {
-      setEmailText(`Greetings from Job Bridge Node.
+      setEmailText(`Dear Recruiter,
+
+Greetings from Job Bridge Node.
 
 We are pleased to share the profile of a candidate who has applied for the position of ${jobTitle} at your organization through our Job Bridge Node platform.
 
@@ -77,8 +79,6 @@ Candidate Details:
 • Qualification: ${qualification}
 • Experience: ${experience}
 • Location: ${location}
-• Contact Number: ${candidatePhone}
-• Email ID: ${candidateEmail}
 
 We believe the candidate's profile aligns with the requirements of the position and request you to kindly review the application and consider them for the further selection process.
 
@@ -87,6 +87,7 @@ Should you require any additional information or assistance, please feel free to
 Thank you for your time and consideration.
 
 Best Regards,
+
 Job Bridge Node Team
 Connecting Talent with Opportunities
 📧 info.jobbridge@solidaritykarnataka.org

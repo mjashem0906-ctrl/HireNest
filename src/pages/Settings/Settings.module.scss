@@ -312,3 +312,60 @@
   }
 }
 
+.passwordForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  max-width: 400px;
+}
+
+.inputField {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-medium);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+  }
+}
+
+.errorText {
+  color: var(--error);
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.successText {
+  color: #2e7d32;
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.passwordInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    width: 100%;
+    padding-right: 40px; /* Space for the eye icon */
+  }
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--accent-primary);
+  }
+}
+
