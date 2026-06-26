@@ -29,8 +29,25 @@ const addRecruiter = async (req, res) => {
       return res.status(400).json({ message: "This email is already registered" });
     }
 
+    // ✅ Auto-generate sequential memberReferenceNumber across Members & Recruiters
+    const Member = require('../models/member');
+    const allMembers = await Member.find().select('memberReferenceNumber');
+    const allRecruiters = await Recruiter.find().select('memberReferenceNumber');
+    let maxRefNo = 0;
+    
+    for (const m of [...allMembers, ...allRecruiters]) {
+      if (m.memberReferenceNumber) {
+        const parsed = parseInt(m.memberReferenceNumber, 10);
+        if (!isNaN(parsed) && parsed > maxRefNo) {
+          maxRefNo = parsed;
+        }
+      }
+    }
+    const memberReferenceNumber = (maxRefNo + 1).toString();
+
     // 3. Create Recruiter
     const recruiter = await Recruiter.create({
+      memberReferenceNumber,
       fullName,
       email,
       phone,

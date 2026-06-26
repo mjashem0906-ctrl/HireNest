@@ -76,6 +76,21 @@ const addMember = async (req, res) => {
       payload.passOutYear = payload.highestEducationPassedOutYear;
     }
 
+    // ✅ Auto-generate sequential memberReferenceNumber across Members & Recruiters
+    const allMembers = await Member.find().select('memberReferenceNumber');
+    const allRecruiters = await Recruiter.find().select('memberReferenceNumber');
+    let maxRefNo = 0;
+    
+    for (const m of [...allMembers, ...allRecruiters]) {
+      if (m.memberReferenceNumber) {
+        const parsed = parseInt(m.memberReferenceNumber, 10);
+        if (!isNaN(parsed) && parsed > maxRefNo) {
+          maxRefNo = parsed;
+        }
+      }
+    }
+    payload.memberReferenceNumber = (maxRefNo + 1).toString();
+
     const member = await Member.create(payload);
 
     await Activity.create({

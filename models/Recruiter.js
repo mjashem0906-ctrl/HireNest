@@ -22,6 +22,7 @@ const recruiterSchema = mongoose.Schema({
   hiringVolume: { type: String, required: true }, // New
   teamSize: { type: String, required: true }, // New
   registeredVia: { type: String, enum: ['admin', 'shareable_link', 'form_link'], default: 'admin' }, // Tracks registration source
+  memberReferenceNumber: { type: String, default: null }, // Shared reference number sequence with Members
   
   password: { type: String, required: true }
 }, {

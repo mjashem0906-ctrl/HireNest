@@ -99,6 +99,8 @@ const sendCandidateToRecruiter = async (req, res) => {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;")
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
         .replace(/\n/g, "<br/>");
 
       htmlContent = `
@@ -137,17 +139,10 @@ const sendCandidateToRecruiter = async (req, res) => {
     .header { background: linear-gradient(135deg, #be123c 0%, #9f1239 100%); padding: 32px 36px; color: #fff; }
     .header h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
     .header p { margin: 6px 0 0; font-size: 13px; opacity: 0.88; }
-    .body { padding: 32px 36px; }
-    .greeting { font-size: 15px; line-height: 1.7; color: #334155; }
-    .table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    .table th { background: #f1f5f9; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 14px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-    .table td { padding: 12px 14px; font-size: 14px; color: #1e293b; border-bottom: 1px solid #f1f5f9; }
-    .table td:first-child { font-weight: 700; color: #475569; width: 38%; }
-    .note { font-size: 14px; color: #475569; line-height: 1.7; margin-top: 8px; }
+    .body { padding: 32px 36px; font-size: 14.5px; line-height: 1.75; color: #334155; }
     .footer { background: #f8fafc; padding: 24px 36px; border-top: 1px solid #e2e8f0; }
     .footer p { margin: 3px 0; font-size: 13px; color: #64748b; }
     .footer strong { color: #be123c; font-size: 15px; display: block; margin-bottom: 8px; }
-    .badge { display: inline-block; background: #fef2f2; color: #be123c; border: 1px solid #fecaca; border-radius: 6px; font-size: 11px; font-weight: 700; padding: 3px 10px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -157,47 +152,30 @@ const sendCandidateToRecruiter = async (req, res) => {
       <p>Connecting Talent with Opportunities</p>
     </div>
     <div class="body">
-      <p class="greeting">
-        Greetings from <strong>Job Bridge Node</strong>.<br/><br/>
-        We are pleased to share the profile of a candidate who has applied for the position of
-        <strong>${jobTitle}</strong> at your organization through our Job Bridge Node platform.<br/><br/>
-        ${resumeUrl ? "Please find the candidate's resume link below for your review." : ""}
-      </p>
-
+      <p>Dear Recruiter,</p>
+      <p>Greetings from <em>Job Bridge Node</em>.</p>
+      <p>We are pleased to share the profile of a candidate who has applied for the position of <strong>${jobTitle}</strong> at your organization through our Job Bridge Node platform.</p>
+      <p>Please find the candidate's resume attached for your review.</p>
+      
       ${resumeHtml}
-      <br/>
 
-      <span class="badge">Candidate Details</span>
+      <p><strong>Candidate Details:</strong><br/>
+      &bull; Name: ${candidateName}<br/>
+      &bull; Position Applied: ${jobTitle}<br/>
+      &bull; Qualification: ${qualification}<br/>
+      &bull; Experience: ${experience}<br/>
+      &bull; Location: ${location}</p>
 
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Field</th>
-            <th>Information</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Name</td><td>${candidateName}</td></tr>
-          <tr><td>Position Applied</td><td>${jobTitle}</td></tr>
-          <tr><td>Qualification</td><td>${qualification}</td></tr>
-          <tr><td>Experience</td><td>${experience}</td></tr>
-          <tr><td>Location</td><td>${location}</td></tr>
-          <tr><td>Contact Number</td><td>${phone}</td></tr>
-          <tr><td>Email ID</td><td>${email}</td></tr>
-        </tbody>
-      </table>
-
-      <p class="note">
-        We believe the candidate's profile aligns with the requirements of the position and request you to
-        kindly review the application and consider them for the further selection process.<br/><br/>
-        Should you require any additional information or assistance, please feel free to contact us.<br/><br/>
-        Thank you for your time and consideration.
-      </p>
+      <p>We believe the candidate's profile aligns with the requirements of the position and request you to kindly review the application and consider them for the further selection process.</p>
+      <p>Should you require any additional information or assistance, please feel free to contact us.</p>
+      <p>Thank you for your time and consideration.</p>
+      
+      <p>Best Regards,</p>
     </div>
     <div class="footer">
       <strong>Job Bridge Node Team</strong>
       <p>Connecting Talent with Opportunities</p>
-      <p>📧 ${process.env.BREVO_SENDER_EMAIL}</p>
+      <p>📧 info.jobbridge@solidaritykarnataka.org</p>
       <p>📞 6366234200</p>
       <p>🌐 Job Bridge Node</p>
     </div>
