@@ -80,8 +80,4 @@ const candidateSchema = new mongoose.Schema({
   
 }, { timestamps: true });
 
-// Create index for email and googleId for faster lookups
-candidateSchema.index({ email: 1 });
-candidateSchema.index({ googleId: 1 }, { sparse: true });
-
 module.exports = mongoose.model("Candidate", candidateSchema);
