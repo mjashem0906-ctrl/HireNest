@@ -283,9 +283,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
       newErrors.name = "Full Name is required";
     }
 
-    if (!formData.mobileNumber?.trim()) {
-      newErrors.mobileNumber = "Mobile Number is required";
-    } else if (formData.mobileNumber.replace(/\D/g, '').length !== 10) {
+    if (formData.mobileNumber?.trim() && formData.mobileNumber.replace(/\D/g, '').length !== 10) {
       newErrors.mobileNumber = "Mobile Number must be exactly 10 digits";
     }
 
@@ -418,7 +416,6 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                     if (errors.mobileNumber) setErrors({ ...errors, mobileNumber: "" });
                   }}
                   placeholder="9876543210"
-                  required
                   error={errors.mobileNumber}
                 />
 
