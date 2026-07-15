@@ -568,7 +568,7 @@ function MemberDashboard() {
 
   // ── calculations (preserved all original calculations) ──
   const totalGrowth = getGrowthRate(members);
-
+ 
   const providers = members.filter((m) => (m.memberType || "").includes("Oppurtunity Provider")).length;
   const recruiters = recruitersCount;
 
