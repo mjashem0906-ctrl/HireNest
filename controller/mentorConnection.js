@@ -4,7 +4,7 @@ const Member = require("../models/member");
 // Create a mentor connection request
 exports.createMentorConnection = async (req, res) => {
   try {
-    const { mentorId, message } = req.body;
+    const { mentorId, message, domain, skill } = req.body;
     const userId = req.user?.userId;
 
     // JWT may not have memberId for new Google users — fall back to DB lookup
@@ -64,6 +64,8 @@ exports.createMentorConnection = async (req, res) => {
         photoUrl: mentor.photoUrl,
       },
       message,
+      domain,
+      skill,
     });
 
     await connection.save();
@@ -128,7 +130,7 @@ exports.getMentorConnectionsByMentor = async (req, res) => {
             if (userDoc?.memberId) {
               obj.userMemberId = userDoc.memberId;
             }
-          } catch (_) {}
+          } catch (_) { }
         }
         return obj;
       })

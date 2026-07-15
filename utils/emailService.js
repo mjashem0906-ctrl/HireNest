@@ -125,10 +125,28 @@ const sendAdminApplicationNotification = async (adminEmail, candidateInfo, jobTi
   await sendEmail(adminEmail, subject, htmlContent);
 };
 
+/**
+ * Notify Admin about successful password change
+ */
+const sendAdminPasswordChangedNotification = async (adminEmail, adminName) => {
+  const subject = `Your Admin Password has been updated`;
+  
+  const htmlContent = `
+    <h1>Password Change Successful</h1>
+    <p>Dear ${adminName},</p>
+    <p>This is to confirm that the password for your admin account has been successfully updated.</p>
+    <p>If you did not make this change, please contact support immediately.</p>
+    <p>Best regards,<br>Job Bridge Karnataka Team</p>
+  `;
+
+  await sendEmail(adminEmail, subject, htmlContent);
+};
+
 module.exports = {
   sendEmail,
   sendStatusUpdateNotification,
-  sendAdminApplicationNotification, 
+  sendAdminApplicationNotification,
+  sendAdminPasswordChangedNotification,
 };
 // module.exports = {
 //   sendEmail,

@@ -46,6 +46,9 @@ const mentorConnectionSchema = new mongoose.Schema(
 
     message: String,
 
+    domain: String,
+    skill: String,
+
     createdAt: {
       type: Date,
       default: Date.now,

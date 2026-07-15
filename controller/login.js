@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Activity = require("../models/activity");
 const Member = require("../models/member");
+const { sendAdminPasswordChangedNotification } = require("../utils/emailService");
 
 // Register new user
 const register = async (req, res) => {
@@ -321,6 +322,58 @@ const changePassword = async (req, res) => {
   }
 };
 
+const verifyAdminEmail = async (req, res) => {
+  const { email } = req.body;
+  const userId = req.user.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user || user.role !== "Admin") {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    if (email !== "Info.jobbridge@solidaritykarnataka.org") {
+      return res.status(400).json({ message: "Email verification failed" });
+    }
+
+    res.json({ success: true, message: "Email verified successfully" });
+  } catch (err) {
+    console.error("Verify Admin Email Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const changePasswordByEmail = async (req, res) => {
+  const { email, newPassword } = req.body;
+  const userId = req.user.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user || user.role !== "Admin") {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    if (email !== "Info.jobbridge@solidaritykarnataka.org") {
+      return res.status(400).json({ message: "Invalid email for this operation" });
+    }
+
+    const hashPwd = await bcrypt.hash(newPassword, 10);
+    user.password = hashPwd;
+    await user.save();
+
+    try {
+      await sendAdminPasswordChangedNotification(email, user.username || 'Admin');
+    } catch (emailErr) {
+      console.error("Failed to send password change notification:", emailErr);
+    }
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Change Password by Email Error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   login,
   logOut,
@@ -329,4 +382,6 @@ module.exports = {
   getAllUser,
   updateProfile,
   changePassword,
+  verifyAdminEmail,
+  changePasswordByEmail,
 };
