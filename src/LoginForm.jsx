@@ -59,11 +59,6 @@ const LoginForm = () => {
       <div className="lp-blob lp-blob-tr" />
       <div className="lp-blob lp-blob-bl" />
 
-      {/* Top-left logo — absolute, outside column flow */}
-      <div className="lp-logo">
-        <img src="/Logo.png" alt="JobBridgeNode" />
-      </div>
-
       {/* Two-column body */}
       <div className="lp-body">
 
@@ -138,6 +133,11 @@ const LoginForm = () => {
         {/* ── RIGHT (card) ── */}
         <div className="lp-right">
           <div className="lp-card">
+            {/* Logo inside the card header */}
+            <div className="lp-logo">
+              <img src="/Logo.png" alt="JobBridgeNode" />
+            </div>
+            
             <h2 className="lp-card-title">Welcome Back</h2>
             <p className="lp-card-sub">Sign in to your account</p>
 

@@ -233,7 +233,7 @@
 //         <CheckCircle2 size={18} />
 //         Shareable link copied to clipboard!
 //       </div>
-      
+
 //       {/* Header Section */}
 //       <div className={styles.header}>
 //         <div className={styles.searchWrapper}>
@@ -281,7 +281,7 @@
 //         <div className={styles.horizontalFilterContainer}>
 //           <div className={styles.filterRowWithScroll}>
 //             <div className={styles.filterRowContent}>
-              
+
 //               {/* Department */}
 //               <div className={styles.filterField}>
 //                 <label>Department</label>
@@ -412,13 +412,13 @@
 //               >
 //                 <Trash2 size={18} />
 //               </button>
-              
+
 //               <div className={styles.info}>
 //                 <div className={styles.nameRow}>
 //                   <h3>{recruiter.fullName}</h3>
 //                   <span className={styles.roleBadge}>Recruiter</span>
 //                 </div>
-                
+
 //                 <div className={styles.contact}>
 //                   <div className={styles.row}><Mail size={16} /> {recruiter.email}</div>
 //                   <div className={styles.row}><Phone size={16} /> {recruiter.phone || 'No Phone listed'}</div>
@@ -472,11 +472,11 @@ import styles from './RecruitersPage.module.scss';
 // Helper components for new UI (Sparkline, DonutChart, AvatarBadge)
 // ----------------------------------------------------------------------
 const SP = {
-  blue:   [20,22,19,25,23,28,26,30,29,33],
-  teal:   [15,17,14,19,18,22,20,24,23,27],
-  purple: [18,20,17,23,21,26,24,28,27,31],
-  orange: [10,12,11,14,13,16,15,18,17,20],
-  pink:   [8,10,9,12,11,14,13,16,15,18],
+  blue: [20, 22, 19, 25, 23, 28, 26, 30, 29, 33],
+  teal: [15, 17, 14, 19, 18, 22, 20, 24, 23, 27],
+  purple: [18, 20, 17, 23, 21, 26, 24, 28, 27, 31],
+  orange: [10, 12, 11, 14, 13, 16, 15, 18, 17, 20],
+  pink: [8, 10, 9, 12, 11, 14, 13, 16, 15, 18],
 };
 
 function Sparkline({ points, color }) {
@@ -539,14 +539,18 @@ function DonutChart({ data, size = 160, thickness = 30 }) {
               fill="none" stroke={seg.color} strokeWidth={isHov ? thickness + 4 : thickness}
               strokeDasharray={`${Math.max(pp, 0)} ${cc}`} strokeDashoffset={-seg.offset * (cc / circ)}
               strokeLinecap="round" transform={`rotate(-90 ${size / 2} ${size / 2})`}
-              style={{ transition: 'r 0.18s, stroke-width 0.18s', cursor: 'pointer',
-                filter: isHov ? `drop-shadow(0 0 7px ${seg.color}aa)` : 'none' }}
+              style={{
+                transition: 'r 0.18s, stroke-width 0.18s', cursor: 'pointer',
+                filter: isHov ? `drop-shadow(0 0 7px ${seg.color}aa)` : 'none'
+              }}
               onMouseEnter={() => setHovered(seg.index)} onMouseLeave={() => setHovered(null)} />
           );
         })}
       </svg>
-      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', pointerEvents: 'none'
+      }}>
         <span style={{ fontSize: hovSeg ? '1.3rem' : '1.6rem', fontWeight: 800, color: hovSeg ? hovSeg.color : 'var(--rec-text)', lineHeight: 1, transition: 'all 0.2s' }}>
           {hovSeg ? hovSeg.value : total}
         </span>
@@ -555,10 +559,12 @@ function DonutChart({ data, size = 160, thickness = 30 }) {
         </span>
       </div>
       {hovSeg && (
-        <div style={{ position: 'absolute', left: mousePos.x + 14, top: mousePos.y - 40,
+        <div style={{
+          position: 'absolute', left: mousePos.x + 14, top: mousePos.y - 40,
           background: '#1e293b', color: '#fff', padding: '5px 10px', borderRadius: 7,
           fontSize: '0.7rem', fontWeight: 700, pointerEvents: 'none', whiteSpace: 'nowrap',
-          zIndex: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', borderLeft: `3px solid ${hovSeg.color}`, lineHeight: 1.5 }}>
+          zIndex: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.25)', borderLeft: `3px solid ${hovSeg.color}`, lineHeight: 1.5
+        }}>
           <span style={{ color: hovSeg.color }}>{hovSeg.name}</span><br />
           {hovSeg.value} ({Math.round(hovSeg.value / total * 100)}%)
         </div>
@@ -567,7 +573,7 @@ function DonutChart({ data, size = 160, thickness = 30 }) {
   );
 }
 
-const AVATAR_COLORS = ['#6366f1','#0891b2','#d97706','#16a34a','#c0392b','#7c3aed','#ec4899'];
+const AVATAR_COLORS = ['#6366f1', '#0891b2', '#d97706', '#16a34a', '#c0392b', '#7c3aed', '#ec4899'];
 function AvatarBadge({ name, size = 36 }) {
   const initials = (name || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const color = AVATAR_COLORS[name?.charCodeAt(0) % AVATAR_COLORS.length] || '#6366f1';
@@ -602,13 +608,13 @@ const getCumulativeTrend = (list) => {
   const sorted = [...list]
     .filter(r => r.createdAt)
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  
+
   if (sorted.length === 0) return Array(10).fill(list.length);
-  
+
   const oldestDate = new Date(sorted[0].createdAt);
   const now = new Date();
   const totalTime = now - oldestDate || 1;
-  
+
   const trend = [];
   for (let i = 0; i < 10; i++) {
     const targetTime = new Date(oldestDate.getTime() + (totalTime / 9) * i);
@@ -626,11 +632,11 @@ const getActiveTrend = (list) => {
 const getNewTrend = (list) => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
+
   const sorted = [...list]
     .filter(r => r.createdAt && new Date(r.createdAt) >= thirtyDaysAgo)
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    
+
   const trend = [];
   const stepMs = (30 * 24 * 3600 * 1000) / 9;
   for (let i = 0; i < 10; i++) {
@@ -643,19 +649,19 @@ const getNewTrend = (list) => {
 
 const getGrowthRate = (list) => {
   if (list.length === 0) return 0;
-  
+
   const now = new Date();
   const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-  
+
   const thisMonthCount = list.filter(r => r.createdAt && new Date(r.createdAt) >= thisMonthStart).length;
   const lastMonthCount = list.filter(r => r.createdAt && new Date(r.createdAt) >= lastMonthStart && new Date(r.createdAt) <= lastMonthEnd).length;
-  
+
   if (lastMonthCount === 0) {
     return thisMonthCount > 0 ? 100 : 0;
   }
-  
+
   const growth = ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100;
   return Math.round(growth);
 };
@@ -669,10 +675,10 @@ const getNewGrowthRate = (list) => {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 3600 * 1000);
-  
+
   const current30d = list.filter(r => r.createdAt && new Date(r.createdAt) >= thirtyDaysAgo).length;
   const previous30d = list.filter(r => r.createdAt && new Date(r.createdAt) >= sixtyDaysAgo && new Date(r.createdAt) < thirtyDaysAgo).length;
-  
+
   if (previous30d === 0) {
     return current30d > 0 ? 100 : 0;
   }
@@ -715,9 +721,9 @@ const RecruitersPage = () => {
     rafRef.current[cardId] = requestAnimationFrame(() => {
       const rect = el.getBoundingClientRect();
       const px = (e.clientX - rect.left) / rect.width;
-      const py = (e.clientY - rect.top)  / rect.height;
+      const py = (e.clientY - rect.top) / rect.height;
       const max = 7;
-      
+
       el.style.setProperty("--rx", `${(-(py - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--ry", `${((px - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--mx", `${(px * 100).toFixed(2)}%`);
@@ -882,16 +888,16 @@ const RecruitersPage = () => {
     industryMap[ind] = (industryMap[ind] || 0) + 1;
   });
   const topIndustries = Object.entries(industryMap).length > 0
-    ? Object.entries(industryMap).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 6)
+    ? Object.entries(industryMap).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 6)
     : [{ name: 'General', value: totalRecruiters }];
   const maxInd = topIndustries[0]?.value || 1;
   const totalInd = topIndustries.reduce((s, i) => s + i.value, 0) || 1;
-  const IND_COLORS = ['#2563eb','#0891b2','#7c3aed','#d97706','#16a34a','#9ca3af'];
+  const IND_COLORS = ['#2563eb', '#0891b2', '#7c3aed', '#d97706', '#16a34a', '#9ca3af'];
 
   const donutData = [
-    { name: 'Active',   value: activeCount  || totalRecruiters, color: '#22c55e' },
+    { name: 'Active', value: activeCount || totalRecruiters, color: '#22c55e' },
     { name: 'Inactive', value: inactiveCount || 0, color: '#ef4444' },
-    { name: 'Pending',  value: pendingCount  || 0, color: '#f97316' },
+    { name: 'Pending', value: pendingCount || 0, color: '#f97316' },
   ];
 
   const recentRecruiters = [...recruiters]
@@ -901,9 +907,9 @@ const RecruitersPage = () => {
   // ----- Table sorting & pagination -----
   const sortedRecruiters = useMemo(() => {
     const list = [...filteredRecruiters];
-    if (sortBy === 'Newest') return list.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-    if (sortBy === 'Oldest') return list.sort((a,b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-    if (sortBy === 'Name A-Z') return list.sort((a,b) => (a.fullName || '').localeCompare(b.fullName || ''));
+    if (sortBy === 'Newest') return list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    if (sortBy === 'Oldest') return list.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    if (sortBy === 'Name A-Z') return list.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
     return list;
   }, [filteredRecruiters, sortBy]);
 
@@ -926,7 +932,7 @@ const RecruitersPage = () => {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `recruiters_${type.toLowerCase()}_${new Date().toISOString().slice(0,19)}.csv`;
+    link.download = `recruiters_${type.toLowerCase()}_${new Date().toISOString().slice(0, 19)}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
   };
@@ -1041,29 +1047,29 @@ const RecruitersPage = () => {
         {/* Stat Cards */}
         <div className={styles.statRow}>
           {[
-            { 
-              label: 'Total Recruiters',     
-              value: totalRecruiters, 
-              icon: Users,     
-              color: '#2563eb', 
-              spark: getCumulativeTrend(recruiters),   
-              growth: getGrowthRate(recruiters) 
+            {
+              label: 'Total Recruiters',
+              value: totalRecruiters,
+              icon: Users,
+              color: '#2563eb',
+              spark: getCumulativeTrend(recruiters),
+              growth: getGrowthRate(recruiters)
             },
-            { 
-              label: 'Active Recruiters',    
-              value: activeCount,      
-              icon: Building2, 
-              color: '#0891b2', 
-              spark: getActiveTrend(recruiters),   
-              growth: getActiveGrowthRate(recruiters) 
+            {
+              label: 'Active Recruiters',
+              value: activeCount,
+              icon: Building2,
+              color: '#0891b2',
+              spark: getActiveTrend(recruiters),
+              growth: getActiveGrowthRate(recruiters)
             },
-            { 
-              label: 'New Recruiters (30d)', 
-              value: newRecruitersCount, 
-              icon: UserPlus, 
-              color: '#d97706', 
-              spark: getNewTrend(recruiters), 
-              growth: getNewGrowthRate(recruiters)  
+            {
+              label: 'New Recruiters (30d)',
+              value: newRecruitersCount,
+              icon: UserPlus,
+              color: '#d97706',
+              spark: getNewTrend(recruiters),
+              growth: getNewGrowthRate(recruiters)
             },
           ].map((s, i) => (
             <div key={i} className={styles.statCard}>
@@ -1274,12 +1280,12 @@ const RecruitersPage = () => {
                     >
                       <div className={styles.cardGlow} />
                       <div className={styles.cardShine} />
-                      
+
                       <div className={styles.cardHeaderRow}>
                         <div className={styles.cardAvatarWrap}>
                           <AvatarBadge name={r.fullName} size={36} />
                         </div>
-                        
+
                         <div className={styles.cardHeaderInfo}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                             <h3 className={styles.cardNameText}>{r.fullName}</h3>
@@ -1332,7 +1338,7 @@ const RecruitersPage = () => {
                         >
                           <Eye size={14} /> Profile
                         </button>
-                        
+
                         <button
                           className={styles.cardDeleteBtn}
                           onClick={(e) => {

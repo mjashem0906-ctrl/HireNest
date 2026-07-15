@@ -339,14 +339,6 @@
   box-shadow: var(--m-shadow-sm);
   padding: 0.9rem 1rem 0.75rem;
   transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--m-shadow-lg);
-    border-color: var(--m-border-h);
-
-    .statIconWrap { transform: scale(1.1) rotate(5deg); }
-  }
 }
 
 .statCardTop {
@@ -1307,11 +1299,6 @@
   .memberCard {
     background: #0f172a;
     border-color: rgba(148,163,184,0.15);
-
-    &:hover {
-      border-color: rgba(248,113,113,0.4);
-      box-shadow: 0 8px 28px rgba(0,0,0,0.5);
-    }
   }
 
   /* ── view toggle buttons ── */
@@ -1386,13 +1373,6 @@
     border-color: rgba(248,113,113,0.25) !important;
     color: #fca5a5 !important;
     box-shadow: none !important;
-
-    &:hover {
-      background: rgba(248,113,113,0.16) !important;
-      border-color: rgba(248,113,113,0.4) !important;
-      color: #fecaca !important;
-      transform: translateY(-1px);
-    }
   }
 
   /* ── stat cards ── */

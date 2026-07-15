@@ -49,6 +49,8 @@ const MentorDetails = () => {
   const [connectingId, setConnectingId] = useState(null);
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectMessage, setConnectMessage] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
 
   // ── 3D tilt refs & handlers ─────────────────────────────
   const mainCardRef = useRef(null);
@@ -64,9 +66,9 @@ const MentorDetails = () => {
     rafRef.current[cardId] = requestAnimationFrame(() => {
       const rect = el.getBoundingClientRect();
       const px = (e.clientX - rect.left) / rect.width;
-      const py = (e.clientY - rect.top)  / rect.height;
+      const py = (e.clientY - rect.top) / rect.height;
       const max = 7; // subtle premium tilt
-      
+
       el.style.setProperty("--rx", `${(-(py - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--ry", `${((px - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--mx", `${(px * 100).toFixed(2)}%`);
@@ -122,7 +124,7 @@ const MentorDetails = () => {
           (c) => String(c.mentorId) === String(id)
         );
         setConnectStatus(conn?.status || null);
-      } catch (_) {}
+      } catch (_) { }
     };
     fetchMyStatus();
   }, [user?.userId, id]);
@@ -353,7 +355,7 @@ const MentorDetails = () => {
         </button>
       </div>
 
-      <div 
+      <div
         ref={mainCardRef}
         onMouseMove={(e) => handleCardMouseMove(e, mainCardRef, "main")}
         onMouseLeave={() => handleCardMouseLeave(mainCardRef, "main")}
@@ -455,7 +457,7 @@ const MentorDetails = () => {
         className={`${styles.contentGrid} ${styles.animateIn}`}
         style={{ animationDelay: "0.12s" }}
       >
-        <section 
+        <section
           ref={personalCardRef}
           onMouseMove={(e) => handleCardMouseMove(e, personalCardRef, "personal")}
           onMouseLeave={() => handleCardMouseLeave(personalCardRef, "personal")}
@@ -464,7 +466,7 @@ const MentorDetails = () => {
         >
           <div className={styles.cardGlow} />
           <div className={styles.cardShine} />
-          
+
           <div className={styles.cardHeader}>
             <div className={styles.iconBox}>
               <User size={20} />
@@ -497,17 +499,7 @@ const MentorDetails = () => {
               )}
             </div>
 
-            <div className={`${styles.item} ${!canSeeContact ? styles.hiddenContactItem : ''}`}>
-              <label>Phone Number</label>
-              {canSeeContact ? (
-                <div className={styles.value}>{mentor?.mobileNumber || "—"}</div>
-              ) : (
-                <div className={styles.hiddenContact}>
-                  <Lock size={14} />
-                  <span>Connect to view</span>
-                </div>
-              )}
-            </div>
+
 
             {isAdmin && (
               <>
@@ -529,7 +521,7 @@ const MentorDetails = () => {
           </div>
         </section>
 
-        <section 
+        <section
           ref={professionalCardRef}
           onMouseMove={(e) => handleCardMouseMove(e, professionalCardRef, "professional")}
           onMouseLeave={() => handleCardMouseLeave(professionalCardRef, "professional")}
@@ -608,6 +600,32 @@ const MentorDetails = () => {
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h2>Connect with {mentor.name}</h2>
             <p>Send a message to {mentor.designation || "this mentor"} (optional)</p>
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className={styles.selectInput}
+              style={{ marginBottom: "10px" }}
+            >
+              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Domains</option>
+              {mentor?.fieldofStudy_Interest?.split(",").map((domain, idx) => (
+                <option key={`domain-${idx}`} value={domain.trim()} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                  {domain.trim()}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedSkill}
+              onChange={(e) => setSelectedSkill(e.target.value)}
+              className={styles.selectInput}
+              style={{ marginBottom: "10px" }}
+            >
+              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Skills</option>
+              {mentor?.skills?.map((skill, idx) => (
+                <option key={`skill-${idx}`} value={skill} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                  {skill}
+                </option>
+              ))}
+            </select>
             <textarea
               placeholder="Tell them why you'd like to connect..."
               value={connectMessage}
@@ -648,7 +666,7 @@ const MentorDetails = () => {
           className={`${styles.requestsSectionWrap} ${styles.animateIn}`}
           style={{ animationDelay: "0.22s" }}
         >
-          <section 
+          <section
             ref={requestsCardRef}
             onMouseMove={(e) => handleCardMouseMove(e, requestsCardRef, "requests")}
             onMouseLeave={() => handleCardMouseLeave(requestsCardRef, "requests")}

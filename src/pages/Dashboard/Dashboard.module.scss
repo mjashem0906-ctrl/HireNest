@@ -668,10 +668,6 @@
 }
 
 .statCard:hover {
-  transform: translateY(-4px);
-  border-color: var(--theme-color);
-  box-shadow: 0 12px 24px var(--glow-color), 
-              0 0 15px var(--glow-color);
 }
 
 .statCardTop {
@@ -1214,9 +1210,6 @@
 /* ── card hover ── */
 .card {
   transition: box-shadow 0.2s, border-color 0.2s;
-}
-.card:hover {
-  box-shadow: var(--card-shadow-hover);
 }
 
 /* ── district row hover: add background ── */

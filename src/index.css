@@ -35,6 +35,32 @@ html, body {
   filter: blur(2px);
 }
 
+/* Card logo (centered inside login card) */
+.lp-card .lp-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 1rem 0;
+  /* Ensure card logo is not affected by global .lp-logo absolute rules */
+  position: static !important;
+  z-index: 2;
+  filter: drop-shadow(0 0 14px rgba(26, 120, 194, 0.4)) drop-shadow(0 0 28px rgba(26, 120, 194, 0.2));
+  transition: filter 0.3s ease;
+}
+
+.lp-card .lp-logo:hover {
+  filter: drop-shadow(0 0 20px rgba(26, 120, 194, 0.65)) drop-shadow(0 0 40px rgba(26, 120, 194, 0.3));
+}
+
+.lp-card .lp-logo img {
+  height: 80px;
+  width: auto;
+  max-width: 80%;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
 /* Top-right blob — glowing pulse */
 .lp-blob-tr {
   width: 380px;

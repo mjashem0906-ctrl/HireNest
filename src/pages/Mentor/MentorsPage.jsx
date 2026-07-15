@@ -4,6 +4,7 @@ import {
   Mail,
   MapPin,
   Briefcase,
+  BriefcaseBusiness,
   TrendingUp,
   CheckCircle2,
   XCircle,
@@ -11,6 +12,7 @@ import {
   UserPlus,
   Send,
   Eye,
+  EyeOff,
   Shield,
   Star,
   ChevronLeft,
@@ -23,6 +25,8 @@ import {
   List,
   ChevronDown,
   Trash2,
+  FileText,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axios";
@@ -30,6 +34,7 @@ import styles from "./Mentors.module.scss";
 import AddMentor from "./AddMentor";
 import { useAuth } from "../../context/AuthContext";
 import FilterStatus from "../../components/Filter/FIlterStatus";
+import MentorConnectionsAdmin from "./MentorConnectionsAdmin";
 
 /* ==========================================================================
    SPARKLINE CHART COMPONENT (Inline SVG Gradients)
@@ -74,6 +79,7 @@ const Sparkline = ({ color }) => {
 };
 
 const MentorsPage = () => {
+  const [view, setView] = useState("mentors"); // 'mentors' | 'applicants'
   const [mentors, setMentors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -91,10 +97,17 @@ const MentorsPage = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [connectMessage, setConnectMessage] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
+
+  // Mentor connections states (for applicants view)
+  const [mentorConnections, setMentorConnections] = useState([]);
+  const [myConnections, setMyConnections] = useState([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
 
   // Custom Dropdown menu state
   const [openDropdown, setOpenDropdown] = useState(null); // null | "domain" | "district" | "experience" | "gender"
@@ -120,9 +133,9 @@ const MentorsPage = () => {
     rafRef.current[cardId] = requestAnimationFrame(() => {
       const rect = el.getBoundingClientRect();
       const px = (e.clientX - rect.left) / rect.width;
-      const py = (e.clientY - rect.top)  / rect.height;
+      const py = (e.clientY - rect.top) / rect.height;
       const max = 7; // subtle premium tilt
-      
+
       el.style.setProperty("--rx", `${(-(py - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--ry", `${((px - 0.5) * max * 2).toFixed(2)}deg`);
       el.style.setProperty("--mx", `${(px * 100).toFixed(2)}%`);
@@ -143,6 +156,25 @@ const MentorsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const role = user?.role?.toLowerCase?.() || "";
+  const memberType = user?.memberType?.toLowerCase?.() || "";
+
+  // Show candidate guidance for all roles except Admin and IT_Member
+  // This mirrors the sidebar logic: "Member", "Mentor", "Job", "Candidate" all get candidate view
+  const isCandidate =
+    role === "candidate" ||
+    role === "member" ||
+    role === "mentor" ||
+    role === "job" ||
+    memberType === "candidate" ||
+    memberType === "member" ||
+    (user?.role && !["Admin", "IT_Member"].includes(user.role));
+
+  const isAdminOrIt =
+    role === "admin" ||
+    role === "it_member" ||
+    (user?.role && ["Admin", "IT_Member"].includes(user.role));
+
   useEffect(() => {
     fetchMentors();
   }, []);
@@ -152,6 +184,16 @@ const MentorsPage = () => {
       fetchUserConnections();
     }
   }, [user?.userId]);
+
+  useEffect(() => {
+    if (view === "applicants") {
+      if (isAdminOrIt) {
+        fetchMentorConnections();
+      } else {
+        fetchUserConnections();
+      }
+    }
+  }, [view, isAdminOrIt]);
 
   const fetchMentors = async () => {
     try {
@@ -171,7 +213,9 @@ const MentorsPage = () => {
 
   const fetchUserConnections = async () => {
     try {
+      setConnectionsLoading(true);
       const res = await API.get("/api/mentor-connections/user/my-connections");
+      setMyConnections(res.data || []);
 
       const statusMap = new Map();
       (res.data || []).forEach((conn) => {
@@ -181,6 +225,34 @@ const MentorsPage = () => {
       setConnectedMentors(statusMap);
     } catch (e) {
       console.error("Error fetching connections:", e);
+    } finally {
+      setConnectionsLoading(false);
+    }
+  };
+
+  const fetchMentorConnections = async () => {
+    try {
+      setConnectionsLoading(true);
+      const res = await API.get("/api/mentor-connections/admin/all");
+      setMentorConnections(res.data || []);
+    } catch (error) {
+      console.error("Error fetching mentor connections:", error);
+      setMentorConnections([]);
+    } finally {
+      setConnectionsLoading(false);
+    }
+  };
+
+  const handleMentorConnectionStatusChange = async (connectionId, newStatus) => {
+    try {
+      await API.put(`/api/mentor-connections/${connectionId}`, {
+        status: newStatus,
+      });
+      alert(`Status updated to ${newStatus}`);
+      fetchMentorConnections();
+    } catch (error) {
+      console.error("Failed to update status", error);
+      alert("Failed to update status. Please try again.");
     }
   };
 
@@ -201,18 +273,30 @@ const MentorsPage = () => {
   const handleSendConnection = async () => {
     if (!selectedMentor) return;
 
+    const hasDomains = !!selectedMentor?.fieldofStudy_Interest?.trim();
+    const hasSkills = !!(selectedMentor?.skills && selectedMentor.skills.length > 0);
+
+    if ((hasDomains && !selectedDomain) || (hasSkills && !selectedSkill)) {
+      alert("Please select a Domain and a Skill to connect with this mentor.");
+      return;
+    }
+
     try {
       setConnectingId(selectedMentor._id);
 
       const response = await API.post("/api/mentor-connections", {
         mentorId: selectedMentor._id,
         message: connectMessage,
+        domain: selectedDomain,
+        skill: selectedSkill,
       });
 
       if (response.status === 201) {
         setConnectedMentors((prev) => new Map([...prev, [String(selectedMentor._id), "pending"]]));
         setShowConnectModal(false);
         setConnectMessage("");
+        setSelectedDomain("");
+        setSelectedSkill("");
         alert("Connection request sent successfully!");
       }
     } catch (error) {
@@ -225,25 +309,6 @@ const MentorsPage = () => {
 
   const getConnectionStatus = (mentorId) => connectedMentors.get(String(mentorId));
 
-  const role = user?.role?.toLowerCase?.() || "";
-  const memberType = user?.memberType?.toLowerCase?.() || "";
-
-  // Show candidate guidance for all roles except Admin and IT_Member
-  // This mirrors the sidebar logic: "Member", "Mentor", "Job", "Candidate" all get candidate view
-  const isCandidate =
-    role === "candidate" ||
-    role === "member" ||
-    role === "mentor" ||
-    role === "job" ||
-    memberType === "candidate" ||
-    memberType === "member" ||
-    (user?.role && !["Admin", "IT_Member"].includes(user.role));
-
-  const isAdminOrIt =
-    role === "admin" ||
-    role === "it_member" ||
-    (user?.role && ["Admin", "IT_Member"].includes(user.role));
-
   const handleDeleteMentor = async (id) => {
     if (window.confirm("Are you sure you want to PERMANENTLY delete this mentor?")) {
       try {
@@ -255,6 +320,20 @@ const MentorsPage = () => {
         alert("Failed to delete mentor.");
       }
     }
+  };
+
+  const renderStatusBadge = (status) => {
+    const statusMap = {
+      pending: { icon: "⏳", text: "Pending", key: "pending" },
+      accepted: { icon: "✅", text: "Accepted", key: "accepted" },
+      rejected: { icon: "❌", text: "Rejected", key: "rejected" },
+    };
+    const s = statusMap[status] || statusMap.pending;
+    return (
+      <div className={styles.statusBadge} data-status={s.key}>
+        <span>{s.icon}</span> <span>{s.text}</span>
+      </div>
+    );
   };
 
   // Dynamic filter lists
@@ -372,7 +451,7 @@ const MentorsPage = () => {
       if (filterValues.experience) {
         const expVal = parseFloat(m.workExp);
         const isExpValid = !isNaN(expVal);
-        
+
         switch (filterValues.experience) {
           case "<1":
             matchesExperience = isExpValid && expVal < 1;
@@ -400,7 +479,7 @@ const MentorsPage = () => {
   // ==========================================================================
   const totalMentors = mentors.length;
   const activeMentors = mentors.length;
-  
+
   const newMentors = React.useMemo(() => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -424,7 +503,7 @@ const MentorsPage = () => {
   // PAGINATION AND SLICING LOGIC
   // ==========================================================================
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-  
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -465,31 +544,61 @@ const MentorsPage = () => {
   return (
     <div className={styles.mentorsContainer}>
       {/* ==========================================================================
-         TOP CONTROLS / TOOLBAR
+         SINGLE-ROW HEADER — matches Jobs page layout exactly
          ========================================================================== */}
-      <div className={styles.topToolbar}>
-        <div className={styles.searchAndFilterArea}>
-          <div className={styles.searchWrapper}>
-            <Search className={styles.searchIcon} size={16} />
-            <input
-              type="text"
-              value={searchTerm}
-              placeholder="Search by name, expertise or role..."
-              onChange={handleSearchChange}
-            />
+      <div className={styles.mentorHeaderWrapper}>
+        <div className={styles.mentorHeaderInner}>
+          <div className={styles.mentorTopBar}>
+
+            {/* Search */}
+            <div className={styles.mentorCardSearch}>
+              <div className={styles.mentorSearchIcon}><Search size={20} /></div>
+              <input
+                type="text"
+                value={searchTerm}
+                placeholder="Search by name, expertise or role..."
+                onChange={handleSearchChange}
+              />
+            </div>
+
+            {/* Tabs: Mentors | Applicants */}
+            <div className={styles.mentorTabsContainer}>
+              <div
+                className={`${styles.mentorTab} ${view === "mentors" ? styles.mentorTabActive : ""}`}
+                onClick={() => setView("mentors")}
+                role="button" tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter") setView("mentors"); }}
+              >
+                <div className={styles.mentorTabIcon}><Shield size={22} /></div>
+                <button type="button" className={styles.mentorTabLabel}>Mentors</button>
+              </div>
+
+              <div
+                className={`${styles.mentorTab} ${view === "applicants" ? styles.mentorTabActive : ""}`}
+                onClick={() => setView("applicants")}
+                role="button" tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter") setView("applicants"); }}
+              >
+                <div className={styles.mentorTabIcon}><BriefcaseBusiness size={22} /></div>
+                <button type="button" className={styles.mentorTabLabel}>Applicants</button>
+              </div>
+            </div>
+
+            {/* Show Filters + Add Mentor */}
+            <div className={styles.mentorExportButtons}>
+              <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                className={`${styles.mentorFilterToggleBtn} ${showFilters ? styles.mentorFilterToggleBtnActive : ""}`}
+              >
+                {showFilters
+                  ? <><EyeOff size={15} /> Hide Filters</>
+                  : <><Filter size={15} /> Show Filters</>}
+              </button>
+              <AddMentor onSuccess={fetchMentors} />
+            </div>
+
           </div>
-        </div>
-
-        <div className={styles.actionGroup}>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
-          >
-            {showFilters ? <X size={15} /> : <Filter size={15} />}
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </button>
-
-          <AddMentor onSuccess={fetchMentors} />
         </div>
       </div>
 
@@ -584,7 +693,7 @@ const MentorsPage = () => {
          CANDIDATE MENTOR GUIDANCE CARD (only shown for candidate/member users)
          ========================================================================== */}
       {isCandidate && (
-        <section 
+        <section
           data-card-id="guidance"
           onMouseMove={handleCardMouseMoveDirect}
           onMouseLeave={handleCardMouseLeaveDirect}
@@ -684,7 +793,7 @@ const MentorsPage = () => {
 
       <div className={styles.metricsGrid}>
         {/* Card 1: Total Mentors */}
-        <div 
+        <div
           data-card-id="metric-total"
           onMouseMove={handleCardMouseMoveDirect}
           onMouseLeave={handleCardMouseLeaveDirect}
@@ -707,7 +816,7 @@ const MentorsPage = () => {
         </div>
 
         {/* Card 2: Active Mentors */}
-        <div 
+        <div
           data-card-id="metric-active"
           onMouseMove={handleCardMouseMoveDirect}
           onMouseLeave={handleCardMouseLeaveDirect}
@@ -730,7 +839,7 @@ const MentorsPage = () => {
         </div>
 
         {/* Card 3: New Mentors */}
-        <div 
+        <div
           data-card-id="metric-new"
           onMouseMove={handleCardMouseMoveDirect}
           onMouseLeave={handleCardMouseLeaveDirect}
@@ -753,7 +862,7 @@ const MentorsPage = () => {
         </div>
 
         {/* Card 4: Average Experience */}
-        <div 
+        <div
           data-card-id="metric-avg"
           onMouseMove={handleCardMouseMoveDirect}
           onMouseLeave={handleCardMouseLeaveDirect}
@@ -777,372 +886,646 @@ const MentorsPage = () => {
       </div>
 
       {/* ==========================================================================
-         MENTORS DATA CONTENT (LIST TABLE OR CARD GRID VIEW)
-         ========================================================================== */}
-      {/* ==========================================================================
-         DIRECTORY SECTION HEADER (WITH VIEW TOGGLE)
-         ========================================================================== */}
+       DIRECTORY SECTION HEADER (WITH VIEW TOGGLE)
+       ========================================================================== */}
       <div className={styles.directoryHeaderRow}>
         <div className={styles.directoryTitleGroup}>
-          <h2>Mentors Directory</h2>
+          <h2>{view === "mentors" ? "Mentors Directory" : "Manage Applications"}</h2>
           <span className={styles.directorySub}>
-            Showing <strong>{filtered.length}</strong> of <strong>{mentors.length}</strong> active job mentors
+            {view === "mentors" ? (
+              <>Showing <strong>{filtered.length}</strong> of <strong>{mentors.length}</strong> active job mentors</>
+            ) : isAdminOrIt ? (
+              <>Showing <strong>{filtered.length}</strong> of <strong>{mentors.length}</strong> active mentor applications</>
+            ) : (
+              <>Showing <strong>{myConnections.length}</strong> active mentor {myConnections.length === 1 ? "application" : "applications"}</>
+            )}
           </span>
         </div>
 
-        <div className={styles.toggleGroupContainer}>
-          <button
-            onClick={() => setViewType("list")}
-            className={`${styles.toggleBtn} ${viewType === "list" ? styles.activeToggle : ""}`}
-            title="List View"
-          >
-            <List size={16} />
-          </button>
-          <button
-            onClick={() => setViewType("card")}
-            className={`${styles.toggleBtn} ${viewType === "card" ? styles.activeToggle : ""}`}
-            title="Card View"
-          >
-            <Grid size={16} />
-          </button>
-        </div>
+        {view === "mentors" && (
+          <div className={styles.toggleGroupContainer}>
+            <button
+              onClick={() => setViewType("list")}
+              className={`${styles.toggleBtn} ${viewType === "list" ? styles.activeToggle : ""}`}
+              title="List View"
+            >
+              <List size={16} />
+            </button>
+            <button
+              onClick={() => setViewType("card")}
+              className={`${styles.toggleBtn} ${viewType === "card" ? styles.activeToggle : ""}`}
+              title="Card View"
+            >
+              <Grid size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
-      <div id="mentorTable" className={viewType === "list" ? styles.tableContainerCard : styles.cardsViewWrapper}>
-        {loading ? (
-          <div className={styles.loading}>
-            <Clock size={16} /> Loading mentors directory...
-          </div>
-        ) : (
-          <>
-            {viewType === "list" ? (
-              <div className={styles.responsiveTableWrap}>
-                <table className={styles.mentorsTable}>
-                  <thead>
-                    <tr>
-                      <th>Mentor</th>
-                      <th>Expertise / Role</th>
-                      <th>Domain</th>
-                      <th>Experience</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentMentors.length === 0 ? (
+      <div id="mentorTable" className={view === "mentors" ? (viewType === "list" ? styles.tableContainerCard : styles.cardsViewWrapper) : styles.applicantsViewContainer}>
+        {view === "mentors" ? (
+          loading ? (
+            <div className={styles.loading}>
+              <Clock size={16} /> Loading mentors directory...
+            </div>
+          ) : (
+            <>
+              {viewType === "list" ? (
+                <div className={styles.responsiveTableWrap}>
+                  <table className={styles.mentorsTable}>
+                    <thead>
                       <tr>
-                        <td colSpan="7" className={styles.emptyStateMessage}>
-                          No mentors found matching the filters.
-                        </td>
+                        <th>Mentor</th>
+                        <th>Expertise / Role</th>
+                        <th>Domain</th>
+                        <th>Experience</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ) : (
-                      currentMentors.map((m) => (
-                        <tr key={m._id} onClick={() => navigate(`/mentors/${m._id}`)}>
-                          {/* Column 1: Profile & Email */}
-                          <td data-label="Mentor">
-                            <div className={styles.mentorProfileCell}>
-                              <div className={styles.avatarInitialCircle}>
+                    </thead>
+                    <tbody>
+                      {currentMentors.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className={styles.emptyStateMessage}>
+                            No mentors found matching the filters.
+                          </td>
+                        </tr>
+                      ) : (
+                        currentMentors.map((m) => (
+                          <tr key={m._id} onClick={() => navigate(`/mentors/${m._id}`)}>
+                            {/* Column 1: Profile & Email */}
+                            <td data-label="Mentor">
+                              <div className={styles.mentorProfileCell}>
+                                <div className={styles.avatarInitialCircle}>
+                                  {getInitials(m.name)}
+                                </div>
+                                <div className={styles.mentorMetaDetails}>
+                                  <span className={styles.mentorNameText}>{m.name}</span>
+                                  <span className={styles.mentorEmailText}>{m.email || "No email"}</span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Column 2: Expertise / Designation */}
+                            <td data-label="Expertise">
+                              {m.designation ? (
+                                <span className={styles.roleText}>{m.designation}</span>
+                              ) : (
+                                <div className={styles.dashCircleIcon}>
+                                  <Minus size={10} strokeWidth={3} />
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Column 3: Domain */}
+                            <td data-label="Domain">
+                              <span className={styles.domainCell}>
+                                {m.fieldofStudy_Interest ? m.fieldofStudy_Interest.split(",")[0].trim() : "General"}
+                              </span>
+                            </td>
+
+                            {/* Column 4: Experience */}
+                            <td data-label="Experience">
+                              <span className={styles.experienceCell}>
+                                {m.workExp ? `${m.workExp} Years` : "Experience N/A"}
+                              </span>
+                            </td>
+
+                            {/* Column 5: Location */}
+                            <td data-label="Location">
+                              <div className={styles.locationCell}>
+                                <MapPin size={13} />
+                                <span>{m.district || "Remote"}</span>
+                              </div>
+                            </td>
+
+                            {/* Column 6: Status Pill */}
+                            <td data-label="Status">
+                              <span className={`${styles.statusBadge} ${styles.available}`}>
+                                Available
+                              </span>
+                            </td>
+
+                            {/* Column 7: Actions */}
+                            <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
+                              <div className={styles.actionsCell}>
+                                {/* View details eye button */}
+                                <button
+                                  onClick={() => navigate(`/mentors/${m._id}`)}
+                                  className={`${styles.actionCircleBtn} ${styles.viewDetails}`}
+                                  title="View Details"
+                                >
+                                  <Eye size={14} />
+                                </button>
+
+                                {/* Candidate connect button */}
+                                {isCandidate && (() => {
+                                  const connStatus = getConnectionStatus(m._id);
+                                  const isSending = connectingId === m._id;
+
+                                  let btnClass = styles.actionCircleBtn;
+                                  let btnTitle = "Connect with Mentor";
+                                  let btnIcon = <UserPlus size={14} />;
+                                  let isDisabled = isSending;
+
+                                  if (connStatus === "accepted") {
+                                    btnClass = `${styles.actionCircleBtn} ${styles.connected}`;
+                                    btnIcon = <CheckCircle2 size={14} />;
+                                    btnTitle = "Connected";
+                                    isDisabled = true;
+                                  } else if (connStatus === "rejected") {
+                                    btnClass = `${styles.actionCircleBtn} ${styles.rejected}`;
+                                    btnIcon = <XCircle size={14} />;
+                                    btnTitle = "Rejected";
+                                    isDisabled = true;
+                                  } else if (connStatus === "pending") {
+                                    btnClass = `${styles.actionCircleBtn} ${styles.pending}`;
+                                    btnIcon = <Clock size={14} />;
+                                    btnTitle = "Pending Connection";
+                                    isDisabled = true;
+                                  }
+
+                                  return (
+                                    <button
+                                      onClick={(e) => handleConnectClick(e, m)}
+                                      disabled={isDisabled}
+                                      className={btnClass}
+                                      title={btnTitle}
+                                    >
+                                      {isSending ? "..." : btnIcon}
+                                    </button>
+                                  );
+                                })()}
+
+                                {/* Admin/IT Delete button */}
+                                {isAdminOrIt && (
+                                  <button
+                                    onClick={() => handleDeleteMentor(m._id)}
+                                    className={`${styles.actionCircleBtn} ${styles.deleteBtn}`}
+                                    title="Delete Mentor"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                )}
+
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.mentorCardGrid}>
+                  {currentMentors.length === 0 ? (
+                    <div className={styles.emptyStateCardMessage}>
+                      No mentors found matching the filters.
+                    </div>
+                  ) : (
+                    currentMentors.map((m) => {
+                      const connStatus = getConnectionStatus(m._id);
+                      const isSending = connectingId === m._id;
+                      return (
+                        <div
+                          key={m._id}
+                          data-card-id={`mentor-${m._id}`}
+                          onMouseMove={handleCardMouseMoveDirect}
+                          onMouseLeave={handleCardMouseLeaveDirect}
+                          className={styles.premiumMentorCard}
+                          onClick={() => navigate(`/mentors/${m._id}`)}
+                        >
+                          <div className={styles.cardGlow} />
+                          <div className={styles.cardShine} />
+
+                          <div className={styles.cardHeaderRow}>
+                            <div className={styles.cardAvatarWrap}>
+                              <div className={styles.cardAvatarCircle}>
                                 {getInitials(m.name)}
                               </div>
-                              <div className={styles.mentorMetaDetails}>
-                                <span className={styles.mentorNameText}>{m.name}</span>
-                                <span className={styles.mentorEmailText}>{m.email || "No email"}</span>
-                              </div>
+                              <span className={styles.cardOnlineDot} />
                             </div>
-                          </td>
 
-                          {/* Column 2: Expertise / Designation */}
-                          <td data-label="Expertise">
-                            {m.designation ? (
-                              <span className={styles.roleText}>{m.designation}</span>
-                            ) : (
-                              <div className={styles.dashCircleIcon}>
-                                <Minus size={10} strokeWidth={3} />
-                              </div>
-                            )}
-                          </td>
+                            <div className={styles.cardHeaderInfo}>
+                              <h3 className={styles.cardNameText}>{m.name}</h3>
+                              <span className={styles.cardEmailText}>{m.email || "No email"}</span>
+                            </div>
+                          </div>
 
-                          {/* Column 3: Domain */}
-                          <td data-label="Domain">
-                            <span className={styles.domainCell}>
+                          <div className={styles.cardDomainBadgeRow}>
+                            <span className={styles.cardDomainBadge}>
                               {m.fieldofStudy_Interest ? m.fieldofStudy_Interest.split(",")[0].trim() : "General"}
                             </span>
-                          </td>
-
-                          {/* Column 4: Experience */}
-                          <td data-label="Experience">
-                            <span className={styles.experienceCell}>
-                              {m.workExp ? `${m.workExp} Years` : "Experience N/A"}
-                            </span>
-                          </td>
-
-                          {/* Column 5: Location */}
-                          <td data-label="Location">
-                            <div className={styles.locationCell}>
-                              <MapPin size={13} />
-                              <span>{m.district || "Remote"}</span>
-                            </div>
-                          </td>
-
-                          {/* Column 6: Status Pill */}
-                          <td data-label="Status">
                             <span className={`${styles.statusBadge} ${styles.available}`}>
                               Available
                             </span>
-                          </td>
-
-                          {/* Column 7: Actions */}
-                          <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
-                            <div className={styles.actionsCell}>
-                              {/* View details eye button */}
-                              <button
-                                onClick={() => navigate(`/mentors/${m._id}`)}
-                                className={`${styles.actionCircleBtn} ${styles.viewDetails}`}
-                                title="View Details"
-                              >
-                                <Eye size={14} />
-                              </button>
-
-                              {/* Candidate connect button */}
-                              {isCandidate && (() => {
-                                const connStatus = getConnectionStatus(m._id);
-                                const isSending = connectingId === m._id;
-
-                                let btnClass = styles.actionCircleBtn;
-                                let btnTitle = "Connect with Mentor";
-                                let btnIcon = <UserPlus size={14} />;
-                                let isDisabled = isSending;
-
-                                if (connStatus === "accepted") {
-                                  btnClass = `${styles.actionCircleBtn} ${styles.connected}`;
-                                  btnIcon = <CheckCircle2 size={14} />;
-                                  btnTitle = "Connected";
-                                  isDisabled = true;
-                                } else if (connStatus === "rejected") {
-                                  btnClass = `${styles.actionCircleBtn} ${styles.rejected}`;
-                                  btnIcon = <XCircle size={14} />;
-                                  btnTitle = "Rejected";
-                                  isDisabled = true;
-                                } else if (connStatus === "pending") {
-                                  btnClass = `${styles.actionCircleBtn} ${styles.pending}`;
-                                  btnIcon = <Clock size={14} />;
-                                  btnTitle = "Pending Connection";
-                                  isDisabled = true;
-                                }
-
-                                return (
-                                  <button
-                                    onClick={(e) => handleConnectClick(e, m)}
-                                    disabled={isDisabled}
-                                    className={btnClass}
-                                    title={btnTitle}
-                                  >
-                                    {isSending ? "..." : btnIcon}
-                                  </button>
-                                );
-                              })()}
-
-                              {/* Admin/IT Delete button */}
-                              {isAdminOrIt && (
-                                <button
-                                  onClick={() => handleDeleteMentor(m._id)}
-                                  className={`${styles.actionCircleBtn} ${styles.deleteBtn}`}
-                                  title="Delete Mentor"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              )}
-
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className={styles.mentorCardGrid}>
-                {currentMentors.length === 0 ? (
-                  <div className={styles.emptyStateCardMessage}>
-                    No mentors found matching the filters.
-                  </div>
-                ) : (
-                  currentMentors.map((m) => {
-                    const connStatus = getConnectionStatus(m._id);
-                    const isSending = connectingId === m._id;
-                    return (
-                      <div
-                        key={m._id}
-                        data-card-id={`mentor-${m._id}`}
-                        onMouseMove={handleCardMouseMoveDirect}
-                        onMouseLeave={handleCardMouseLeaveDirect}
-                        className={styles.premiumMentorCard}
-                        onClick={() => navigate(`/mentors/${m._id}`)}
-                      >
-                        <div className={styles.cardGlow} />
-                        <div className={styles.cardShine} />
-                        
-                        <div className={styles.cardHeaderRow}>
-                          <div className={styles.cardAvatarWrap}>
-                            <div className={styles.cardAvatarCircle}>
-                              {getInitials(m.name)}
-                            </div>
-                            <span className={styles.cardOnlineDot} />
                           </div>
-                          
-                          <div className={styles.cardHeaderInfo}>
-                            <h3 className={styles.cardNameText}>{m.name}</h3>
-                            <span className={styles.cardEmailText}>{m.email || "No email"}</span>
-                          </div>
-                        </div>
 
-                        <div className={styles.cardDomainBadgeRow}>
-                          <span className={styles.cardDomainBadge}>
-                            {m.fieldofStudy_Interest ? m.fieldofStudy_Interest.split(",")[0].trim() : "General"}
-                          </span>
-                          <span className={`${styles.statusBadge} ${styles.available}`}>
-                            Available
-                          </span>
-                        </div>
-
-                        <div className={styles.cardContentList}>
-                          {m.designation && (
+                          <div className={styles.cardContentList}>
+                            {m.designation && (
+                              <div className={styles.cardContentItem}>
+                                <Briefcase size={13} />
+                                <span>{m.designation}</span>
+                              </div>
+                            )}
                             <div className={styles.cardContentItem}>
-                              <Briefcase size={13} />
-                              <span>{m.designation}</span>
+                              <Clock size={13} />
+                              <span>{m.workExp ? `${m.workExp} Years Exp.` : "Experience N/A"}</span>
                             </div>
-                          )}
-                          <div className={styles.cardContentItem}>
-                            <Clock size={13} />
-                            <span>{m.workExp ? `${m.workExp} Years Exp.` : "Experience N/A"}</span>
+                            <div className={styles.cardContentItem}>
+                              <MapPin size={13} />
+                              <span>{m.district || "Remote"}</span>
+                            </div>
                           </div>
-                          <div className={styles.cardContentItem}>
-                            <MapPin size={13} />
-                            <span>{m.district || "Remote"}</span>
-                          </div>
-                        </div>
 
-                        <div className={styles.cardActions}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/mentors/${m._id}`);
-                            }}
-                            className={styles.cardViewDetailsBtn}
-                            title="View Details"
-                          >
-                            <Eye size={14} /> Details
-                          </button>
-
-                          {isCandidate && (() => {
-                            let btnClass = styles.cardConnectBtn;
-                            let btnLabel = "Connect";
-                            let btnIcon = <UserPlus size={14} />;
-                            let isDisabled = isSending;
-
-                            if (connStatus === "accepted") {
-                              btnClass = `${styles.cardConnectBtn} ${styles.cardConnected}`;
-                              btnLabel = "Connected";
-                              btnIcon = <CheckCircle2 size={14} />;
-                              isDisabled = true;
-                            } else if (connStatus === "rejected") {
-                              btnClass = `${styles.cardConnectBtn} ${styles.cardRejected}`;
-                              btnLabel = "Rejected";
-                              btnIcon = <XCircle size={14} />;
-                              isDisabled = true;
-                            } else if (connStatus === "pending") {
-                              btnClass = `${styles.cardConnectBtn} ${styles.cardPending}`;
-                              btnLabel = "Pending";
-                              btnIcon = <Clock size={14} />;
-                              isDisabled = true;
-                            } else if (isSending) {
-                              btnLabel = "...";
-                              isDisabled = true;
-                            }
-
-                            return (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleConnectClick(e, m);
-                                }}
-                                disabled={isDisabled}
-                                className={btnClass}
-                              >
-                                {btnIcon} {btnLabel}
-                              </button>
-                            );
-                          })()}
-
-                          {/* Admin/IT Delete button */}
-                          {isAdminOrIt && (
+                          <div className={styles.cardActions}>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDeleteMentor(m._id);
+                                navigate(`/mentors/${m._id}`);
                               }}
-                              className={styles.cardDeleteBtn}
-                              title="Delete Mentor"
+                              className={styles.cardViewDetailsBtn}
+                              title="View Details"
                             >
-                              <Trash2 size={14} /> Delete
+                              <Eye size={14} /> Details
                             </button>
+
+                            {isCandidate && (() => {
+                              let btnClass = styles.cardConnectBtn;
+                              let btnLabel = "Connect";
+                              let btnIcon = <UserPlus size={14} />;
+                              let isDisabled = isSending;
+
+                              if (connStatus === "accepted") {
+                                btnClass = `${styles.cardConnectBtn} ${styles.cardConnected}`;
+                                btnLabel = "Connected";
+                                btnIcon = <CheckCircle2 size={14} />;
+                                isDisabled = true;
+                              } else if (connStatus === "rejected") {
+                                btnClass = `${styles.cardConnectBtn} ${styles.cardRejected}`;
+                                btnLabel = "Rejected";
+                                btnIcon = <XCircle size={14} />;
+                                isDisabled = true;
+                              } else if (connStatus === "pending") {
+                                btnClass = `${styles.cardConnectBtn} ${styles.cardPending}`;
+                                btnLabel = "Pending";
+                                btnIcon = <Clock size={14} />;
+                                isDisabled = true;
+                              } else if (isSending) {
+                                btnLabel = "...";
+                                isDisabled = true;
+                              }
+
+                              return (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleConnectClick(e, m);
+                                  }}
+                                  disabled={isDisabled}
+                                  className={btnClass}
+                                >
+                                  {btnIcon} {btnLabel}
+                                </button>
+                              );
+                            })()}
+
+                            {/* Admin/IT Delete button */}
+                            {isAdminOrIt && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteMentor(m._id);
+                                }}
+                                className={styles.cardDeleteBtn}
+                                title="Delete Mentor"
+                              >
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* Pagination Footer */}
+              <div className={styles.paginationFooter}>
+                <div className={styles.paginationStats}>
+                  Showing <strong>{recordStart}</strong> to <strong>{recordEnd}</strong> of <strong>{filtered.length}</strong> mentors
+                </div>
+
+                <div className={styles.paginationControls}>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className={styles.paginationBtn}
+                    title="Previous Page"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+
+                  {renderPaginationButtons()}
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className={styles.paginationBtn}
+                    title="Next Page"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                <div className={styles.pageSizeSelector}>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={8}>8 / page</option>
+                    <option value={16}>16 / page</option>
+                    <option value={24}>24 / page</option>
+                    <option value={48}>48 / page</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )
+        ) : (
+          connectionsLoading ? (
+            <div className={styles.loading}>
+              <Clock size={16} /> Loading mentor applicants...
+            </div>
+          ) : !isAdminOrIt ? (
+            myConnections && myConnections.length > 0 ? (
+              <div className={styles.mentorsApplicantsGrid}>
+                {myConnections.map((app) => (
+                  <div key={app._id} className={styles.mentorApplicantCard}>
+                    {/* Mentor Header */}
+                    <div className={styles.mentorApplicantHeader}>
+                      <div className={styles.mentorInfo}>
+                        <div className={styles.mentorAvatar}>
+                          {getInitials(app.mentorDetails?.name || "")}
+                        </div>
+                        <div className={styles.mentorDetails}>
+                          <h3 className={styles.mentorName}>{app.mentorDetails?.name || "Unknown Mentor"}</h3>
+                          <p className={styles.mentorEmail}>{app.mentorDetails?.email || "No email"}</p>
+                          {app.mentorDetails?.designation && (
+                            <p className={styles.mentorDesignation}>{app.mentorDetails.designation}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Applicants Section */}
+                    <div className={styles.applicantsSection}>
+                      <div className={styles.applicantsHeader}>
+                        <h4>
+                          <Users size={16} /> Applicants (1)
+                        </h4>
+                        <span className={styles.applicantsCount}>
+                          1 total
+                        </span>
+                      </div>
+
+                      <div className={`${styles.applicantsTable} ${styles.candidateCardTable}`}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Email</th>
+                              <th>Status</th>
+                              <th>Domain</th>
+                              <th>Skill</th>
+                              <th>Request Sent Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className={styles.applicantName}>
+                                {app.userDetails?.name || "Unknown Applicant"}
+                              </td>
+                              <td className={styles.applicantEmail}>
+                                {app.userDetails?.email || "—"}
+                              </td>
+                              <td className={styles.applicantStatus}>
+                                {renderStatusBadge(app.status || "pending")}
+                              </td>
+                              <td className={styles.applicantDomain}>
+                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                  ? "-"
+                                  : (app.domain || "-")}
+                              </td>
+                              <td className={styles.applicantSkill}>
+                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                  ? "-"
+                                  : (app.skill || "-")}
+                              </td>
+                              <td className={styles.applicantDate}>
+                                {app.createdAt && !isNaN(new Date(app.createdAt))
+                                  ? new Date(app.createdAt).toLocaleString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })
+                                  : "—"}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.noResults}>
+                <div className={styles.noResultsIcon}>📋</div>
+                <h3>You haven't sent any mentor requests yet</h3>
+                <p>Browse mentors and send a request to get started.</p>
+              </div>
+            )
+          ) : (
+            <>
+              {filtered.length === 0 ? (
+                <div className={styles.emptyStateMessage}>
+                  No mentors found matching the filters.
+                </div>
+              ) : (
+                <div className={styles.mentorsApplicantsGrid}>
+                  {currentMentors.map((mentor) => {
+                    // Get all connections for this mentor
+                    const mentorApplicants = mentorConnections.filter(
+                      (conn) => String(conn.mentorId) === String(mentor._id)
+                    );
+
+                    return (
+                      <div key={mentor._id} className={styles.mentorApplicantCard}>
+                        {/* Mentor Header */}
+                        <div className={styles.mentorApplicantHeader}>
+                          <div className={styles.mentorInfo}>
+                            <div className={styles.mentorAvatar}>
+                              {getInitials(mentor.name)}
+                            </div>
+                            <div className={styles.mentorDetails}>
+                              <h3 className={styles.mentorName}>{mentor.name}</h3>
+                              <p className={styles.mentorEmail}>{mentor.email || "No email"}</p>
+                              {mentor.designation && (
+                                <p className={styles.mentorDesignation}>{mentor.designation}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Applicants Section */}
+                        <div className={styles.applicantsSection}>
+                          <div className={styles.applicantsHeader}>
+                            <h4>
+                              <Users size={16} /> Applicants (
+                              {mentorApplicants?.length || 0})
+                            </h4>
+                            <span className={styles.applicantsCount}>
+                              {mentorApplicants?.length || 0} total
+                            </span>
+                          </div>
+
+                          {mentorApplicants?.length > 0 ? (
+                            <div className={styles.applicantsTable}>
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Change Status</th>
+                                    <th>Domain</th>
+                                    <th>Skill</th>
+                                    <th>Request Sent Date</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {mentorApplicants.map((app, idx) => (
+                                    <tr key={idx}>
+                                      <td className={styles.applicantName}>
+                                        {app.userDetails?.name || "Unknown Applicant"}
+                                      </td>
+                                      <td className={styles.applicantEmail}>
+                                        {app.userDetails?.email || "N/A"}
+                                      </td>
+                                      <td className={styles.applicantStatus}>
+                                        {renderStatusBadge(app.status || "pending")}
+                                      </td>
+                                      <td className={styles.applicantChangeStatus}>
+                                        <select
+                                          className={styles.statusSelect}
+                                          value={app.status || "pending"}
+                                          onChange={(e) =>
+                                            handleMentorConnectionStatusChange(
+                                              app._id,
+                                              e.target.value
+                                            )
+                                          }
+                                        >
+                                          <option value="pending">Pending</option>
+                                          <option value="accepted">Accepted</option>
+                                          <option value="rejected">Rejected</option>
+                                        </select>
+                                      </td>
+                                      <td className={styles.applicantDomain}>
+                                        {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                          ? "-"
+                                          : (app.domain || "-")}
+                                      </td>
+                                      <td className={styles.applicantSkill}>
+                                        {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                          ? "-"
+                                          : (app.skill || "-")}
+                                      </td>
+                                      <td className={styles.applicantDate}>
+                                        {app.createdAt && !isNaN(new Date(app.createdAt))
+                                          ? new Date(app.createdAt).toLocaleString('en-IN', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true
+                                          })
+                                          : "—"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className={styles.noApplicants}>
+                              <Users size={24} />
+                              <p>No applicants yet</p>
+                            </div>
                           )}
                         </div>
                       </div>
                     );
-                  })
-                )}
+                  })}
+                </div>
+              )}
+
+              {/* Pagination Footer */}
+              <div className={styles.paginationFooter}>
+                <div className={styles.paginationStats}>
+                  Showing <strong>{recordStart}</strong> to <strong>{recordEnd}</strong> of{" "}
+                  <strong>{filtered.length}</strong> mentors
+                </div>
+
+                <div className={styles.paginationControls}>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className={styles.paginationBtn}
+                    title="Previous Page"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+
+                  {renderPaginationButtons()}
+
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className={styles.paginationBtn}
+                    title="Next Page"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                <div className={styles.pageSizeSelector}>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={8}>8 / page</option>
+                    <option value={16}>16 / page</option>
+                    <option value={24}>24 / page</option>
+                    <option value={48}>48 / page</option>
+                  </select>
+                </div>
               </div>
-            )}
-
-            {/* ==========================================================================
-               PAGINATION FOOTER CONTROLS
-               ========================================================================== */}
-            <div className={styles.paginationFooter}>
-              <div className={styles.paginationStats}>
-                Showing <strong>{recordStart}</strong> to <strong>{recordEnd}</strong> of <strong>{filtered.length}</strong> mentors
-              </div>
-
-              <div className={styles.paginationControls}>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className={styles.paginationBtn}
-                  title="Previous Page"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-
-                {renderPaginationButtons()}
-
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className={styles.paginationBtn}
-                  title="Next Page"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-
-              <div className={styles.pageSizeSelector}>
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value={8}>8 / page</option>
-                  <option value={16}>16 / page</option>
-                  <option value={24}>24 / page</option>
-                  <option value={48}>48 / page</option>
-                </select>
-              </div>
-            </div>
-          </>
+            </>
+          )
         )}
       </div>
 
@@ -1160,6 +1543,33 @@ const MentorsPage = () => {
           >
             <h2>Connect with {selectedMentor.name}</h2>
             <p>Send a message to {selectedMentor.designation || "this mentor"} to introduce yourself.</p>
+
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className={styles.selectInput}
+              style={{ marginBottom: "10px" }}
+            >
+              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Domains</option>
+              {selectedMentor?.fieldofStudy_Interest?.split(",").map((domain, idx) => (
+                <option key={`domain-${idx}`} value={domain.trim()} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                  {domain.trim()}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedSkill}
+              onChange={(e) => setSelectedSkill(e.target.value)}
+              className={styles.selectInput}
+              style={{ marginBottom: "10px" }}
+            >
+              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Skills</option>
+              {selectedMentor?.skills?.map((skill, idx) => (
+                <option key={`skill-${idx}`} value={skill} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                  {skill}
+                </option>
+              ))}
+            </select>
 
             <textarea
               placeholder="Tell them why you'd like to connect... (optional)"

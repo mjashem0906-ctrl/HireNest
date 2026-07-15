@@ -168,7 +168,7 @@ const ApplyButton = ({
               onLoginSuccess={() => {
                 setShowLoginPrompt(false);
                 onGoogleLogin?.(() => {
-                  onApplyClick({ stopPropagation: () => {} }, job);
+                  onApplyClick({ stopPropagation: () => { } }, job);
                 });
               }}
             />
@@ -276,7 +276,7 @@ const EditableDropdown = ({
   error = "",
   onChange,
   category = null,
-  onCustomAdded = () => {},
+  onCustomAdded = () => { },
 }) => {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -335,9 +335,8 @@ const EditableDropdown = ({
 
       <div className={styles.edControl}>
         <div
-          className={`${styles.edField} ${
-            error ? styles.edFieldError : ""
-          }`}
+          className={`${styles.edField} ${error ? styles.edFieldError : ""
+            }`}
           onClick={() => {
             setOpen(true);
             setTimeout(() => inputRef.current?.focus(), 0);
@@ -392,11 +391,10 @@ const EditableDropdown = ({
                   <button
                     key={opt}
                     type="button"
-                    className={`${styles.edItem} ${
-                      norm(opt) === norm(value)
+                    className={`${styles.edItem} ${norm(opt) === norm(value)
                         ? styles.edItemActive
                         : ""
-                    }`}
+                      }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
                   >
@@ -872,8 +870,8 @@ const BulkCSVReviewModal = ({
                                 <div>
                                   {job.refereedBy
                                     ? refereesList?.find(
-                                        (r) => r._id === job.refereedBy
-                                      )?.name || "Referee Selected"
+                                      (r) => r._id === job.refereedBy
+                                    )?.name || "Referee Selected"
                                     : "None"}
                                 </div>
                               )}
@@ -907,8 +905,8 @@ const BulkCSVReviewModal = ({
                                 <div>
                                   {job.jobPosted
                                     ? recruitersList?.find(
-                                        (r) => r._id === job.jobPosted
-                                      )?.fullName || "Recruiter Selected"
+                                      (r) => r._id === job.jobPosted
+                                    )?.fullName || "Recruiter Selected"
                                     : "None"}
                                 </div>
                               )}
@@ -1018,9 +1016,8 @@ const BulkCSVReviewModal = ({
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
             disabled={currentPage === 0}
-            className={`${styles.bulkPageButton} ${
-              currentPage === 0 ? styles.disabled : ""
-            }`}
+            className={`${styles.bulkPageButton} ${currentPage === 0 ? styles.disabled : ""
+              }`}
             type="button"
           >
             <ChevronLeft size={16} /> Previous
@@ -1031,9 +1028,8 @@ const BulkCSVReviewModal = ({
               setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))
             }
             disabled={currentPage === totalPages - 1}
-            className={`${styles.bulkPageButton} ${
-              currentPage === totalPages - 1 ? styles.disabled : ""
-            }`}
+            className={`${styles.bulkPageButton} ${currentPage === totalPages - 1 ? styles.disabled : ""
+              }`}
             type="button"
           >
             Next <ChevronRight size={16} />
@@ -1163,7 +1159,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
     saveAs(blob, "jobs_template.csv");
   };
 
-    const downloadExcelTemplate = () => {
+  const downloadExcelTemplate = () => {
     const headers = [
       "title",
       "companyName",
@@ -1750,7 +1746,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
 
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <Users size={14} /> Refereed Person 
+                <Users size={14} /> Refereed Person
                 {!jobPosted && <span className={styles.required}> (Required if Recruiter is empty)</span>}
               </label>
               <select
@@ -1774,7 +1770,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
 
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <Users size={14} /> Job Posted By (Recruiter) 
+                <Users size={14} /> Job Posted By (Recruiter)
                 {!refereedBy && <span className={styles.required}> (Required if Referee is empty)</span>}
               </label>
               <select
@@ -1959,8 +1955,8 @@ const ResumeChoiceModal = ({ isOpen, onClose, onUseExisting, onUploadNew, jobTit
                 >
                   {/* Eye icon */}
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
                   </svg>
                   View
                 </a>
@@ -2256,9 +2252,8 @@ const ResumeUploadModal = ({
               <button
                 type="submit"
                 disabled={!resumeFile || isUploading}
-                className={`${styles.resumeSubmitButton} ${
-                  !resumeFile || isUploading ? styles.disabled : ""
-                }`}
+                className={`${styles.resumeSubmitButton} ${!resumeFile || isUploading ? styles.disabled : ""
+                  }`}
               >
                 {isUploading ? "Uploading..." : "Upload & Apply Now"}
               </button>
@@ -2363,25 +2358,25 @@ function Jobs() {
   const [headerHeight, setHeaderHeight] = useState(90);
 
   const [filters, setFilters] = useState({
-  jobId: "",
-  title: "",
-  companyName: "",
-  role: "",
-  employmentType: "",
-  industry: "",
-  location: "",
-  experience: "",
-  salary: "",
-  education: "",
-  passedOutYear: "",
-  keySkills: "",
-  refereedBy: "",
-  description: "",
-  startDate: null,
-  endDate: null,
-  initialNumber: "",
-  finalNumber: "",
-});
+    jobId: "",
+    title: "",
+    companyName: "",
+    role: "",
+    employmentType: "",
+    industry: "",
+    location: "",
+    experience: "",
+    salary: "",
+    education: "",
+    passedOutYear: "",
+    keySkills: "",
+    refereedBy: "",
+    description: "",
+    startDate: null,
+    endDate: null,
+    initialNumber: "",
+    finalNumber: "",
+  });
 
   const [pendingFilters, setPendingFilters] = useState({});
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
@@ -2520,25 +2515,25 @@ function Jobs() {
       const search = globalFilter.trim().toLowerCase();
 
       const {
-  jobId,
-  title,
-  companyName,
-  role,
-  employmentType,
-  industry,
-  location,
-  experience,
-  salary,
-  education,
-  passedOutYear,
-  keySkills,
-  refereedBy,
-  description,
-  startDate,
-  endDate,
-  initialNumber,
-  finalNumber,
-} = filters;
+        jobId,
+        title,
+        companyName,
+        role,
+        employmentType,
+        industry,
+        location,
+        experience,
+        salary,
+        education,
+        passedOutYear,
+        keySkills,
+        refereedBy,
+        description,
+        startDate,
+        endDate,
+        initialNumber,
+        finalNumber,
+      } = filters;
 
       const titleFilter = title?.trim().toLowerCase() || "";
       const companyFilter = companyName?.trim().toLowerCase() || "";
@@ -2566,22 +2561,22 @@ function Jobs() {
       return jobs.filter((job) => {
         if (search) {
           const haystack = [
-  job.jobId,
-  job.title,
-  job.companyName,
-  job.location,
-  job.role,
-  job.description,
-  job.keySkills,
-]
-  .filter(Boolean)
-  .join(" ")
-  .toLowerCase();
+            job.jobId,
+            job.title,
+            job.companyName,
+            job.location,
+            job.role,
+            job.description,
+            job.keySkills,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
           if (!haystack.includes(search)) return false;
         }
 
         if (jobIdFilter && !(job.jobId || "").toLowerCase().includes(jobIdFilter))
-  return false;
+          return false;
 
         if (titleFilter && !(job.title || "").toLowerCase().includes(titleFilter))
           return false;
@@ -2679,9 +2674,9 @@ function Jobs() {
   }, [view, jobPosts, user, applyFilters]);
 
   const jobIdOptions = useMemo(
-  () => Array.from(new Set(jobPosts.map((j) => j.jobId).filter(Boolean))),
-  [jobPosts]
-);
+    () => Array.from(new Set(jobPosts.map((j) => j.jobId).filter(Boolean))),
+    [jobPosts]
+  );
 
   const paginatedJobs = useMemo(() => {
     const source = view === "myPost" ? filteredMyPost : filteredJobPosts;
@@ -2720,25 +2715,25 @@ function Jobs() {
 
   const clearAllFilters = () => {
     setFilters({
-  jobId: "",
-  title: "",
-  companyName: "",
-  role: "",
-  employmentType: "",
-  industry: "",
-  location: "",
-  experience: "",
-  salary: "",
-  education: "",
-  passedOutYear: "",
-  keySkills: "",
-  refereedBy: "",
-  description: "",
-  startDate: null,
-  endDate: null,
-  initialNumber: "",
-  finalNumber: "",
-});
+      jobId: "",
+      title: "",
+      companyName: "",
+      role: "",
+      employmentType: "",
+      industry: "",
+      location: "",
+      experience: "",
+      salary: "",
+      education: "",
+      passedOutYear: "",
+      keySkills: "",
+      refereedBy: "",
+      description: "",
+      startDate: null,
+      endDate: null,
+      initialNumber: "",
+      finalNumber: "",
+    });
     setPendingFilters({});
     setHasPendingChanges(false);
     setPage(1);
@@ -2808,8 +2803,8 @@ function Jobs() {
           ? "#be123c"
           : "#e11d48"
         : isDarkTheme
-        ? "rgba(148, 163, 184, 0.25)"
-        : "#d1d5db",
+          ? "rgba(148, 163, 184, 0.25)"
+          : "#d1d5db",
       borderRadius: "10px",
       boxShadow: state.isFocused
         ? isDarkTheme
@@ -2822,8 +2817,8 @@ function Jobs() {
             ? "#be123c"
             : "#e11d48"
           : isDarkTheme
-          ? "rgba(148, 163, 184, 0.4)"
-          : "#9ca3af",
+            ? "rgba(148, 163, 184, 0.4)"
+            : "#9ca3af",
       },
     }),
     valueContainer: (base) => ({
@@ -2901,12 +2896,12 @@ function Jobs() {
           ? "rgba(225, 29, 72, 0.4)"
           : "#e11d48"
         : state.isFocused
-        ? isDarkTheme
-          ? "rgba(225, 29, 72, 0.2)"
-          : "rgba(225, 29, 72, 0.08)"
-        : isDarkTheme
-        ? "#1e293b"
-        : "#ffffff",
+          ? isDarkTheme
+            ? "rgba(225, 29, 72, 0.2)"
+            : "rgba(225, 29, 72, 0.08)"
+          : isDarkTheme
+            ? "#1e293b"
+            : "#ffffff",
       color: state.isSelected ? "white" : isDarkTheme ? "#e5e7eb" : "#111827",
       padding: "10px 12px",
       cursor: "pointer",
@@ -2916,8 +2911,8 @@ function Jobs() {
             ? "rgba(225, 29, 72, 0.4)"
             : "#e11d48"
           : isDarkTheme
-          ? "rgba(225, 29, 72, 0.2)"
-          : "rgba(225, 29, 72, 0.08)",
+            ? "rgba(225, 29, 72, 0.2)"
+            : "rgba(225, 29, 72, 0.08)",
       },
     }),
   };
@@ -3249,12 +3244,12 @@ function Jobs() {
 
   const renderStatusBadge = (status) => {
     const statusMap = {
-      Applied:     { icon: "📝", text: "Applied",      key: "applied"     },
-      Review:      { icon: "🔍", text: "Under Review", key: "review"      },
-      Shortlisted: { icon: "⭐", text: "Shortlisted",  key: "shortlisted" },
-      Offer:       { icon: "📄", text: "Offer Sent",   key: "offer"       },
-      Accepted:    { icon: "✅", text: "Accepted",     key: "accepted"    },
-      Rejected:    { icon: "❌", text: "Rejected",     key: "rejected"    },
+      Applied: { icon: "📝", text: "Applied", key: "applied" },
+      Review: { icon: "🔍", text: "Under Review", key: "review" },
+      Shortlisted: { icon: "⭐", text: "Shortlisted", key: "shortlisted" },
+      Offer: { icon: "📄", text: "Offer Sent", key: "offer" },
+      Accepted: { icon: "✅", text: "Accepted", key: "accepted" },
+      Rejected: { icon: "❌", text: "Rejected", key: "rejected" },
     };
     const s = statusMap[status] || statusMap.Applied;
     return (
@@ -3560,32 +3555,32 @@ function Jobs() {
             </div>
 
             <div className={styles.sidebarField}>
-  <label className={styles.sidebarLabel}>JOB ID</label>
-  <Select
-    options={[
-      { value: "", label: "All Job IDs" },
-      ...jobIdOptions.map((id) => ({ value: id, label: id })),
-    ]}
-    value={
-      getDisplayValue("jobId")
-        ? {
-            value: getDisplayValue("jobId"),
-            label: getDisplayValue("jobId"),
-          }
-        : { value: "", label: "All Job IDs" }
-    }
-    onChange={(selected) =>
-      handleFilterChange("jobId", selected?.value || "")
-    }
-    isSearchable
-    isClearable
-    placeholder="All Job IDs"
-    styles={customSelectStyles}
-    className={styles.reactSelect}
-    menuPortalTarget={document.body}
-    menuPosition="fixed"
-  />
-</div>
+              <label className={styles.sidebarLabel}>JOB ID</label>
+              <Select
+                options={[
+                  { value: "", label: "All Job IDs" },
+                  ...jobIdOptions.map((id) => ({ value: id, label: id })),
+                ]}
+                value={
+                  getDisplayValue("jobId")
+                    ? {
+                      value: getDisplayValue("jobId"),
+                      label: getDisplayValue("jobId"),
+                    }
+                    : { value: "", label: "All Job IDs" }
+                }
+                onChange={(selected) =>
+                  handleFilterChange("jobId", selected?.value || "")
+                }
+                isSearchable
+                isClearable
+                placeholder="All Job IDs"
+                styles={customSelectStyles}
+                className={styles.reactSelect}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+              />
+            </div>
 
             <div className={styles.sidebarField}>
               <label className={styles.sidebarLabel}>JOB TITLE</label>
@@ -3597,9 +3592,9 @@ function Jobs() {
                 value={
                   getDisplayValue("title")
                     ? {
-                        value: getDisplayValue("title"),
-                        label: getDisplayValue("title"),
-                      }
+                      value: getDisplayValue("title"),
+                      label: getDisplayValue("title"),
+                    }
                     : { value: "", label: "All Titles" }
                 }
                 onChange={(selected) =>
@@ -3625,9 +3620,9 @@ function Jobs() {
                 value={
                   getDisplayValue("companyName")
                     ? {
-                        value: getDisplayValue("companyName"),
-                        label: getDisplayValue("companyName"),
-                      }
+                      value: getDisplayValue("companyName"),
+                      label: getDisplayValue("companyName"),
+                    }
                     : { value: "", label: "All Companies" }
                 }
                 onChange={(selected) =>
@@ -3653,9 +3648,9 @@ function Jobs() {
                 value={
                   getDisplayValue("role")
                     ? {
-                        value: getDisplayValue("role"),
-                        label: getDisplayValue("role"),
-                      }
+                      value: getDisplayValue("role"),
+                      label: getDisplayValue("role"),
+                    }
                     : { value: "", label: "All Roles" }
                 }
                 onChange={(selected) =>
@@ -3681,9 +3676,9 @@ function Jobs() {
                 value={
                   getDisplayValue("location")
                     ? {
-                        value: getDisplayValue("location"),
-                        label: getDisplayValue("location"),
-                      }
+                      value: getDisplayValue("location"),
+                      label: getDisplayValue("location"),
+                    }
                     : { value: "", label: "All Locations" }
                 }
                 onChange={(selected) =>
@@ -3709,9 +3704,9 @@ function Jobs() {
                 value={
                   getDisplayValue("employmentType")
                     ? {
-                        value: getDisplayValue("employmentType"),
-                        label: getDisplayValue("employmentType"),
-                      }
+                      value: getDisplayValue("employmentType"),
+                      label: getDisplayValue("employmentType"),
+                    }
                     : { value: "", label: "All Types" }
                 }
                 onChange={(selected) =>
@@ -3737,9 +3732,9 @@ function Jobs() {
                 value={
                   getDisplayValue("industry")
                     ? {
-                        value: getDisplayValue("industry"),
-                        label: getDisplayValue("industry"),
-                      }
+                      value: getDisplayValue("industry"),
+                      label: getDisplayValue("industry"),
+                    }
                     : { value: "", label: "All Industries" }
                 }
                 onChange={(selected) =>
@@ -3765,9 +3760,9 @@ function Jobs() {
                 value={
                   getDisplayValue("experience")
                     ? {
-                        value: getDisplayValue("experience"),
-                        label: getDisplayValue("experience"),
-                      }
+                      value: getDisplayValue("experience"),
+                      label: getDisplayValue("experience"),
+                    }
                     : { value: "", label: "All Experience" }
                 }
                 onChange={(selected) =>
@@ -3793,9 +3788,9 @@ function Jobs() {
                 value={
                   getDisplayValue("salary")
                     ? {
-                        value: getDisplayValue("salary"),
-                        label: getDisplayValue("salary"),
-                      }
+                      value: getDisplayValue("salary"),
+                      label: getDisplayValue("salary"),
+                    }
                     : { value: "", label: "All Salaries" }
                 }
                 onChange={(selected) =>
@@ -3821,9 +3816,9 @@ function Jobs() {
                 value={
                   getDisplayValue("keySkills")
                     ? {
-                        value: getDisplayValue("keySkills"),
-                        label: getDisplayValue("keySkills"),
-                      }
+                      value: getDisplayValue("keySkills"),
+                      label: getDisplayValue("keySkills"),
+                    }
                     : { value: "", label: "All Skills" }
                 }
                 onChange={(selected) =>
@@ -3849,9 +3844,9 @@ function Jobs() {
                 value={
                   getDisplayValue("education")
                     ? {
-                        value: getDisplayValue("education"),
-                        label: getDisplayValue("education"),
-                      }
+                      value: getDisplayValue("education"),
+                      label: getDisplayValue("education"),
+                    }
                     : { value: "", label: "All Education" }
                 }
                 onChange={(selected) =>
@@ -3979,13 +3974,13 @@ function Jobs() {
                                   <Calendar size={14} />
                                   {job.createdAt && !isNaN(new Date(job.createdAt))
                                     ? new Date(job.createdAt).toLocaleString('en-IN', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                      })
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    })
                                     : "Just Now"}
                                 </span>
                                 {job.jobId && (
@@ -4067,15 +4062,15 @@ function Jobs() {
                             {(user?.role === "Member" ||
                               user?.role === "Candidate" ||
                               !user) && (
-                              <ApplyButton
-                                job={job}
-                                user={user}
-                                isApplied={isApplied(job)}
-                                onApplyClick={handleApplyClick}
-                                loadingState={loadingState}
-                                onGoogleLogin={handleGoogleLogin}
-                              />
-                            )}
+                                <ApplyButton
+                                  job={job}
+                                  user={user}
+                                  isApplied={isApplied(job)}
+                                  onApplyClick={handleApplyClick}
+                                  loadingState={loadingState}
+                                  onGoogleLogin={handleGoogleLogin}
+                                />
+                              )}
 
                             <button
                               className={styles.viewDetailsBtn}
@@ -4260,11 +4255,11 @@ function Jobs() {
                                             </td>
                                             <td className={styles.applicantResume}>
                                               {app.resumeLink ||
-                                              app.memberId?.resumeLink ? (
+                                                app.memberId?.resumeLink ? (
                                                 <a
                                                   href={getFileUrl(
                                                     app.resumeLink ||
-                                                      app.memberId.resumeLink
+                                                    app.memberId.resumeLink
                                                   )}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
@@ -4436,7 +4431,7 @@ function Jobs() {
                 onLoginSuccess={() => {
                   setShowGoogleLoginModal(false);
                   if (selectedJob)
-                    handleApplyClick({ stopPropagation: () => {} }, selectedJob);
+                    handleApplyClick({ stopPropagation: () => { } }, selectedJob);
                 }}
               />
 

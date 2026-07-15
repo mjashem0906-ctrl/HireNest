@@ -23,6 +23,11 @@ function Settings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [passwordChangeMode, setPasswordChangeMode] = useState("username");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+
   // Load notification workflow settings (Admin only)
   useEffect(() => {
     const fetchWorkflows = async () => {
@@ -87,6 +92,69 @@ function Settings() {
       }
     } catch (err) {
       console.error("Failed to change password:", err);
+      setPasswordError(err.response?.data?.message || "Failed to update password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+    
+    if (!adminEmail) {
+      setPasswordError("Email is required.");
+      return;
+    }
+    
+    setIsVerifyingEmail(true);
+    try {
+      const res = await API.post("/auth/verify-admin-email", { email: adminEmail });
+      if (res.data.success) {
+        setIsEmailVerified(true);
+        setPasswordSuccess("Email verified. You can now enter your new password.");
+      } else {
+        setPasswordError(res.data.message || "Failed to verify email.");
+      }
+    } catch (err) {
+      console.error("Failed to verify email:", err);
+      setPasswordError(err.response?.data?.message || "Failed to verify email.");
+    } finally {
+      setIsVerifyingEmail(false);
+    }
+  };
+
+  const handleChangePasswordByEmail = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!newPassword || !confirmPassword) {
+      setPasswordError("All fields are required.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const res = await API.post("/auth/change-password-email", {
+        email: adminEmail,
+        newPassword
+      });
+      if (res.data.success) {
+        setPasswordSuccess("Password updated successfully! A notification email has been sent.");
+        setAdminEmail("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setIsEmailVerified(false);
+      } else {
+        setPasswordError(res.data.message || "Failed to update password.");
+      }
+    } catch (err) {
+      console.error("Failed to change password via email:", err);
       setPasswordError(err.response?.data?.message || "Failed to update password.");
     } finally {
       setIsChangingPassword(false);
@@ -184,67 +252,165 @@ function Settings() {
             </div>
             
             <div className={`${styles.workflowContent} ${isPasswordOpen ? styles.expanded : styles.collapsed}`}>
-              <p className={styles.workflowIntro}>
-                Update your admin account password.
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p className={styles.workflowIntro} style={{ margin: 0 }}>
+                  Update your admin account password.
+                </p>
+                
+                <div style={{ display: 'flex', background: 'var(--md-soft)', borderRadius: '8px', padding: '4px', gap: '4px' }}>
+                  <button 
+                    onClick={() => { setPasswordChangeMode("username"); setPasswordError(""); setPasswordSuccess(""); }}
+                    style={{ 
+                      padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                      background: passwordChangeMode === "username" ? 'var(--md-card-solid)' : 'transparent',
+                      color: passwordChangeMode === "username" ? 'var(--md-text)' : 'var(--md-muted)',
+                      boxShadow: passwordChangeMode === "username" ? 'var(--md-shadow-sm)' : 'none'
+                    }}
+                  >
+                    Username
+                  </button>
+                  <button 
+                    onClick={() => { setPasswordChangeMode("email"); setPasswordError(""); setPasswordSuccess(""); }}
+                    style={{ 
+                      padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                      background: passwordChangeMode === "email" ? 'var(--md-card-solid)' : 'transparent',
+                      color: passwordChangeMode === "email" ? 'var(--md-text)' : 'var(--md-muted)',
+                      boxShadow: passwordChangeMode === "email" ? 'var(--md-shadow-sm)' : 'none'
+                    }}
+                  >
+                    Email
+                  </button>
+                </div>
+              </div>
 
               <div className={styles.passwordForm}>
                 {passwordError && <p className={styles.errorText}>{passwordError}</p>}
                 {passwordSuccess && <p className={styles.successText}>{passwordSuccess}</p>}
                 
-                <div className={styles.passwordInputContainer}>
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    placeholder="Current Password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className={styles.inputField}
-                  />
-                  {showCurrentPassword ? (
-                    <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowCurrentPassword(false)} />
-                  ) : (
-                    <Eye size={18} className={styles.eyeIcon} onClick={() => setShowCurrentPassword(true)} />
-                  )}
-                </div>
+                {passwordChangeMode === "username" ? (
+                  <>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        placeholder="Current Password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className={styles.inputField}
+                      />
+                      {showCurrentPassword ? (
+                        <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowCurrentPassword(false)} />
+                      ) : (
+                        <Eye size={18} className={styles.eyeIcon} onClick={() => setShowCurrentPassword(true)} />
+                      )}
+                    </div>
 
-                <div className={styles.passwordInputContainer}>
-                  <input
-                    type={showNewPassword ? "text" : "password"}
-                    placeholder="New Password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className={styles.inputField}
-                  />
-                  {showNewPassword ? (
-                    <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(false)} />
-                  ) : (
-                    <Eye size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(true)} />
-                  )}
-                </div>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="New Password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className={styles.inputField}
+                      />
+                      {showNewPassword ? (
+                        <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(false)} />
+                      ) : (
+                        <Eye size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(true)} />
+                      )}
+                    </div>
 
-                <div className={styles.passwordInputContainer}>
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm New Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={styles.inputField}
-                  />
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(false)} />
-                  ) : (
-                    <Eye size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(true)} />
-                  )}
-                </div>
-                
-                <button 
-                  className={styles.saveWorkflowsBtn} 
-                  onClick={handleChangePassword}
-                  disabled={isChangingPassword}
-                  style={{ marginTop: '10px' }}
-                >
-                  {isChangingPassword ? "Updating..." : "Update Password"}
-                </button>
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm New Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={styles.inputField}
+                      />
+                      {showConfirmPassword ? (
+                        <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(false)} />
+                      ) : (
+                        <Eye size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(true)} />
+                      )}
+                    </div>
+                    
+                    <button 
+                      className={styles.saveWorkflowsBtn} 
+                      onClick={handleChangePassword}
+                      disabled={isChangingPassword}
+                      style={{ marginTop: '10px' }}
+                    >
+                      {isChangingPassword ? "Updating..." : "Update Password"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h4 style={{ color: 'var(--md-text)', marginBottom: '16px', fontSize: '1rem', fontWeight: 700 }}>Change Password using email</h4>
+                    
+                    <div className={styles.passwordInputContainer}>
+                      <input
+                        type="email"
+                        placeholder="Enter Admin Email"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        className={styles.inputField}
+                        disabled={isEmailVerified}
+                      />
+                    </div>
+                    
+                    {!isEmailVerified ? (
+                      <button 
+                        className={styles.saveWorkflowsBtn} 
+                        onClick={handleVerifyEmail}
+                        disabled={isVerifyingEmail || !adminEmail}
+                        style={{ marginTop: '10px' }}
+                      >
+                        {isVerifyingEmail ? "Verifying..." : "Verify Email"}
+                      </button>
+                    ) : (
+                      <>
+                        <div className={styles.passwordInputContainer} style={{ marginTop: '16px' }}>
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            placeholder="New Password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className={styles.inputField}
+                          />
+                          {showNewPassword ? (
+                            <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(false)} />
+                          ) : (
+                            <Eye size={18} className={styles.eyeIcon} onClick={() => setShowNewPassword(true)} />
+                          )}
+                        </div>
+
+                        <div className={styles.passwordInputContainer}>
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm New Password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className={styles.inputField}
+                          />
+                          {showConfirmPassword ? (
+                            <EyeOff size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(false)} />
+                          ) : (
+                            <Eye size={18} className={styles.eyeIcon} onClick={() => setShowConfirmPassword(true)} />
+                          )}
+                        </div>
+                        
+                        <button 
+                          className={styles.saveWorkflowsBtn} 
+                          onClick={handleChangePasswordByEmail}
+                          disabled={isChangingPassword}
+                          style={{ marginTop: '10px' }}
+                        >
+                          {isChangingPassword ? "Updating..." : "Update Password"}
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </CustomCard>

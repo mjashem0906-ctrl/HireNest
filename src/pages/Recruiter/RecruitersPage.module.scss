@@ -1154,14 +1154,8 @@
   box-shadow: var(--rec-shadow-sm);
   padding: 0.9rem 1rem 0.75rem;
   cursor: default;
-  transition: all 0.2s ease;
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--rec-shadow-lg);
-    border-color: var(--rec-border-h);
-    .statIcon { transform: scale(1.1) rotate(5deg); }
-  }
+
 }
 
 .statCardTop {

@@ -530,10 +530,7 @@ $rx: 24px;
   border: 1px solid rgba(225, 29, 72, 0.15);
   transition: all 0.2s ease;
 
-  .infoCard:hover & {
-    transform: scale(1.06);
-    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.12);
-  }
+    /* Removed parent hover scale to keep icon static */
 }
 
 :global([data-theme="dark"]) .iconBox {

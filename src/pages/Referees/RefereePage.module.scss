@@ -203,11 +203,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   transition: all 0.2s var(--ease);
   min-width: 160px;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--page-shadow-md);
-    border-color: rgba(225, 29, 72, 0.2);
-  }
+  /* Removed hover translate to keep stat cards static */
 }
 
 .statIcon {
@@ -219,9 +215,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   flex-shrink: 0;
   transition: transform 0.2s var(--ease);
 
-  .statCard:hover & {
-    transform: scale(1.08);
-  }
+  /* Removed child scale when parent hovered */
 }
 
 .statValue {
@@ -449,7 +443,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   &:hover,
   &.cardHovered {
-    transform: translateY(-6px);
+    /* keep card position stable; remove translateY hover */
     box-shadow: 0 12px 32px rgba(225, 29, 72, 0.12);
     border-color: rgba(225, 29, 72, 0.25);
 
