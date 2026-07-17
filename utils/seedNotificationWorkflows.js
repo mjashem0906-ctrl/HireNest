@@ -64,6 +64,14 @@ const defaultWorkflows = [
     inAppEnabled: true,
     emailEnabled: true,
     recipientRole: "Candidate"
+  },
+  {
+    notificationType: "meeting_schedule",
+    displayName: "Meeting Scheduled Alert",
+    description: "Sent to candidates when a meeting is scheduled with their mentor.",
+    inAppEnabled: true,
+    emailEnabled: true,
+    recipientRole: "Candidate"
   }
 ];
 

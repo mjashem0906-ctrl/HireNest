@@ -165,13 +165,26 @@ exports.updateMentorConnection = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["pending", "accepted", "rejected"].includes(status)) {
+    if (!["pending", "accepted", "rejected", "meeting_schedule"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const updateData = { status, updatedAt: new Date() };
+
+    if (status === "meeting_schedule") {
+      const { meetingDate, meetingTime, meetingMessage, meetingLink } = req.body;
+      if (!meetingDate || !meetingTime || !meetingMessage || !meetingLink) {
+        return res.status(400).json({ error: "All meeting details (Date, Time, Message, and Link) are required" });
+      }
+      updateData.meetingDate = meetingDate;
+      updateData.meetingTime = meetingTime;
+      updateData.meetingMessage = meetingMessage;
+      updateData.meetingLink = meetingLink;
     }
 
     const connection = await MentorConnection.findByIdAndUpdate(
       id,
-      { status, updatedAt: new Date() },
+      updateData,
       { new: true }
     );
 
@@ -201,8 +214,32 @@ exports.updateMentorConnection = async (req, res) => {
       }
     }
 
+    // Trigger notification to candidate when meeting is scheduled
+    if (status === "meeting_schedule") {
+      try {
+        const { triggerNotification } = require("../utils/notificationHelper");
+        await triggerNotification({
+          type: "meeting_schedule",
+          recipientId: connection.userId, // target user account
+          title: "Mentor Meeting Scheduled",
+          message: `A meeting has been scheduled with your mentor "${connection.mentorDetails.name}" on ${connection.meetingDate} at ${connection.meetingTime}.`,
+          relatedId: connection._id,
+          relatedModel: "MentorConnection",
+          data: {
+            mentorName: connection.mentorDetails.name,
+            meetingDate: connection.meetingDate,
+            meetingTime: connection.meetingTime,
+            meetingMessage: connection.meetingMessage,
+            meetingLink: connection.meetingLink,
+          }
+        });
+      } catch (err) {
+        console.error("Failed to trigger mentor meeting schedule notification:", err);
+      }
+    }
+
     res.json({
-      message: `Connection ${status} successfully`,
+      message: `Connection status updated to ${status} successfully`,
       connection,
     });
   } catch (error) {

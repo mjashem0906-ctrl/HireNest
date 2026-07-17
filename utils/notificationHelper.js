@@ -92,6 +92,26 @@ const triggerNotification = async ({
         `;
         await sendEmail(recipientEmail, subject, html);
       }
+      else if (type === "meeting_schedule" && recipientEmail) {
+        const subject = `Meeting Scheduled with Mentor: ${data.mentorName || "Your Mentor"}`;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #4f46e5; margin-bottom: 20px;">Meeting Scheduled</h2>
+            <p>Dear ${recipientName},</p>
+            <p>A meeting has been scheduled with your mentor <strong>${data.mentorName || "Your Mentor"}</strong>.</p>
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #4f46e5;">
+              <p style="margin: 5px 0;"><strong>Date:</strong> ${data.meetingDate}</p>
+              <p style="margin: 5px 0;"><strong>Time:</strong> ${data.meetingTime}</p>
+              <p style="margin: 5px 0;"><strong>Message:</strong> ${data.meetingMessage}</p>
+              <p style="margin: 5px 0;"><strong>Meeting Link:</strong> <a href="${data.meetingLink}" style="color: #4f46e5; text-decoration: underline;">${data.meetingLink}</a></p>
+            </div>
+            <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to view details.</p>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+            <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
+          </div>
+        `;
+        await sendEmail(recipientEmail, subject, html);
+      }
       else if (type === "status_update" && recipientEmail) {
         await sendStatusUpdateNotification(
           recipientEmail,

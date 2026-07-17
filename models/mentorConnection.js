@@ -40,7 +40,7 @@ const mentorConnectionSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected"],
+      enum: ["pending", "accepted", "rejected", "meeting_schedule"],
       default: "pending",
     },
 
@@ -48,6 +48,11 @@ const mentorConnectionSchema = new mongoose.Schema(
 
     domain: String,
     skill: String,
+
+    meetingDate: String,
+    meetingTime: String,
+    meetingMessage: String,
+    meetingLink: String,
 
     createdAt: {
       type: Date,
