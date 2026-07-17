@@ -119,6 +119,43 @@ $r:  14px;
     border-radius: 999px;
     filter: blur(24px);
   }
+
+  .backButton {
+    position: absolute;
+    top: 24px;
+    left: calc((100% - 1200px) / 2 + 24px);
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateX(-3px);
+    }
+
+    @media (max-width: 1240px) {
+      left: 24px;
+    }
+
+    @media (max-width: 768px) {
+      top: 16px;
+      left: 16px;
+      font-size: 13px;
+      padding: 6px 12px;
+    }
+  }
 }
 
 :global([data-theme="dark"]) .banner,

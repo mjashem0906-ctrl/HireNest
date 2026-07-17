@@ -25,6 +25,7 @@ import {
   ClipboardList,
   Wrench,
   Linkedin,
+  ChevronLeft,
 } from "lucide-react";
 import AddMember from "../../components/Models/AddMember";
 
@@ -170,7 +171,11 @@ function MembersDetail() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.banner}></div>
+      <div className={styles.banner}>
+        <button className={styles.backButton} onClick={() => navigate(-1)}>
+          <ChevronLeft size={18} /> Back
+        </button>
+      </div>
 
       <div className={styles.headerCard}>
         <div className={styles.profileSection}>

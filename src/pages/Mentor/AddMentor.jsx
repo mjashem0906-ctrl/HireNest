@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, UserPlus, ChevronDown, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import DateSelect from "../../components/UI/DateSelect";
@@ -210,8 +211,8 @@ function MultiValueInput({ label, value = [], onChange, placeholder = "Type and 
         {label} {required && <span className={styles.edReq}>*</span>}
       </label>
       <div className={styles.edControl}>
-        <div 
-          className={`${styles.edField} ${error ? styles.edFieldError : ""}`} 
+        <div
+          className={`${styles.edField} ${error ? styles.edFieldError : ""}`}
           style={{ height: 'auto', minHeight: '48px', flexWrap: 'wrap', padding: '6px 16px', gap: '8px', alignItems: 'center' }}
         >
           {value.map((tag, index) => (
@@ -374,7 +375,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
         </button>
       )}
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <div className={styles.header}>
@@ -405,7 +406,6 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                     setFormData({ ...formData, email: v });
                     if (errors.email) setErrors({ ...errors, email: "" });
                   }}
-                  required
                   error={errors.email}
                 />
 
@@ -418,7 +418,6 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                     if (errors.mobileNumber) setErrors({ ...errors, mobileNumber: "" });
                   }}
                   placeholder="9876543210"
-                  required
                   error={errors.mobileNumber}
                 />
 
@@ -525,7 +524,8 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

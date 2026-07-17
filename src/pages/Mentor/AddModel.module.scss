@@ -378,13 +378,25 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* =========================================
@@ -403,7 +415,8 @@
 :global(.dark) .modal,
 :global(body[data-theme="dark"]) .modal {
   /* Dark tokens */
-  --m-bg: rgba(11, 18, 32, 0.96);          /* slate glass */
+  --m-bg: rgba(11, 18, 32, 0.96);
+  /* slate glass */
   --m-border: rgba(148, 163, 184, 0.14);
   --m-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
 
@@ -533,6 +546,7 @@
   background: rgba(2, 6, 23, 0.72) !important;
   backdrop-filter: blur(10px) !important;
 }
+
 /* =========================================
    Editable Dropdown
 ========================================= */
@@ -713,6 +727,7 @@
     opacity: 0;
     transform: translateY(6px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -875,11 +890,11 @@
 .modal select,
 .modal textarea {
   transition: all 0.2s ease;
-  
+
   &:hover:not(:focus) {
     border-color: rgba(225, 29, 72, 0.35) !important;
   }
-  
+
   &:focus {
     border-color: var(--m-focus) !important;
     box-shadow: 0 0 0 4px var(--m-focusRing) !important;
@@ -890,12 +905,13 @@
 /* Scoped overrides for custom DropdownSelect inside the modal */
 .modal :global(.custom-dropdown-select) {
   transition: all 0.2s ease;
-  
+
   &:hover {
     border-color: rgba(225, 29, 72, 0.35) !important;
   }
-  
-  &[class*="open_"], &:global(.custom-dropdown-open) {
+
+  &[class*="open_"],
+  &:global(.custom-dropdown-open) {
     border-color: var(--m-focus) !important;
     box-shadow: 0 0 0 4px var(--m-focusRing) !important;
     outline: none !important;
@@ -904,16 +920,17 @@
 
 .modal :global(.custom-dropdown-option) {
   transition: all 0.15s ease;
-  
-  &[class*="selected_"], &:global(.custom-dropdown-selected) {
+
+  &[class*="selected_"],
+  &:global(.custom-dropdown-selected) {
     background-color: var(--m-primary) !important;
     color: white !important;
-    
+
     &:hover {
       background-color: var(--m-primary-hover, #be123c) !important;
     }
   }
-  
+
   &:hover:not([class*="selected_"]):not(:global(.custom-dropdown-selected)) {
     background-color: rgba(225, 29, 72, 0.08) !important;
     color: var(--m-primary) !important;
@@ -933,10 +950,10 @@
 
   .header {
     padding: 16px 20px;
-    
+
     h2 {
       font-size: 1.25rem;
-      
+
       &::after {
         height: 3px;
         bottom: -4px;
@@ -957,7 +974,7 @@
     padding-top: 16px;
     margin-top: 16px;
     gap: 10px;
-    
+
     .cancelButton,
     .submitButton {
       flex: 1;
@@ -968,4 +985,3 @@
     }
   }
 }
-

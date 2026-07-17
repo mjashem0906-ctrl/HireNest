@@ -2071,7 +2071,8 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   box-shadow: $shadow-sm;
 
   table {
-    width: 1200px;
+    width: 100%;
+    min-width: 1200px;
     border-collapse: collapse;
     table-layout: fixed;
     font-size: 13px;
@@ -2116,32 +2117,82 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   thead th:nth-child(3),
   tbody td:nth-child(3) {
-    width: 120px;
+    width: 170px;
     text-align: center;
   }
 
   thead th:nth-child(4),
   tbody td:nth-child(4) {
-    width: 150px;
+    width: 180px;
     text-align: center;
   }
 
   thead th:nth-child(5),
   tbody td:nth-child(5) {
-    width: 170px;
+    width: 140px;
     text-align: left;
   }
 
   thead th:nth-child(6),
   tbody td:nth-child(6) {
-    width: 170px;
+    width: 140px;
     text-align: left;
   }
 
   thead th:nth-child(7),
   tbody td:nth-child(7) {
-    width: 170px;
+    width: 150px;
     text-align: left;
+  }
+
+  &.candidateCardTable {
+    table {
+      width: 100%;
+      min-width: 1000px;
+    }
+
+    /* Column widths — 4 columns */
+    thead th:nth-child(1),
+    tbody td:nth-child(1) {
+      width: 250px;
+      text-align: left;
+    }
+
+    thead th:nth-child(2),
+    tbody td:nth-child(2) {
+      width: 220px;
+      text-align: left;
+    }
+
+    thead th:nth-child(3),
+    tbody td:nth-child(3) {
+      width: 220px;
+      text-align: left;
+    }
+
+    thead th:nth-child(4),
+    tbody td:nth-child(4) {
+      width: 150px;
+      text-align: center;
+    }
+
+    thead th:nth-child(5),
+    tbody td:nth-child(5) {
+      width: 120px;
+      text-align: center;
+    }
+
+    thead th:nth-child(6),
+    tbody td:nth-child(6) {
+      width: auto;
+      text-align: left;
+    }
+
+    thead th:nth-child(7),
+    tbody td:nth-child(7) {
+      width: auto;
+      text-align: left;
+    }
   }
 }
 
@@ -2278,6 +2329,13 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.2);
   }
+
+  /* Meeting Scheduled state */
+  &[data-status="meeting_schedule"] {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+  }
 }
 
 :global([data-theme="dark"]) .statusBadge {
@@ -2297,6 +2355,12 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     background: rgba(239, 68, 68, 0.15);
     color: #fca5a5;
     border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &[data-status="meeting_schedule"] {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
   }
 }
 
@@ -2719,4 +2783,26 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     width: 170px !important;
     text-align: left !important;
   }
+}
+
+.skillsListCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 250px;
+}
+
+.skillBadgeMini {
+  background: rgba(225, 29, 72, 0.06);
+  color: var(--m-primary);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:global([data-theme="dark"]) .skillBadgeMini {
+  background: rgba(225, 29, 72, 0.12);
+  color: #fda4af;
 }

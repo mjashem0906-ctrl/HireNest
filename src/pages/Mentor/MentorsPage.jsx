@@ -112,6 +112,17 @@ const MentorsPage = () => {
   // Custom Dropdown menu state
   const [openDropdown, setOpenDropdown] = useState(null); // null | "domain" | "district" | "experience" | "gender"
 
+  // Meeting Schedule states
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [scheduleConnectionId, setScheduleConnectionId] = useState(null);
+  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingTime, setMeetingTime] = useState("");
+  const [meetingMessage, setMeetingMessage] = useState("");
+  const [meetingLink, setMeetingLink] = useState("");
+
+  const [showMeetingDetailsModal, setShowMeetingDetailsModal] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+
   const toggleDropdown = (e, name) => {
     e.stopPropagation();
     setOpenDropdown(prev => prev === name ? null : name);
@@ -243,17 +254,41 @@ const MentorsPage = () => {
     }
   };
 
-  const handleMentorConnectionStatusChange = async (connectionId, newStatus) => {
+  const handleMentorConnectionStatusChange = async (connectionId, newStatus, meetingDetails = null) => {
     try {
-      await API.put(`/api/mentor-connections/${connectionId}`, {
-        status: newStatus,
-      });
+      const payload = { status: newStatus };
+      if (meetingDetails) {
+        payload.meetingDate = meetingDetails.meetingDate;
+        payload.meetingTime = meetingDetails.meetingTime;
+        payload.meetingMessage = meetingDetails.meetingMessage;
+        payload.meetingLink = meetingDetails.meetingLink;
+      }
+      await API.put(`/api/mentor-connections/${connectionId}`, payload);
       alert(`Status updated to ${newStatus}`);
       fetchMentorConnections();
     } catch (error) {
       console.error("Failed to update status", error);
       alert("Failed to update status. Please try again.");
     }
+  };
+
+  const handleScheduleSubmit = async () => {
+    if (!meetingDate || !meetingTime || !meetingMessage || !meetingLink) {
+      alert("All fields are required. Please fill in all fields before submitting.");
+      return;
+    }
+    await handleMentorConnectionStatusChange(scheduleConnectionId, "meeting_schedule", {
+      meetingDate,
+      meetingTime,
+      meetingMessage,
+      meetingLink,
+    });
+    setShowScheduleModal(false);
+    setScheduleConnectionId(null);
+    setMeetingDate("");
+    setMeetingTime("");
+    setMeetingMessage("");
+    setMeetingLink("");
   };
 
   const handleConnectClick = (e, mentor) => {
@@ -327,6 +362,7 @@ const MentorsPage = () => {
       pending: { icon: "⏳", text: "Pending", key: "pending" },
       accepted: { icon: "✅", text: "Accepted", key: "accepted" },
       rejected: { icon: "❌", text: "Rejected", key: "rejected" },
+      meeting_schedule: { icon: "📅", text: "Meeting Scheduled", key: "meeting_schedule" },
     };
     const s = statusMap[status] || statusMap.pending;
     return (
@@ -938,8 +974,8 @@ const MentorsPage = () => {
                         <th>Mentor</th>
                         <th>Expertise / Role</th>
                         <th>Domain</th>
+                        <th>Skills</th>
                         <th>Experience</th>
-                        <th>Location</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -985,19 +1021,26 @@ const MentorsPage = () => {
                               </span>
                             </td>
 
-                            {/* Column 4: Experience */}
+                            {/* Column 4: Skills */}
+                            <td data-label="Skills">
+                              <div className={styles.skillsListCell}>
+                                {m.skills && m.skills.length > 0 ? (
+                                  m.skills.map((skill, index) => (
+                                    <span key={index} className={styles.skillBadgeMini}>
+                                      {skill}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span style={{ color: 'var(--m-text-muted)', fontSize: '13px' }}>—</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Column 5: Experience */}
                             <td data-label="Experience">
                               <span className={styles.experienceCell}>
                                 {m.workExp ? `${m.workExp} Years` : "Experience N/A"}
                               </span>
-                            </td>
-
-                            {/* Column 5: Location */}
-                            <td data-label="Location">
-                              <div className={styles.locationCell}>
-                                <MapPin size={13} />
-                                <span>{m.district || "Remote"}</span>
-                              </div>
                             </td>
 
                             {/* Column 6: Status Pill */}
@@ -1287,7 +1330,7 @@ const MentorsPage = () => {
                     <div className={styles.applicantsSection}>
                       <div className={styles.applicantsHeader}>
                         <h4>
-                          <Users size={16} /> Applicants (1)
+                          <Users size={16} /> Application status (1)
                         </h4>
                         <span className={styles.applicantsCount}>
                           1 total
@@ -1298,35 +1341,15 @@ const MentorsPage = () => {
                         <table>
                           <thead>
                             <tr>
-                              <th>Name</th>
-                              <th>Email</th>
-                              <th>Status</th>
-                              <th>Domain</th>
-                              <th>Skill</th>
                               <th>Request Sent Date</th>
+                              <th>Skill</th>
+                              <th>Domain</th>
+                              <th>Status</th>
+                              {app.status === "meeting_schedule" && <th>Action</th>}
                             </tr>
                           </thead>
                           <tbody>
                             <tr>
-                              <td className={styles.applicantName}>
-                                {app.userDetails?.name || "Unknown Applicant"}
-                              </td>
-                              <td className={styles.applicantEmail}>
-                                {app.userDetails?.email || "—"}
-                              </td>
-                              <td className={styles.applicantStatus}>
-                                {renderStatusBadge(app.status || "pending")}
-                              </td>
-                              <td className={styles.applicantDomain}>
-                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
-                                  ? "-"
-                                  : (app.domain || "-")}
-                              </td>
-                              <td className={styles.applicantSkill}>
-                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
-                                  ? "-"
-                                  : (app.skill || "-")}
-                              </td>
                               <td className={styles.applicantDate}>
                                 {app.createdAt && !isNaN(new Date(app.createdAt))
                                   ? new Date(app.createdAt).toLocaleString('en-IN', {
@@ -1339,6 +1362,40 @@ const MentorsPage = () => {
                                   })
                                   : "—"}
                               </td>
+                              <td className={styles.applicantSkill}>
+                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                  ? "-"
+                                  : (app.skill || "-")}
+                              </td>
+                              <td className={styles.applicantDomain}>
+                                {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
+                                  ? "-"
+                                  : (app.domain || "-")}
+                              </td>
+                              <td className={styles.applicantStatus}>
+                                {renderStatusBadge(app.status || "pending")}
+                              </td>
+                              {app.status === "meeting_schedule" && (
+                                <td style={{ textAlign: "center" }}>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedMeeting(app);
+                                      setShowMeetingDetailsModal(true);
+                                    }}
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      color: "var(--m-primary)",
+                                      cursor: "pointer",
+                                      display: "inline-flex",
+                                      alignItems: "center"
+                                    }}
+                                    title="View Meeting Details"
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                </td>
+                              )}
                             </tr>
                           </tbody>
                         </table>
@@ -1428,16 +1485,22 @@ const MentorsPage = () => {
                                         <select
                                           className={styles.statusSelect}
                                           value={app.status || "pending"}
-                                          onChange={(e) =>
-                                            handleMentorConnectionStatusChange(
-                                              app._id,
-                                              e.target.value
-                                            )
-                                          }
+                                          onChange={(e) => {
+                                            if (e.target.value === "meeting_schedule") {
+                                              setScheduleConnectionId(app._id);
+                                              setShowScheduleModal(true);
+                                            } else {
+                                              handleMentorConnectionStatusChange(
+                                                app._id,
+                                                e.target.value
+                                              );
+                                            }
+                                          }}
                                         >
                                           <option value="pending">Pending</option>
                                           <option value="accepted">Accepted</option>
                                           <option value="rejected">Rejected</option>
+                                          <option value="meeting_schedule">Meeting Schedule</option>
                                         </select>
                                       </td>
                                       <td className={styles.applicantDomain}>
@@ -1598,6 +1661,146 @@ const MentorsPage = () => {
                     <Send size={14} /> Send Request
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================================
+         SCHEDULE MEETING MODAL OVERLAY (ADMIN SIDE)
+         ========================================================================== */}
+      {showScheduleModal && scheduleConnectionId && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => {
+            setShowScheduleModal(false);
+            setScheduleConnectionId(null);
+          }}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "450px" }}
+          >
+            <h2>Schedule Meeting</h2>
+            <p>Enter the meeting details to schedule a connection meeting with the candidate.</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Date</label>
+                <input 
+                  type="date" 
+                  value={meetingDate}
+                  onChange={(e) => setMeetingDate(e.target.value)}
+                  className={styles.selectInput}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Time</label>
+                <input 
+                  type="time" 
+                  value={meetingTime}
+                  onChange={(e) => setMeetingTime(e.target.value)}
+                  className={styles.selectInput}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Message</label>
+                <textarea 
+                  placeholder="Enter message for the candidate..."
+                  value={meetingMessage}
+                  onChange={(e) => setMeetingMessage(e.target.value)}
+                  className={styles.messageInput}
+                  rows={3}
+                  required
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Meeting Link</label>
+                <input 
+                  type="text" 
+                  placeholder="https://zoom.us/j/..."
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  className={styles.selectInput}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => {
+                  setShowScheduleModal(false);
+                  setScheduleConnectionId(null);
+                }}
+                className={styles.cancelBtn}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleScheduleSubmit}
+                className={styles.sendBtn}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================================
+         MEETING DETAILS MODAL OVERLAY (JOB SEEKER SIDE)
+         ========================================================================== */}
+      {showMeetingDetailsModal && selectedMeeting && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowMeetingDetailsModal(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "450px" }}
+          >
+            <h2>Meeting Details</h2>
+            <p>Here are the scheduled meeting details with your mentor <strong>{selectedMeeting.mentorDetails?.name}</strong>:</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", margin: "16px 0" }}>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Date</strong>
+                <span style={{ fontSize: "14px", fontWeight: "600" }}>{selectedMeeting.meetingDate}</span>
+              </div>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Time</strong>
+                <span style={{ fontSize: "14px", fontWeight: "600" }}>{selectedMeeting.meetingTime}</span>
+              </div>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
+                <p style={{ margin: "4px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>{selectedMeeting.meetingMessage}</p>
+              </div>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Link</strong>
+                <a 
+                  href={selectedMeeting.meetingLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ fontSize: "14px", color: "var(--m-primary)", textDecoration: "underline", wordBreak: "break-all", fontWeight: "600" }}
+                >
+                  {selectedMeeting.meetingLink}
+                </a>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => setShowMeetingDetailsModal(false)}
+                className={styles.cancelBtn}
+                style={{ width: "100%" }}
+              >
+                Close
               </button>
             </div>
           </div>
