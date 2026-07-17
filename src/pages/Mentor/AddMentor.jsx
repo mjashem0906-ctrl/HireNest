@@ -284,15 +284,11 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
       newErrors.name = "Full Name is required";
     }
 
-    if (!formData.mobileNumber?.trim()) {
-      newErrors.mobileNumber = "Mobile Number is required";
-    } else if (formData.mobileNumber.replace(/\D/g, '').length !== 10) {
+    if (formData.mobileNumber?.trim() && formData.mobileNumber.replace(/\D/g, '').length !== 10) {
       newErrors.mobileNumber = "Mobile Number must be exactly 10 digits";
     }
 
-    if (!formData.email?.trim()) {
-      newErrors.email = "Email Address is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    if (formData.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = "Please enter a valid email address";
     }
 
@@ -338,6 +334,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
       let res;
       if (isEditing) {
         res = await API.put(`/member/${editData._id}`, payload);
+        alert("Profile Updated Successfully");
       } else {
         res = await API.post("/member", payload);
       }

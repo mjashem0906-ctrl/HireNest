@@ -2072,7 +2072,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   table {
     width: 100%;
-    min-width: 1200px;
+    min-width: 1300px;
     border-collapse: collapse;
     table-layout: fixed;
     font-size: 13px;
@@ -2141,6 +2141,12 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   thead th:nth-child(7),
   tbody td:nth-child(7) {
+    width: 100px;
+    text-align: center;
+  }
+
+  thead th:nth-child(8),
+  tbody td:nth-child(8) {
     width: 150px;
     text-align: left;
   }

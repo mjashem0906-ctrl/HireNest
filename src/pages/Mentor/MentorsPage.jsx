@@ -123,6 +123,9 @@ const MentorsPage = () => {
   const [showMeetingDetailsModal, setShowMeetingDetailsModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
 
+  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [selectedMsgConnection, setSelectedMsgConnection] = useState(null);
+
   const toggleDropdown = (e, name) => {
     e.stopPropagation();
     setOpenDropdown(prev => prev === name ? null : name);
@@ -998,7 +1001,7 @@ const MentorsPage = () => {
                                 </div>
                                 <div className={styles.mentorMetaDetails}>
                                   <span className={styles.mentorNameText}>{m.name}</span>
-                                  <span className={styles.mentorEmailText}>{m.email || "No email"}</span>
+                                  {!isCandidate && <span className={styles.mentorEmailText}>{m.email || "No email"}</span>}
                                 </div>
                               </div>
                             </td>
@@ -1152,7 +1155,7 @@ const MentorsPage = () => {
 
                             <div className={styles.cardHeaderInfo}>
                               <h3 className={styles.cardNameText}>{m.name}</h3>
-                              <span className={styles.cardEmailText}>{m.email || "No email"}</span>
+                              {!isCandidate && <span className={styles.cardEmailText}>{m.email || "No email"}</span>}
                             </div>
                           </div>
 
@@ -1318,7 +1321,7 @@ const MentorsPage = () => {
                         </div>
                         <div className={styles.mentorDetails}>
                           <h3 className={styles.mentorName}>{app.mentorDetails?.name || "Unknown Mentor"}</h3>
-                          <p className={styles.mentorEmail}>{app.mentorDetails?.email || "No email"}</p>
+                          {!isCandidate && <p className={styles.mentorEmail}>{app.mentorDetails?.email || "No email"}</p>}
                           {app.mentorDetails?.designation && (
                             <p className={styles.mentorDesignation}>{app.mentorDetails.designation}</p>
                           )}
@@ -1466,6 +1469,7 @@ const MentorsPage = () => {
                                     <th>Change Status</th>
                                     <th>Domain</th>
                                     <th>Skill</th>
+                                    <th>Message</th>
                                     <th>Request Sent Date</th>
                                   </tr>
                                 </thead>
@@ -1512,6 +1516,25 @@ const MentorsPage = () => {
                                         {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
                                           ? "-"
                                           : (app.skill || "-")}
+                                      </td>
+                                      <td style={{ textAlign: "center" }}>
+                                        <button
+                                          onClick={() => {
+                                            setSelectedMsgConnection(app);
+                                            setShowMsgModal(true);
+                                          }}
+                                          style={{
+                                            background: "none",
+                                            border: "none",
+                                            color: "var(--m-primary)",
+                                            cursor: "pointer",
+                                            display: "inline-flex",
+                                            alignItems: "center"
+                                          }}
+                                          title="View Message"
+                                        >
+                                          <Eye size={16} />
+                                        </button>
                                       </td>
                                       <td className={styles.applicantDate}>
                                         {app.createdAt && !isNaN(new Date(app.createdAt))
@@ -1797,6 +1820,47 @@ const MentorsPage = () => {
             <div className={styles.modalActions}>
               <button
                 onClick={() => setShowMeetingDetailsModal(false)}
+                className={styles.cancelBtn}
+                style={{ width: "100%" }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMsgModal && selectedMsgConnection && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => {
+            setShowMsgModal(false);
+            setSelectedMsgConnection(null);
+          }}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "450px" }}
+          >
+            <h2>Applicant Message</h2>
+            <p>Message from <strong>{selectedMsgConnection.userDetails?.name || "the candidate"}</strong>:</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", margin: "16px 0" }}>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
+                <p style={{ margin: "4px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>
+                  {selectedMsgConnection.message || "No message provided."}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                onClick={() => {
+                  setShowMsgModal(false);
+                  setSelectedMsgConnection(null);
+                }}
                 className={styles.cancelBtn}
                 style={{ width: "100%" }}
               >

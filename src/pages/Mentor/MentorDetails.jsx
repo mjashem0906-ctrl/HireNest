@@ -90,10 +90,13 @@ const MentorDetails = () => {
   const role = user?.role?.toLowerCase?.() || "";
   const memberType = user?.memberType?.toLowerCase?.() || "";
   const isCandidate =
+    role === "candidate" ||
+    role === "member" ||
+    role === "mentor" ||
+    role === "job" ||
     memberType === "candidate" ||
     memberType === "member" ||
-    role === "candidate" ||
-    role === "member";
+    (user?.role && !["Admin", "IT_Member"].includes(user.role));
 
   // Contact details are visible only to admins or when connection is accepted
   const canSeeContact = isAdmin || connectStatus === "accepted";
@@ -487,17 +490,19 @@ const MentorDetails = () => {
               </div>
             )}
 
-            <div className={`${styles.item} ${!canSeeContact ? styles.hiddenContactItem : ''}`}>
-              <label>Email Address</label>
-              {canSeeContact ? (
-                <div className={styles.value}>{mentor?.email || "—"}</div>
-              ) : (
-                <div className={styles.hiddenContact}>
-                  <Lock size={14} />
-                  <span>Connect to view</span>
-                </div>
-              )}
-            </div>
+            {!isCandidate && (
+              <div className={`${styles.item} ${!canSeeContact ? styles.hiddenContactItem : ''}`}>
+                <label>Email Address</label>
+                {canSeeContact ? (
+                  <div className={styles.value}>{mentor?.email || "—"}</div>
+                ) : (
+                  <div className={styles.hiddenContact}>
+                    <Lock size={14} />
+                    <span>Connect to view</span>
+                  </div>
+                )}
+              </div>
+            )}
 
 
 
