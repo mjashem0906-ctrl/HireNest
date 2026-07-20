@@ -187,51 +187,164 @@ function EditableDropdown({
   );
 }
 
-function MultiValueInput({ label, value = [], onChange, placeholder = "Type and press Enter", required = false, error = "" }) {
+function MultiValueInput({ 
+  label, 
+  value = [], 
+  options = [], 
+  onChange, 
+  placeholder = "Type and press Enter", 
+  required = false, 
+  error = "",
+  onCustomAdded
+}) {
   const [inputValue, setInputValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const addTag = (tagVal) => {
+    const v = String(tagVal || inputValue || "").trim();
+    if (!v) return;
+
+    const exists = value.some(
+      (x) => String(x).toLowerCase() === v.toLowerCase()
+    );
+    if (!exists) {
+      onChange([...value, v]);
+      if (onCustomAdded && !options.some(opt => String(opt).toLowerCase() === v.toLowerCase())) {
+        onCustomAdded(v);
+      }
+    }
+    setInputValue("");
+    setOpen(false);
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const val = inputValue.trim();
-      if (val && !value.includes(val)) {
-        onChange([...value, val]);
-      }
-      setInputValue("");
+      addTag();
     }
+    if (e.key === "Backspace" && !inputValue && value.length > 0) {
+      onChange(value.slice(0, -1));
+    }
+    if (e.key === "Escape") setOpen(false);
   };
 
   const removeTag = (tagToRemove) => {
     onChange(value.filter(tag => tag !== tagToRemove));
   };
 
+  const toggleOption = (opt) => {
+    const exists = value.some(
+      (x) => String(x).toLowerCase() === String(opt).toLowerCase()
+    );
+    if (exists) {
+      onChange(value.filter((t) => String(t).toLowerCase() !== String(opt).toLowerCase()));
+    } else {
+      onChange([...value, opt]);
+    }
+    setInputValue("");
+    setOpen(false);
+  };
+
+  const norm = (s) => String(s || "").toLowerCase().trim();
+
+  const filteredOptions = (options || []).filter((opt) => {
+    if (!inputValue) return true;
+    return norm(opt).includes(norm(inputValue));
+  });
+
   return (
-    <div className={styles.edWrap}>
+    <div ref={wrapRef} className={styles.edWrap} style={{ position: 'relative' }}>
       <label className={styles.edLabel}>
         {label} {required && <span className={styles.edReq}>*</span>}
       </label>
       <div className={styles.edControl}>
         <div
           className={`${styles.edField} ${error ? styles.edFieldError : ""}`}
-          style={{ height: 'auto', minHeight: '48px', flexWrap: 'wrap', padding: '6px 16px', gap: '8px', alignItems: 'center' }}
+          style={{ height: 'auto', minHeight: '48px', flexWrap: 'wrap', padding: '6px 16px', gap: '8px', alignItems: 'center', cursor: 'text', position: 'relative' }}
+          onClick={() => {
+            inputRef.current?.focus();
+            setOpen(true);
+          }}
         >
           {value.map((tag, index) => (
             <span key={index} style={{ background: '#f1f5f9', color: '#334155', padding: '4px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '500' }}>
               {tag}
-              <button type="button" onClick={() => removeTag(tag)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, color: '#64748b' }}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); removeTag(tag); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, color: '#64748b' }}>
                 <X size={14} />
               </button>
             </span>
           ))}
           <input
+            ref={inputRef}
             className={styles.edInput}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={value.length === 0 ? placeholder : ""}
-            style={{ flex: 1, minWidth: '120px', padding: '0', height: 'auto' }}
+            style={{ flex: 1, minWidth: '120px', padding: '0', height: 'auto', border: 'none', outline: 'none', background: 'transparent', boxShadow: 'none' }}
           />
+
+          {options && options.length > 0 && (
+            <button
+              type="button"
+              className={styles.edBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen((p) => !p);
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b', padding: 0 }}
+            >
+              <ChevronDown size={18} />
+            </button>
+          )}
         </div>
+
+        {open && options && options.length > 0 && (
+          <div className={styles.edMenu} style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100 }}>
+            {filteredOptions.length === 0 ? (
+              <div className={styles.edEmpty}>
+                No matches. Press <b>Enter</b> to add: “{inputValue}”
+              </div>
+            ) : (
+              <div className={styles.edMenuList} style={{ maxHeight: 200, overflowY: 'auto' }}>
+                {filteredOptions.map((opt) => {
+                  const isSel = value.some((x) => norm(x) === norm(opt));
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`${styles.edItem} ${isSel ? styles.edItemActive : ""}`}
+                      onClick={() => toggleOption(opt)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      style={{ width: '100%', textAlign: 'left' }}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div className={styles.edTip}>
+              <span>Tip: Type to search. Press <b>Enter</b> to add custom values.</span>
+            </div>
+          </div>
+        )}
       </div>
       {error && <p className={styles.edErrorText}>{error}</p>}
     </div>
@@ -245,6 +358,54 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
   const [btnLoading, setBtnLoading] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+
+  const [existingDomains, setExistingDomains] = useState([]);
+  const [existingSkills, setExistingSkills] = useState([]);
+
+  const fetchDomainsAndSkills = async () => {
+    try {
+      const res = await API.get("/member");
+      const members = res.data || [];
+      const mentorsList = members.filter(
+        (m) => String(m.memberType || "").toLowerCase() === "mentor"
+      );
+
+      // Extract unique domains (fieldofStudy_Interest)
+      const domainSet = new Set();
+      mentorsList.forEach((m) => {
+        if (m.fieldofStudy_Interest) {
+          m.fieldofStudy_Interest.split(",").forEach((item) => {
+            const trimmed = item.trim();
+            if (trimmed) domainSet.add(trimmed);
+          });
+        }
+      });
+      setExistingDomains(Array.from(domainSet).sort());
+
+      // Extract unique skills
+      const skillSet = new Set();
+      mentorsList.forEach((m) => {
+        if (Array.isArray(m.skills)) {
+          m.skills.forEach((skill) => {
+            const trimmed = String(skill || "").trim();
+            if (trimmed) skillSet.add(trimmed);
+          });
+        }
+      });
+      setExistingSkills(Array.from(skillSet).sort());
+    } catch (err) {
+      console.error("Failed to fetch domains/skills from mentors:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchDomainsAndSkills();
+    }
+  }, [isOpen]);
+
+  const saveCustomDomain = () => {};
+  const saveCustomSkill = () => {};
 
   useEffect(() => {
     if (location.state?.openAddModal) {
@@ -469,12 +630,14 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                 <MultiValueInput
                   label="Domain"
                   value={formData.fieldofStudy_Interest ? formData.fieldofStudy_Interest.split(",").map(s => s.trim()).filter(Boolean) : []}
+                  options={existingDomains}
                   onChange={(v) => {
                     setFormData({ ...formData, fieldofStudy_Interest: v.join(", ") });
                     if (errors.fieldofStudy_Interest) {
                       setErrors({ ...errors, fieldofStudy_Interest: "" });
                     }
                   }}
+                  onCustomAdded={saveCustomDomain}
                   required
                   error={errors.fieldofStudy_Interest}
                   placeholder="e.g. Technology, AI (press Enter)"
@@ -494,7 +657,9 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
                 <MultiValueInput
                   label="Skills"
                   value={formData.skills || []}
+                  options={existingSkills}
                   onChange={(v) => setFormData({ ...formData, skills: v })}
+                  onCustomAdded={saveCustomSkill}
                   placeholder="e.g. React, Node.js (press Enter)"
                 />
               </div>

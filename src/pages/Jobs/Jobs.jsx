@@ -2336,6 +2336,7 @@ function Jobs() {
   const [showSendToRecruiterModal, setShowSendToRecruiterModal] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [selectedJobForRecruiter, setSelectedJobForRecruiter] = useState(null);
+  const [editingStatusKey, setEditingStatusKey] = useState(null);
 
   const [loadingState, setLoadingState] = useState({
     fetching: false,
@@ -4229,7 +4230,7 @@ function Jobs() {
                                     <Users size={16} /> Applicants (
                                     {request.appliedMembers?.length || 0})
                                   </h4>
-                                  <span className={styles.applicantsCount}>
+                              <span className={styles.applicantsCount}>
                                     {request.appliedMembers?.length || 0} total
                                   </span>
                                 </div>
@@ -4242,7 +4243,6 @@ function Jobs() {
                                           <th>Name</th>
                                           <th>Resume</th>
                                           <th>Status</th>
-                                          <th>Change Status</th>
                                           <th>Email To Recruiter</th>
                                         </tr>
                                       </thead>
@@ -4274,29 +4274,49 @@ function Jobs() {
                                               )}
                                             </td>
                                             <td className={styles.applicantStatus}>
-                                              {renderStatusBadge(
-                                                app.status || "Applied"
+                                              {editingStatusKey === `${request._id}-${app.memberId?._id}` ? (
+                                                <select
+                                                  className={styles.statusSelect}
+                                                  value={app.status || "Applied"}
+                                                  autoFocus
+                                                  onBlur={() => setEditingStatusKey(null)}
+                                                  onChange={(e) => {
+                                                    handleStatusChange(
+                                                      request._id,
+                                                      app.memberId?._id,
+                                                      e.target.value
+                                                    );
+                                                    setEditingStatusKey(null);
+                                                  }}
+                                                >
+                                                  <option value="Applied">Applied</option>
+                                                  <option value="Review">Under Review</option>
+                                                  <option value="Shortlisted">Shortlisted</option>
+                                                  <option value="Shortlisted">Interview</option>
+                                                  <option value="Offer">Offer Accepted</option>
+                                                  <option value="Offer">Offer Rejected</option>
+                                                  <option value="Rejected">Rejected</option>
+                                                </select>
+                                              ) : (
+                                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                  {renderStatusBadge(app.status || "Applied")}
+                                                  <button
+                                                    onClick={() => setEditingStatusKey(`${request._id}-${app.memberId?._id}`)}
+                                                    style={{
+                                                      background: "none",
+                                                      border: "none",
+                                                      color: "var(--m-primary)",
+                                                      cursor: "pointer",
+                                                      display: "inline-flex",
+                                                      alignItems: "center",
+                                                      padding: 0
+                                                    }}
+                                                    title="Edit Status"
+                                                  >
+                                                    <Edit size={14} />
+                                                  </button>
+                                                </div>
                                               )}
-                                            </td>
-                                            <td className={styles.applicantChangeStatus}>
-                                              <select
-                                                className={styles.statusSelect}
-                                                value={app.status || "Applied"}
-                                                onChange={(e) =>
-                                                  handleStatusChange(
-                                                    request._id,
-                                                    app.memberId?._id,
-                                                    e.target.value
-                                                  )
-                                                }
-                                              >
-                                                <option value="Applied">Applied</option>
-                                                <option value="Review">Review</option>
-                                                <option value="Shortlisted">Shortlisted</option>
-                                                <option value="Offer">Offer</option>
-                                                <option value="Accepted">Accepted</option>
-                                                <option value="Rejected">Rejected</option>
-                                              </select>
                                             </td>
                                             <td className={styles.applicantEmailAction}>
                                               <button

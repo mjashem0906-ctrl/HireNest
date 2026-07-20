@@ -60,12 +60,11 @@ const SendToRecruiterModal = ({ isOpen, onClose, applicant, job }) => {
   const location = [applicant?.memberId?.district, applicant?.memberId?.address].filter(Boolean).join(", ") || applicant?.memberId?.careerProfile?.location || "N/A";
   const jobTitle = job?.title || "the position";
 
-  // Initialize email text once when modal opens or candidate changes
+  // Initialize email text once when modal opens, candidate changes, or recruiter changes
   const [emailText, setEmailText] = useState("");
 
-  useEffect(() => {
-    if (isOpen && applicant && job) {
-      setEmailText(`Dear Recruiter,
+  const getEmailTemplate = (recruiterName = "Recruiter") => {
+    return `Dear ${recruiterName},
 
 Greetings from Job Bridge Node.
 
@@ -92,10 +91,16 @@ Job Bridge Node Team
 Connecting Talent with Opportunities
 📧 info.jobbridge@solidaritykarnataka.org
 📞 6366234200
-🌐 Job Bridge Node`);
+🌐 Job Bridge Node`;
+  };
+
+  useEffect(() => {
+    if (isOpen && applicant && job) {
+      const name = selectedRecruiter?.fullName || "Recruiter";
+      setEmailText(getEmailTemplate(name));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, applicant?.memberId?._id, job?._id]);
+  }, [isOpen, applicant?.memberId?._id, job?._id, selectedRecruiter]);
 
   if (!isOpen || !applicant || !job) return null;
 

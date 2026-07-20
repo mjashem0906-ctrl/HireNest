@@ -1676,34 +1676,28 @@ $radius-xl: 22px;
     border-bottom: none;
   }
 
-  /* Column widths — 5 columns */
+  /* Column widths — 4 columns */
   thead th:nth-child(1),
   tbody td:nth-child(1) {
-    width: 24%;
+    width: 25%;
   }
 
   thead th:nth-child(2),
   tbody td:nth-child(2) {
-    width: 18%;
-    text-align: center;
+    width: 25%;
+    text-align: left;
   }
 
   thead th:nth-child(3),
   tbody td:nth-child(3) {
-    width: 18%;
-    text-align: center;
+    width: 25%;
+    text-align: left;
   }
 
   thead th:nth-child(4),
   tbody td:nth-child(4) {
-    width: 26%;
-    text-align: center;
-  }
-
-  thead th:nth-child(5),
-  tbody td:nth-child(5) {
-    width: 14%;
-    text-align: center;
+    width: 25%;
+    text-align: left;
   }
 }
 
@@ -1714,20 +1708,20 @@ $radius-xl: 22px;
 }
 
 .applicantResume {
-  text-align: center;
+  text-align: left;
 }
 
 .applicantStatus {
-  text-align: center;
+  text-align: left;
 }
 
 .applicantChangeStatus {
-  text-align: center;
+  text-align: left;
   vertical-align: middle;
 }
 
 .applicantEmailAction {
-  text-align: center;
+  text-align: left;
   vertical-align: middle;
 }
 

@@ -139,7 +139,7 @@ function Members() {
   }, [memberContext, recruiters, location.state]);
 
   const sortByReferenceNumber = (list = []) =>
-    [...list].sort((a, b) => (a.memberReferenceNumber ?? 0) - (b.memberReferenceNumber ?? 0));
+    [...list].sort((a, b) => (Number(a.memberReferenceNumber) || 0) - (Number(b.memberReferenceNumber) || 0));
 
   const unique = (arr) => [...new Set(arr.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
 

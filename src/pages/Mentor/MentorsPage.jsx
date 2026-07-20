@@ -27,6 +27,7 @@ import {
   Trash2,
   FileText,
   Users,
+  Edit,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axios";
@@ -125,6 +126,7 @@ const MentorsPage = () => {
 
   const [showMsgModal, setShowMsgModal] = useState(false);
   const [selectedMsgConnection, setSelectedMsgConnection] = useState(null);
+  const [editingStatusId, setEditingStatusId] = useState(null);
 
   const toggleDropdown = (e, name) => {
     e.stopPropagation();
@@ -1348,7 +1350,7 @@ const MentorsPage = () => {
                               <th>Skill</th>
                               <th>Domain</th>
                               <th>Status</th>
-                              {app.status === "meeting_schedule" && <th>Action</th>}
+                              {app.status === "meeting_schedule" && <th>View</th>}
                             </tr>
                           </thead>
                           <tbody>
@@ -1463,19 +1465,30 @@ const MentorsPage = () => {
                               <table>
                                 <thead>
                                   <tr>
+                                    <th>Request Sent Date</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Status</th>
-                                    <th>Change Status</th>
                                     <th>Domain</th>
                                     <th>Skill</th>
                                     <th>Message</th>
-                                    <th>Request Sent Date</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {mentorApplicants.map((app, idx) => (
                                     <tr key={idx}>
+                                      <td className={styles.applicantDate}>
+                                        {app.createdAt && !isNaN(new Date(app.createdAt))
+                                          ? new Date(app.createdAt).toLocaleString('en-IN', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true
+                                          })
+                                          : "—"}
+                                      </td>
                                       <td className={styles.applicantName}>
                                         {app.userDetails?.name || "Unknown Applicant"}
                                       </td>
@@ -1483,29 +1496,50 @@ const MentorsPage = () => {
                                         {app.userDetails?.email || "N/A"}
                                       </td>
                                       <td className={styles.applicantStatus}>
-                                        {renderStatusBadge(app.status || "pending")}
-                                      </td>
-                                      <td className={styles.applicantChangeStatus}>
-                                        <select
-                                          className={styles.statusSelect}
-                                          value={app.status || "pending"}
-                                          onChange={(e) => {
-                                            if (e.target.value === "meeting_schedule") {
-                                              setScheduleConnectionId(app._id);
-                                              setShowScheduleModal(true);
-                                            } else {
-                                              handleMentorConnectionStatusChange(
-                                                app._id,
-                                                e.target.value
-                                              );
-                                            }
-                                          }}
-                                        >
-                                          <option value="pending">Pending</option>
-                                          <option value="accepted">Accepted</option>
-                                          <option value="rejected">Rejected</option>
-                                          <option value="meeting_schedule">Meeting Schedule</option>
-                                        </select>
+                                        {editingStatusId === app._id ? (
+                                          <select
+                                            className={styles.statusSelect}
+                                            value={app.status || "pending"}
+                                            autoFocus
+                                            onBlur={() => setEditingStatusId(null)}
+                                            onChange={(e) => {
+                                              if (e.target.value === "meeting_schedule") {
+                                                setScheduleConnectionId(app._id);
+                                                setShowScheduleModal(true);
+                                              } else {
+                                                handleMentorConnectionStatusChange(
+                                                  app._id,
+                                                  e.target.value
+                                                );
+                                              }
+                                              setEditingStatusId(null);
+                                            }}
+                                          >
+                                            <option value="pending">Pending</option>
+                                            <option value="accepted">Accepted</option>
+                                            <option value="rejected">Rejected</option>
+                                            <option value="meeting_schedule">Meeting Scheduled</option>
+                                          </select>
+                                        ) : (
+                                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                            {renderStatusBadge(app.status || "pending")}
+                                            <button
+                                              onClick={() => setEditingStatusId(app._id)}
+                                              style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "var(--m-primary)",
+                                                cursor: "pointer",
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                padding: 0
+                                              }}
+                                              title="Edit Status"
+                                            >
+                                              <Edit size={14} />
+                                            </button>
+                                          </div>
+                                        )}
                                       </td>
                                       <td className={styles.applicantDomain}>
                                         {app.createdAt && new Date(app.createdAt) < new Date("2026-07-14T00:00:00Z")
@@ -1531,22 +1565,10 @@ const MentorsPage = () => {
                                             display: "inline-flex",
                                             alignItems: "center"
                                           }}
-                                          title="View Message"
+                                          title="View Details"
                                         >
                                           <Eye size={16} />
                                         </button>
-                                      </td>
-                                      <td className={styles.applicantDate}>
-                                        {app.createdAt && !isNaN(new Date(app.createdAt))
-                                          ? new Date(app.createdAt).toLocaleString('en-IN', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            hour12: true
-                                          })
-                                          : "—"}
                                       </td>
                                     </tr>
                                   ))}
@@ -1801,6 +1823,22 @@ const MentorsPage = () => {
                 <span style={{ fontSize: "14px", fontWeight: "600" }}>{selectedMeeting.meetingTime}</span>
               </div>
               <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Domain</strong>
+                <span style={{ fontSize: "14px", fontWeight: "600" }}>
+                  {selectedMeeting.createdAt && new Date(selectedMeeting.createdAt) < new Date("2026-07-14T00:00:00Z")
+                    ? "-"
+                    : (selectedMeeting.domain || "-")}
+                </span>
+              </div>
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Skill</strong>
+                <span style={{ fontSize: "14px", fontWeight: "600" }}>
+                  {selectedMeeting.createdAt && new Date(selectedMeeting.createdAt) < new Date("2026-07-14T00:00:00Z")
+                    ? "-"
+                    : (selectedMeeting.skill || "-")}
+                </span>
+              </div>
+              <div>
                 <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
                 <p style={{ margin: "4px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>{selectedMeeting.meetingMessage}</p>
               </div>
@@ -1830,46 +1868,94 @@ const MentorsPage = () => {
         </div>
       )}
 
-      {showMsgModal && selectedMsgConnection && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => {
-            setShowMsgModal(false);
-            setSelectedMsgConnection(null);
-          }}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "450px" }}
-          >
-            <h2>Applicant Message</h2>
-            <p>Message from <strong>{selectedMsgConnection.userDetails?.name || "the candidate"}</strong>:</p>
+      {showMsgModal && selectedMsgConnection && (() => {
+        const formattedDate = selectedMsgConnection.createdAt && !isNaN(new Date(selectedMsgConnection.createdAt))
+          ? new Date(selectedMsgConnection.createdAt).toLocaleString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })
+          : "—";
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", margin: "16px 0" }}>
-              <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
-                <p style={{ margin: "4px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>
+        const domainVal = selectedMsgConnection.createdAt && new Date(selectedMsgConnection.createdAt) < new Date("2026-07-14T00:00:00Z")
+          ? "-"
+          : (selectedMsgConnection.domain || "-");
+
+        const skillVal = selectedMsgConnection.createdAt && new Date(selectedMsgConnection.createdAt) < new Date("2026-07-14T00:00:00Z")
+          ? "-"
+          : (selectedMsgConnection.skill || "-");
+
+        return (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => {
+              setShowMsgModal(false);
+              setSelectedMsgConnection(null);
+            }}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "500px" }}
+            >
+              <h2>Applicant Details</h2>
+              <p>Full application details for <strong>{selectedMsgConnection.userDetails?.name || "the candidate"}</strong>:</p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", margin: "20px 0" }}>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Request Sent Date</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{formattedDate}</span>
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Name</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{selectedMsgConnection.userDetails?.name || "N/A"}</span>
+                </div>
+                <div style={{ gridColumn: "span 2" }}>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Email</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)", wordBreak: "break-all" }}>{selectedMsgConnection.userDetails?.email || "N/A"}</span>
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Status</strong>
+                  <div style={{ marginTop: "4px" }}>
+                    {renderStatusBadge(selectedMsgConnection.status || "pending")}
+                  </div>
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Domain</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{domainVal}</span>
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Skill</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{skillVal}</span>
+                </div>
+              </div>
+
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "14px", marginTop: "14px" }}>
+                <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
+                <p style={{ margin: "6px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>
                   {selectedMsgConnection.message || "No message provided."}
                 </p>
               </div>
-            </div>
 
-            <div className={styles.modalActions}>
-              <button
-                onClick={() => {
-                  setShowMsgModal(false);
-                  setSelectedMsgConnection(null);
-                }}
-                className={styles.cancelBtn}
-                style={{ width: "100%" }}
-              >
-                Close
-              </button>
+              <div className={styles.modalActions} style={{ marginTop: "24px" }}>
+                <button
+                  onClick={() => {
+                    setShowMsgModal(false);
+                    setSelectedMsgConnection(null);
+                  }}
+                  className={styles.cancelBtn}
+                  style={{ width: "100%" }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

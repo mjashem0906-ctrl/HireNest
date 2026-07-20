@@ -80,7 +80,7 @@ export const DataProvider = ({ children }) => {
   const fetchMemberData = async () => {
     try {
       const res = await API.get('/member')
-      const sorted = res.data.sort((a, b) => a.memberReferenceNumber - b.memberReferenceNumber)
+      const sorted = res.data.sort((a, b) => (Number(a.memberReferenceNumber) || 0) - (Number(b.memberReferenceNumber) || 0))
       setMemberContext(sorted);
      console.log(sorted);
   

@@ -34,6 +34,7 @@ const initialState = {
   seekerNeed: "",
   highest_education: "",
   branch: "",
+  educationStatus: "",
   passOutYear: "",
   preferredJobRole_Sector: "",
   relocationStatus: "",
@@ -924,6 +925,7 @@ function AddMember({
         ...initialState,
         ...editMember,
         branch: editMember.branch || "",
+        educationStatus: editMember.educationStatus || "",
         passOutYear: editMember.passOutYear || "",
         dateOfBirth: editMember.dateOfBirth ? new Date(editMember.dateOfBirth) : null,
         linkedinUrl: editMember.linkedinUrl || "",
@@ -1318,6 +1320,7 @@ function AddMember({
         photoUrl: photo, 
         resumeLink: resume, 
         branch: String(formData.branch || "").trim(), 
+        educationStatus: String(formData.educationStatus || "").trim(), 
         highest_education: String(formData.highest_education || "").trim(), 
         passOutYear: String(formData.passOutYear || "").trim(), 
         dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth.toISOString().split("T")[0] : null, 
@@ -2082,6 +2085,21 @@ function AddMember({
                   onChange={(val) => {
                     setFormData((p) => ({ ...p, branch: val }));
                     setErrors((p) => ({ ...p, branch: "" }));
+                  }}
+                />
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <DropdownSelect
+                  label="Status"
+                  value={formData.educationStatus}
+                  options={[
+                    { value: "Pursuing", label: "Pursuing" },
+                    { value: "Ongoing", label: "Ongoing" }
+                  ]}
+                  placeholder="Select Status"
+                  onChange={(val) => {
+                    setFormData((p) => ({ ...p, educationStatus: val }));
                   }}
                 />
               </div>

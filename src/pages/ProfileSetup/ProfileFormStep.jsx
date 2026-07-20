@@ -782,6 +782,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     workExp: initialData.workExp || "",
     highest_education: initialData.highest_education || "",
     branch: initialData.branch || initialData.fieldofStudy_Interest || "",
+    educationStatus: initialData.educationStatus || "",
     passOutYear: initialData.passOutYear || "",
     preferredJobRole_Sector: Array.isArray(initialData.preferredJobRole_Sector)
       ? initialData.preferredJobRole_Sector
@@ -1143,6 +1144,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
           ...formData,
           photoUrl: photo,
           branch: String(formData.branch || "").trim(),
+          educationStatus: String(formData.educationStatus || "").trim(),
           highest_education: String(formData.highest_education || "").trim(),
           passOutYear: String(formData.passOutYear || "").trim(),
           dateOfBirth: formData.dateOfBirth ? (formData.dateOfBirth instanceof Date ? formData.dateOfBirth.toISOString().split("T")[0] : formData.dateOfBirth) : null,
@@ -1779,6 +1781,19 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                   setFormData((p) => ({ ...p, branch: val }));
                   setErrors((p) => ({ ...p, branch: "" }));
                 }}
+              />
+            </div>
+
+            <div style={{ marginTop: 16 }}>
+              <DropdownSelect
+                label="Status"
+                value={formData.educationStatus}
+                options={[
+                  { value: "Pursuing", label: "Pursuing" },
+                  { value: "Ongoing", label: "Ongoing" }
+                ]}
+                placeholder="Select Status"
+                onChange={(val) => setFormData((p) => ({ ...p, educationStatus: val }))}
               />
             </div>
 
