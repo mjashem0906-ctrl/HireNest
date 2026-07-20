@@ -71,6 +71,7 @@ const memberSchema = new mongoose.Schema(
     seekerNeed: [String],
     highest_education: String,
     branch: String,
+    educationStatus: String,
 
     // ✅ NEW: Pass-out Year (your frontend uses passOutYear)
     passOutYear: String,
@@ -125,7 +126,7 @@ const memberSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-memberSchema.pre("save", function (next) {
+memberSchema.pre("save", async function (next) {
   // Sync employmentType
   if (this.isModified("careerProfile.employmentType")) {
     this.employmentType = this.careerProfile.employmentType;
@@ -176,6 +177,30 @@ memberSchema.pre("save", function (next) {
       this.careerProfile.role = pref;
     } else if (role.length > 0 && pref.length === 0) {
       this.preferredJobRole_Sector = role;
+    }
+  }
+
+  // ✅ Auto-generate sequential memberReferenceNumber across Members & Recruiters if not set
+  if (!this.memberReferenceNumber) {
+    try {
+      const MemberModel = mongoose.models.Member || mongoose.model("Member");
+      const RecruiterModel = mongoose.models.Recruiter || require("./Recruiter");
+      
+      const allMembers = await MemberModel.find().select('memberReferenceNumber').lean();
+      const allRecruiters = await RecruiterModel.find().select('memberReferenceNumber').lean();
+      
+      let maxRefNo = 0;
+      for (const m of [...allMembers, ...allRecruiters]) {
+        if (m.memberReferenceNumber) {
+          const parsed = parseInt(m.memberReferenceNumber, 10);
+          if (!isNaN(parsed) && parsed > maxRefNo) {
+            maxRefNo = parsed;
+          }
+        }
+      }
+      this.memberReferenceNumber = (maxRefNo + 1).toString();
+    } catch (err) {
+      return next(err);
     }
   }
 

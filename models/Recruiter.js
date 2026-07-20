@@ -29,4 +29,30 @@ const recruiterSchema = mongoose.Schema({
   timestamps: true
 });
 
+recruiterSchema.pre("save", async function (next) {
+  if (!this.memberReferenceNumber) {
+    try {
+      const MemberModel = mongoose.models.Member || require("./member");
+      const RecruiterModel = mongoose.models.Recruiter || mongoose.model("Recruiter");
+      
+      const allMembers = await MemberModel.find().select('memberReferenceNumber').lean();
+      const allRecruiters = await RecruiterModel.find().select('memberReferenceNumber').lean();
+      
+      let maxRefNo = 0;
+      for (const m of [...allMembers, ...allRecruiters]) {
+        if (m.memberReferenceNumber) {
+          const parsed = parseInt(m.memberReferenceNumber, 10);
+          if (!isNaN(parsed) && parsed > maxRefNo) {
+            maxRefNo = parsed;
+          }
+        }
+      }
+      this.memberReferenceNumber = (maxRefNo + 1).toString();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model('Recruiter', recruiterSchema);

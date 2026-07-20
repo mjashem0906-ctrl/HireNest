@@ -102,6 +102,8 @@ const triggerNotification = async ({
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #4f46e5;">
               <p style="margin: 5px 0;"><strong>Date:</strong> ${data.meetingDate}</p>
               <p style="margin: 5px 0;"><strong>Time:</strong> ${data.meetingTime}</p>
+              <p style="margin: 5px 0;"><strong>Domain:</strong> ${data.domain || "-"}</p>
+              <p style="margin: 5px 0;"><strong>Skill:</strong> ${data.skill || "-"}</p>
               <p style="margin: 5px 0;"><strong>Message:</strong> ${data.meetingMessage}</p>
               <p style="margin: 5px 0;"><strong>Meeting Link:</strong> <a href="${data.meetingLink}" style="color: #4f46e5; text-decoration: underline;">${data.meetingLink}</a></p>
             </div>

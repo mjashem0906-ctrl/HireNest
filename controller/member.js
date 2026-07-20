@@ -275,6 +275,7 @@ function cleanPayload(data) {
     "seekerNeed",
     "highest_education",
     "branch",
+    "educationStatus",
 
     // ✅ NEW: passOutYear (frontend)
     "passOutYear",

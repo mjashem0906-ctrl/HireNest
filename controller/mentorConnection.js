@@ -231,6 +231,8 @@ exports.updateMentorConnection = async (req, res) => {
             meetingTime: connection.meetingTime,
             meetingMessage: connection.meetingMessage,
             meetingLink: connection.meetingLink,
+            domain: connection.domain,
+            skill: connection.skill,
           }
         });
       } catch (err) {
