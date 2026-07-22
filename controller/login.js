@@ -3,7 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Activity = require("../models/activity");
 const Member = require("../models/member");
-const { sendAdminPasswordChangedNotification } = require("../utils/emailService");
+const AdminOtp = require("../models/otp");
+const { sendAdminPasswordChangedNotification, sendAdminOtpEmail } = require("../utils/emailService");
 
 // Register new user
 const register = async (req, res) => {
@@ -324,45 +325,153 @@ const changePassword = async (req, res) => {
 
 const verifyAdminEmail = async (req, res) => {
   const { email } = req.body;
-  const userId = req.user.userId;
 
   try {
-    const user = await User.findById(userId);
-    if (!user || user.role !== "Admin") {
-      return res.status(403).json({ message: "Unauthorized access" });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail) {
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    if (email !== "Info.jobbridge@solidaritykarnataka.org") {
-      return res.status(400).json({ message: "Email verification failed" });
+    // Validate entered email against database
+    let isValidAdminEmail = false;
+
+    if (req.user?.userId) {
+      const loggedUser = await User.findById(req.user.userId);
+      if (loggedUser && loggedUser.role === "Admin") {
+        if (loggedUser.memberId) {
+          const member = await Member.findById(loggedUser.memberId);
+          if (member && member.email && member.email.trim().toLowerCase() === normalizedEmail) {
+            isValidAdminEmail = true;
+          }
+        }
+      }
     }
 
-    res.json({ success: true, message: "Email verified successfully" });
+    if (!isValidAdminEmail) {
+      const adminMember = await Member.findOne({ email: normalizedEmail });
+      if (adminMember) {
+        const u = await User.findOne({ memberId: adminMember._id });
+        if (u && u.role === "Admin") {
+          isValidAdminEmail = true;
+        }
+      }
+    }
+
+    if (!isValidAdminEmail) {
+      const adminUser = await User.findOne({ username: normalizedEmail, role: "Admin" });
+      if (adminUser) {
+        isValidAdminEmail = true;
+      }
+    }
+
+    if (!isValidAdminEmail && normalizedEmail === "info.jobbridge@solidaritykarnataka.org") {
+      isValidAdminEmail = true;
+    }
+
+    if (!isValidAdminEmail) {
+      return res.status(400).json({ success: false, message: "Invalid email address. Email does not match any registered admin account." });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store OTP in database (removes old OTP for this email)
+    await AdminOtp.deleteMany({ email: normalizedEmail });
+    await AdminOtp.create({
+      email: normalizedEmail,
+      otp: otp,
+      verified: false
+    });
+
+    // Send OTP email
+    try {
+      await sendAdminOtpEmail(normalizedEmail, otp);
+    } catch (emailErr) {
+      console.error("Failed to send OTP email:", emailErr);
+      return res.status(500).json({ success: false, message: "Failed to send OTP email. Please verify email configuration." });
+    }
+
+    res.json({ success: true, message: "6-digit OTP sent to your registered email address." });
   } catch (err) {
     console.error("Verify Admin Email Error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const verifyAdminOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedOtp = String(otp || "").trim();
+
+    if (!normalizedEmail || !normalizedOtp) {
+      return res.status(400).json({ success: false, message: "Email and OTP are required" });
+    }
+
+    const otpRecord = await AdminOtp.findOne({ email: normalizedEmail }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, message: "OTP has expired or does not exist. Please request a new OTP." });
+    }
+
+    if (otpRecord.otp !== normalizedOtp) {
+      return res.status(400).json({ success: false, message: "Incorrect OTP. Please try again." });
+    }
+
+    otpRecord.verified = true;
+    await otpRecord.save();
+
+    res.json({ success: true, message: "OTP verified successfully. You can now set your new password." });
+  } catch (err) {
+    console.error("Verify Admin OTP Error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
 const changePasswordByEmail = async (req, res) => {
-  const { email, newPassword } = req.body;
-  const userId = req.user.userId;
+  const { email, otp, newPassword } = req.body;
 
   try {
-    const user = await User.findById(userId);
-    if (!user || user.role !== "Admin") {
-      return res.status(403).json({ message: "Unauthorized access" });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedOtp = String(otp || "").trim();
+
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ success: false, message: "Please enter a valid new password." });
     }
 
-    if (email !== "Info.jobbridge@solidaritykarnataka.org") {
-      return res.status(400).json({ message: "Invalid email for this operation" });
+    const otpRecord = await AdminOtp.findOne({ email: normalizedEmail }).sort({ createdAt: -1 });
+    if (!otpRecord || !otpRecord.verified || otpRecord.otp !== normalizedOtp) {
+      return res.status(400).json({ success: false, message: "OTP verification failed or expired. Please verify OTP first." });
+    }
+
+    let user = null;
+    if (req.user?.userId) {
+      user = await User.findById(req.user.userId);
+    }
+    if (!user) {
+      const member = await Member.findOne({ email: normalizedEmail });
+      if (member) {
+        user = await User.findOne({ memberId: member._id });
+      }
+    }
+    if (!user) {
+      user = await User.findOne({ role: "Admin" });
+    }
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Admin account not found." });
     }
 
     const hashPwd = await bcrypt.hash(newPassword, 10);
     user.password = hashPwd;
     await user.save();
 
+    // Clear OTP record after successful password change
+    await AdminOtp.deleteMany({ email: normalizedEmail });
+
     try {
-      await sendAdminPasswordChangedNotification(email, user.username || 'Admin');
+      await sendAdminPasswordChangedNotification(normalizedEmail, user.username || 'Admin');
     } catch (emailErr) {
       console.error("Failed to send password change notification:", emailErr);
     }
@@ -370,7 +479,7 @@ const changePasswordByEmail = async (req, res) => {
     res.json({ success: true, message: "Password updated successfully" });
   } catch (err) {
     console.error("Change Password by Email Error:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -383,5 +492,6 @@ module.exports = {
   updateProfile,
   changePassword,
   verifyAdminEmail,
+  verifyAdminOtp,
   changePasswordByEmail,
 };

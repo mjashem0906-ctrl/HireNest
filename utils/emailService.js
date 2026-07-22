@@ -142,11 +142,35 @@ const sendAdminPasswordChangedNotification = async (adminEmail, adminName) => {
   await sendEmail(adminEmail, subject, htmlContent);
 };
 
+/**
+ * Send OTP for Admin Password Reset
+ */
+const sendAdminOtpEmail = async (adminEmail, otp) => {
+  const subject = `Your Admin Password Reset OTP - Job Bridge`;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+      <h2 style="color: #e11d48; margin-top: 0;">Admin Password Reset</h2>
+      <p>Hello Admin,</p>
+      <p>You requested to change your admin password. Please use the following 6-digit OTP to complete your verification:</p>
+      <div style="background-color: #f4f4f5; padding: 16px; border-radius: 6px; text-align: center; margin: 20px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #111827;">${otp}</span>
+      </div>
+      <p>This OTP is valid for <strong>10 minutes</strong>. Do not share this code with anyone.</p>
+      <p style="color: #6b7280; font-size: 0.85rem; margin-top: 24px;">If you did not request a password change, please ignore this email.</p>
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+      <p style="color: #9ca3af; font-size: 0.8rem;">Job Bridge Karnataka Team</p>
+    </div>
+  `;
+
+  await sendEmail(adminEmail, subject, htmlContent);
+};
+
 module.exports = {
   sendEmail,
   sendStatusUpdateNotification,
   sendAdminApplicationNotification,
   sendAdminPasswordChangedNotification,
+  sendAdminOtpEmail,
 };
 // module.exports = {
 //   sendEmail,
