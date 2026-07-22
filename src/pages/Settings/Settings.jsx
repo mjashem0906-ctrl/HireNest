@@ -25,8 +25,11 @@ function Settings() {
 
   const [passwordChangeMode, setPasswordChangeMode] = useState("username");
   const [adminEmail, setAdminEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   // Load notification workflow settings (Admin only)
   useEffect(() => {
@@ -111,8 +114,8 @@ function Settings() {
     try {
       const res = await API.post("/auth/verify-admin-email", { email: adminEmail });
       if (res.data.success) {
-        setIsEmailVerified(true);
-        setPasswordSuccess("Email verified. You can now enter your new password.");
+        setIsOtpSent(true);
+        setPasswordSuccess(res.data.message || "OTP sent to your registered email address.");
       } else {
         setPasswordError(res.data.message || "Failed to verify email.");
       }
@@ -121,6 +124,32 @@ function Settings() {
       setPasswordError(err.response?.data?.message || "Failed to verify email.");
     } finally {
       setIsVerifyingEmail(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!otp) {
+      setPasswordError("Please enter the 6-digit OTP.");
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const res = await API.post("/auth/verify-admin-otp", { email: adminEmail, otp });
+      if (res.data.success) {
+        setIsOtpVerified(true);
+        setPasswordSuccess(res.data.message || "OTP verified successfully. You can now enter your new password.");
+      } else {
+        setPasswordError(res.data.message || "Failed to verify OTP.");
+      }
+    } catch (err) {
+      console.error("Failed to verify OTP:", err);
+      setPasswordError(err.response?.data?.message || "Invalid or expired OTP.");
+    } finally {
+      setIsVerifyingOtp(false);
     }
   };
 
@@ -142,14 +171,17 @@ function Settings() {
     try {
       const res = await API.post("/auth/change-password-email", {
         email: adminEmail,
+        otp,
         newPassword
       });
       if (res.data.success) {
         setPasswordSuccess("Password updated successfully! A notification email has been sent.");
         setAdminEmail("");
+        setOtp("");
         setNewPassword("");
         setConfirmPassword("");
-        setIsEmailVerified(false);
+        setIsOtpSent(false);
+        setIsOtpVerified(false);
       } else {
         setPasswordError(res.data.message || "Failed to update password.");
       }
@@ -259,7 +291,15 @@ function Settings() {
                 
                 <div style={{ display: 'flex', background: 'var(--md-soft)', borderRadius: '8px', padding: '4px', gap: '4px' }}>
                   <button 
-                    onClick={() => { setPasswordChangeMode("username"); setPasswordError(""); setPasswordSuccess(""); }}
+                    onClick={() => { 
+                      setPasswordChangeMode("username"); 
+                      setPasswordError(""); 
+                      setPasswordSuccess("");
+                      setAdminEmail("");
+                      setOtp("");
+                      setIsOtpSent(false);
+                      setIsOtpVerified(false);
+                    }}
                     style={{ 
                       padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
                       background: passwordChangeMode === "username" ? 'var(--md-card-solid)' : 'transparent',
@@ -267,10 +307,18 @@ function Settings() {
                       boxShadow: passwordChangeMode === "username" ? 'var(--md-shadow-sm)' : 'none'
                     }}
                   >
-                    Username
+                    Using Current Password
                   </button>
                   <button 
-                    onClick={() => { setPasswordChangeMode("email"); setPasswordError(""); setPasswordSuccess(""); }}
+                    onClick={() => { 
+                      setPasswordChangeMode("email"); 
+                      setPasswordError(""); 
+                      setPasswordSuccess("");
+                      setAdminEmail("");
+                      setOtp("");
+                      setIsOtpSent(false);
+                      setIsOtpVerified(false);
+                    }}
                     style={{ 
                       padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
                       background: passwordChangeMode === "email" ? 'var(--md-card-solid)' : 'transparent',
@@ -278,7 +326,7 @@ function Settings() {
                       boxShadow: passwordChangeMode === "email" ? 'var(--md-shadow-sm)' : 'none'
                     }}
                   >
-                    Email
+                    Using Email
                   </button>
                 </div>
               </div>
@@ -289,7 +337,9 @@ function Settings() {
                 
                 {passwordChangeMode === "username" ? (
                   <>
-                    <div className={styles.passwordInputContainer}>
+                  <h4 style={{ color: 'var(--md-text)', marginBottom: '16px', fontSize: '1rem', fontWeight: 700 }}>Change Password using Current Password</h4>
+                   
+                   <div className={styles.passwordInputContainer}>
                       <input
                         type={showCurrentPassword ? "text" : "password"}
                         placeholder="Current Password"
@@ -354,19 +404,56 @@ function Settings() {
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
                         className={styles.inputField}
-                        disabled={isEmailVerified}
+                        disabled={isOtpSent}
                       />
                     </div>
                     
-                    {!isEmailVerified ? (
+                    {!isOtpSent ? (
                       <button 
                         className={styles.saveWorkflowsBtn} 
                         onClick={handleVerifyEmail}
                         disabled={isVerifyingEmail || !adminEmail}
                         style={{ marginTop: '10px' }}
                       >
-                        {isVerifyingEmail ? "Verifying..." : "Verify Email"}
+                        {isVerifyingEmail ? "Sending OTP..." : "Verify Email"}
                       </button>
+                    ) : !isOtpVerified ? (
+                      <>
+                        <div className={styles.passwordInputContainer} style={{ marginTop: '16px' }}>
+                          <input
+                            type="text"
+                            placeholder="Enter 6-Digit OTP"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            className={styles.inputField}
+                            maxLength={6}
+                          />
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                          <button 
+                            className={styles.saveWorkflowsBtn} 
+                            onClick={handleVerifyOtp}
+                            disabled={isVerifyingOtp || !otp}
+                          >
+                            {isVerifyingOtp ? "Verifying OTP..." : "Verify OTP"}
+                          </button>
+                          
+                          <button
+                            type="button"
+                            className={styles.saveWorkflowsBtn}
+                            onClick={() => {
+                              setIsOtpSent(false);
+                              setOtp("");
+                              setPasswordError("");
+                              setPasswordSuccess("");
+                            }}
+                            style={{ background: 'transparent', border: '1px solid var(--border-medium)', color: 'var(--text-secondary)' }}
+                          >
+                            Change Email
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <>
                         <div className={styles.passwordInputContainer} style={{ marginTop: '16px' }}>

@@ -53,6 +53,118 @@ const LoginForm = () => {
     }
   };
 
+  // Forgot Password state
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [fpStep, setFpStep] = useState("email"); // 'email' | 'otp' | 'password'
+  const [fpEmail, setFpEmail] = useState("");
+  const [fpOtp, setFpOtp] = useState("");
+  const [fpNewPassword, setFpNewPassword] = useState("");
+  const [fpConfirmPassword, setFpConfirmPassword] = useState("");
+  const [fpShowNewPassword, setFpShowNewPassword] = useState(false);
+  const [fpShowConfirmPassword, setFpShowConfirmPassword] = useState(false);
+  const [fpLoading, setFpLoading] = useState(false);
+  const [fpError, setFpError] = useState("");
+  const [fpSuccess, setFpSuccess] = useState("");
+
+  const handleFpSendOtp = async (e) => {
+    e.preventDefault();
+    setFpError("");
+    setFpSuccess("");
+
+    if (!fpEmail) {
+      setFpError("Email is required.");
+      return;
+    }
+
+    setFpLoading(true);
+    try {
+      const res = await API.post("/auth/verify-admin-email", { email: fpEmail });
+      if (res.data.success) {
+        setFpStep("otp");
+        setFpSuccess(res.data.message || "OTP sent to your registered email address.");
+      } else {
+        setFpError(res.data.message || "Failed to verify email.");
+      }
+    } catch (err) {
+      console.error("Forgot Password Verify Email Error:", err);
+      setFpError(err.response?.data?.message || "Failed to verify email.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  const handleFpVerifyOtp = async (e) => {
+    e.preventDefault();
+    setFpError("");
+    setFpSuccess("");
+
+    if (!fpOtp) {
+      setFpError("Please enter the 6-digit OTP.");
+      return;
+    }
+
+    setFpLoading(true);
+    try {
+      const res = await API.post("/auth/verify-admin-otp", { email: fpEmail, otp: fpOtp });
+      if (res.data.success) {
+        setFpStep("password");
+        setFpSuccess(res.data.message || "OTP verified successfully. You can now set your new password.");
+      } else {
+        setFpError(res.data.message || "Failed to verify OTP.");
+      }
+    } catch (err) {
+      console.error("Forgot Password Verify OTP Error:", err);
+      setFpError(err.response?.data?.message || "Invalid or expired OTP.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
+  const handleFpUpdatePassword = async (e) => {
+    e.preventDefault();
+    setFpError("");
+    setFpSuccess("");
+
+    if (!fpNewPassword || !fpConfirmPassword) {
+      setFpError("All fields are required.");
+      return;
+    }
+
+    if (fpNewPassword !== fpConfirmPassword) {
+      setFpError("New passwords do not match.");
+      return;
+    }
+
+    setFpLoading(true);
+    try {
+      const res = await API.post("/auth/change-password-email", {
+        email: fpEmail,
+        otp: fpOtp,
+        newPassword: fpNewPassword,
+      });
+      if (res.data.success) {
+        setFpSuccess("Password updated successfully! Redirecting to login...");
+        setTimeout(() => {
+          setIsForgotPassword(false);
+          setFpStep("email");
+          setFpEmail("");
+          setFpOtp("");
+          setFpNewPassword("");
+          setFpConfirmPassword("");
+          setFpError("");
+          setFpSuccess("");
+        }, 2000);
+      } else {
+        setFpError(res.data.message || "Failed to update password.");
+      }
+    } catch (err) {
+      console.error("Forgot Password Change Password Error:", err);
+      setFpError(err.response?.data?.message || "Failed to update password.");
+    } finally {
+      setFpLoading(false);
+    }
+  };
+
   return (
     <div className="lp-root">
       {/* Decorative blobs */}
@@ -137,68 +249,230 @@ const LoginForm = () => {
             <div className="lp-logo">
               <img src="/Logo.png" alt="JobBridgeNode" />
             </div>
-            
-            <h2 className="lp-card-title">Welcome Back</h2>
-            <p className="lp-card-sub">Sign in to your account</p>
 
-            <form onSubmit={handleLogin} className="lp-form">
-              <div className="lp-field">
-                <label>Email or Username</label>
-                <input
-                  type="text"
-                  placeholder="admin"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  required
-                />
-              </div>
+            {!isForgotPassword ? (
+              <>
+                <h2 className="lp-card-title">Welcome Back</h2>
+                <p className="lp-card-sub">Sign in to your account</p>
 
-              <div className="lp-field">
-                <label>Password</label>
-                <div className="lp-pw-wrap">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••••"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                    className="lp-pw-input"
-                    required
-                  />
+                <form onSubmit={handleLogin} className="lp-form">
+                  <div className="lp-field">
+                    <label>Email or Username</label>
+                    <input
+                      type="text"
+                      placeholder="admin"
+                      value={formData.username}
+                      onChange={(e) =>
+                        setFormData({ ...formData, username: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="lp-field">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label>Password</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsForgotPassword(true);
+                          setFpStep("email");
+                          setFpEmail("");
+                          setFpOtp("");
+                          setFpNewPassword("");
+                          setFpConfirmPassword("");
+                          setFpError("");
+                          setFpSuccess("");
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#1a78c2', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
+                      >
+                        Forgot Password
+                      </button>
+                    </div>
+                    <div className="lp-pw-wrap">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••••"
+                        value={formData.password}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password: e.target.value })
+                        }
+                        className="lp-pw-input"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="lp-eye"
+                        onClick={() => setShowPassword((p) => !p)}
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {error && <p className="lp-error">{error}</p>}
+
+                  <button className="lp-signin-btn" disabled={loading} type="submit">
+                    {loading ? "Signing in..." : "Sign In"}
+                  </button>
+
+                  <div className="lp-divider"><span>or</span></div>
+
+                  <p className="lp-register" style={{ textAlign: "center", margin: "4px 0 -8px", fontWeight: "600", color: "#4b5563" }}>
+                    For Job Seeker
+                  </p>
                   <button
                     type="button"
-                    className="lp-eye"
-                    onClick={() => setShowPassword((p) => !p)}
-                    aria-label="Toggle password visibility"
+                    className="lp-google-btn"
+                    onClick={loginWithGoogle}
                   >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    <FcGoogle size={20} />
+                    <span>Continue with Google</span>
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2 className="lp-card-title">Forgot Password</h2>
+                <p className="lp-card-sub">Reset your account password via Email OTP</p>
+
+                <div className="lp-form">
+                  {fpError && <p className="lp-error">{fpError}</p>}
+                  {fpSuccess && <p style={{ color: "#16a34a", fontSize: "13px", margin: "4px 0", fontWeight: 600 }}>{fpSuccess}</p>}
+
+                  {fpStep === "email" && (
+                    <>
+                      <div className="lp-field">
+                        <label>Admin Email</label>
+                        <input
+                          type="email"
+                          placeholder="Enter Admin Email"
+                          value={fpEmail}
+                          onChange={(e) => setFpEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="lp-signin-btn"
+                        onClick={handleFpSendOtp}
+                        disabled={fpLoading || !fpEmail}
+                      >
+                        {fpLoading ? "Sending OTP..." : "Verify Email"}
+                      </button>
+                    </>
+                  )}
+
+                  {fpStep === "otp" && (
+                    <>
+                      <div className="lp-field">
+                        <label>Admin Email</label>
+                        <input type="email" value={fpEmail} disabled style={{ opacity: 0.75 }} />
+                      </div>
+                      <div className="lp-field">
+                        <label>6-Digit OTP</label>
+                        <input
+                          type="text"
+                          placeholder="Enter 6-Digit OTP"
+                          maxLength={6}
+                          value={fpOtp}
+                          onChange={(e) => setFpOtp(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="lp-signin-btn"
+                        onClick={handleFpVerifyOtp}
+                        disabled={fpLoading || !fpOtp}
+                      >
+                        {fpLoading ? "Verifying..." : "Verify OTP"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setFpStep("email"); setFpError(""); setFpSuccess(""); }}
+                        style={{ background: 'none', border: 'none', color: '#1a78c2', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '4px' }}
+                      >
+                        Change Email
+                      </button>
+                    </>
+                  )}
+
+                  {fpStep === "password" && (
+                    <>
+                      <div className="lp-field">
+                        <label>New Password</label>
+                        <div className="lp-pw-wrap">
+                          <input
+                            type={fpShowNewPassword ? "text" : "password"}
+                            placeholder="••••••••••"
+                            value={fpNewPassword}
+                            onChange={(e) => setFpNewPassword(e.target.value)}
+                            className="lp-pw-input"
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="lp-eye"
+                            onClick={() => setFpShowNewPassword((p) => !p)}
+                          >
+                            {fpShowNewPassword ? <FaEyeSlash /> : <FaEye />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="lp-field">
+                        <label>Confirm New Password</label>
+                        <div className="lp-pw-wrap">
+                          <input
+                            type={fpShowConfirmPassword ? "text" : "password"}
+                            placeholder="••••••••••"
+                            value={fpConfirmPassword}
+                            onChange={(e) => setFpConfirmPassword(e.target.value)}
+                            className="lp-pw-input"
+                            required
+                          />
+                          <button
+                            type="button"
+                            className="lp-eye"
+                            onClick={() => setFpShowConfirmPassword((p) => !p)}
+                          >
+                            {fpShowConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="lp-signin-btn"
+                        onClick={handleFpUpdatePassword}
+                        disabled={fpLoading}
+                      >
+                        {fpLoading ? "Updating..." : "Update Password"}
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotPassword(false);
+                      setFpStep("email");
+                      setFpEmail("");
+                      setFpOtp("");
+                      setFpNewPassword("");
+                      setFpConfirmPassword("");
+                      setFpError("");
+                      setFpSuccess("");
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#4b5563', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '12px' }}
+                  >
+                    ← Back to Sign In
                   </button>
                 </div>
-              </div>
-
-              {error && <p className="lp-error">{error}</p>}
-
-              <button className="lp-signin-btn" disabled={loading} type="submit">
-                {loading ? "Signing in..." : "Sign In"}
-              </button>
-
-              <div className="lp-divider"><span>or</span></div>
-
-              <p className="lp-register" style={{ textAlign: "center", margin: "4px 0 -8px", fontWeight: "600", color: "#4b5563" }}>
-                For Job Seeker
-              </p>
-              <button
-                type="button"
-                className="lp-google-btn"
-                onClick={loginWithGoogle}
-              >
-                <FcGoogle size={20} />
-                <span>Continue with Google</span>
-              </button>
-            </form>
+              </>
+            )}
           </div>
         </div>
 
