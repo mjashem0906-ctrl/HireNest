@@ -1209,7 +1209,7 @@ function AddMember({
   };
 
   const validateCareerTab = () => {
-    const nextErrors = { ...errors, designation: "", workExp: "", role: "", industry: "", location: "" };
+    const nextErrors = { ...errors, designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "" };
     let hasError = false;
 
     if (!String(formData.designation || "").trim()) {
@@ -1231,6 +1231,10 @@ function AddMember({
     }
     if (!String(formData.careerProfile?.location || "").trim()) {
       nextErrors.location = "Location Preference is required.";
+      hasError = true;
+    }
+    if (!String(formData.linkedinUrl || "").trim()) {
+      nextErrors.linkedinUrl = "LinkedIn Profile URL is required.";
       hasError = true;
     }
 
@@ -1741,8 +1745,13 @@ function AddMember({
               <FormInput
                 label="LinkedIn Profile URL"
                 value={formData.linkedinUrl}
-                onChange={(v) => setFormData({ ...formData, linkedinUrl: v })}
+                onChange={(v) => {
+                  setFormData({ ...formData, linkedinUrl: v });
+                  if (errors.linkedinUrl) setErrors({ ...errors, linkedinUrl: "" });
+                }}
                 placeholder="https://linkedin.com/in/your-profile"
+                required
+                error={errors.linkedinUrl}
               />
 
               <div style={{ gridColumn: "1 / -1", marginTop: "20px" }}>
@@ -2095,7 +2104,7 @@ function AddMember({
                   value={formData.educationStatus}
                   options={[
                     { value: "Pursuing", label: "Pursuing" },
-                    { value: "Ongoing", label: "Ongoing" }
+                    { value: "Completed", label: "Completed" }
                   ]}
                   placeholder="Select Status"
                   onChange={(val) => {

@@ -107,6 +107,18 @@ const ApplyButton = ({
   onGoogleLogin,
 }) => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const { theme } = useTheme();
+  const isDarkTheme = theme === "dark";
+
+  const isJobClosed = (() => {
+    if (job?.isActive === false) return true;
+    if (!job?.applicationEndDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(job.applicationEndDate);
+    endDate.setHours(0, 0, 0, 0);
+    return today >= endDate;
+  })();
 
   const handleClick = (e) => {
     e.stopPropagation();
@@ -116,9 +128,28 @@ const ApplyButton = ({
       return;
     }
 
-    if (isApplied) return;
+    if (isApplied || isJobClosed) return;
     onApplyClick(e, job);
   };
+
+  if (isJobClosed) {
+    return (
+      <button
+        className={styles.appliedButton}
+        disabled
+        style={{
+          opacity: 0.6,
+          cursor: "not-allowed",
+          backgroundColor: isDarkTheme ? "rgba(148, 163, 184, 0.15)" : "rgba(107, 114, 128, 0.12)",
+          color: isDarkTheme ? "#94a3b8" : "#4b5563"
+        }}
+        onClick={(e) => e.stopPropagation()}
+        type="button"
+      >
+        <XCircle size={16} /> Application Closed
+      </button>
+    );
+  }
 
   if (isApplied) {
     return (
@@ -1092,6 +1123,15 @@ const normalizeEmploymentType = (type) => {
 // ProvidedForm
 // =========================================================================================
 const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, getFileUrl }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
+  const todayLocalString = useMemo(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }, []);
   const [title, setTitle] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyLogo, setCompanyLogo] = useState("");
@@ -1107,6 +1147,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
   const [keySkills, setKeySkills] = useState("");
   const [jobPosted, setJobPosted] = useState("");
   const [industry, setIndustry] = useState("");
+  const [applicationEndDate, setApplicationEndDate] = useState("");
   const [dynamicIndustries, setDynamicIndustries] = useState([]);
 
   const combinedIndustries = useMemo(() => {
@@ -1238,6 +1279,14 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       setKeySkills(initialData.keySkills || "");
       setIndustry(initialData.industry || "");
 
+      if (initialData.applicationEndDate) {
+        const date = new Date(initialData.applicationEndDate);
+        const formattedDate = date.toISOString().split('T')[0];
+        setApplicationEndDate(formattedDate);
+      } else {
+        setApplicationEndDate("");
+      }
+
       const refId =
         initialData.refereedBy && typeof initialData.refereedBy === "object"
           ? initialData.refereedBy._id
@@ -1267,6 +1316,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       setRefereedBy("");
       setJobPosted("");
       setIndustry("");
+      setApplicationEndDate("");
     }
   }, [isOpen, initialData]);
 
@@ -1457,6 +1507,23 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
       return;
     }
 
+    if (isAdmin && applicationEndDate) {
+      const newDate = new Date(applicationEndDate);
+      newDate.setHours(0, 0, 0, 0);
+
+      const oldDate = initialData?.applicationEndDate ? new Date(initialData.applicationEndDate) : null;
+      if (oldDate) oldDate.setHours(0, 0, 0, 0);
+
+      if (!oldDate || newDate.getTime() !== oldDate.getTime()) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (newDate < today) {
+          alert("Application End Date cannot be in the past.");
+          return;
+        }
+      }
+    }
+
     onSubmit(
       {
         title,
@@ -1474,6 +1541,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
         industry,
         refereedBy: refereedBy || null,
         jobPosted: jobPosted || null,
+        applicationEndDate: applicationEndDate || null,
       },
       false
     );
@@ -1816,6 +1884,23 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
                 required
               />
             </div>
+
+            {isAdmin && (
+              <div className={styles.formGroup}>
+                <label>
+                  <Calendar size={14} /> Application End Date{" "}
+                  <span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.formInput}
+                  type="date"
+                  value={applicationEndDate}
+                  onChange={(e) => setApplicationEndDate(e.target.value)}
+                  min={todayLocalString}
+                  required
+                />
+              </div>
+            )}
 
             <div className={`${styles.modalFooter} ${styles.fullRow}`}>
               <button type="submit" className={styles.submitButton}>
@@ -2322,6 +2407,7 @@ function Jobs() {
   const [myPost, setMyPost] = useState([]);
   const [view, setView] = useState("request");
   const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("active");
   const [totalPages, setTotalPages] = useState(1);
 
   const [showProvidedModal, setShowProvidedModal] = useState(false);
@@ -2560,6 +2646,19 @@ function Jobs() {
       const end = toDate(endDate);
 
       return jobs.filter((job) => {
+        const isClosed = (() => {
+          if (!job.applicationEndDate) return false;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const endDateLimit = new Date(job.applicationEndDate);
+          endDateLimit.setHours(0, 0, 0, 0);
+          return today >= endDateLimit;
+        })();
+        const isCurrentJobActive = !isClosed && (job.isActive !== false);
+
+        if (statusFilter === "active" && !isCurrentJobActive) return false;
+        if (statusFilter === "inactive" && isCurrentJobActive) return false;
+
         if (search) {
           const haystack = [
             job.jobId,
@@ -2657,7 +2756,7 @@ function Jobs() {
         return true;
       });
     },
-    [filters, globalFilter]
+    [filters, globalFilter, statusFilter]
   );
 
   const filteredJobPosts = useMemo(
@@ -2965,6 +3064,9 @@ function Jobs() {
           }, 300);
         }
         window.history.replaceState({}, document.title);
+      }
+      if (location.state.status) {
+        setStatusFilter(location.state.status);
       }
     }
   }, [location.state]);
@@ -3412,6 +3514,27 @@ function Jobs() {
                 </>
               )}
             </div>
+          </div>
+
+          <div className={styles.statusToggleContainer}>
+            <button
+              type="button"
+              className={classNames(styles.statusToggleBtn, {
+                [styles.statusToggleActive]: statusFilter === "active"
+              })}
+              onClick={() => setStatusFilter("active")}
+            >
+              Active
+            </button>
+            <button
+              type="button"
+              className={classNames(styles.statusToggleBtn, {
+                [styles.statusToggleActive]: statusFilter === "inactive"
+              })}
+              onClick={() => setStatusFilter("inactive")}
+            >
+              Inactive
+            </button>
           </div>
         </div>
       </div>
@@ -3993,19 +4116,40 @@ function Jobs() {
                             </div>
                           </div>
 
-                          <div className={styles.jobRowRightCol}>
-                            <div className={styles.statusColActiveRow}>
-                              <span className={styles.activeStatusBadge}>
-                                <span className={styles.greenPulseDot}></span>
-                                Active
-                              </span>
-                              {user?.role === "Admin" && (
-                                <span className={styles.applicantsCountLabel}>
-                                  {job.appliedMembers?.length || 0} Applicants
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          {(() => {
+                            const isClosed = (() => {
+                              if (!job.applicationEndDate) return false;
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const endDateLimit = new Date(job.applicationEndDate);
+                              endDateLimit.setHours(0, 0, 0, 0);
+                              return today >= endDateLimit;
+                            })();
+                            const isCurrentJobActive = !isClosed && (job.isActive !== false);
+
+                            return (
+                              <div className={styles.jobRowRightCol}>
+                                <div className={styles.statusColActiveRow}>
+                                  {isCurrentJobActive ? (
+                                    <span className={styles.activeStatusBadge}>
+                                      <span className={styles.greenPulseDot}></span>
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className={styles.inactiveStatusBadge}>
+                                      <span className={styles.redPulseDot}></span>
+                                      Inactive
+                                    </span>
+                                  )}
+                                  {user?.role === "Admin" && (
+                                    <span className={styles.applicantsCountLabel}>
+                                      {job.appliedMembers?.length || 0} Applicants
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         {job.keySkills && (

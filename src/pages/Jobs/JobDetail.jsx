@@ -5,7 +5,7 @@ import { useData } from "../../context/DataContext";
 import { useAuth } from '../../context/AuthContext';
 import API from '../../axios';
 import {
-  Briefcase, Award, CheckCircle, Zap, Users, Star,
+  Briefcase, Award, CheckCircle, XCircle, Zap, Users, Star,
   Calendar, GraduationCap, ArrowLeft,
   MapPin, IndianRupee, Clock, FileText, Trash2, X,
   Building, TrendingUp, Sparkles, BookOpen, Target,
@@ -177,6 +177,13 @@ function JobDetail() {
   }, [id, jobContext]);
 
   useEffect(() => {
+    if (job) {
+      console.log("Job detail loaded:", {
+        title: job.title,
+        applicationEndDate: job.applicationEndDate,
+        isClosed: job.isActive === false || (job.applicationEndDate ? (new Date() >= new Date(job.applicationEndDate)) : false)
+      });
+    }
     if (job && memberContext?.length > 0) processData();
   }, [job, memberContext]);
 
@@ -196,6 +203,21 @@ function JobDetail() {
 
   const handleApply = async (resumeFile = null) => {
     if (!user) return navigate('/login');
+
+    const isClosed = (() => {
+      if (job?.isActive === false) return true;
+      if (!job?.applicationEndDate) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endDate = new Date(job.applicationEndDate);
+      endDate.setHours(0, 0, 0, 0);
+      return today >= endDate;
+    })();
+    if (isClosed) {
+      alert("Application Closed");
+      return;
+    }
+
     if (!resumeFile && !user.resumeLink && user.role !== "Admin") {
       setShowResumeModal(true);
       return;
@@ -414,30 +436,59 @@ function JobDetail() {
         )}
 
         {/* ---- APPLY CTA ---- */}
-        {user?.role !== "Admin" && (
-          <div className={styles.ctaCard}>
-            <div className={styles.ctaLeft}>
-              <div className={styles.ctaIconWrap}>
-                <Sparkles size={22} />
+        {user?.role !== "Admin" && (() => {
+          const isClosed = (() => {
+            if (job?.isActive === false) return true;
+            if (!job?.applicationEndDate) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const endDate = new Date(job.applicationEndDate);
+            endDate.setHours(0, 0, 0, 0);
+            return today >= endDate;
+          })();
+
+          return (
+            <div className={styles.ctaCard}>
+              <div className={styles.ctaLeft}>
+                <div className={styles.ctaIconWrap}>
+                  <Sparkles size={22} />
+                </div>
+                <div>
+                  <h4>{isClosed ? "Application Closed" : "Ready to apply?"}</h4>
+                  <p>
+                    {isClosed
+                      ? "Applications are no longer being accepted for this position."
+                      : hasApplied
+                      ? "You've already applied for this position."
+                      : "Submit your application and take the next step."}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4>Ready to apply?</h4>
-                <p>{hasApplied ? "You've already applied for this position." : "Submit your application and take the next step."}</p>
-              </div>
-            </div>
-            <button
-              className={hasApplied ? styles.btnApplied : styles.btnApply}
-              onClick={() => handleApply()}
-              disabled={hasApplied}
-            >
-              {hasApplied ? (
-                <><CheckCircle size={18} /> Applied</>
+              {isClosed ? (
+                <button
+                  className={styles.btnApplied}
+                  disabled
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ opacity: 0.6, cursor: "not-allowed" }}
+                >
+                  <XCircle size={18} /> Application Closed
+                </button>
               ) : (
-                <><Zap size={18} /> Apply Now</>
+                <button
+                  className={hasApplied ? styles.btnApplied : styles.btnApply}
+                  onClick={() => handleApply()}
+                  disabled={hasApplied}
+                >
+                  {hasApplied ? (
+                    <><CheckCircle size={18} /> Applied</>
+                  ) : (
+                    <><Zap size={18} /> Apply Now</>
+                  )}
+                </button>
               )}
-            </button>
-          </div>
-        )}
+            </div>
+          );
+        })()}
 
         {/* ---- ADMIN AREA ---- */}
         {user?.role === "Admin" && (

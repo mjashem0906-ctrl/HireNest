@@ -685,6 +685,35 @@ const getNewGrowthRate = (list) => {
   return Math.round(((current30d - previous30d) / previous30d) * 100);
 };
 
+const formatDate = (d) => {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch { return d; }
+};
+
+const isValidFilterValue = (v) => {
+  if (v === null || v === undefined) return false;
+  const s = String(v).trim().toLowerCase();
+  if (!s || s === "null" || s === "undefined" || s === "—" || s === "-" || s === "n/a" || s === "na" || s === "none") return false;
+  if (s.includes("test") || s.includes("dummy") || s.includes("placeholder") || s.includes("demo")) return false;
+  if (s.startsWith("[") && s.endsWith("]")) return false;
+  if (s.startsWith("{") && s.endsWith("}")) return false;
+
+  // Gibberish & Dummy Check
+  if (s.length <= 3 && s !== "it" && s !== "hr") return false;
+  if (s === "yes" || s === "no" || s === "any") return false;
+  if (s.startsWith("any ") && (s.includes("company") || s.includes("organization") || s.includes("institution"))) return false;
+
+  // List of known gibberish/placeholder values from screenshots
+  const knownGibberish = ["fbsadrn", "fdbda", "erhen", "ergewyh", "derhaer", "any hardware or software company", "erheh"];
+  if (knownGibberish.includes(s)) return false;
+
+  // Match words that have 4 or more consecutive consonants (excluding 'y')
+  if (/[bcdfghjklmnpqrstvwxz]{4,}/.test(s)) return false;
+
+  return true;
+};
+
 // ----------------------------------------------------------------------
 
 const RecruitersPage = () => {
@@ -701,6 +730,11 @@ const RecruitersPage = () => {
     location: '',
     companyName: '',
     registeredVia: '',
+    employeeId: '',
+    teamSize: '',
+    companyEmail: '',
+    hiringVolume: '',
+    memberSince: '',
   });
   const [activeFilters, setActiveFilters] = useState({});
   const [sortBy, setSortBy] = useState('Newest');
@@ -803,10 +837,16 @@ const RecruitersPage = () => {
   }, []);
 
   // ----- ORIGINAL FILTER LOGIC -----
-  const allDepartments = useMemo(() => [...new Set(recruiters.map(r => r.department?.trim()).filter(Boolean))].sort(), [recruiters]);
-  const allDesignations = useMemo(() => [...new Set(recruiters.map(r => r.designation?.trim()).filter(Boolean))].sort(), [recruiters]);
-  const allLocations = useMemo(() => [...new Set(recruiters.map(r => r.location?.trim()).filter(Boolean))].sort(), [recruiters]);
-  const allCompanyNames = useMemo(() => [...new Set(recruiters.map(r => r.companyName?.trim()).filter(Boolean))].sort(), [recruiters]);
+  const allDepartments = useMemo(() => [...new Set(recruiters.map(r => r.department?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allDesignations = useMemo(() => [...new Set(recruiters.map(r => r.designation?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allLocations = useMemo(() => [...new Set(recruiters.map(r => r.location?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allCompanyNames = useMemo(() => [...new Set(recruiters.map(r => r.companyName?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allSources = useMemo(() => [...new Set(recruiters.map(r => r.registeredVia?.trim() || 'admin').filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allEmployeeIds = useMemo(() => [...new Set(recruiters.map(r => r.employeeId?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allTeamSizes = useMemo(() => [...new Set(recruiters.map(r => r.teamSize?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allCompanyEmails = useMemo(() => [...new Set(recruiters.map(r => r.companyEmail?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allHiringVolumes = useMemo(() => [...new Set(recruiters.map(r => r.hiringVolume?.trim()).filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
+  const allMemberSince = useMemo(() => [...new Set(recruiters.map(r => r.createdAt ? formatDate(r.createdAt) : '').filter(v => isValidFilterValue(v)))].sort(), [recruiters]);
 
   const recruitersFilterConfig = {
     labels: {
@@ -815,6 +855,11 @@ const RecruitersPage = () => {
       location: "Hiring Region",
       companyName: "Company Name",
       registeredVia: "Registration Source",
+      employeeId: "Employee ID",
+      teamSize: "Team Size",
+      companyEmail: "Company Email",
+      hiringVolume: "Hiring Volume",
+      memberSince: "Member Since",
     },
   };
 
@@ -837,7 +882,18 @@ const RecruitersPage = () => {
 
   const clearFilter = (key) => handleFilterChange(key, "");
   const clearAllFilters = () => {
-    setFilterValues({ department: '', designation: '', location: '', companyName: '', registeredVia: '' });
+    setFilterValues({
+      department: '',
+      designation: '',
+      location: '',
+      companyName: '',
+      registeredVia: '',
+      employeeId: '',
+      teamSize: '',
+      companyEmail: '',
+      hiringVolume: '',
+      memberSince: '',
+    });
     setActiveFilters({});
     setSearchTerm("");
     setPage(1);
@@ -863,10 +919,31 @@ const RecruitersPage = () => {
 
       let matchesSource = true;
       if (filterValues.registeredVia) {
-        if (filterValues.registeredVia === 'form') matchesSource = recruiter.registeredVia && recruiter.registeredVia !== 'admin';
-        else matchesSource = !recruiter.registeredVia || recruiter.registeredVia === 'admin';
+        const val = filterValues.registeredVia.toLowerCase();
+        if (val === 'admin') {
+          matchesSource = !recruiter.registeredVia || recruiter.registeredVia === 'admin';
+        } else {
+          matchesSource = recruiter.registeredVia === val;
+        }
       }
-      return matchesSearch && matchesDept && matchesDesignation && matchesLocation && matchesCompany && matchesSource;
+
+      const matchesEmployeeId = !filterValues.employeeId ||
+        recruiter.employeeId?.trim().toLowerCase() === filterValues.employeeId.trim().toLowerCase();
+
+      const matchesTeamSize = !filterValues.teamSize ||
+        recruiter.teamSize?.trim().toLowerCase() === filterValues.teamSize.trim().toLowerCase();
+
+      const matchesCompanyEmail = !filterValues.companyEmail ||
+        recruiter.companyEmail?.trim().toLowerCase() === filterValues.companyEmail.trim().toLowerCase();
+
+      const matchesHiringVolume = !filterValues.hiringVolume ||
+        recruiter.hiringVolume?.trim().toLowerCase() === filterValues.hiringVolume.trim().toLowerCase();
+
+      const matchesMemberSince = !filterValues.memberSince ||
+        (recruiter.createdAt ? formatDate(recruiter.createdAt) : '') === filterValues.memberSince;
+
+      return matchesSearch && matchesDept && matchesDesignation && matchesLocation && matchesCompany && matchesSource &&
+             matchesEmployeeId && matchesTeamSize && matchesCompanyEmail && matchesHiringVolume && matchesMemberSince;
     });
   }, [recruiters, searchTerm, filterValues]);
 
@@ -916,11 +993,7 @@ const RecruitersPage = () => {
   const totalPages = Math.ceil(sortedRecruiters.length / rowsPerPage) || 1;
   const pageData = sortedRecruiters.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
-  const formatDate = (d) => {
-    if (!d) return '—';
-    try { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
-    catch { return d; }
-  };
+
 
   const exportToCSV = (type) => {
     const headers = ['Full Name', 'Email', 'Phone', 'Company', 'Department', 'Designation', 'Registration Source'];
@@ -994,39 +1067,111 @@ const RecruitersPage = () => {
             <div className={styles.filterRowWithScroll}>
               <div className={styles.filterRowContent}>
                 <div className={styles.filterField}>
+                  <label>Employee ID</label>
+                  <select value={filterValues.employeeId || ""} onChange={(e) => handleFilterChange("employeeId", e.target.value)}>
+                    {allEmployeeIds.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Employee IDs</option>
+                        {allEmployeeIds.map(id => <option key={id} value={id}>{id}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className={styles.filterField}>
                   <label>Department</label>
                   <select value={filterValues.department || ""} onChange={(e) => handleFilterChange("department", e.target.value)}>
-                    <option value="">All Departments</option>
-                    {allDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+                    {allDepartments.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Departments</option>
+                        {allDepartments.map(d => <option key={d} value={d}>{d}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className={styles.filterField}>
-                  <label>Designation / Role</label>
-                  <select value={filterValues.designation || ""} onChange={(e) => handleFilterChange("designation", e.target.value)}>
-                    <option value="">All Roles</option>
-                    {allDesignations.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div className={styles.filterField}>
-                  <label>Hiring Region</label>
-                  <select value={filterValues.location || ""} onChange={(e) => handleFilterChange("location", e.target.value)}>
-                    <option value="">All Regions</option>
-                    {allLocations.map(l => <option key={l} value={l}>{l}</option>)}
+                  <label>Team Size</label>
+                  <select value={filterValues.teamSize || ""} onChange={(e) => handleFilterChange("teamSize", e.target.value)}>
+                    {allTeamSizes.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Team Sizes</option>
+                        {allTeamSizes.map(ts => <option key={ts} value={ts}>{ts}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className={styles.filterField}>
                   <label>Company Name</label>
                   <select value={filterValues.companyName || ""} onChange={(e) => handleFilterChange("companyName", e.target.value)}>
-                    <option value="">All Companies</option>
-                    {allCompanyNames.map(c => <option key={c} value={c}>{c}</option>)}
+                    {allCompanyNames.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Companies</option>
+                        {allCompanyNames.map(c => <option key={c} value={c}>{c}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className={styles.filterField}>
+                  <label>Hiring Volume</label>
+                  <select value={filterValues.hiringVolume || ""} onChange={(e) => handleFilterChange("hiringVolume", e.target.value)}>
+                    {allHiringVolumes.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Hiring Volumes</option>
+                        {allHiringVolumes.map(hv => <option key={hv} value={hv}>{hv}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className={styles.filterField}>
+                  <label>Hiring Region</label>
+                  <select value={filterValues.location || ""} onChange={(e) => handleFilterChange("location", e.target.value)}>
+                    {allLocations.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Regions</option>
+                        {allLocations.map(l => <option key={l} value={l}>{l}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className={styles.filterField}>
+                  <label>Member Since</label>
+                  <select value={filterValues.memberSince || ""} onChange={(e) => handleFilterChange("memberSince", e.target.value)}>
+                    {allMemberSince.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Dates</option>
+                        {allMemberSince.map(ms => <option key={ms} value={ms}>{ms}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className={styles.filterField}>
                   <label>Source</label>
                   <select value={filterValues.registeredVia || ""} onChange={(e) => handleFilterChange("registeredVia", e.target.value)}>
-                    <option value="">All Sources</option>
-                    <option value="form">Registered via Form Link</option>
-                    <option value="admin">Admin Added</option>
+                    {allSources.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Sources</option>
+                        {allSources.map(s => (
+                          <option key={s} value={s}>
+                            {s === 'admin' ? 'Admin Added' : 'Registered via Form Link'}
+                          </option>
+                        ))}
+                      </>
+                    )}
                   </select>
                 </div>
                 <button className={styles.clearAllButton} onClick={clearAllFilters}>Clear All</button>

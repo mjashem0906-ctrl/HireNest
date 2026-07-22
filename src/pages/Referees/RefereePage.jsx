@@ -146,6 +146,29 @@ const RefereeCard = React.memo(({ member, isHovered, onHover, onLeave, onNavigat
   );
 });
 
+const isValidFilterValue = (v) => {
+  if (v === null || v === undefined) return false;
+  const s = String(v).trim().toLowerCase();
+  if (!s || s === "null" || s === "undefined" || s === "—" || s === "-" || s === "n/a" || s === "na" || s === "none") return false;
+  if (s.includes("test") || s.includes("dummy") || s.includes("placeholder") || s.includes("demo")) return false;
+  if (s.startsWith("[") && s.endsWith("]")) return false;
+  if (s.startsWith("{") && s.endsWith("}")) return false;
+
+  // Gibberish & Dummy Check
+  if (s.length <= 3 && s !== "it" && s !== "hr") return false;
+  if (s === "yes" || s === "no" || s === "any") return false;
+  if (s.startsWith("any ") && (s.includes("company") || s.includes("organization") || s.includes("institution"))) return false;
+
+  // List of known gibberish/placeholder values from screenshots
+  const knownGibberish = ["fbsadrn", "fdbda", "erhen", "ergewyh", "derhaer", "any hardware or software company", "erheh"];
+  if (knownGibberish.includes(s)) return false;
+
+  // Match words that have 4 or more consecutive consonants (excluding 'y')
+  if (/[bcdfghjklmnpqrstvwxz]{4,}/.test(s)) return false;
+
+  return true;
+};
+
 const RefereePage = () => {
   const context = useOutletContext();
   const sidebarCollapsed = context?.sidebarCollapsed || false;
@@ -160,6 +183,17 @@ const RefereePage = () => {
     district: '',
     sector: '',
     referrerStatus: '',
+    gender: '',
+    age: '',
+    symMemberStatus: '',
+    companyDetails: '',
+    referringSector: '',
+    referrerContact: '',
+    referringFor: '',
+    jobOfferType: '',
+    offer_Location: '',
+    referringOfferType: '',
+    levelOfSupport: '',
   });
   const [activeFilters, setActiveFilters] = useState({});
   const [hoveredId, setHoveredId] = useState(null);
@@ -214,9 +248,8 @@ const RefereePage = () => {
   const allOccupations = useMemo(() => {
     const occSet = new Set();
     referees.forEach((r) => {
-      if (r.occupation) {
-        const trimmed = r.occupation.trim();
-        if (trimmed) occSet.add(trimmed);
+      if (isValidFilterValue(r.occupation)) {
+        occSet.add(r.occupation.trim());
       }
     });
     return Array.from(occSet).sort();
@@ -225,9 +258,8 @@ const RefereePage = () => {
   const allDistricts = useMemo(() => {
     const distSet = new Set();
     referees.forEach((r) => {
-      if (r.district) {
-        const trimmed = r.district.trim();
-        if (trimmed) distSet.add(trimmed);
+      if (isValidFilterValue(r.district)) {
+        distSet.add(r.district.trim());
       }
     });
     return Array.from(distSet).sort();
@@ -236,9 +268,8 @@ const RefereePage = () => {
   const allSectors = useMemo(() => {
     const secSet = new Set();
     referees.forEach((r) => {
-      if (r.sector) {
-        const trimmed = r.sector.trim();
-        if (trimmed) secSet.add(trimmed);
+      if (isValidFilterValue(r.sector)) {
+        secSet.add(r.sector.trim());
       }
     });
     return Array.from(secSet).sort();
@@ -247,12 +278,119 @@ const RefereePage = () => {
   const allStatuses = useMemo(() => {
     const statusSet = new Set();
     referees.forEach((r) => {
-      if (r.referrerStatus) {
-        const trimmed = r.referrerStatus.trim();
-        if (trimmed) statusSet.add(trimmed);
+      if (isValidFilterValue(r.referrerStatus)) {
+        statusSet.add(r.referrerStatus.trim());
       }
     });
     return Array.from(statusSet).sort();
+  }, [referees]);
+
+  const allGenders = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.gender)) set.add(r.gender.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allAges = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => {
+      let age = r.age;
+      if (!age && r.dateOfBirth) {
+        const dob = new Date(r.dateOfBirth);
+        if (!isNaN(dob.getTime())) {
+          const diff = Date.now() - dob.getTime();
+          age = Math.abs(new Date(diff).getUTCFullYear() - 1970).toString();
+        }
+      }
+      if (isValidFilterValue(age)) set.add(age.trim());
+    });
+    return Array.from(set).sort((a, b) => parseInt(a) - parseInt(b));
+  }, [referees]);
+
+  const allSymStatuses = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.symMemberStatus)) set.add(r.symMemberStatus.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allCompanyDetails = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.companyDetails)) set.add(r.companyDetails.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allReferringSectors = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => {
+      if (r.referringSector) {
+        if (Array.isArray(r.referringSector)) {
+          r.referringSector.forEach(s => { if (isValidFilterValue(s)) set.add(s.trim()); });
+        } else {
+          if (isValidFilterValue(r.referringSector)) set.add(r.referringSector.trim());
+        }
+      }
+    });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allReferrerContacts = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.referrerContact)) set.add(r.referrerContact.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allReferringFors = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.referringFor)) set.add(r.referringFor.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allJobOfferTypes = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => {
+      if (r.jobOfferType) {
+        if (Array.isArray(r.jobOfferType)) {
+          r.jobOfferType.forEach(s => { if (isValidFilterValue(s)) set.add(s.trim()); });
+        } else {
+          if (isValidFilterValue(r.jobOfferType)) set.add(r.jobOfferType.trim());
+        }
+      }
+    });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allOfferLocations = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => { if (isValidFilterValue(r.offer_Location)) set.add(r.offer_Location.trim()); });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allReferringOfferTypes = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => {
+      if (r.referringOfferType) {
+        if (Array.isArray(r.referringOfferType)) {
+          r.referringOfferType.forEach(s => { if (isValidFilterValue(s)) set.add(s.trim()); });
+        } else {
+          if (isValidFilterValue(r.referringOfferType)) set.add(r.referringOfferType.trim());
+        }
+      }
+    });
+    return Array.from(set).sort();
+  }, [referees]);
+
+  const allLevelsOfSupport = useMemo(() => {
+    const set = new Set();
+    referees.forEach(r => {
+      if (r.levelOfSupport) {
+        if (Array.isArray(r.levelOfSupport)) {
+          r.levelOfSupport.forEach(s => { if (isValidFilterValue(s)) set.add(s.trim()); });
+        } else {
+          if (isValidFilterValue(r.levelOfSupport)) set.add(r.levelOfSupport.trim());
+        }
+      }
+    });
+    return Array.from(set).sort();
   }, [referees]);
 
   const refereeFilterConfig = {
@@ -261,6 +399,17 @@ const RefereePage = () => {
       district: "District",
       sector: "Industry / Sector",
       referrerStatus: "Referrer Status",
+      gender: "Gender",
+      age: "Age",
+      symMemberStatus: "Solidarity Status",
+      companyDetails: "Company Details",
+      referringSector: "Referring Sector",
+      referrerContact: "Referrer Contact",
+      referringFor: "Referring For",
+      jobOfferType: "Job Offer Type",
+      offer_Location: "Offer Location",
+      referringOfferType: "Referring Offer Type",
+      levelOfSupport: "Level of Support",
     },
   };
 
@@ -287,6 +436,17 @@ const RefereePage = () => {
       district: "",
       sector: "",
       referrerStatus: "",
+      gender: "",
+      age: "",
+      symMemberStatus: "",
+      companyDetails: "",
+      referringSector: "",
+      referrerContact: "",
+      referringFor: "",
+      jobOfferType: "",
+      offer_Location: "",
+      referringOfferType: "",
+      levelOfSupport: "",
     });
     setActiveFilters({});
     setSearchTerm("");
@@ -317,7 +477,51 @@ const RefereePage = () => {
       !filterValues.referrerStatus ||
       member.referrerStatus?.trim().toLowerCase() === filterValues.referrerStatus.trim().toLowerCase();
 
-    return matchesSearch && matchesOccupation && matchesDistrict && matchesSector && matchesStatus;
+    const matchesGender = !filterValues.gender ||
+      member.gender?.trim().toLowerCase() === filterValues.gender.trim().toLowerCase();
+
+    const matchesAge = !filterValues.age ||
+      member.age?.trim().toLowerCase() === filterValues.age.trim().toLowerCase();
+
+    const matchesSymStatus = !filterValues.symMemberStatus ||
+      member.symMemberStatus?.trim().toLowerCase() === filterValues.symMemberStatus.trim().toLowerCase();
+
+    const matchesCompanyDetails = !filterValues.companyDetails ||
+      member.companyDetails?.trim().toLowerCase() === filterValues.companyDetails.trim().toLowerCase();
+
+    const matchesReferringSector = !filterValues.referringSector ||
+      (Array.isArray(member.referringSector)
+        ? member.referringSector.some(s => s.trim().toLowerCase() === filterValues.referringSector.trim().toLowerCase())
+        : member.referringSector?.trim().toLowerCase() === filterValues.referringSector.trim().toLowerCase());
+
+    const matchesReferrerContact = !filterValues.referrerContact ||
+      member.referrerContact?.trim().toLowerCase() === filterValues.referrerContact.trim().toLowerCase();
+
+    const matchesReferringFor = !filterValues.referringFor ||
+      member.referringFor?.trim().toLowerCase() === filterValues.referringFor.trim().toLowerCase();
+
+    const matchesJobOfferType = !filterValues.jobOfferType ||
+      (Array.isArray(member.jobOfferType)
+        ? member.jobOfferType.some(s => s.trim().toLowerCase() === filterValues.jobOfferType.trim().toLowerCase())
+        : member.jobOfferType?.trim().toLowerCase() === filterValues.jobOfferType.trim().toLowerCase());
+
+    const matchesOfferLocation = !filterValues.offer_Location ||
+      member.offer_Location?.trim().toLowerCase() === filterValues.offer_Location.trim().toLowerCase();
+
+    const matchesReferringOfferType = !filterValues.referringOfferType ||
+      (Array.isArray(member.referringOfferType)
+        ? member.referringOfferType.some(s => s.trim().toLowerCase() === filterValues.referringOfferType.trim().toLowerCase())
+        : member.referringOfferType?.trim().toLowerCase() === filterValues.referringOfferType.trim().toLowerCase());
+
+    const matchesLevelOfSupport = !filterValues.levelOfSupport ||
+      (Array.isArray(member.levelOfSupport)
+        ? member.levelOfSupport.some(s => s.trim().toLowerCase() === filterValues.levelOfSupport.trim().toLowerCase())
+        : member.levelOfSupport?.trim().toLowerCase() === filterValues.levelOfSupport.trim().toLowerCase());
+
+    return matchesSearch && matchesOccupation && matchesDistrict && matchesSector && matchesStatus &&
+           matchesGender && matchesAge && matchesSymStatus && matchesCompanyDetails && matchesReferringSector &&
+           matchesReferrerContact && matchesReferringFor && matchesJobOfferType && matchesOfferLocation &&
+           matchesReferringOfferType && matchesLevelOfSupport;
   });
 
   // ── Pagination calculations ────────────────────────────────
@@ -422,53 +626,211 @@ const RefereePage = () => {
               <div className={styles.filterRowContent}>
                 <div className={styles.filterField}>
                   <label>Occupation</label>
-                  <select
-                    value={filterValues.occupation || ""}
-                    onChange={(e) => handleFilterChange("occupation", e.target.value)}
-                  >
-                    <option value="">All Occupations</option>
-                    {allOccupations.map((o) => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
+                  <select value={filterValues.occupation || ""} onChange={(e) => handleFilterChange("occupation", e.target.value)}>
+                    {allOccupations.length === 0 ? (
+                      <option disabled value="">All Occupation</option>
+                    ) : (
+                      <>
+                        <option value="">All Occupations</option>
+                        {allOccupations.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className={styles.filterField}>
                   <label>District</label>
-                  <select
-                    value={filterValues.district || ""}
-                    onChange={(e) => handleFilterChange("district", e.target.value)}
-                  >
-                    <option value="">All Districts</option>
-                    {allDistricts.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
+                  <select value={filterValues.district || ""} onChange={(e) => handleFilterChange("district", e.target.value)}>
+                    {allDistricts.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Districts</option>
+                        {allDistricts.map((d) => <option key={d} value={d}>{d}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className={styles.filterField}>
-                  <label>Industry / Sector</label>
-                  <select
-                    value={filterValues.sector || ""}
-                    onChange={(e) => handleFilterChange("sector", e.target.value)}
-                  >
-                    <option value="">All Sectors</option>
-                    {allSectors.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
+                  <label>Sector</label>
+                  <select value={filterValues.sector || ""} onChange={(e) => handleFilterChange("sector", e.target.value)}>
+                    {allSectors.length === 0 ? (
+                      <option disabled value="">All Sector</option>
+                    ) : (
+                      <>
+                        <option value="">All Sectors</option>
+                        {allSectors.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div className={styles.filterField}>
                   <label>Referrer Status</label>
-                  <select
-                    value={filterValues.referrerStatus || ""}
-                    onChange={(e) => handleFilterChange("referrerStatus", e.target.value)}
-                  >
-                    <option value="">All Statuses</option>
-                    {allStatuses.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
+                  <select value={filterValues.referrerStatus || ""} onChange={(e) => handleFilterChange("referrerStatus", e.target.value)}>
+                    {allStatuses.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Statuses</option>
+                        {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Gender</label>
+                  <select value={filterValues.gender || ""} onChange={(e) => handleFilterChange("gender", e.target.value)}>
+                    {allGenders.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Genders</option>
+                        {allGenders.map((g) => <option key={g} value={g}>{g}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Age</label>
+                  <select value={filterValues.age || ""} onChange={(e) => handleFilterChange("age", e.target.value)}>
+                    {allAges.length === 0 ? (
+                      <option disabled value="">All Age</option>
+                    ) : (
+                      <>
+                        <option value="">All Ages</option>
+                        {allAges.map((a) => <option key={a} value={a}>{a}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Solidarity Status</label>
+                  <select value={filterValues.symMemberStatus || ""} onChange={(e) => handleFilterChange("symMemberStatus", e.target.value)}>
+                    {allSymStatuses.length === 0 ? (
+                      <option disabled value="">No Values</option>
+                    ) : (
+                      <>
+                        <option value="">All Solidarity Statuses</option>
+                        {allSymStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Company Details</label>
+                  <select value={filterValues.companyDetails || ""} onChange={(e) => handleFilterChange("companyDetails", e.target.value)}>
+                    {allCompanyDetails.length === 0 ? (
+                      <option disabled value="">All Company Details</option>
+                    ) : (
+                      <>
+                        <option value="">All Company Details</option>
+                        {allCompanyDetails.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Referring Sector</label>
+                  <select value={filterValues.referringSector || ""} onChange={(e) => handleFilterChange("referringSector", e.target.value)}>
+                    {allReferringSectors.length === 0 ? (
+                      <option disabled value="">All Referring Sectors</option>
+                    ) : (
+                      <>
+                        <option value="">All Referring Sectors</option>
+                        {allReferringSectors.map((s) => <option key={s} value={s}>{s}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Referrer Contact</label>
+                  <select value={filterValues.referrerContact || ""} onChange={(e) => handleFilterChange("referrerContact", e.target.value)}>
+                    {allReferrerContacts.length === 0 ? (
+                      <option disabled value="">All Referrer Contacts</option>
+                    ) : (
+                      <>
+                        <option value="">All Referrer Contacts</option>
+                        {allReferrerContacts.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Referring For</label>
+                  <select value={filterValues.referringFor || ""} onChange={(e) => handleFilterChange("referringFor", e.target.value)}>
+                    {allReferringFors.length === 0 ? (
+                      <option disabled value="">All Referral Targets</option>
+                    ) : (
+                      <>
+                        <option value="">All Referral Targets</option>
+                        {allReferringFors.map((rf) => <option key={rf} value={rf}>{rf}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Job Offer Type</label>
+                  <select value={filterValues.jobOfferType || ""} onChange={(e) => handleFilterChange("jobOfferType", e.target.value)}>
+                    {allJobOfferTypes.length === 0 ? (
+                      <option disabled value="">All Job Offer</option>
+                    ) : (
+                      <>
+                        <option value="">All Job Offer</option>
+                        {allJobOfferTypes.map((jot) => <option key={jot} value={jot}>{jot}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Offer Location</label>
+                  <select value={filterValues.offer_Location || ""} onChange={(e) => handleFilterChange("offer_Location", e.target.value)}>
+                    {allOfferLocations.length === 0 ? (
+                      <option disabled value="">All Offer Locations</option>
+                    ) : (
+                      <>
+                        <option value="">All Offer Locations</option>
+                        {allOfferLocations.map((ol) => <option key={ol} value={ol}>{ol}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Referring Offer Type</label>
+                  <select value={filterValues.referringOfferType || ""} onChange={(e) => handleFilterChange("referringOfferType", e.target.value)}>
+                    {allReferringOfferTypes.length === 0 ? (
+                      <option disabled value="">All Referring Offer Types</option>
+                    ) : (
+                      <>
+                        <option value="">All Referring Offer Types</option>
+                        {allReferringOfferTypes.map((rot) => <option key={rot} value={rot}>{rot}</option>)}
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className={styles.filterField}>
+                  <label>Level of Support</label>
+                  <select value={filterValues.levelOfSupport || ""} onChange={(e) => handleFilterChange("levelOfSupport", e.target.value)}>
+                    {allLevelsOfSupport.length === 0 ? (
+                      <option disabled value="">All Levels of Support</option>
+                    ) : (
+                      <>
+                        <option value="">All Levels of Support</option>
+                        {allLevelsOfSupport.map((ls) => <option key={ls} value={ls}>{ls}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
 

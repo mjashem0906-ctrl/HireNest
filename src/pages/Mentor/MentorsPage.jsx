@@ -79,6 +79,29 @@ const Sparkline = ({ color }) => {
   );
 };
 
+const isValidFilterValue = (v) => {
+  if (v === null || v === undefined) return false;
+  const s = String(v).trim().toLowerCase();
+  if (!s || s === "null" || s === "undefined" || s === "—" || s === "-" || s === "n/a" || s === "na" || s === "none") return false;
+  if (s.includes("test") || s.includes("dummy") || s.includes("placeholder") || s.includes("demo")) return false;
+  if (s.startsWith("[") && s.endsWith("]")) return false;
+  if (s.startsWith("{") && s.endsWith("}")) return false;
+
+  // Gibberish & Dummy Check
+  if (s.length <= 3 && s !== "it" && s !== "hr" && !/\d/.test(s)) return false;
+  if (s === "yes" || s === "no" || s === "any") return false;
+  if (s.startsWith("any ") && (s.includes("company") || s.includes("organization") || s.includes("institution"))) return false;
+
+  // List of known gibberish/placeholder values from screenshots
+  const knownGibberish = ["fbsadrn", "fdbda", "erhen", "ergewyh", "derhaer", "any hardware or software company", "erheh"];
+  if (knownGibberish.includes(s)) return false;
+
+  // Match words that have 4 or more consecutive consonants (excluding 'y')
+  if (/[bcdfghjklmnpqrstvwxz]{4,}/.test(s)) return false;
+
+  return true;
+};
+
 const MentorsPage = () => {
   const [view, setView] = useState("mentors"); // 'mentors' | 'applicants'
   const [mentors, setMentors] = useState([]);
@@ -90,6 +113,12 @@ const MentorsPage = () => {
     district: "",
     experience: "",
     gender: "",
+    role: "",
+    skills: "",
+    status: "",
+    currentInstitution: "",
+    designation: "",
+    age: "",
   });
   const [activeFilters, setActiveFilters] = useState({});
   const [loading, setLoading] = useState(true);
@@ -378,25 +407,118 @@ const MentorsPage = () => {
   };
 
   // Dynamic filter lists
+  const allRoles = React.useMemo(() => {
+    const rolesSet = new Set();
+    mentors.forEach((m) => {
+      if (isValidFilterValue(m.designation)) rolesSet.add(m.designation.trim());
+      if (m.careerProfile?.role) {
+        if (Array.isArray(m.careerProfile.role)) {
+          m.careerProfile.role.forEach(r => { if (isValidFilterValue(r)) rolesSet.add(r.trim()); });
+        } else {
+          if (isValidFilterValue(m.careerProfile.role)) rolesSet.add(m.careerProfile.role.trim());
+        }
+      }
+      if (m.preferredJobRole_Sector) {
+        if (Array.isArray(m.preferredJobRole_Sector)) {
+          m.preferredJobRole_Sector.forEach(r => { if (isValidFilterValue(r)) rolesSet.add(r.trim()); });
+        } else {
+          if (isValidFilterValue(m.preferredJobRole_Sector)) rolesSet.add(m.preferredJobRole_Sector.trim());
+        }
+      }
+    });
+    return Array.from(rolesSet).sort();
+  }, [mentors]);
+
   const allDomains = React.useMemo(() => {
     const domainSet = new Set();
     mentors.forEach((m) => {
       if (m.fieldofStudy_Interest) {
         m.fieldofStudy_Interest.split(",").forEach((d) => {
           const trimmed = d.trim();
-          if (trimmed) domainSet.add(trimmed);
+          if (isValidFilterValue(trimmed)) domainSet.add(trimmed);
         });
       }
     });
     return Array.from(domainSet).sort();
   }, [mentors]);
 
+  const allSkills = React.useMemo(() => {
+    const skillSet = new Set();
+    mentors.forEach((m) => {
+      if (m.skills) {
+        if (Array.isArray(m.skills)) {
+          m.skills.forEach(s => { if (isValidFilterValue(s)) skillSet.add(s.trim()); });
+        } else if (typeof m.skills === 'string') {
+          m.skills.split(",").forEach(s => { if (isValidFilterValue(s)) skillSet.add(s.trim()); });
+        }
+      }
+    });
+    return Array.from(skillSet).sort();
+  }, [mentors]);
+
+  const allExperiences = React.useMemo(() => {
+    const expSet = new Set();
+    mentors.forEach((m) => {
+      const expVal = m.workExp || m.experience || m.experienceYears || m.totalExperience;
+      if (isValidFilterValue(expVal)) {
+        expSet.add(String(expVal).trim());
+      }
+    });
+    return Array.from(expSet).sort((a, b) => parseFloat(a) - parseFloat(b));
+  }, [mentors]);
+
+  const allStatuses = React.useMemo(() => {
+    const statusSet = new Set();
+    mentors.forEach((m) => {
+      const status = m.symMemberStatus || m.status || "Available";
+      if (isValidFilterValue(status)) {
+        statusSet.add(status.trim());
+      }
+    });
+    return Array.from(statusSet).sort();
+  }, [mentors]);
+
+  const allInstitutions = React.useMemo(() => {
+    const instSet = new Set();
+    mentors.forEach((m) => {
+      if (isValidFilterValue(m.currentInstitutionOrCompany)) {
+        instSet.add(m.currentInstitutionOrCompany.trim());
+      }
+    });
+    return Array.from(instSet).sort();
+  }, [mentors]);
+
+  const allDesignations = React.useMemo(() => {
+    const desSet = new Set();
+    mentors.forEach((m) => {
+      if (isValidFilterValue(m.designation)) {
+        desSet.add(m.designation.trim());
+      }
+    });
+    return Array.from(desSet).sort();
+  }, [mentors]);
+
+  const allAges = React.useMemo(() => {
+    const ageSet = new Set();
+    mentors.forEach((m) => {
+      let age = m.age;
+      if (!age && m.dateOfBirth) {
+        const dob = new Date(m.dateOfBirth);
+        if (!isNaN(dob.getTime())) {
+          const diff = Date.now() - dob.getTime();
+          age = Math.abs(new Date(diff).getUTCFullYear() - 1970).toString();
+        }
+      }
+      if (isValidFilterValue(age)) ageSet.add(age.trim());
+    });
+    return Array.from(ageSet).sort((a, b) => parseInt(a) - parseInt(b));
+  }, [mentors]);
+
   const allDistricts = React.useMemo(() => {
     const districtSet = new Set();
     mentors.forEach((m) => {
-      if (m.district) {
-        const trimmed = m.district.trim();
-        if (trimmed) districtSet.add(trimmed);
+      if (isValidFilterValue(m.district)) {
+        districtSet.add(m.district.trim());
       }
     });
     return Array.from(districtSet).sort();
@@ -405,9 +527,8 @@ const MentorsPage = () => {
   const allGenders = React.useMemo(() => {
     const genderSet = new Set();
     mentors.forEach((m) => {
-      if (m.gender) {
-        const trimmed = m.gender.trim();
-        if (trimmed) genderSet.add(trimmed);
+      if (isValidFilterValue(m.gender)) {
+        genderSet.add(m.gender.trim());
       }
     });
     return Array.from(genderSet).sort();
@@ -419,6 +540,12 @@ const MentorsPage = () => {
       district: "District",
       experience: "Experience Level",
       gender: "Gender",
+      role: "Expertise / Role",
+      skills: "Skills",
+      status: "Status",
+      currentInstitution: "Current Institution",
+      designation: "Designation",
+      age: "Age",
     },
   };
 
@@ -446,6 +573,12 @@ const MentorsPage = () => {
       district: "",
       experience: "",
       gender: "",
+      role: "",
+      skills: "",
+      status: "",
+      currentInstitution: "",
+      designation: "",
+      age: "",
     });
     setActiveFilters({});
     setSearchTerm("");
@@ -490,28 +623,81 @@ const MentorsPage = () => {
       // 5. Experience filter check
       let matchesExperience = true;
       if (filterValues.experience) {
-        const expVal = parseFloat(m.workExp);
+        const rawExp = String(m.workExp || m.experience || m.experienceYears || m.totalExperience || "").trim();
+        const expVal = parseFloat(rawExp);
         const isExpValid = !isNaN(expVal);
-
-        switch (filterValues.experience) {
-          case "<1":
-            matchesExperience = isExpValid && expVal < 1;
-            break;
-          case "1-3":
-            matchesExperience = isExpValid && expVal >= 1 && expVal <= 3;
-            break;
-          case "3-5":
-            matchesExperience = isExpValid && expVal >= 3 && expVal <= 5;
-            break;
-          case "5+":
-            matchesExperience = isExpValid && expVal > 5;
-            break;
-          default:
-            matchesExperience = true;
+        const selectedExp = filterValues.experience.trim();
+        if (selectedExp === "<1") {
+          matchesExperience = isExpValid && expVal < 1;
+        } else if (selectedExp === "1-3") {
+          matchesExperience = isExpValid && expVal >= 1 && expVal <= 3;
+        } else if (selectedExp === "3-5") {
+          matchesExperience = isExpValid && expVal >= 3 && expVal <= 5;
+        } else if (selectedExp === "5+") {
+          matchesExperience = isExpValid && expVal > 5;
+        } else {
+          matchesExperience = rawExp.toLowerCase() === selectedExp.toLowerCase();
         }
       }
 
-      return matchesSearch && matchesDomain && matchesDistrict && matchesGender && matchesExperience;
+      // 6. Expertise / Role check
+      let matchesRole = true;
+      if (filterValues.role) {
+        const targetRole = filterValues.role.toLowerCase();
+        const mRole = m.careerProfile?.role;
+        const mPreferred = m.preferredJobRole_Sector;
+        const hasRole = (Array.isArray(mRole) ? mRole : [mRole]).some(r => String(r || "").toLowerCase().trim() === targetRole) ||
+                        (Array.isArray(mPreferred) ? mPreferred : [mPreferred]).some(r => String(r || "").toLowerCase().trim() === targetRole) ||
+                        String(m.designation || "").toLowerCase().trim() === targetRole;
+        matchesRole = hasRole;
+      }
+
+      // 7. Skills check
+      let matchesSkills = true;
+      if (filterValues.skills) {
+        const targetSkill = filterValues.skills.toLowerCase();
+        const mSkills = m.skills;
+        const hasSkill = Array.isArray(mSkills)
+          ? mSkills.some(s => String(s || "").toLowerCase().trim() === targetSkill)
+          : String(mSkills || "").toLowerCase().split(",").map(s => s.trim()).includes(targetSkill);
+        matchesSkills = hasSkill;
+      }
+
+      // 8. Status check
+      let matchesStatus = true;
+      if (filterValues.status) {
+        const currentStatus = m.symMemberStatus || m.status || "Available";
+        matchesStatus = currentStatus.trim().toLowerCase() === filterValues.status.trim().toLowerCase();
+      }
+
+      // 9. Current Institution check
+      let matchesInstitution = true;
+      if (filterValues.currentInstitution) {
+        matchesInstitution = String(m.currentInstitutionOrCompany || "").trim().toLowerCase() === filterValues.currentInstitution.trim().toLowerCase();
+      }
+
+      // 10. Designation check
+      let matchesDesignation = true;
+      if (filterValues.designation) {
+        matchesDesignation = String(m.designation || "").trim().toLowerCase() === filterValues.designation.trim().toLowerCase();
+      }
+
+      // 11. Age check
+      let matchesAge = true;
+      if (filterValues.age) {
+        let age = m.age;
+        if (!age && m.dateOfBirth) {
+          const dob = new Date(m.dateOfBirth);
+          if (!isNaN(dob.getTime())) {
+            const diff = Date.now() - dob.getTime();
+            age = Math.abs(new Date(diff).getUTCFullYear() - 1970).toString();
+          }
+        }
+        matchesAge = String(age || "").trim() === filterValues.age.trim();
+      }
+
+      return matchesSearch && matchesDomain && matchesDistrict && matchesGender && matchesExperience &&
+             matchesRole && matchesSkills && matchesStatus && matchesInstitution && matchesDesignation && matchesAge;
     });
   }, [mentors, searchTerm, filterValues]);
 
@@ -651,17 +837,165 @@ const MentorsPage = () => {
           <div className={styles.filterRowWithScroll}>
             <div className={styles.filterRowContent}>
 
-              {/* Domain / Expertise */}
+              {/* Expertise / Role */}
               <div className={styles.filterField}>
-                <label>EXPERTISE / DOMAIN</label>
+                <label>EXPERTISE / ROLE</label>
+                <select
+                  value={filterValues.role}
+                  onChange={(e) => handleFilterChange('role', e.target.value)}
+                >
+                  {allRoles.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Roles</option>
+                      {allRoles.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Domain */}
+              <div className={styles.filterField}>
+                <label>DOMAIN</label>
                 <select
                   value={filterValues.domain}
                   onChange={(e) => handleFilterChange('domain', e.target.value)}
                 >
-                  <option value="">All Domains</option>
-                  {allDomains.map((d) => (
-                    <option key={d} value={d}>{d.length > 22 ? `${d.substring(0, 22)}...` : d}</option>
-                  ))}
+                  {allDomains.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Domains</option>
+                      {allDomains.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Skills */}
+              <div className={styles.filterField}>
+                <label>SKILLS</label>
+                <select
+                  value={filterValues.skills}
+                  onChange={(e) => handleFilterChange('skills', e.target.value)}
+                >
+                  {allSkills.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Skills</option>
+                      {allSkills.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Experience */}
+              <div className={styles.filterField}>
+                <label>EXPERIENCE</label>
+                <select
+                  value={filterValues.experience}
+                  onChange={(e) => handleFilterChange('experience', e.target.value)}
+                >
+                  {allExperiences.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Experience</option>
+                      {allExperiences.map((ex) => (
+                        <option key={ex} value={ex}>
+                          {/year/i.test(ex) ? ex : `${ex} Years`}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Status */}
+              <div className={styles.filterField}>
+                <label>STATUS</label>
+                <select
+                  value={filterValues.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                >
+                  {allStatuses.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Statuses</option>
+                      {allStatuses.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Current Institution */}
+              <div className={styles.filterField}>
+                <label>CURRENT INSTITUTION</label>
+                <select
+                  value={filterValues.currentInstitution}
+                  onChange={(e) => handleFilterChange('currentInstitution', e.target.value)}
+                >
+                  {allInstitutions.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Institutions</option>
+                      {allInstitutions.map((i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Designation */}
+              <div className={styles.filterField}>
+                <label>DESIGNATION</label>
+                <select
+                  value={filterValues.designation}
+                  onChange={(e) => handleFilterChange('designation', e.target.value)}
+                >
+                  {allDesignations.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Designations</option>
+                      {allDesignations.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Age */}
+              <div className={styles.filterField}>
+                <label>AGE</label>
+                <select
+                  value={filterValues.age}
+                  onChange={(e) => handleFilterChange('age', e.target.value)}
+                >
+                  {allAges.length === 0 ? (
+                    <option disabled value="">All Ages</option>
+                  ) : (
+                    <>
+                      <option value="">All Ages</option>
+                      {allAges.map((a) => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -672,25 +1006,16 @@ const MentorsPage = () => {
                   value={filterValues.district}
                   onChange={(e) => handleFilterChange('district', e.target.value)}
                 >
-                  <option value="">All Districts</option>
-                  {allDistricts.map((d) => (
-                    <option key={d} value={d}>{d.length > 18 ? `${d.substring(0, 18)}...` : d}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Experience Level */}
-              <div className={styles.filterField}>
-                <label>EXPERIENCE LEVEL</label>
-                <select
-                  value={filterValues.experience}
-                  onChange={(e) => handleFilterChange('experience', e.target.value)}
-                >
-                  <option value="">All Experience</option>
-                  <option value="<1">&lt; 1 Year</option>
-                  <option value="1-3">1–3 Years</option>
-                  <option value="3-5">3–5 Years</option>
-                  <option value="5+">5+ Years</option>
+                  {allDistricts.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Districts</option>
+                      {allDistricts.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -701,10 +1026,16 @@ const MentorsPage = () => {
                   value={filterValues.gender}
                   onChange={(e) => handleFilterChange('gender', e.target.value)}
                 >
-                  <option value="">All Genders</option>
-                  {allGenders.map((g) => (
-                    <option key={g} value={g}>{g}</option>
-                  ))}
+                  {allGenders.length === 0 ? (
+                    <option disabled value="">No Values</option>
+                  ) : (
+                    <>
+                      <option value="">All Genders</option>
+                      {allGenders.map((g) => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </div>
 

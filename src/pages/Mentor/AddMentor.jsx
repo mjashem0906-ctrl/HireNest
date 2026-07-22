@@ -465,8 +465,10 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
       newErrors.fieldofStudy_Interest = "Domain is required";
     }
 
-    if (!formData.workExp?.trim()) {
+    if (!formData.workExp || !formData.workExp.toString().trim()) {
       newErrors.workExp = "Years of Experience is required";
+    } else if (isNaN(Number(formData.workExp)) || Number(formData.workExp) < 0) {
+      newErrors.workExp = "Years of Experience must be a valid positive number";
     }
 
     setErrors(newErrors);
@@ -645,6 +647,9 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
 
                 <FormInput
                   label="Years of Experience"
+                  type="number"
+                  min="0"
+                  step="1"
                   value={formData.workExp}
                   onChange={(v) => {
                     setFormData({ ...formData, workExp: v });

@@ -1023,7 +1023,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
 
   // ── Validation logic ───────────────────────────────────────────────────────
   const validateCareerTab = () => {
-    const nextErrors = { designation: "", workExp: "", role: "", industry: "", location: "" };
+    const nextErrors = { designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "" };
     let hasError = false;
 
     if (!String(formData.designation || "").trim()) {
@@ -1045,6 +1045,10 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     }
     if (!String(formData.careerProfile?.location || "").trim()) {
       nextErrors.location = "Location Preference is required.";
+      hasError = true;
+    }
+    if (!String(formData.linkedinUrl || "").trim()) {
+      nextErrors.linkedinUrl = "LinkedIn Profile URL is required.";
       hasError = true;
     }
 
@@ -1591,8 +1595,13 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
             <FormInput
               label="LinkedIn Profile URL"
               value={formData.linkedinUrl}
-              onChange={(v) => setFormData({ ...formData, linkedinUrl: v })}
+              onChange={(v) => {
+                setFormData({ ...formData, linkedinUrl: v });
+                setErrors((prev) => ({ ...prev, linkedinUrl: "" }));
+              }}
               placeholder="https://linkedin.com/in/your-profile"
+              required
+              error={errors.linkedinUrl}
             />
 
             <div style={{ gridColumn: "1 / -1", marginTop: "20px" }}>
@@ -1790,7 +1799,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                 value={formData.educationStatus}
                 options={[
                   { value: "Pursuing", label: "Pursuing" },
-                  { value: "Ongoing", label: "Ongoing" }
+                  { value: "Completed", label: "Completed" }
                 ]}
                 placeholder="Select Status"
                 onChange={(val) => setFormData((p) => ({ ...p, educationStatus: val }))}

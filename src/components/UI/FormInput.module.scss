@@ -61,6 +61,56 @@
   &::placeholder {
     color: var(--text-muted);
   }
+
+  &.typeNumber {
+    padding-right: 44px;
+  }
+}
+
+/* Hide native spin buttons */
+.input[type="number"]::-webkit-inner-spin-button,
+.input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.stepperContainer {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 16px);
+}
+
+.stepperBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  color: var(--text-muted);
+  width: 26px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 
 .textarea {
