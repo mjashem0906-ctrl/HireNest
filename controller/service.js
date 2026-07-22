@@ -34,12 +34,45 @@ const generateJobId = async () => {
   }
 };
 
+// Helper function to sync job active status based on applicationEndDate
+const syncJobStatuses = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Update jobs whose end date has passed to be inactive
+    await Service.updateMany(
+      {
+        isActive: true,
+        applicationEndDate: { $lte: today }
+      },
+      {
+        $set: { isActive: false }
+      }
+    );
+
+    // Update jobs whose end date is in the future to be active
+    await Service.updateMany(
+      {
+        isActive: false,
+        applicationEndDate: { $gt: today }
+      },
+      {
+        $set: { isActive: true }
+      }
+    );
+  } catch (error) {
+    console.error("Error syncing job statuses:", error);
+  }
+};
+
 /* -------------------- CREATE SERVICE (ADMIN ONLY) -------------------- */
 const addServicePost = async (req, res) => {
   try {
     const {
       title, description, companyName, companyLogo, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry,
+      applicationEndDate
     } = req.body;
 
     const normalizedEmploymentType = normalizeEmploymentType(employmentType);
@@ -51,6 +84,19 @@ const addServicePost = async (req, res) => {
         message: "Validation error",
         errors: ["Either 'Refereed Person' or 'Job Posted By (Recruiter)' is required."]
       });
+    }
+
+    if (applicationEndDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(applicationEndDate);
+      selectedDate.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        return res.status(400).json({
+          success: false,
+          message: "Application End Date cannot be in the past."
+        });
+      }
     }
 
     // --- DUPLICATE CHECK ---
@@ -92,6 +138,7 @@ const addServicePost = async (req, res) => {
       jobPosted,
       memberId,
       jobId,
+      applicationEndDate,
     });
 
     const populatedService = await Service.findById(service._id)
@@ -154,10 +201,17 @@ const getServicePost = async (req, res) => {
       location,
       search,
       status,
-      memberId
+      memberId,
+      isActive
     } = req.query;
 
+    await syncJobStatuses();
+
     let query = {};
+
+    if (isActive !== undefined) {
+      query.isActive = isActive === 'true';
+    }
 
     // Apply filters if provided
     if (employmentType) {
@@ -251,6 +305,7 @@ const deleteServicePost = async (req, res) => {
 /* -------------------- GET SINGLE SERVICE -------------------- */
 const getSingleServicePost = async (req, res) => {
   try {
+    await syncJobStatuses();
     const service = await Service.findById(req.params.id)
       .populate("memberId", "name email photoUrl")
       .populate("refereedBy", "name email")
@@ -304,11 +359,33 @@ const applyToService = async (req, res) => {
       });
     }
 
+    await syncJobStatuses();
     console.log('Looking for service:', serviceId);
     const service = await Service.findById(serviceId);
     if (!service) {
       console.log('Service not found');
       return res.status(404).json({ success: false, message: "Service not found" });
+    }
+
+    // Check if Application End Date is reached (on and after) or if job is marked inactive
+    if (service.isActive === false) {
+      return res.status(400).json({
+        success: false,
+        message: "Application Closed"
+      });
+    }
+
+    if (service.applicationEndDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endDate = new Date(service.applicationEndDate);
+      endDate.setHours(0, 0, 0, 0);
+      if (today >= endDate) {
+        return res.status(400).json({
+          success: false,
+          message: "Application Closed"
+        });
+      }
     }
 
     // Check if service has a memberId (job poster) - fix validation issue
@@ -574,7 +651,8 @@ const updateServicePost = async (req, res) => {
     const { id } = req.params;
     const {
       title, description, companyName, companyLogo, employmentType, location,
-      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry
+      education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted, industry,
+      applicationEndDate
     } = req.body;
 
     // Check if user is admin or the original poster
@@ -586,6 +664,25 @@ const updateServicePost = async (req, res) => {
       });
     }
 
+    if (applicationEndDate) {
+      const newDate = new Date(applicationEndDate);
+      newDate.setHours(0, 0, 0, 0);
+      
+      const oldDate = existingService.applicationEndDate ? new Date(existingService.applicationEndDate) : null;
+      if (oldDate) oldDate.setHours(0, 0, 0, 0);
+      
+      if (!oldDate || newDate.getTime() !== oldDate.getTime()) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (newDate < today) {
+          return res.status(400).json({
+            success: false,
+            message: "Application End Date cannot be in the past."
+          });
+        }
+      }
+    }
+
     // Authorization check (admin or original poster)
     if (req.user?.role !== "Admin" &&
       String(existingService.memberId) !== String(req.user?.memberId)) {
@@ -595,11 +692,22 @@ const updateServicePost = async (req, res) => {
       });
     }
 
+    let isActive = undefined;
+    if (applicationEndDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(applicationEndDate);
+      selectedDate.setHours(0, 0, 0, 0);
+      isActive = today < selectedDate;
+    }
+
     const updatedService = await Service.findByIdAndUpdate(
       id,
       {
         title, description, companyName, companyLogo, employmentType, location, industry,
         education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted,
+        applicationEndDate,
+        ...(isActive !== undefined ? { isActive } : {}),
         updatedAt: new Date()
       },
       { new: true, runValidators: true }
@@ -714,6 +822,13 @@ const bulkCreateServices = async (req, res) => {
       // sequential calls in a loop are safe because each one waits for the previous save
       const jobId = await generateJobId();
 
+      const resolvedEndDate = serviceData.applicationEndDate ? new Date(serviceData.applicationEndDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tempEndDate = new Date(resolvedEndDate);
+      tempEndDate.setHours(0, 0, 0, 0);
+      const isActive = today < tempEndDate;
+
       // Create service
       const service = await Service.create({
         ...serviceData,
@@ -721,7 +836,9 @@ const bulkCreateServices = async (req, res) => {
         employmentType: normalizeEmploymentType(serviceData.employmentType),
         jobId,
         refereedBy: serviceData.refereedBy || null,
-        jobPosted: serviceData.jobPosted || null
+        jobPosted: serviceData.jobPosted || null,
+        applicationEndDate: resolvedEndDate,
+        isActive
       });
 
       createdServices.push(service);
@@ -769,6 +886,7 @@ const bulkCreateServices = async (req, res) => {
 /* -------------------- GET UNLINKED JOBS (No refereedBy set) -------------------- */
 const getUnlinkedJobs = async (req, res) => {
   try {
+    await syncJobStatuses();
     // Find all services that don't have a refereedBy
     const unlinkedJobs = await Service.find({
       $or: [

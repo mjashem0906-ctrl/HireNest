@@ -155,6 +155,10 @@ const serviceSchema = new mongoose.Schema({
     applicationDeadline: {
         type: Date
     },
+    applicationEndDate: {
+        type: Date,
+        required: [true, 'Application End Date is required']
+    },
     isActive: {
         type: Boolean,
         default: true
