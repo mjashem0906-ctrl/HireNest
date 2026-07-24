@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import Cropper from "react-easy-crop";
 import {
   X,
   UploadCloud,
@@ -8,6 +9,10 @@ import {
   ChevronDown,
   Search,
   CalendarDays,
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import axios from "axios";
 import FormInput from "../UI/FormInput";
@@ -869,6 +874,13 @@ function AddMember({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [photoFile, setPhotoFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [cropArea, setCropArea] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [pendingPhotoPreview, setPendingPhotoPreview] = useState(null);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState(null);
   const [btnLoading, setBtnLoading] = useState(false);
   
   const [dynamicDistricts, setDynamicDistricts] = useState([]);
@@ -1271,11 +1283,41 @@ function AddMember({
     setUploadProgress((p) => ({ ...p, resume: 0 })); 
   };
 
-  const clearSelectedPhoto = () => { 
-    setPhotoFile(null); 
-    setErrors((p) => ({ ...p, photo: "" })); 
-    if (photoInputRef.current) photoInputRef.current.value = ""; 
-    setUploadProgress((p) => ({ ...p, photo: 0 })); 
+  const applyCroppedPhoto = async () => {
+    if (!pendingPhotoPreview || !pendingPhotoFile) return;
+
+    try {
+      const finalCropArea = cropArea || { x: 0, y: 0, width: 1000, height: 1000 };
+      const croppedFile = await getCroppedImage(
+        pendingPhotoPreview,
+        finalCropArea,
+        rotation,
+        pendingPhotoFile.name || "profile-photo.jpg"
+      );
+
+      setPhotoFile(croppedFile);
+      setFormData((prev) => ({ ...prev, photoUrl: "" }));
+      setErrors((p) => ({ ...p, photo: "" }));
+      setUploadProgress((p) => ({ ...p, photo: 0 }));
+      setIsCropModalOpen(false);
+      setPendingPhotoPreview(null);
+      setPendingPhotoFile(null);
+      setCropArea(null);
+    } catch (err) {
+      console.error("Failed to crop selected photo:", err);
+      setErrors((p) => ({ ...p, photo: "Photo could not be processed. Please try another image." }));
+    }
+  };
+
+  const clearSelectedPhoto = () => {
+    setPhotoFile(null);
+    setPendingPhotoPreview(null);
+    setPendingPhotoFile(null);
+    setCropArea(null);
+    setIsCropModalOpen(false);
+    setErrors((p) => ({ ...p, photo: "" }));
+    if (photoInputRef.current) photoInputRef.current.value = "";
+    setUploadProgress((p) => ({ ...p, photo: 0 }));
   };
 
   const handleSubmit = async (e) => { 
@@ -1286,8 +1328,9 @@ function AddMember({
       return; 
     } 
     
-    const hasExistingPhoto = Boolean(formData.photoUrl); 
-    const hasNewPhoto = Boolean(photoFile); 
+    const hasExistingPhoto = Boolean(formData.photoUrl);
+    const hasNewPhoto = Boolean(photoFile);
+    const shouldReplacePhoto = Boolean(photoFile);
     
     if (!hasExistingPhoto && !hasNewPhoto) { 
       setErrors((p) => ({ ...p, photo: "Profile photo is mandatory. Please upload a photo.", })); 
@@ -1309,20 +1352,31 @@ function AddMember({
     
     setBtnLoading(true); 
     try { 
-      let photo = formData.photoUrl; 
-      if (photoFile) { 
-        photo = await uploadToServer(photoFile, "photo"); 
-      } 
+      let photo = formData.photoUrl;
+      if (shouldReplacePhoto) {
+        const uploadedPhoto = await uploadToServer(photoFile, "photo");
+        if (!uploadedPhoto) {
+          setErrors((p) => ({ ...p, photo: "Photo upload failed. Please try again." }));
+          setActiveTab("basic");
+          return;
+        }
+        photo = uploadedPhoto;
+      }
       
-      let resume = formData.resumeLink; 
-      if (resumeFile) { 
-        resume = await uploadToServer(resumeFile, "resume"); 
-      } 
+      let resume = formData.resumeLink;
+      if (resumeFile) {
+        const uploadedResume = await uploadToServer(resumeFile, "resume");
+        if (uploadedResume) {
+          resume = uploadedResume;
+        }
+      }
       
       const payload = { 
         ...formData, 
-        photoUrl: photo, 
-        resumeLink: resume, 
+        photo,
+        photoUrl: photo,
+        resume,
+        resumeLink: resume,
         branch: String(formData.branch || "").trim(), 
         educationStatus: String(formData.educationStatus || "").trim(), 
         highest_education: String(formData.highest_education || "").trim(), 
@@ -1414,6 +1468,70 @@ function AddMember({
 
           {activeTab === "basic" && (
             <div className={styles.formGrid}>
+              {isCropModalOpen && pendingPhotoPreview && (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    borderRadius: 20,
+                    background: "var(--am-card)",
+                    border: "1px solid var(--am-border)",
+                    padding: 16,
+                    boxShadow: "0 14px 40px rgba(15, 23, 42, 0.12)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontWeight: 900, fontSize: 16 }}>Edit your profile photo</div>
+                      <div style={{ fontSize: 13, color: "var(--am-muted)" }}>Crop, zoom, and rotate before saving.</div>
+                    </div>
+                    <button type="button" onClick={() => setIsCropModalOpen(false)} style={{ border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "var(--am-muted)", fontWeight: 700 }}>
+                      <X size={16} /> Close
+                    </button>
+                  </div>
+
+                  <div style={{ position: "relative", width: "100%", height: 340, borderRadius: 18, overflow: "hidden", background: "#0f172a" }}>
+                    <Cropper
+                      image={pendingPhotoPreview}
+                      crop={crop}
+                      zoom={zoom}
+                      rotation={rotation}
+                      aspect={1}
+                      cropShape="round"
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onRotationChange={setRotation}
+                      onCropComplete={(_, croppedAreaPixels) => setCropArea(croppedAreaPixels)}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <button type="button" onClick={() => setZoom((z) => Math.max(1, Number((z - 0.2).toFixed(2))))} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                        <ZoomOut size={16} /> Zoom Out
+                      </button>
+                      <button type="button" onClick={() => setZoom((z) => Math.min(3, Number((z + 0.2).toFixed(2))))} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                        <ZoomIn size={16} /> Zoom In
+                      </button>
+                      <button type="button" onClick={() => setRotation((r) => r - 90)} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                        <RotateCcw size={16} /> Rotate Left
+                      </button>
+                      <button type="button" onClick={() => setRotation((r) => r + 90)} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                        <RotateCw size={16} /> Rotate Right
+                      </button>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <button type="button" onClick={() => setIsCropModalOpen(false)} style={{ background: "transparent", color: "var(--am-muted)", fontWeight: 800, border: "none", cursor: "pointer" }}>
+                        Cancel
+                      </button>
+                      <button type="button" onClick={applyCroppedPhoto} style={{ background: "var(--am-primary)", color: "white", fontWeight: 800, border: "none", borderRadius: 10, padding: "10px 16px", cursor: "pointer" }}>
+                        Save Photo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div style={{ gridColumn: "1 / -1" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                   <h3 style={{ margin: 0 }}>
@@ -1574,7 +1692,17 @@ function AddMember({
                           return;
                         }
 
-                        setPhotoFile(file);
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          setPendingPhotoFile(file);
+                          setPendingPhotoPreview(ev.target.result);
+                          setCrop({ x: 0, y: 0 });
+                          setZoom(1);
+                          setRotation(0);
+                          setCropArea(null);
+                          setIsCropModalOpen(true);
+                        };
+                        reader.readAsDataURL(file);
                         setErrors((p) => ({ ...p, photo: "" }));
                         setUploadProgress((p) => ({ ...p, photo: 0 }));
                       }}

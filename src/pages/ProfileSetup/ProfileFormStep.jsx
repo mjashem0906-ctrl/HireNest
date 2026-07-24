@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import Cropper from "react-easy-crop";
 import {
   Trash2,
   Plus,
@@ -8,6 +9,11 @@ import {
   CheckCircle2,
   FileText,
   UploadCloud,
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  X,
 } from "lucide-react";
 import API from "../../axios";
 import FormInput from "../../components/UI/FormInput";
@@ -90,6 +96,57 @@ const LANGUAGE_OPTIONS = [
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous");
+    image.src = url;
+  });
+
+const getCroppedImage = async (imageSrc, pixelCrop, rotation = 0, fileName = "profile-photo.png") => {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const safeSize = Math.max(image.width, image.height);
+  canvas.width = safeSize;
+  canvas.height = safeSize;
+
+  ctx.translate(safeSize / 2, safeSize / 2);
+  ctx.rotate((rotation * Math.PI) / 180);
+  ctx.translate(-safeSize / 2, -safeSize / 2);
+  ctx.drawImage(image, 0, 0, safeSize, safeSize);
+
+  const targetCanvas = document.createElement("canvas");
+  targetCanvas.width = pixelCrop.width;
+  targetCanvas.height = pixelCrop.height;
+  const targetCtx = targetCanvas.getContext("2d");
+
+  targetCtx.drawImage(
+    canvas,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    targetCanvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Failed to create cropped image"));
+        return;
+      }
+      resolve(new File([blob], fileName, { type: blob.type || "image/jpeg" }));
+    }, "image/jpeg", 0.92);
+  });
 };
 
 // ── Helper inline sub-components ─────────────────────────────────────────────
@@ -833,6 +890,13 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
   const [role] = useState("Job"); // Default to Job Seeker
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [cropArea, setCropArea] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [pendingPhotoPreview, setPendingPhotoPreview] = useState(null);
+  const [pendingPhotoFile, setPendingPhotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -941,11 +1005,43 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
       setErrors((p) => ({ ...p, photo: "Photo must be under 5MB" }));
       return;
     }
-    setPhotoFile(file);
-    setErrors((p) => ({ ...p, photo: "" }));
+
     const reader = new FileReader();
-    reader.onload = (ev) => setPhotoPreview(ev.target.result);
+    reader.onload = (ev) => {
+      setPendingPhotoFile(file);
+      setPendingPhotoPreview(ev.target.result);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setRotation(0);
+      setIsCropModalOpen(true);
+      setErrors((p) => ({ ...p, photo: "" }));
+    };
     reader.readAsDataURL(file);
+  };
+
+  const applyCroppedPhoto = async () => {
+    if (!pendingPhotoPreview || !pendingPhotoFile) return;
+
+    try {
+      const finalCropArea = cropArea || { x: 0, y: 0, width: 1000, height: 1000 };
+      const croppedFile = await getCroppedImage(
+        pendingPhotoPreview,
+        finalCropArea,
+        rotation,
+        pendingPhotoFile.name || "profile-photo.jpg"
+      );
+
+      setPhotoFile(croppedFile);
+      setPhotoPreview(URL.createObjectURL(croppedFile));
+      setErrors((p) => ({ ...p, photo: "" }));
+      setIsCropModalOpen(false);
+      setPendingPhotoFile(null);
+      setPendingPhotoPreview(null);
+      setCropArea(null);
+    } catch (err) {
+      console.error("Failed to crop selected photo:", err);
+      setErrors((p) => ({ ...p, photo: "Photo could not be processed. Please try another image." }));
+    }
   };
 
   const clearSelectedPhoto = () => {
@@ -1259,6 +1355,70 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
       <div className={styles.form}>
         {activeTab === "basic" && (
           <div className={styles.formGrid}>
+            {isCropModalOpen && pendingPhotoPreview && (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  borderRadius: 20,
+                  background: "var(--am-card)",
+                  border: "1px solid var(--am-border)",
+                  padding: 16,
+                  boxShadow: "0 14px 40px rgba(15, 23, 42, 0.12)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: 16 }}>Edit your profile photo</div>
+                    <div style={{ fontSize: 13, color: "var(--am-muted)" }}>Crop, zoom, and rotate before saving.</div>
+                  </div>
+                  <button type="button" onClick={() => setIsCropModalOpen(false)} style={{ border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, color: "var(--am-muted)", fontWeight: 700 }}>
+                    <X size={16} /> Close
+                  </button>
+                </div>
+
+                <div style={{ position: "relative", width: "100%", height: 340, borderRadius: 18, overflow: "hidden", background: "#0f172a" }}>
+                  <Cropper
+                    image={pendingPhotoPreview}
+                    crop={crop}
+                    zoom={zoom}
+                    rotation={rotation}
+                    aspect={1}
+                    cropShape="round"
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onRotationChange={setRotation}
+                    onCropComplete={(_, croppedAreaPixels) => setCropArea(croppedAreaPixels)}
+                  />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <button type="button" onClick={() => setZoom((z) => Math.max(1, Number((z - 0.2).toFixed(2))))} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                      <ZoomOut size={16} /> Zoom Out
+                    </button>
+                    <button type="button" onClick={() => setZoom((z) => Math.min(3, Number((z + 0.2).toFixed(2))))} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                      <ZoomIn size={16} /> Zoom In
+                    </button>
+                    <button type="button" onClick={() => setRotation((r) => r - 90)} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                      <RotateCcw size={16} /> Rotate Left
+                    </button>
+                    <button type="button" onClick={() => setRotation((r) => r + 90)} style={{ border: "1px solid var(--am-border)", background: "white", borderRadius: 10, padding: "8px 10px", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                      <RotateCw size={16} /> Rotate Right
+                    </button>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button type="button" onClick={() => setIsCropModalOpen(false)} style={{ background: "transparent", color: "var(--am-muted)", fontWeight: 800, border: "none", cursor: "pointer" }}>
+                      Cancel
+                    </button>
+                    <button type="button" onClick={applyCroppedPhoto} style={{ background: "var(--am-primary)", color: "white", fontWeight: 800, border: "none", borderRadius: 10, padding: "10px 16px", cursor: "pointer" }}>
+                      Save Photo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Profile Photo Uploader */}
             <div style={{ gridColumn: "1 / -1" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
