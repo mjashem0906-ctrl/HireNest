@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search, Check, X } from "lucide-react";
 import styles from "./DropdownSelect.module.scss";
@@ -17,59 +15,107 @@ const DropdownSelect = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef(null);
+  const selectBoxRef = useRef(null);
+  const searchInputRef = useRef(null);
 
-  // const filteredOptions = options.filter((option) =>
-  //   option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
   const filteredOptions = (options || []).filter((option) =>
-  (option.label || "").toLowerCase().includes(searchTerm.toLowerCase())
-);
-
+    (option.label || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const selectedValues = multiple
-    ? options.filter((opt) => value.includes(opt.value))
-    : options.find((opt) => opt.value === value);
+    ? (options || []).filter((opt) => (Array.isArray(value) ? value : []).includes(opt.value))
+    : (options || []).find((opt) => opt.value === value);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
         setSearchTerm("");
+        setFocusedIndex(-1);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (isOpen && searchable && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen, searchable]);
+
   const handleSelect = (val) => {
     if (multiple) {
-      if (value.includes(val)) {
-        onChange(value.filter((v) => v !== val));
+      const arr = Array.isArray(value) ? value : [];
+      if (arr.includes(val)) {
+        onChange(arr.filter((v) => v !== val));
       } else {
-        onChange([...value, val]);
+        onChange([...arr, val]);
       }
     } else {
       onChange(val);
       setIsOpen(false);
+      selectBoxRef.current?.focus();
     }
     setSearchTerm("");
+    setFocusedIndex(-1);
   };
 
-  // const handleRemove = (val) => {
-  //   onChange(value.filter((v) => v !== val));
-  // };
-
   const handleRemove = (val) => {
-  if (multiple) {
-    onChange(value.filter((v) => v !== val));
-  } else {
-    onChange(""); // clears selection for single-select
-    setIsOpen(false); // optional, to close dropdown after removal
-  }
-};
+    if (multiple) {
+      const arr = Array.isArray(value) ? value : [];
+      onChange(arr.filter((v) => v !== val));
+    } else {
+      onChange("");
+      setIsOpen(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Tab") {
+      if (isOpen) {
+        setIsOpen(false);
+        setSearchTerm("");
+        setFocusedIndex(-1);
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      setIsOpen(false);
+      setSearchTerm("");
+      setFocusedIndex(-1);
+      selectBoxRef.current?.focus();
+      return;
+    }
+
+    if (!isOpen) {
+      if (["Enter", " ", "ArrowDown", "ArrowUp"].includes(e.key)) {
+        e.preventDefault();
+        setIsOpen(true);
+        setFocusedIndex(0);
+      }
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev < filteredOptions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : filteredOptions.length - 1));
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (focusedIndex >= 0 && focusedIndex < filteredOptions.length) {
+        handleSelect(filteredOptions[focusedIndex].value);
+      }
+    }
+  };
 
   const renderIcon = (option) => {
+    if (!option) return null;
     if (option.image) {
       return <img src={option.image} alt={option.label} className={styles.avatar} />;
     } else if (option.color) {
@@ -93,14 +139,20 @@ const DropdownSelect = ({
       <div className={styles.selectWrap}>
         {/* Selected Value */}
         <div
+          ref={selectBoxRef}
+          tabIndex={0}
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
           className={`${styles.select} ${isOpen ? `${styles.open} custom-dropdown-open` : ""} ${
             error ? styles.error : ""
           } custom-dropdown-select`}
           onClick={() => setIsOpen(!isOpen)}
+          onKeyDown={handleKeyDown}
         >
           <span className={`${styles.chosenValue} custom-dropdown-value`}>
             {multiple ? (
-              selectedValues.length > 0 ? (
+              Array.isArray(selectedValues) && selectedValues.length > 0 ? (
                 <div className={styles.multiChosen}>
                   {selectedValues.map((sel) => (
                     <span key={sel.value} className={styles.chip}>
@@ -108,6 +160,7 @@ const DropdownSelect = ({
                       {sel.label}
                       <X
                         size={14}
+                        tabIndex={-1}
                         className={styles.removeIcon}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -125,13 +178,14 @@ const DropdownSelect = ({
                 {renderIcon(selectedValues)}
                 {selectedValues.label}
                 <X
-                        size={14}
-                        className={styles.removeIcon}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemove(selectedValues.value);
-                        }}
-                      />
+                  size={14}
+                  tabIndex={-1}
+                  className={styles.removeIcon}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemove(selectedValues.value);
+                  }}
+                />
               </span>
             ) : (
               placeholder
@@ -150,33 +204,46 @@ const DropdownSelect = ({
               <div className={`${styles.searchBox} custom-dropdown-search`}>
                 <Search size={16} />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setFocusedIndex(0);
+                  }}
+                  onKeyDown={handleKeyDown}
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
             )}
 
-            <div className={styles.optionsList}>
-              {filteredOptions.map((option) => (
+            <div className={styles.optionsList} role="listbox">
+              {filteredOptions.map((option, idx) => (
                 <div
                   key={option.value}
+                  role="option"
+                  aria-selected={
+                    multiple
+                      ? Array.isArray(value) && value.includes(option.value)
+                      : option.value === value
+                  }
+                  tabIndex={-1}
                   className={`${styles.option} ${
                     multiple
-                      ? value.includes(option.value)
+                      ? Array.isArray(value) && value.includes(option.value)
                         ? `${styles.selected} custom-dropdown-selected`
                         : ""
                       : option.value === value
                       ? `${styles.selected} custom-dropdown-selected`
                       : ""
-                  } custom-dropdown-option`}
+                  } ${idx === focusedIndex ? styles.focused : ""} custom-dropdown-option`}
                   onClick={() => handleSelect(option.value)}
+                  onMouseEnter={() => setFocusedIndex(idx)}
                 >
                   {renderIcon(option)}
                   {option.label}
-                  {multiple && value.includes(option.value) && (
+                  {multiple && Array.isArray(value) && value.includes(option.value) && (
                     <Check className={styles.checkIcon} size={14} />
                   )}
                 </div>

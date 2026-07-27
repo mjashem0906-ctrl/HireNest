@@ -159,6 +159,14 @@ const CvUploadStep = ({ onParsed, onSkip }) => {
       {/* Drop Zone */}
       <div
         className={`${styles.cvDropZone} ${dragging ? styles.cvDropZoneDragging : ""} ${status === "done" ? styles.cvDropZoneDone : ""} ${status === "error" ? styles.cvDropZoneError : ""}`}
+        tabIndex={status === "idle" || status === "error" ? 0 : -1}
+        role="button"
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && (status === "idle" || status === "error")) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}

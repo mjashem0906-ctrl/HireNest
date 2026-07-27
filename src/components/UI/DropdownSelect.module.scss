@@ -36,6 +36,12 @@
     border-color: var(--text-muted);
   }
   
+  &:focus, &:focus-visible {
+    outline: none;
+    border-color: var(--accent-primary, #e11d48);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+  }
+  
   &.open {
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
@@ -118,7 +124,7 @@
 }
 
 .optionsList {
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -132,16 +138,16 @@
   color: var(--text-primary);
   font-size: 0.875rem;
   
-  &:hover {
-    background-color: var(--bg-tertiary);
+  &:hover, &.focused {
+    background-color: var(--bg-tertiary, rgba(225, 29, 72, 0.08));
   }
   
   &.selected {
     background-color: var(--accent-primary);
     color: white;
     
-    &:hover {
-      background-color: var(--accent-hover);
+    &:hover, &.focused {
+      background-color: var(--accent-hover, #be123c);
     }
   }
 }

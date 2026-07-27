@@ -23,25 +23,11 @@ import styles from "./ProfileSetup.module.scss";
 
 // ── Static data ──────────────────────────────────────────────────────────────
 const KARNATAKA_DISTRICTS = [
-  "Bagalkote","Ballari (Bellary)","Belagavi (Belgaum)","Bengaluru Rural","Bengaluru Urban",
-  "Bidar","Chamarajanagar","Chikballapur","Chikkamagaluru","Chitradurga","Dakshina Kannada",
-  "Davanagere","Dharwad","Gadag","Hassan","Haveri","Kalaburagi (Gulbarga)","Kodagu",
-  "Kolar","Koppal","Mandya","Mysuru (Mysore)","Raichur","Ramanagara","Shivamogga (Shimoga)",
-  "Tumakuru (Tumkur)","Udupi","Uttara Kannada (Karwar)","Vijayanagara","Vijayapura (Bijapur)","Yadgir",
-];
-
-const TAMIL_NADU_DISTRICTS = [
-  "Ariyalur","Chengalpattu","Chennai","Coimbatore","Cuddalore","Dharmapuri","Dindigul",
-  "Erode","Kallakurichi","Kanchipuram","Kanyakumari","Karur","Krishnagiri","Madurai",
-  "Mayiladuthurai","Nagapattinam","Namakkal","Nilgiris","Perambalur","Pudukkottai",
-  "Ramanathapuram","Ranipet","Salem","Sivaganga","Tenkasi","Thanjavur","Theni",
-  "Thoothukudi","Tiruchirappalli","Tirunelveli","Tirupathur","Tiruppur","Tiruvallur",
-  "Tiruvannamalai","Tiruvarur","Vellore","Viluppuram","Virudhunagar",
-];
-
-const KERALA_DISTRICTS = [
-  "Alappuzha","Ernakulam","Idukki","Kannur","Kasaragod","Kollam","Kottayam","Kozhikode",
-  "Malappuram","Palakkad","Pathanamthitta","Thiruvananthapuram","Thrissur","Wayanad",
+  "Bagalkote", "Ballari (Bellary)", "Belagavi (Belgaum)", "Bengaluru Rural", "Bengaluru Urban",
+  "Bidar", "Chamarajanagar", "Chikballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
+  "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi (Gulbarga)", "Kodagu",
+  "Kolar", "Koppal", "Mandya", "Mysuru (Mysore)", "Raichur", "Ramanagara", "Shivamogga (Shimoga)",
+  "Tumakuru (Tumkur)", "Udupi", "Uttara Kannada (Karwar)", "Vijayanagara", "Vijayapura (Bijapur)", "Yadgir",
 ];
 
 const DEGREE_OPTIONS = [
@@ -159,7 +145,7 @@ function EditableDropdown({
   error = "",
   onChange,
   category = null,
-  onCustomAdded = () => {},
+  onCustomAdded = () => { },
 }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -263,11 +249,19 @@ function EditableDropdown({
                 commit(query);
               }
               if (e.key === "Escape") setOpen(false);
+              if (e.key === "Tab") {
+                setOpen(false);
+                const trimmedQuery = String(query || "").trim();
+                if (trimmedQuery && trimmedQuery !== value) {
+                  commit(trimmedQuery);
+                }
+              }
             }}
           />
 
           <button
             type="button"
+            tabIndex={-1}
             className={styles.edBtn}
             onClick={(e) => {
               e.stopPropagation();
@@ -291,6 +285,7 @@ function EditableDropdown({
                   <button
                     key={opt}
                     type="button"
+                    tabIndex={-1}
                     className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""}`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
@@ -388,11 +383,13 @@ function YearPicker({
                 commit(value);
               }
               if (e.key === "Escape") setOpen(false);
+              if (e.key === "Tab") setOpen(false);
             }}
           />
 
           <button
             type="button"
+            tabIndex={-1}
             className={styles.edBtn}
             onClick={(e) => {
               e.stopPropagation();
@@ -412,9 +409,9 @@ function YearPicker({
                 <button
                   key={y}
                   type="button"
-                  className={`${styles.edItem} ${
-                    String(value) === y ? styles.edItemActive : ""
-                  }`}
+                  tabIndex={-1}
+                  className={`${styles.edItem} ${String(value) === y ? styles.edItemActive : ""
+                    }`}
                   onClick={() => commit(y)}
                   onMouseDown={(e) => e.preventDefault()}
                 >
@@ -573,6 +570,7 @@ function TagInputField({
                 {tag}
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={(e) => {
                     e.stopPropagation();
                     removeTag(tag);
@@ -627,6 +625,9 @@ function TagInputField({
                 if (e.key === "Escape") {
                   setOpen(false);
                 }
+                if (e.key === "Tab") {
+                  setOpen(false);
+                }
               }}
             />
           </div>
@@ -634,6 +635,7 @@ function TagInputField({
           {options && options.length > 0 && (
             <button
               type="button"
+              tabIndex={-1}
               className={styles.edBtn}
               onClick={(e) => {
                 e.stopPropagation();
@@ -668,6 +670,7 @@ function TagInputField({
                     <button
                       key={opt}
                       type="button"
+                      tabIndex={-1}
                       className={`${styles.edItem} ${isSelected ? styles.edItemActive : ""}`}
                       onClick={() => toggleTagFromOption(opt)}
                       onMouseDown={(e) => e.preventDefault()}
@@ -703,7 +706,7 @@ function TagInputField({
   );
 }
 
-function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], options = [], required = false, error = "", onChange, category = null, onCustomAdded = () => {} }) {
+function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], options = [], required = false, error = "", onChange, category = null, onCustomAdded = () => { } }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -712,8 +715,8 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
   const selected = Array.isArray(value)
     ? value.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
     : value
-    ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+      ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -760,7 +763,7 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
           {selected.map((tag) => (
             <span key={tag} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 6px 3px 10px", background: "var(--am-primary-soft)", border: "1px solid rgba(225,29,72,0.22)", borderRadius: 6, fontSize: "0.78rem", fontWeight: 600, color: "var(--am-primary)", whiteSpace: "nowrap", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis" }}>
               <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tag}</span>
-              <button type="button" onClick={(e) => removeTag(tag, e)} style={{ border: "none", background: "transparent", color: "var(--am-muted)", fontSize: "1rem", cursor: "pointer", padding: 0, lineHeight: 1, display: "flex", alignItems: "center" }} aria-label={`Remove ${tag}`}>×</button>
+              <button type="button" tabIndex={-1} onClick={(e) => removeTag(tag, e)} style={{ border: "none", background: "transparent", color: "var(--am-muted)", fontSize: "1rem", cursor: "pointer", padding: 0, lineHeight: 1, display: "flex", alignItems: "center" }} aria-label={`Remove ${tag}`}>×</button>
             </span>
           ))}
 
@@ -775,10 +778,11 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
             onFocus={() => setOpen(true)}
             onKeyDown={(e) => {
               if (e.key === "Escape") { setOpen(false); setQuery(""); }
+              if (e.key === "Tab") { setOpen(false); setQuery(""); }
               if (e.key === "Backspace" && query === "" && selected.length > 0) onChange(selected.slice(0, -1));
             }}
           />
-          <button type="button" className={styles.edBtn} onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); setTimeout(() => inputRef.current?.focus(), 0); }}>
+          <button type="button" tabIndex={-1} className={styles.edBtn} onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); setTimeout(() => inputRef.current?.focus(), 0); }}>
             <ChevronDown size={18} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
           </button>
         </div>
@@ -795,6 +799,7 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
                     <button
                       key={opt}
                       type="button"
+                      tabIndex={-1}
                       className={`${styles.edItem} ${isSel ? styles.edItemActive : ""}`}
                       style={{ display: "flex", alignItems: "center", gap: 10 }}
                       onClick={() => toggleOption(opt)}
@@ -813,7 +818,7 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
             <div className={styles.edTip} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span>{selected.length > 0 ? `✔ ${selected.length} role${selected.length > 1 ? "s" : ""} selected` : "Click a role to select"}</span>
               {selected.length > 0 && (
-                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => onChange([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, color: "var(--am-muted)", fontFamily: "inherit" }}>Clear all</button>
+                <button type="button" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={() => onChange([])} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, color: "var(--am-muted)", fontFamily: "inherit" }}>Clear all</button>
               )}
             </div>
           </div>
@@ -844,17 +849,17 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     preferredJobRole_Sector: Array.isArray(initialData.preferredJobRole_Sector)
       ? initialData.preferredJobRole_Sector
       : initialData.careerProfile?.role
-      ? (Array.isArray(initialData.careerProfile.role) ? initialData.careerProfile.role : [initialData.careerProfile.role])
-      : [],
+        ? (Array.isArray(initialData.careerProfile.role) ? initialData.careerProfile.role : [initialData.careerProfile.role])
+        : [],
     careerProfile: {
       location: initialData.careerProfile?.location || initialData.district || "",
       role: Array.isArray(initialData.careerProfile?.role)
         ? initialData.careerProfile.role
         : initialData.careerProfile?.role
-        ? [initialData.careerProfile.role]
-        : Array.isArray(initialData.preferredJobRole_Sector)
-        ? initialData.preferredJobRole_Sector
-        : [],
+          ? [initialData.careerProfile.role]
+          : Array.isArray(initialData.preferredJobRole_Sector)
+            ? initialData.preferredJobRole_Sector
+            : [],
       industry: initialData.careerProfile?.industry || "",
       employmentType: initialData.careerProfile?.employmentType || "",
       expectedSalary: initialData.careerProfile?.expectedSalary || "",
@@ -954,7 +959,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     fetchDynamicDropdowns();
   }, [fetchDynamicDropdowns]);
 
-  const combinedDistricts = [...new Set([...KARNATAKA_DISTRICTS, ...TAMIL_NADU_DISTRICTS, ...KERALA_DISTRICTS, ...dynamicDistricts])].sort();
+  const combinedDistricts = [...new Set([...KARNATAKA_DISTRICTS, ...dynamicDistricts])].sort();
   const combinedRoles = [...new Set([...DESIRED_ROLES_OPTIONS, ...dynamicRoles])].sort();
   const combinedIndustries = [...new Set([...INDUSTRY_OPTIONS, ...dynamicIndustries])].sort();
 
@@ -1631,6 +1636,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
               <div className={`${styles.spinnerWrapper} ${errors.workExp ? styles.edFieldError : ""}`}>
                 <button
                   type="button"
+                  tabIndex={-1}
                   className={styles.spinBtn}
                   onClick={() => handleWorkExpChange(-1)}
                   disabled={formData.workExp !== "" && parseFloat(formData.workExp) <= 0}
@@ -1654,6 +1660,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   className={styles.spinBtn}
                   onClick={() => handleWorkExpChange(1)}
                   disabled={formData.workExp !== "" && parseFloat(formData.workExp) >= 50}
