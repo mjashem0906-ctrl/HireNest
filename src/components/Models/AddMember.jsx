@@ -31,7 +31,7 @@ const initialState = {
   district: "",
   forGrouping: [],
   memberType: "",
-  symMemberStatus: "Active",
+  symMemberStatus: "Yes",
   currentInstitutionOrCompany: "",
   designation: "",
   workExp: "",
@@ -89,20 +89,11 @@ const BRANCH_OPTIONS = [
 ];
 
 const KARNATAKA_DISTRICTS = [
-  "Bagalkote", "Ballari (Bellary)", "Belagavi (Belgaum)", "Bengaluru Rural", "Bengaluru Urban",
-  "Bidar", "Chamarajanagar", "Chikballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
-  "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi (Gulbarga)", "Kodagu",
+  "Bagalkot", "Ballari", "Belagavi", "Bengaluru Rural", "Bengaluru Urban",
+  "Bidar", "Chamarajanagar", "Chikkaballapur", "Chikkamagaluru", "Chitradurga", "Dakshina Kannada",
+  "Davanagere", "Dharwad", "Gadag", "Hassan", "Haveri", "Kalaburagi", "Kodagu",
   "Kolar", "Koppal", "Mandya", "Mysuru (Mysore)", "Raichur", "Ramanagara", "Shivamogga (Shimoga)",
   "Tumakuru (Tumkur)", "Udupi", "Uttara Kannada (Karwar)", "Vijayanagara", "Vijayapura (Bijapur)", "Yadgir",
-];
-
-const TAMIL_NADU_DISTRICTS = [
-  "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", "Dindigul",
-  "Erode", "Kallakurichi", "Kanchipuram", "Kanyakumari", "Karur", "Krishnagiri", "Madurai",
-  "Mayiladuthurai", "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai",
-  "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", "Thanjavur", "Theni",
-  "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tirupathur", "Tiruppur", "Tiruvallur",
-  "Tiruvannamalai", "Tiruvarur", "Vellore", "Viluppuram", "Virudhunagar",
 ];
 
 const DESIRED_ROLES_OPTIONS = [
@@ -194,7 +185,8 @@ function EditableDropdown({
   error = "",
   onChange,
   category = null,
-  onCustomAdded = () => {},
+  onCustomAdded = () => { },
+  onOpenChange = () => { },
 }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
@@ -203,6 +195,10 @@ function EditableDropdown({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => setQuery(value || ""), [value]);
+
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -447,9 +443,8 @@ function YearPicker({
                 <button
                   key={y}
                   type="button"
-                  className={`${styles.edItem} ${
-                    String(value) === y ? styles.edItemActive : ""
-                  }`}
+                  className={`${styles.edItem} ${String(value) === y ? styles.edItemActive : ""
+                    }`}
                   onClick={() => commit(y)}
                   onMouseDown={(e) => e.preventDefault()}
                 >
@@ -738,7 +733,7 @@ function TagInputField({
   );
 }
 
-function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], options = [], required = false, error = "", onChange, category = null, onCustomAdded = () => {} }) {
+function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], options = [], required = false, error = "", onChange, category = null, onCustomAdded = () => { }, onOpenChange = () => { } }) {
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -747,9 +742,12 @@ function MultiJobRoleDropdown({ label = "Preferred Job Role", value = [], option
   const selected = Array.isArray(value)
     ? value.flatMap((v) => String(v).split(",").map((s) => s.trim()).filter(Boolean))
     : value
-    ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+      ? String(value).split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
 
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [open, onOpenChange]);
 
   useEffect(() => {
     const onDocClick = (e) => {
@@ -872,6 +870,7 @@ function AddMember({
 }) {
   const [formData, setFormData] = useState(initialState);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [photoFile, setPhotoFile] = useState(null);
   const [resumeFile, setResumeFile] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -882,7 +881,7 @@ function AddMember({
   const [pendingPhotoPreview, setPendingPhotoPreview] = useState(null);
   const [pendingPhotoFile, setPendingPhotoFile] = useState(null);
   const [btnLoading, setBtnLoading] = useState(false);
-  
+
   const [dynamicDistricts, setDynamicDistricts] = useState([]);
   const [dynamicRoles, setDynamicRoles] = useState([]);
   const [dynamicIndustries, setDynamicIndustries] = useState([]);
@@ -899,23 +898,23 @@ function AddMember({
   const fetchDynamicDropdowns = useCallback(async () => {
     if (!isOpen) return;
     try {
-      const options = { headers: getAuthHeaders() };    
+      const options = { headers: getAuthHeaders() };
 
       const locRes = await API.get("/dropdown?category=locationPreferences", options);
-      const fetchedLocs = Array.isArray(locRes.data) 
-        ? locRes.data.map((item) => typeof item === 'object' ? item.value : item) 
+      const fetchedLocs = Array.isArray(locRes.data)
+        ? locRes.data.map((item) => typeof item === 'object' ? item.value : item)
         : [];
       setDynamicDistricts(fetchedLocs);
 
       const roleRes = await API.get("/dropdown?category=desiredRoles", options);
-      const fetchedRoles = Array.isArray(roleRes.data) 
-        ? roleRes.data.map((item) => typeof item === 'object' ? item.value : item) 
+      const fetchedRoles = Array.isArray(roleRes.data)
+        ? roleRes.data.map((item) => typeof item === 'object' ? item.value : item)
         : [];
       setDynamicRoles(fetchedRoles);
 
       const indRes = await API.get("/dropdown?category=industry", options);
-      const fetchedIndustries = Array.isArray(indRes.data) 
-        ? indRes.data.map((item) => typeof item === 'object' ? item.value : item) 
+      const fetchedIndustries = Array.isArray(indRes.data)
+        ? indRes.data.map((item) => typeof item === 'object' ? item.value : item)
         : [];
       setDynamicIndustries(fetchedIndustries);
 
@@ -936,6 +935,7 @@ function AddMember({
       setFormData({
         ...initialState,
         ...editMember,
+        symMemberStatus: editMember.symMemberStatus || "",
         branch: editMember.branch || "",
         educationStatus: editMember.educationStatus || "",
         passOutYear: editMember.passOutYear || "",
@@ -947,8 +947,8 @@ function AddMember({
           role: Array.isArray(editMember.careerProfile?.role)
             ? editMember.careerProfile.role
             : editMember.careerProfile?.role
-            ? [editMember.careerProfile.role]
-            : [],
+              ? [editMember.careerProfile.role]
+              : [],
           noticePeriod: editMember.careerProfile?.noticePeriod || editMember.noticePeriod || "",
         },
         experienceDetails: editMember.experienceDetails || [],
@@ -980,7 +980,7 @@ function AddMember({
 
   const handleMobileChange = (val) => val.replace(/\D/g, "").slice(0, 10);
 
-  const combinedDistricts = [...new Set([...KARNATAKA_DISTRICTS, ...TAMIL_NADU_DISTRICTS, ...dynamicDistricts])].sort();
+  const combinedDistricts = [...new Set([...KARNATAKA_DISTRICTS, ...dynamicDistricts])].sort();
   const combinedRoles = [...new Set([...DESIRED_ROLES_OPTIONS, ...dynamicRoles])].sort();
   const combinedIndustries = [...new Set([...INDUSTRY_OPTIONS, ...dynamicIndustries])].sort();
 
@@ -1195,29 +1195,29 @@ function AddMember({
     }));
   };
 
-  const addCertificate = () => { 
-    setFormData((p) => ({ 
-      ...p, 
-      certifications: [ 
-        ...(p.certifications || []), 
-        { name: "", description: "", certifiedDate: "" }, 
-      ], 
-    })); 
+  const addCertificate = () => {
+    setFormData((p) => ({
+      ...p,
+      certifications: [
+        ...(p.certifications || []),
+        { name: "", description: "", certifiedDate: "" },
+      ],
+    }));
   };
 
-  const updateCertificate = (index, key, value) => { 
-    setFormData((p) => { 
-      const next = [...(p.certifications || [])]; 
-      next[index] = { ...next[index], [key]: value }; 
-      return { ...p, certifications: next }; 
-    }); 
+  const updateCertificate = (index, key, value) => {
+    setFormData((p) => {
+      const next = [...(p.certifications || [])];
+      next[index] = { ...next[index], [key]: value };
+      return { ...p, certifications: next };
+    });
   };
 
-  const removeCertificate = (index) => { 
-    setFormData((p) => ({ 
-      ...p, 
-      certifications: (p.certifications || []).filter((_, i) => i !== index), 
-    })); 
+  const removeCertificate = (index) => {
+    setFormData((p) => ({
+      ...p,
+      certifications: (p.certifications || []).filter((_, i) => i !== index),
+    }));
   };
 
   const validateCareerTab = () => {
@@ -1254,33 +1254,33 @@ function AddMember({
     return !hasError;
   };
 
-  const validateEduTab = () => { 
-    const nextErrors = { ...errors, resume: "", degree: "", branch: "" }; 
-    
-    if (!String(formData.highest_education || "").trim()) { 
-      nextErrors.degree = "Degree is required."; 
-    } 
-    
-    if (!String(formData.branch || "").trim()) { 
-      nextErrors.branch = "Branch is required."; 
-    } 
-    
-    const hasExistingResume = Boolean(formData.resumeLink); 
-    const hasNewResume = Boolean(resumeFile); 
-    
-    if (!hasExistingResume && !hasNewResume) { 
-      nextErrors.resume = "Resume is mandatory. Please upload your resume."; 
-    } 
-    
-    setErrors(nextErrors); 
-    return !nextErrors.resume && !nextErrors.degree && !nextErrors.branch; 
+  const validateEduTab = () => {
+    const nextErrors = { ...errors, resume: "", degree: "", branch: "" };
+
+    if (!String(formData.highest_education || "").trim()) {
+      nextErrors.degree = "Degree is required.";
+    }
+
+    if (!String(formData.branch || "").trim()) {
+      nextErrors.branch = "Branch is required.";
+    }
+
+    const hasExistingResume = Boolean(formData.resumeLink);
+    const hasNewResume = Boolean(resumeFile);
+
+    if (!hasExistingResume && !hasNewResume) {
+      nextErrors.resume = "Resume is mandatory. Please upload your resume.";
+    }
+
+    setErrors(nextErrors);
+    return !nextErrors.resume && !nextErrors.degree && !nextErrors.branch;
   };
 
-  const clearSelectedResume = () => { 
-    setResumeFile(null); 
-    setErrors((p) => ({ ...p, resume: "" })); 
-    if (resumeInputRef.current) resumeInputRef.current.value = ""; 
-    setUploadProgress((p) => ({ ...p, resume: 0 })); 
+  const clearSelectedResume = () => {
+    setResumeFile(null);
+    setErrors((p) => ({ ...p, resume: "" }));
+    if (resumeInputRef.current) resumeInputRef.current.value = "";
+    setUploadProgress((p) => ({ ...p, resume: 0 }));
   };
 
   const applyCroppedPhoto = async () => {
@@ -1320,38 +1320,38 @@ function AddMember({
     setUploadProgress((p) => ({ ...p, photo: 0 }));
   };
 
-  const handleSubmit = async (e) => { 
-    e.preventDefault(); 
-    
-    if (formData.mobileNumber && formData.mobileNumber.length !== 10) { 
-      alert("Mobile number must be exactly 10 digits."); 
-      return; 
-    } 
-    
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (formData.mobileNumber && formData.mobileNumber.length !== 10) {
+      alert("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     const hasExistingPhoto = Boolean(formData.photoUrl);
     const hasNewPhoto = Boolean(photoFile);
     const shouldReplacePhoto = Boolean(photoFile);
-    
-    if (!hasExistingPhoto && !hasNewPhoto) { 
-      setErrors((p) => ({ ...p, photo: "Profile photo is mandatory. Please upload a photo.", })); 
-      setActiveTab("basic"); 
-      return; 
-    } 
-    
+
+    if (!hasExistingPhoto && !hasNewPhoto) {
+      setErrors((p) => ({ ...p, photo: "Profile photo is mandatory. Please upload a photo.", }));
+      setActiveTab("basic");
+      return;
+    }
+
     const careerOk = validateCareerTab();
     if (!careerOk) {
       setActiveTab("career");
       return;
     }
 
-    const ok = validateEduTab(); 
-    if (!ok) { 
-      setActiveTab("edu"); 
-      return; 
-    } 
-    
-    setBtnLoading(true); 
-    try { 
+    const ok = validateEduTab();
+    if (!ok) {
+      setActiveTab("edu");
+      return;
+    }
+
+    setBtnLoading(true);
+    try {
       let photo = formData.photoUrl;
       if (shouldReplacePhoto) {
         const uploadedPhoto = await uploadToServer(photoFile, "photo");
@@ -1362,7 +1362,7 @@ function AddMember({
         }
         photo = uploadedPhoto;
       }
-      
+
       let resume = formData.resumeLink;
       if (resumeFile) {
         const uploadedResume = await uploadToServer(resumeFile, "resume");
@@ -1370,27 +1370,27 @@ function AddMember({
           resume = uploadedResume;
         }
       }
-      
-      const payload = { 
-        ...formData, 
+
+      const payload = {
+        ...formData,
         photo,
         photoUrl: photo,
         resume,
         resumeLink: resume,
-        branch: String(formData.branch || "").trim(), 
-        educationStatus: String(formData.educationStatus || "").trim(), 
-        highest_education: String(formData.highest_education || "").trim(), 
-        passOutYear: String(formData.passOutYear || "").trim(), 
-        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth.toISOString().split("T")[0] : null, 
-        careerProfile: { 
-          ...formData.careerProfile, 
-          role: String(formData.careerProfile?.role || "").trim(), 
-          industry: String(formData.careerProfile?.industry || "").trim(), 
-          location: String(formData.careerProfile?.location || "").trim(), 
-          expectedSalary: String(formData.careerProfile?.expectedSalary || "").trim(), 
+        branch: String(formData.branch || "").trim(),
+        educationStatus: String(formData.educationStatus || "").trim(),
+        highest_education: String(formData.highest_education || "").trim(),
+        passOutYear: String(formData.passOutYear || "").trim(),
+        dateOfBirth: formData.dateOfBirth ? formData.dateOfBirth.toISOString().split("T")[0] : null,
+        careerProfile: {
+          ...formData.careerProfile,
+          role: String(formData.careerProfile?.role || "").trim(),
+          industry: String(formData.careerProfile?.industry || "").trim(),
+          location: String(formData.careerProfile?.location || "").trim(),
+          expectedSalary: String(formData.careerProfile?.expectedSalary || "").trim(),
           noticePeriod: String(formData.careerProfile?.noticePeriod || "").trim(),
-        }, 
-        linkedinUrl: String(formData.linkedinUrl || "").trim(), 
+        },
+        linkedinUrl: String(formData.linkedinUrl || "").trim(),
         experienceDetails: (formData.experienceDetails || []).map((e) => ({
           companyName: e?.companyName || "",
           designation: e?.designation || "",
@@ -1399,28 +1399,28 @@ function AddMember({
           currentlyWorking: Boolean(e?.currentlyWorking),
           description: e?.description || "",
         })),
-        certifications: (formData.certifications || []).map((c) => ({ 
-          name: c?.name || "", 
-          description: c?.description || "", 
-          certifiedDate: c?.certifiedDate || "", 
-        })), 
+        certifications: (formData.certifications || []).map((c) => ({
+          name: c?.name || "",
+          description: c?.description || "",
+          certifiedDate: c?.certifiedDate || "",
+        })),
         skills: (formData.skills || [])
           .filter((s) => String(s || "").trim())
           .map((s) => String(s).trim()),
-        languages: (formData.languages || []) 
-          .filter((l) => String(l || "").trim()) 
-          .map((l) => String(l).trim()), 
-      }; 
-      
-      const res = editMember ? await API.put(`/member/${editMember._id}`, payload) : await API.post("/member", payload); 
-      onSuccess(res.data); 
-      onClose(); 
-    } catch (err) { 
-      console.error(err); 
-      alert("Error saving profile"); 
-    } finally { 
-      setBtnLoading(false); 
-    } 
+        languages: (formData.languages || [])
+          .filter((l) => String(l || "").trim())
+          .map((l) => String(l).trim()),
+      };
+
+      const res = editMember ? await API.put(`/member/${editMember._id}`, payload) : await API.post("/member", payload);
+      onSuccess(res.data);
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert("Error saving profile");
+    } finally {
+      setBtnLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -1452,13 +1452,13 @@ function AddMember({
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <span className={styles.autofillIcon}>✨</span>
                 <div>
-                  <strong>{autoFilledCount} fields</strong> were auto-filled from your CV. 
+                  <strong>{autoFilledCount} fields</strong> were auto-filled from your CV.
                   Please review the tabs (Basic Info, Career Profile, Education, Advanced Personal) to verify details.
                 </div>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setAutoFilledCount(0)} 
+              <button
+                type="button"
+                onClick={() => setAutoFilledCount(0)}
                 style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontSize: 16, fontWeight: "bold", padding: "0 4px" }}
               >
                 ×
@@ -1618,9 +1618,9 @@ function AddMember({
                       >
                         {photoFile
                           ? `${photoFile.name} • ${(
-                              photoFile.size /
-                              (1024 * 1024)
-                            ).toFixed(2)} MB`
+                            photoFile.size /
+                            (1024 * 1024)
+                          ).toFixed(2)} MB`
                           : "Click upload button to choose a file"}
                       </div>
 
@@ -1751,7 +1751,7 @@ function AddMember({
                   </p>
                 )}
               </div>
-              
+
               <FormInput label="Full Name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} required />
 
               <DropdownSelect
@@ -1768,28 +1768,37 @@ function AddMember({
                 placeholder="Select your district..."
                 category="locationPreferences"
                 onCustomAdded={fetchDynamicDropdowns}
+                onOpenChange={setIsDropdownOpen}
                 onChange={(v) => setFormData({ ...formData, district: v })}
+              />
+
+              <DropdownSelect
+                label="Solidarity Member Status"
+                value={formData.symMemberStatus}
+                options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]}
+                onOpenChange={setIsDropdownOpen}
+                onChange={(v) => setFormData({ ...formData, symMemberStatus: v })}
               />
             </div>
           )}
 
           {activeTab === "career" && (
             <div className={styles.formGrid}>
-              <FormInput 
-                label="Designation" 
+              <FormInput
+                label="Designation"
                 required
                 error={errors.designation}
-                value={formData.designation} 
-                onChange={(v) => { setFormData({ ...formData, designation: v }); setErrors(p => ({ ...p, designation: "" })); }} 
+                value={formData.designation}
+                onChange={(v) => { setFormData({ ...formData, designation: v }); setErrors(p => ({ ...p, designation: "" })); }}
               />
-              <FormInput 
-                label="Experience (Years)" 
-                type="number" 
+              <FormInput
+                label="Experience (Years)"
+                type="number"
                 required
                 error={errors.workExp}
-                value={formData.workExp} 
-                onChange={(v) => { setFormData({ ...formData, workExp: v }); setErrors(p => ({ ...p, workExp: "" })); }} 
-                placeholder="0" 
+                value={formData.workExp}
+                onChange={(v) => { setFormData({ ...formData, workExp: v }); setErrors(p => ({ ...p, workExp: "" })); }}
+                placeholder="0"
               />
 
               <MultiJobRoleDropdown
@@ -1816,7 +1825,7 @@ function AddMember({
                 placeholder="Select or type industry..."
                 category="industry"
                 onCustomAdded={fetchDynamicDropdowns}
-                onChange={(v) => { setFormData({ ...formData, careerProfile: { ...formData.careerProfile, industry: v }}); setErrors(p => ({ ...p, industry: "" })); }}
+                onChange={(v) => { setFormData({ ...formData, careerProfile: { ...formData.careerProfile, industry: v } }); setErrors(p => ({ ...p, industry: "" })); }}
               />
 
               <EditableDropdown
@@ -1828,7 +1837,7 @@ function AddMember({
                 placeholder="Select your district..."
                 category="locationPreferences"
                 onCustomAdded={fetchDynamicDropdowns}
-                onChange={(v) => { setFormData({ ...formData, careerProfile: { ...formData.careerProfile, location: v }}); setErrors(p => ({ ...p, location: "" })); }}
+                onChange={(v) => { setFormData({ ...formData, careerProfile: { ...formData.careerProfile, location: v } }); setErrors(p => ({ ...p, location: "" })); }}
               />
 
               <FormInput
@@ -1837,11 +1846,11 @@ function AddMember({
                 value={formData.careerProfile.expectedSalary}
                 onChange={(v) => {
                   const numValue = String(v).replace(/[^0-9]/g, "");
-                  setFormData({ ...formData, careerProfile: { ...formData.careerProfile, expectedSalary: numValue }});
+                  setFormData({ ...formData, careerProfile: { ...formData.careerProfile, expectedSalary: numValue } });
                 }}
                 placeholder="0"
               />
-              
+
               <DropdownSelect
                 label="Employment Type"
                 value={formData.careerProfile.employmentType}
@@ -2063,18 +2072,18 @@ function AddMember({
                         background: isParsingCv
                           ? "rgba(225,29,72,0.12)"
                           : resumeFile
-                          ? "rgba(34,197,94,0.12)"
-                          : "var(--am-primary-soft)",
+                            ? "rgba(34,197,94,0.12)"
+                            : "var(--am-primary-soft)",
                         border: isParsingCv
                           ? "1px solid rgba(225,29,72,0.25)"
                           : resumeFile
-                          ? "1px solid rgba(34,197,94,0.25)"
-                          : "1.5px solid var(--am-primary)",
+                            ? "1px solid rgba(34,197,94,0.25)"
+                            : "1.5px solid var(--am-primary)",
                         color: isParsingCv
                           ? "var(--am-primary)"
                           : resumeFile
-                          ? "#15803d"
-                          : "var(--am-primary)",
+                            ? "#15803d"
+                            : "var(--am-primary)",
                       }}
                     >
                       {isParsingCv ? (
@@ -2101,8 +2110,8 @@ function AddMember({
                         {isParsingCv
                           ? "Extracting details to auto-fill the profile form..."
                           : resumeFile
-                          ? `${selectedResumeName} • ${selectedResumeSizeMB} MB`
-                          : "Click upload button to choose a file"}
+                            ? `${selectedResumeName} • ${selectedResumeSizeMB} MB`
+                            : "Click upload button to choose a file"}
                       </div>
 
                       {!resumeFile && formData.resumeLink && (
@@ -2198,7 +2207,7 @@ function AddMember({
 
               <div style={{ marginTop: 18 }}>
                 <EditableDropdown
-                  label="Degree"
+                  label="Current Degree"
                   required
                   value={formData.highest_education || ""}
                   options={DEGREE_OPTIONS}
@@ -2213,7 +2222,7 @@ function AddMember({
 
               <div style={{ marginTop: 16 }}>
                 <EditableDropdown
-                  label="Branch"
+                  label=" Current Branch"
                   required
                   value={formData.branch || ""}
                   options={BRANCH_OPTIONS}
@@ -2456,4 +2465,4 @@ function AddMember({
   );
 }
 
-export default AddMember;
+export default AddMember;                

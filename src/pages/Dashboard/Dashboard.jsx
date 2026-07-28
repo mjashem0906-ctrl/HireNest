@@ -358,7 +358,7 @@ function MemberDashboard() {
   // ── Growth chart data builders ──────────────────────────────────────────────
   const getYearData = useCallback((membersList) => {
     if (!Array.isArray(membersList) || membersList.length === 0)
-      return ["Jan","Feb","Mar","Apr","May","Jun"].map(l => ({ label: l, value: 0 }));
+      return ["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map(l => ({ label: l, value: 0 }));
     const now = new Date();
     const months = [];
     for (let i = 5; i >= 0; i--) {
@@ -380,7 +380,7 @@ function MemberDashboard() {
     const month = now.getMonth();
     return Array.from({ length: 4 }, (_, i) => {
       const weekStart = new Date(year, month, i * 7 + 1);
-      const weekEnd   = new Date(year, month, i * 7 + 7, 23, 59, 59, 999);
+      const weekEnd = new Date(year, month, i * 7 + 7, 23, 59, 59, 999);
       const count = membersList.filter(mb => {
         if (!mb.createdAt) return i === 0;
         const d = new Date(mb.createdAt);
@@ -392,13 +392,13 @@ function MemberDashboard() {
 
   const getWeekData = useCallback((membersList) => {
     if (!Array.isArray(membersList) || membersList.length === 0)
-      return ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(l => ({ label: l, value: 0 }));
+      return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(l => ({ label: l, value: 0 }));
     const now = new Date();
     const dayOfWeek = now.getDay(); // 0=Sun
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - ((dayOfWeek + 6) % 7)); // Monday
     startOfWeek.setHours(0, 0, 0, 0);
-    const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     return days.map((label, i) => {
       const dayStart = new Date(startOfWeek);
       dayStart.setDate(startOfWeek.getDate() + i);
@@ -415,22 +415,22 @@ function MemberDashboard() {
 
   const growthData = useMemo(() => {
     if (growthPeriod === "month") return getMonthData(members);
-    if (growthPeriod === "week")  return getWeekData(members);
+    if (growthPeriod === "week") return getWeekData(members);
     return getYearData(members);
   }, [growthPeriod, members, getYearData, getMonthData, getWeekData]);
 
   const dynamicGrowthPct = useMemo(() => {
     if (growthData.length < 2) return "0";
     const firstVal = growthData[0].value;
-    const lastVal  = growthData[growthData.length - 1].value;
+    const lastVal = growthData[growthData.length - 1].value;
     if (firstVal <= 0) return lastVal > 0 ? "100" : "0";
     return (((lastVal - firstVal) / firstVal) * 100).toFixed(0);
   }, [growthData]);
 
   const GROWTH_OPTIONS = [
-    { key: "year",  label: "This Year"  },
+    { key: "year", label: "This Year" },
     { key: "month", label: "This Month" },
-    { key: "week",  label: "This Week"  },
+    { key: "week", label: "This Week" },
   ];
   const selectedGrowthLabel = GROWTH_OPTIONS.find(o => o.key === growthPeriod)?.label ?? "This Year";
 
@@ -518,6 +518,79 @@ function MemberDashboard() {
     }
   }, [jobContext, user, authLoading]);
 
+  const pastMonthsDash = useMemo(() => {
+    const months = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      months.push(new Date(now.getFullYear(), now.getMonth() - i, 1));
+    }
+    return months;
+  }, []);
+
+  const getMemberTimeDash = (member) => {
+    const d = member?.timestamp || member?.createdAt;
+    if (!d) return 0;
+    const time = new Date(d).getTime();
+    return isNaN(time) ? 0 : time;
+  };
+
+  const activeTrendDash = useMemo(() => {
+    return pastMonthsDash.map(m => {
+      const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+      return (members || []).filter(member => {
+        const isActive = String(member?.symMemberStatus || '').toLowerCase() === 'active';
+        return isActive && getMemberTimeDash(member) <= endOfMonth;
+      }).length;
+    });
+  }, [members, pastMonthsDash]);
+
+  const activeGrowthDash = useMemo(() => {
+    const len = activeTrendDash.length;
+    if (len < 2) return 0;
+    const current = activeTrendDash[len - 1];
+    const previous = activeTrendDash[len - 2] || 1;
+    return Math.round(((current - previous) / previous) * 100);
+  }, [activeTrendDash]);
+
+  const newTrendDash = useMemo(() => {
+    return pastMonthsDash.map(m => {
+      const startOfMonth = new Date(m.getFullYear(), m.getMonth(), 1, 0, 0, 0, 0).getTime();
+      const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+      return (members || []).filter(member => {
+        const t = getMemberTimeDash(member);
+        return t >= startOfMonth && t <= endOfMonth;
+      }).length;
+    });
+  }, [members, pastMonthsDash]);
+
+  const newGrowthDash = useMemo(() => {
+    const len = newTrendDash.length;
+    if (len < 2) return 0;
+    const current = newTrendDash[len - 1];
+    const previous = newTrendDash[len - 2];
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  }, [newTrendDash]);
+
+  const jobsTrendDash = useMemo(() => {
+    return pastMonthsDash.map(m => {
+      const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
+      return (jobs || []).filter(j => {
+        const d = j?.createdAt || j?.timestamp;
+        const t = d ? new Date(d).getTime() : 0;
+        return t <= endOfMonth;
+      }).length || (jobs || []).length;
+    });
+  }, [jobs, pastMonthsDash]);
+
+  const jobsGrowthDash = useMemo(() => {
+    const len = jobsTrendDash.length;
+    if (len < 2) return 0;
+    const current = jobsTrendDash[len - 1];
+    const previous = jobsTrendDash[len - 2] || 1;
+    return Math.round(((current - previous) / previous) * 100);
+  }, [jobsTrendDash]);
+
   // ── loading / error / role guards (preserved) ──
   if (authLoading) {
     return (
@@ -568,7 +641,7 @@ function MemberDashboard() {
 
   // ── calculations (preserved all original calculations) ──
   const totalGrowth = getGrowthRate(members);
- 
+
   const providers = members.filter((m) => (m.memberType || "").includes("Oppurtunity Provider")).length;
   const recruiters = recruitersCount;
 
@@ -584,25 +657,52 @@ function MemberDashboard() {
   const mentors = mentorsList.length;
   const mentorsGrowth = getGrowthRate(mentorsList);
 
-  const freshersList = members.filter((m) => {
-    const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp === "0" || exp === "fresher" || exp === "0 years" || parseFloat(exp) === 0;
-  });
+  const seekersList = members.filter((m) => (m.memberType || "").toLowerCase().includes("job seeker"));
+  const seekers = seekersList.length;
+
+  const isFresher = (m) => {
+    const workExp = typeof m === "object" && m !== null ? m.workExp : m;
+    if (!workExp) return true;
+    const str = String(workExp).toLowerCase().trim();
+    if (
+      !str ||
+      str === "undefined" ||
+      str === "null" ||
+      str === "0" ||
+      str === "0.0" ||
+      str === "0 years" ||
+      str === "0 yr" ||
+      str === "nil" ||
+      str === "no" ||
+      str === "none" ||
+      str === "n/a" ||
+      str.includes("no experience") ||
+      str.includes("fresher")
+    ) {
+      return true;
+    }
+    const val = parseFloat(str);
+    if (!isNaN(val) && val === 0) return true;
+    return false;
+  };
+
+  const freshersList = seekersList.filter((m) => isFresher(m));
   const freshersCount = freshersList.length;
   const freshersGrowth = getGrowthRate(freshersList);
 
-  const experiencedList = members.filter((m) => {
-    const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp !== "" && exp !== "unknown" && parseFloat(exp) > 0;
-  });
+  const experiencedList = seekersList.filter((m) => !isFresher(m));
   const experiencedCount = experiencedList.length;
   const experiencedGrowth = getGrowthRate(experiencedList);
-
-  const seekersList = [...freshersList, ...experiencedList];
-  const seekers = seekersList.length;
   const seekersGrowth = getGrowthRate(seekersList);
 
   const totalMembers = seekers + recruiters + mentors + upskillers + referees;
+  const activeMembers = members.filter(m => String(m.symMemberStatus || '').toLowerCase() === 'active').length || members.length;
+  const newThisMonth = members.filter(m => {
+    const raw = m.createdAt || m.timestamp;
+    if (!raw) return false;
+    const d = new Date(raw), now = new Date();
+    return !isNaN(d.getTime()) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
 
   const topDistricts = countBy(members, "district").slice(0, 5);
   const topEducations = countBy(members, "highest_education").slice(0, 5);
@@ -760,73 +860,37 @@ function MemberDashboard() {
       label: "Total Members",
       value: totalMembers,
       icon: Users,
-      color: "#c0392b",
-      spark: SP.red,
+      color: "#2563eb",
+      spark: SP.blue,
       growth: totalGrowth,
       onClick: () => navigate("/members"),
     },
     {
-      label: "Job Seekers",
-      value: seekers,
+      label: "Active Members",
+      value: activeMembers,
       icon: Briefcase,
-      color: "#2563eb",
-      spark: SP.blue,
-      growth: seekersGrowth,
-      onClick: () => navigate("/job-seekers"),
-    },
-    {
-      label: "Freshers",
-      value: freshersCount,
-      icon: GraduationCap,
-      color: "#7c3aed",
-      spark: SP.purple,
-      growth: freshersGrowth,
-      onClick: () => navigate("/job-seekers", { state: { expFilter: "fresher" } }),
-    },
-    {
-      label: "Experienced",
-      value: experiencedCount,
-      icon: Star,
-      color: "#d97706",
-      spark: SP.yellow,
-      growth: experiencedGrowth,
-      onClick: () => navigate("/job-seekers", { state: { expFilter: "experienced" } }),
-    },
-    {
-      label: "Job Recruiters",
-      value: recruitersCount,
-      icon: Building2,
-      color: "#8b5cf6",
-      spark: SP.cyan,
-      growth: "4",
-      onClick: () => navigate("/recruiters"),
-    },
-    {
-      label: "Mentors",
-      value: mentors,
-      icon: UserCheck,
-      color: "#0891b2",
-      spark: SP.blue,
-      growth: mentorsGrowth,
-      onClick: () => navigate("/mentors"),
-    },
-    {
-      label: "Upskillers",
-      value: upskillers,
-      icon: BookOpen,
       color: "#16a34a",
       spark: SP.green,
-      growth: upskillersGrowth,
-      onClick: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }),
+      growth: activeGrowthDash,
+      onClick: () => navigate("/members"),
     },
     {
-      label: "Job Referees",
-      value: referees,
+      label: "New This Month",
+      value: newThisMonth,
       icon: User,
-      color: "#ec4899",
-      spark: SP.red,
-      growth: refereesGrowth,
-      onClick: () => navigate("/referees"),
+      color: "#7c3aed",
+      spark: SP.purple,
+      growth: newGrowthDash,
+      onClick: () => navigate("/members"),
+    },
+    {
+      label: "Active Job Openings",
+      value: activeJobsCount || totalJobsCount,
+      icon: BriefcaseIcon,
+      color: "#d97706",
+      spark: SP.yellow,
+      growth: jobsGrowthDash,
+      onClick: () => navigate("/jobs"),
     },
   ];
 
@@ -864,10 +928,10 @@ function MemberDashboard() {
         {/* ── STAT CARDS ── */}
         <div className={styles.statRow}>
           {statCards.map((s, i) => (
-            <div 
-              key={i} 
-              className={styles.statCard} 
-              onClick={s.onClick} 
+            <div
+              key={i}
+              className={styles.statCard}
+              onClick={s.onClick}
               title={`View ${s.label}`}
               style={{
                 "--theme-color": s.color,

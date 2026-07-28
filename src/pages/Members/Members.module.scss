@@ -746,6 +746,20 @@
   flex-shrink: 0;
 }
 
+.statusNo {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+:global(:root[data-theme="dark"]) .statusNo {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #f87171 !important;
+}
+
+.statusDotNo {
+  background: #dc2626 !important;
+}
+
 /* action icon buttons */
 .actionButtons {
   display: flex;

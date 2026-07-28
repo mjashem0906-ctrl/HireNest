@@ -11,7 +11,8 @@ const DropdownSelect = ({
   searchable = false,
   required = false,
   error,
-  multiple = false
+  multiple = false,
+  onOpenChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +20,10 @@ const DropdownSelect = ({
   const dropdownRef = useRef(null);
   const selectBoxRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    onOpenChange?.(isOpen);
+  }, [isOpen, onOpenChange]);
 
   const filteredOptions = (options || []).filter((option) =>
     (option.label || "").toLowerCase().includes(searchTerm.toLowerCase())

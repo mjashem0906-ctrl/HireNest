@@ -25,14 +25,14 @@ const initialState = {
 };
 
 const KARNATAKA_DISTRICTS = [
-  "Bagalkote",
-  "Ballari (Bellary)",
-  "Belagavi (Belgaum)",
+  "Bagalkot",
+  "Ballari",
+  "Belagavi",
   "Bengaluru Rural",
   "Bengaluru Urban",
   "Bidar",
   "Chamarajanagar",
-  "Chikballapur",
+  "Chikkaballapur",
   "Chikkamagaluru",
   "Chitradurga",
   "Dakshina Kannada",
@@ -41,7 +41,7 @@ const KARNATAKA_DISTRICTS = [
   "Gadag",
   "Hassan",
   "Haveri",
-  "Kalaburagi (Gulbarga)",
+  "Kalaburagi",
   "Kodagu",
   "Kolar",
   "Koppal",
@@ -187,13 +187,13 @@ function EditableDropdown({
   );
 }
 
-function MultiValueInput({ 
-  label, 
-  value = [], 
-  options = [], 
-  onChange, 
-  placeholder = "Type and press Enter", 
-  required = false, 
+function MultiValueInput({
+  label,
+  value = [],
+  options = [],
+  onChange,
+  placeholder = "Type and press Enter",
+  required = false,
   error = "",
   onCustomAdded
 }) {
@@ -404,8 +404,8 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
     }
   }, [isOpen]);
 
-  const saveCustomDomain = () => {};
-  const saveCustomSkill = () => {};
+  const saveCustomDomain = () => { };
+  const saveCustomSkill = () => { };
 
   useEffect(() => {
     if (location.state?.openAddModal) {

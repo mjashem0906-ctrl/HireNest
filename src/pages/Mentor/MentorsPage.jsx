@@ -102,6 +102,44 @@ const isValidFilterValue = (v) => {
   return true;
 };
 
+const SkillsCell = ({ skills }) => {
+  const [expanded, setExpanded] = useState(false);
+  const skillsArray = Array.isArray(skills)
+    ? skills
+    : typeof skills === "string"
+    ? skills.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
+  if (!skillsArray || skillsArray.length === 0) {
+    return <span style={{ color: "var(--m-text-muted)", fontSize: "13px" }}>—</span>;
+  }
+
+  const displayedSkills = expanded ? skillsArray : skillsArray.slice(0, 6);
+  const hasMore = skillsArray.length > 6;
+
+  return (
+    <div className={styles.skillsListCell}>
+      {displayedSkills.map((skill, index) => (
+        <span key={index} className={styles.skillBadgeMini}>
+          {skill}
+        </span>
+      ))}
+      {hasMore && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((prev) => !prev);
+          }}
+          className={styles.seeAllSkillsBtn}
+        >
+          {expanded ? "See less" : `See all (+${skillsArray.length - 6})`}
+        </button>
+      )}
+    </div>
+  );
+};
+
 const MentorsPage = () => {
   const [view, setView] = useState("mentors"); // 'mentors' | 'applicants'
   const [mentors, setMentors] = useState([]);
@@ -1359,17 +1397,7 @@ const MentorsPage = () => {
 
                             {/* Column 4: Skills */}
                             <td data-label="Skills">
-                              <div className={styles.skillsListCell}>
-                                {m.skills && m.skills.length > 0 ? (
-                                  m.skills.map((skill, index) => (
-                                    <span key={index} className={styles.skillBadgeMini}>
-                                      {skill}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span style={{ color: 'var(--m-text-muted)', fontSize: '13px' }}>—</span>
-                                )}
-                              </div>
+                              <SkillsCell skills={m.skills} />
                             </td>
 
                             {/* Column 5: Experience */}

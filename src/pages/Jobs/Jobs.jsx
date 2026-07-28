@@ -265,14 +265,14 @@ const INDUSTRY_OPTIONS = [
 
 
 const KARNATAKA_DISTRICTS = [
-  "Bagalkote",
-  "Ballari (Bellary)",
-  "Belagavi (Belgaum)",
+  "Bagalkot",
+  "Ballari",
+  "Belagavi",
   "Bengaluru Rural",
   "Bengaluru Urban",
   "Bidar",
   "Chamarajanagar",
-  "Chikballapur",
+  "Chikkaballapur",
   "Chikkamagaluru",
   "Chitradurga",
   "Dakshina Kannada",
@@ -281,7 +281,7 @@ const KARNATAKA_DISTRICTS = [
   "Gadag",
   "Hassan",
   "Haveri",
-  "Kalaburagi (Gulbarga)",
+  "Kalaburagi",
   "Kodagu",
   "Kolar",
   "Koppal",
@@ -423,8 +423,8 @@ const EditableDropdown = ({
                     key={opt}
                     type="button"
                     className={`${styles.edItem} ${norm(opt) === norm(value)
-                        ? styles.edItemActive
-                        : ""
+                      ? styles.edItemActive
+                      : ""
                       }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
@@ -4374,7 +4374,7 @@ function Jobs() {
                                     <Users size={16} /> Applicants (
                                     {request.appliedMembers?.length || 0})
                                   </h4>
-                              <span className={styles.applicantsCount}>
+                                  <span className={styles.applicantsCount}>
                                     {request.appliedMembers?.length || 0} total
                                   </span>
                                 </div>

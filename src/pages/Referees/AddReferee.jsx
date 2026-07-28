@@ -31,14 +31,14 @@ const initialState = {
 };
 
 const KARNATAKA_DISTRICTS = [
-  "Bagalkote",
-  "Ballari (Bellary)",
-  "Belagavi (Belgaum)",
+  "Bagalkot",
+  "Ballari",
+  "Belagavi",
   "Bengaluru Rural",
   "Bengaluru Urban",
   "Bidar",
   "Chamarajanagar",
-  "Chikballapur",
+  "Chikkaballapur",
   "Chikkamagaluru",
   "Chitradurga",
   "Dakshina Kannada",
@@ -47,7 +47,7 @@ const KARNATAKA_DISTRICTS = [
   "Gadag",
   "Hassan",
   "Haveri",
-  "Kalaburagi (Gulbarga)",
+  "Kalaburagi",
   "Kodagu",
   "Kolar",
   "Koppal",
@@ -168,8 +168,7 @@ function EditableDropdown({
                   <button
                     key={opt}
                     type="button"
-                    className={`${styles.edItem} ${
-                      norm(opt) === norm(value) ? styles.edItemActive : ""
+                    className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""
                     }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}

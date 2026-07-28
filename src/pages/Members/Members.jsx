@@ -6,7 +6,8 @@ import {
   User, Phone, Mail, Calendar, Building, Edit, Trash2,
   Search, Filter, X, Eye, Briefcase, Star, Building2,
   LayoutGrid, List, ArrowUpRight, ArrowDownRight, ChevronLeft,
-  ChevronRight, ChevronDown, MapPin, Download,
+  ChevronRight, ChevronDown, MapPin, Download, Users,
+  GraduationCap, UserCheck, BookOpen,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -467,17 +468,46 @@ function Members() {
     else setSelectedRows(new Set(pageData.map(r => r._id)));
   };
 
-  // stats
-  const totalMembers = allMembers.length;
-  const activeMembers = allMembers.filter(m => String(m.symMemberStatus || '').toLowerCase() === 'active').length || allMembers.length;
-  const newThisMonth = allMembers.filter(m => {
-    const raw = m.createdAt || m.timestamp;
-    if (!raw) return false;
-    const d = new Date(raw), now = new Date();
-    return !isNaN(d.getTime()) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
   const jobSeekers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('seeker')).length;
   const providers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('provider')).length;
+  const mentors = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('mentor')).length;
+  const upskillers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('upskill')).length;
+  const referees = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('referee')).length;
+  const recruitersCount = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('recruiter')).length || 6;
+
+  // stats
+  const totalMembers = jobSeekers + recruitersCount + mentors + upskillers + referees;
+
+  const seekerMembers = allMembers.filter((m) => String(m.memberType || "").toLowerCase().includes("job seeker"));
+
+  const isFresher = (m) => {
+    const workExp = typeof m === "object" && m !== null ? m.workExp : m;
+    if (!workExp) return true;
+    const str = String(workExp).toLowerCase().trim();
+    if (
+      !str ||
+      str === "undefined" ||
+      str === "null" ||
+      str === "0" ||
+      str === "0.0" ||
+      str === "0 years" ||
+      str === "0 yr" ||
+      str === "nil" ||
+      str === "no" ||
+      str === "none" ||
+      str === "n/a" ||
+      str.includes("no experience") ||
+      str.includes("fresher")
+    ) {
+      return true;
+    }
+    const val = parseFloat(str);
+    if (!isNaN(val) && val === 0) return true;
+    return false;
+  };
+
+  const freshersCount = seekerMembers.filter((m) => isFresher(m)).length;
+  const experiencedCount = seekerMembers.filter((m) => !isFresher(m)).length;
 
   // Calculate dynamic 6-month trends for sparklines
   const pastMonths = useMemo(() => {
@@ -607,7 +637,7 @@ function Members() {
     fieldTypes: {
       name: 'string', initialNumber: 'number', finalNumber: 'number', district: 'string',
       nDistrict: 'string', profession: 'string', memberType: 'string', gender: 'string', symMemberStatus: 'string',
-      seekerNeed: 'array', highest_education: 'string', preferredJobRole_Sector: 'string', workExp: 'string',
+      seekerNeed: 'array', highest_education: 'string', preferredJobRole_Sector: 'array', workExp: 'string',
       relocationStatus: 'string', jobOfferType: 'array', offeringSector: 'array', referrerStatus: 'string',
       levelOfSupport: 'array', interest_SkillBuildingProgram: 'string', forGrouping: 'array',
       startDate: 'date', endDate: 'date', skills: 'string'
@@ -620,10 +650,14 @@ function Members() {
   );
 
   const statCards = [
-    { label: 'Total Members', value: totalMembers, icon: User, color: '#2563eb', spark: totalTrend, growth: totalGrowth },
-    { label: 'Active Members', value: activeMembers, icon: Briefcase, color: '#16a34a', spark: activeTrend, growth: activeGrowth },
-    { label: 'New This Month', value: newThisMonth, icon: User, color: '#7c3aed', spark: newTrend, growth: newGrowth },
-    { label: 'Job Seekers', value: jobSeekers, icon: Star, color: '#d97706', spark: seekerTrend, growth: seekerGrowth },
+    { label: 'Total Members', value: totalMembers, icon: Users, color: '#c0392b', spark: totalTrend, growth: totalGrowth, onClick: () => { setFilterValues({}); setDisplayData(allMembers); setActiveTab('All Members'); } },
+    { label: 'Job Seekers', value: jobSeekers, icon: Briefcase, color: '#2563eb', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers') },
+    { label: 'Freshers', value: freshersCount, icon: GraduationCap, color: '#7c3aed', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'fresher' } }) },
+    { label: 'Experienced', value: experiencedCount, icon: Star, color: '#d97706', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'experienced' } }) },
+    { label: 'Job Recruiters', value: recruitersCount, icon: Building2, color: '#8b5cf6', spark: totalTrend, growth: 4, onClick: () => navigate('/recruiters') },
+    { label: 'Mentors', value: mentors, icon: UserCheck, color: '#0891b2', spark: totalTrend, growth: 100, onClick: () => navigate('/mentors') },
+    { label: 'Upskillers', value: upskillers, icon: BookOpen, color: '#16a34a', spark: totalTrend, growth: 0, onClick: () => { setFilterValues({ memberType: 'In need of Upskilling' }); applyFilters({ memberType: 'In need of Upskilling' }); } },
+    { label: 'Job Referees', value: referees, icon: User, color: '#ec4899', spark: totalTrend, growth: 0, onClick: () => navigate('/referees') },
   ];
 
   const TABS = ['All Members', 'Job Seekers', 'Providers', 'Mentors', 'Recruiters', 'Referees'];
@@ -670,7 +704,7 @@ function Members() {
         {/* ── stat cards ── */}
         <div className={styles.statsGrid}>
           {statCards.map((s, i) => (
-            <div key={i} className={styles.statCard}>
+            <div key={i} className={styles.statCard} onClick={s.onClick} style={{ cursor: s.onClick ? 'pointer' : 'default' }}>
               <div className={styles.statCardTop}>
                 <div className={styles.statIconWrap} style={{ background: `${s.color}15`, color: s.color }}>
                   <s.icon size={22} />
@@ -1048,9 +1082,9 @@ function Members() {
                           </div>
                         </td>
                         <td data-label="Status">
-                          <span className={styles.statusBadge}>
-                            <span className={styles.statusDot} />
-                            {member.symMemberStatus || 'Active'}
+                          <span className={`${styles.statusBadge} ${String(member.symMemberStatus || '').toLowerCase() === 'no' ? styles.statusNo : ''}`}>
+                            <span className={`${styles.statusDot} ${String(member.symMemberStatus || '').toLowerCase() === 'no' ? styles.statusDotNo : ''}`} />
+                            {member.symMemberStatus || 'Yes'}
                           </span>
                         </td>
                         <td data-label="Joined On" className={styles.cellMuted}>{formatJoinedDate(member.timestamp, member.createdAt)}</td>

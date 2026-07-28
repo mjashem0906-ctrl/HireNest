@@ -110,10 +110,8 @@ const JobSeekersPage = () => {
   // Load Seekers from Context
   useEffect(() => {
     if (memberContext && memberContext.length > 0) {
-      // Job seekers are either explicitly labeled, or have an empty member type (default)
       const filtered = memberContext.filter(m => 
-        (m.memberType || "").toLowerCase().includes("job seeker") || 
-        (m.memberType || "") === ""
+        (m.memberType || "").toLowerCase().includes("job seeker")
       );
       
       // Sort by reference number ascending
@@ -190,8 +188,29 @@ const JobSeekersPage = () => {
 
   // Helper to determine if a member is a fresher or experienced
   const isFresher = (m) => {
-    const exp = String(m.workExp || "").toLowerCase().trim();
-    return exp === "0" || exp === "fresher" || exp === "0 years" || exp === "0 yr" || exp === "" || parseFloat(exp) === 0;
+    const workExp = typeof m === "object" && m !== null ? m.workExp : m;
+    if (!workExp) return true;
+    const str = String(workExp).toLowerCase().trim();
+    if (
+      !str ||
+      str === "undefined" ||
+      str === "null" ||
+      str === "0" ||
+      str === "0.0" ||
+      str === "0 years" ||
+      str === "0 yr" ||
+      str === "nil" ||
+      str === "no" ||
+      str === "none" ||
+      str === "n/a" ||
+      str.includes("no experience") ||
+      str.includes("fresher")
+    ) {
+      return true;
+    }
+    const val = parseFloat(str);
+    if (!isNaN(val) && val === 0) return true;
+    return false;
   };
 
   // --- HELPERS FOR UNIQUE OPTION EXTRACATION ---
@@ -673,7 +692,7 @@ const JobSeekersPage = () => {
       {/* Count Info Panel */}
       <div className={styles.countInfo}>
         <span className={styles.countText}>
-          Showing <strong>{filteredSeekers.length}</strong> of <strong>{seekers.length}</strong> active job seekers
+          Showing <strong>{filteredSeekers.length}</strong> of <strong>{seekers.length}</strong> job seekers
         </span>
       </div>
 
