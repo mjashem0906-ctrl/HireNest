@@ -11,7 +11,6 @@ export const DataProvider = ({ children }) => {
   const [projectContext,setProjectContext] = useState([]);
   const [taskContext,setTaskContext] = useState([]);
   const [subTaskContext,setSubTaskContext] = useState([]);
-  const [assignForContext,setAssignForContext] = useState([]);
   const [activityContext,setActivityContext] = useState([]);
   const [userContext,setUserContext] =useState('');
   const [allUserContext,setAllUserContext]= useState([]);
@@ -34,7 +33,6 @@ export const DataProvider = ({ children }) => {
       fetchProjectData();
       fetchTaskData();
       fetchSubTaskData();
-      fetchAssignForData();
       fetchUserData();
       fetchPlaceData();
       fetchJobData();
@@ -45,7 +43,6 @@ export const DataProvider = ({ children }) => {
       setMemberContext([]);
       setTaskContext([]);
       setSubTaskContext([]);
-      setAssignForContext([]);
       setUserContext("");
       setAllUserContext([]);
       setPlaceContext([]);
@@ -157,24 +154,12 @@ export const DataProvider = ({ children }) => {
             }
   }
 
-  const fetchAssignForData = async()=>{
-    try {
-           const res=  await API.get("/assignFor");
-           const sorted = res.data.data.sort((a,b)=>a.customId - b.customId)
-           setAssignForContext(sorted);
-          
-            }
-        catch (error) {
-            console.error("Error fetching AssignFor in Data Context:", error);
-            }
-
-  }
   const fetchPlaceData  = async()=>{
     try {
            const res=  await API.get("/place");
            const sorted = res.data;
            setPlaceContext(sorted);
-  
+   
             }
         catch (error) {
             console.error("Error fetching Places in Data Context:", error);
@@ -194,9 +179,9 @@ export const DataProvider = ({ children }) => {
   // }
   return (
     <DataContext.Provider value={{
-       memberContext, projectContext,taskContext,subTaskContext,assignForContext,activityContext,userContext,allUserContext,placeContext,
+       memberContext, projectContext,taskContext,subTaskContext,activityContext,userContext,allUserContext,placeContext,
        memberCommentsContext,jobContext,setJobContext,setMemberCommentsContext,setPlaceContext,setMemberContext,setProjectContext,setTaskContext,setSubTaskContext,
-       setAssignForContext,setActivityContext,setUserContext,setAllUserContext}}>
+       setActivityContext,setUserContext,setAllUserContext}}>
       {children}
     </DataContext.Provider>
   )

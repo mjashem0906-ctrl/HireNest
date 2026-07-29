@@ -4,7 +4,7 @@ import API from '../../axios';
 import { formatDistanceToNow } from 'date-fns';
 import styles from './ActivityList.module.scss';
 import { useNavigate } from 'react-router';
-import { CheckSquare, FolderOpen, List, ShieldUser, UserCheck2, Users } from 'lucide-react';
+import { CheckSquare, FolderOpen, List, ShieldUser, Users } from 'lucide-react';
 
 const ActivityList = () => {
   const [activities, setActivities] = useState([]);
@@ -47,8 +47,6 @@ const ActivityList = () => {
         return <>New SubTask <strong className={styles.subtask}>{meta.title}</strong> is created for <strong className={styles.task}>{meta.taskTitle}</strong> Task and assigned to <strong className={styles.members}>{meta.memberNames?.join(', ')}</strong>.</>;
       case 'MEMBER':
         return <>New Member <strong className={styles.members}>{meta.name}</strong> joined Solidarity.</>;
-      case 'ASSIGNFOR':
-        return <>SubTask <strong className={styles.subtask}>{meta.subTaskTitle}</strong> is assigned for <strong className={styles.members}>{meta.memberNames?.join(', ')}</strong>.</>;
       case 'USER':
       return <> New User account is created for <strong className={styles.members}>{meta.memberName}</strong> </>
         default:
@@ -71,9 +69,6 @@ const ActivityList = () => {
         break;
       case 'MEMBER':
         navigate(`/member/${targetId}`);
-        break;
-        case 'ASSIGNFOR':
-        navigate(`/assignFor/${targetId}`);
         break;
       default:
         break;
@@ -98,7 +93,6 @@ const ActivityList = () => {
                   {activity.type === 'PROJECT' && <FolderOpen size={16} />}
                   {activity.type === 'MEMBER' && <Users size={16} />}
                   {activity.type === 'SUBTASK' && <List size={16} />}
-                  {activity.type === 'ASSIGNFOR' && <UserCheck2 size={16} />}
                   {activity.type === 'USER' && <ShieldUser size={20} />}
                 </div>
             

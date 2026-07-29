@@ -21,7 +21,6 @@ function Layout({ children }) {
     '/tasks': 'Tasks',
     '/subtasks': 'Subtasks',
     '/settings': 'Settings',
-    '/assignFor': 'AssignFor',
     '/memberComments': 'About Members',
     '/mentors': 'Mentors',
     '/referees': 'Job Referees',
@@ -49,7 +48,6 @@ function Layout({ children }) {
     if (path.startsWith('/project/')) return 'Project';
     if (path.startsWith('/task/')) return 'Task';
     if (path.startsWith('/subtask/')) return 'SubTask';
-    if (path.startsWith('/assignFor/')) return 'AssignFor';
     if (path.startsWith('/jobs')) return 'Jobs';
     if (path.startsWith('/status-requests')) return 'Status Requests';
     if (path.startsWith('/membersWorking')) return 'Members Working in Tasks';

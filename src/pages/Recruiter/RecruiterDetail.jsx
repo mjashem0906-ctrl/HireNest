@@ -107,7 +107,7 @@ const RecruiterDetail = () => {
                 <div className={styles.value}>{recruiter.employeeId || "Not Provided"}</div>
               </div>
               <div className={styles.item}>
-                <label>Email Address</label>
+                <label>HR Email Address</label>
                 <div className={styles.value}>{recruiter.email}</div>
               </div>
               <div className={styles.item}>
@@ -130,7 +130,7 @@ const RecruiterDetail = () => {
                 <div className={styles.value}>{recruiter.teamSize || "Individual Contributor"}</div>
               </div>
               <div className={styles.item}>
-                <label>Company Name</label>
+                <label>Company / Institution / Organization Name</label>
                 <div className={styles.value}>{recruiter.companyName || "JobBridge Karnataka"}</div>
               </div>
               <div className={styles.item}>

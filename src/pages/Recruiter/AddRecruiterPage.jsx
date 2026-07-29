@@ -82,7 +82,7 @@ const AddRecruiterPage = () => {
           </div>
 
           <div className={styles.inputGroup}>
-            <label>Email ID *</label>
+            <label>HR Email ID *</label>
             <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="john@company.com" required />
           </div>
 
@@ -141,13 +141,13 @@ const AddRecruiterPage = () => {
           </div>
 
           <div className={styles.inputGroup}>
-            <label>Company Name *</label>
+            <label>Company / Institution / Organization Name *</label>
             <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} required />
           </div>
 
           <div className={styles.inputGroup}>
-            <label>Company GST *</label>
-            <input type="text" name="companyGST" value={formData.companyGST || ''} onChange={handleChange} placeholder="e.g. 29AAAAA1111A1Z1" required />
+            <label>Company GST </label>
+            <input type="text" name="companyGST" value={formData.companyGST || ''} onChange={handleChange} placeholder="e.g. 29AAAAA1111A1Z1" />
           </div>
 
           <div className={styles.inputGroup}>

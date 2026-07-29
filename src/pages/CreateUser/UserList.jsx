@@ -113,7 +113,6 @@ const getRoleColor = (status) => {
                                       <th>Username</th>
                                       <th>Role</th>
                                       {/* <th>Password</th> */}
-                                      {/* {assignFor.description&&<th>Description</th>} */}
                                       </tr>
                                   </thead>
                                   <tbody>

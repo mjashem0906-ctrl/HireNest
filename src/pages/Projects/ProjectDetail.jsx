@@ -119,8 +119,6 @@ const fetchTask = async(projectId)=>{
         setSelectedTask(task); // Set selected task
         setShowSubtaskModal(true);
   }
-      // if(type ==='assignfor')setShowAssignForModal(true);
-  }
 
   const handleSubTaskEdit = (subtask) => {
     setEditingSubtask(subtask);
@@ -239,12 +237,6 @@ const handleEditSubtask = (updatedSubtask) => {
     
       
        try{
-          const res =await API.get(`/assignFor`);
-        const filteredAssignFor = res.data.data.filter((assignFor)=>String(assignFor.subTaskId._id) === String(id));
-        if(filteredAssignFor.length>0){
-          alert("This  SubTask is used for creating Assign For. So you can't delete this subtask");
-          return
-        }
         if (window.confirm('Are you sure you want to delete this subtask?')) {
             await API.delete(`/subTask/${id}`);
            setSubTasks(subTasks.filter(subtask => subtask._id !== id));

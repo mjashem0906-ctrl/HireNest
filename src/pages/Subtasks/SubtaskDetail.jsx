@@ -12,44 +12,25 @@ import { useData } from '../../context/DataContext';
 function SubtaskDetail() {
   const {id} = useParams();
   const [subTask,setSubTask] = useState('');
-  const [assignFor, setAssignFor] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingSubtask, setEditingSubtask] = useState(null);
-  const {subTaskContext,assignForContext} = useData();
+  const {subTaskContext} = useData();
   const navigate = useNavigate();
   const [loading , setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(()=>{
     fetchSubTask();
-  },[subTaskContext,assignForContext])
+  },[subTaskContext])
   const fetchSubTask =async()=>{
     try{
      // const res = await API.get(`/subTask/${id}`);
       const filtered = await subTaskContext.find(subtask=> String(subtask._id)===String(id));
       setSubTask(filtered);
-      fetchAssignFor(id);
       setLoading(false);
     }catch(err){
       console.log("Error in fetching subtask:",err);
       setLoading(false);
-    }
-  }
-
-  const fetchAssignFor = async(subTaskId)=>{
-    try{
-     // const res = await API.get(`/assignFor`);
-     
-      const filtered = assignForContext.filter(assignFor=>
-       assignFor.subTaskId && String(assignFor.subTaskId._id) === String(subTaskId)
-       
-      )
-      
-      setAssignFor(filtered);
-      
-    }catch(err){
-      console.log("Error in fetching assignFor:",err);
-      
     }
   }
 const getPriorityColor = (priority) => {
@@ -226,47 +207,6 @@ organisationalStatus}</p>}
           <p>Unassigned</p>
         )}
       </div>
-        {assignFor.length>0&&(
-             <div className={styles.assignFor}>
-      <h3>Related Assigned For</h3>
-                              <div  className={styles.tableContainer}>
-                                  <table className={styles.table}>
-                                  <thead>
-                                      <tr>
-                                      <th>AssignFor Id</th>
-                                      <th>Project</th>
-                                      <th>Task</th>
-                                      <th>Assigned For</th>
-                                      <th>Status</th>
-                                      {/* {assignFor.description&&<th>Description</th>} */}
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                       {assignFor.map(assignfor => (
-                                      <tr key={assignfor._id}>
-                                          <td style={{cursor:"pointer"}} onClick={()=>navigate(`/assignFor/${assignfor._id}`)}>{assignfor.customId}</td>
-                                          <td style={{cursor:"pointer"}} onClick={()=>navigate(`/project/${assignfor.projectId._id}`)}>{assignfor.projectId?.title}</td>
-                                          <td style={{cursor:"pointer"}} onClick={()=>navigate(`/task/${assignfor.taskId._id}`)}>{assignfor.taskId?.title}</td>
-                                           <td>{assignfor.assignedFor.map((member)=>(
-                                               <div key={member._id} className={styles.member}>
-                                                  <img style={{ cursor: "pointer" }} onClick={()=>navigate(`/member/${member._id}`)} src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"} alt={member.name} className={styles.profile}  onError={(e) => {
-                                        e.target.src = "/members/AnonymousImage.jpg";}} />
-                                                  <span style={{ cursor: "pointer" }} onClick={()=>navigate(`/member/${member._id}`)}>{member.name}</span>
-                                                </div>
-                                           ))}</td>
-                                           
-                                           <td>
-                                          <div className={styles.badges}>
-                                          <span style={{ backgroundColor: getStatusColor2(assignfor.status) }}>{assignfor.status}</span>
-                                          </div>
-                                          </td>
-                                      </tr>
-                                      ))} 
-                                  </tbody>
-                                  </table>
-                                  </div>
-                                  </div>
-        )}
      
 
     </div>
