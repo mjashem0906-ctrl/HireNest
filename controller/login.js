@@ -1,4 +1,5 @@
 const User = require("../models/login");
+const GoogleUser = require("../models/googleUser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Activity = require("../models/activity");
@@ -119,8 +120,16 @@ const getAllUser = async (req, res) => {
     "memberId",
     "name photoUrl"
   );
+  const googleUsers = await GoogleUser.find().populate(
+    "memberId",
+    "name photoUrl"
+  );
 
-  return res.json(users);
+  const combined = [...users, ...googleUsers].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  return res.json(combined);
 };
 
 // LOGOUT
@@ -139,10 +148,17 @@ const logOut = (req, res) => {
 // CHECK AUTH
 const check = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).populate(
+    let user = await User.findById(req.user.userId).populate(
       "memberId",
       "resumeLink name photoUrl"
     );
+
+    if (!user) {
+      user = await GoogleUser.findById(req.user.userId).populate(
+        "memberId",
+        "resumeLink name photoUrl"
+      );
+    }
 
     if (!user) {
       return res.status(401).json({
@@ -184,6 +200,9 @@ const updateProfile = async (req, res) => {
 
   try {
     let user = await User.findById(userId);
+    if (!user) {
+      user = await GoogleUser.findById(userId);
+    }
 
     if (!user) {
       return res.status(404).json({
@@ -205,6 +224,7 @@ const updateProfile = async (req, res) => {
     if (!member) {
       member = new Member({
         email: user.username,
+        googleId: user.googleId || undefined,
         memberType:
           selectedRole === "Mentor"
             ? "Mentor"
@@ -217,6 +237,9 @@ const updateProfile = async (req, res) => {
       user.memberId = member._id;
 
     } else {
+      if (user.googleId && !member.googleId) {
+        member.googleId = user.googleId;
+      }
       Object.keys(profileData).forEach((key) => {
         if (
           profileData[key] !== undefined &&
@@ -300,7 +323,10 @@ const changePassword = async (req, res) => {
   const userId = req.user.userId;
 
   try {
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
+    if (!user) {
+      user = await GoogleUser.findById(userId);
+    }
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

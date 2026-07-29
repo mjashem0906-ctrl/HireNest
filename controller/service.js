@@ -347,7 +347,8 @@ const applyToService = async (req, res) => {
     // JWT may be stale (issued before profile setup) — fall back to DB lookup
     if (!applicantMemberId && req.user?.userId) {
       const LoginUser = require("../models/login");
-      const loginDoc = await LoginUser.findById(req.user.userId).select("memberId");
+      const GoogleUser = require("../models/googleUser");
+      const loginDoc = (await LoginUser.findById(req.user.userId).select("memberId")) || (await GoogleUser.findById(req.user.userId).select("memberId"));
       applicantMemberId = loginDoc?.memberId;
     }
 
@@ -617,8 +618,9 @@ const updateStatus = async (req, res) => {
     // --- NOTIFICATIONS WORKFLOW TRIGGER ---
     try {
       const LoginUser = require("../models/login");
+      const GoogleUser = require("../models/googleUser");
       // Find the user associated with this member
-      const user = await LoginUser.findOne({ memberId: memberId });
+      const user = (await LoginUser.findOne({ memberId: memberId })) || (await GoogleUser.findOne({ memberId: memberId }));
       
       if (user) {
         const isInterview = status === "Shortlisted";

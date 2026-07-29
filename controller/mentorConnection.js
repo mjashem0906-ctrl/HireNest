@@ -11,7 +11,8 @@ exports.createMentorConnection = async (req, res) => {
     let userMemberId = req.user?.memberId;
     if (!userMemberId && userId) {
       const LoginUser = require("../models/login");
-      const loginDoc = await LoginUser.findById(userId).select("memberId");
+      const GoogleUser = require("../models/googleUser");
+      const loginDoc = (await LoginUser.findById(userId).select("memberId")) || (await GoogleUser.findById(userId).select("memberId"));
       userMemberId = loginDoc?.memberId;
     }
 
@@ -115,18 +116,19 @@ exports.getMentorConnectionsByMentor = async (req, res) => {
   try {
     const { mentorId } = req.params;
     const User = require("../models/login");
+    const GoogleUser = require("../models/googleUser");
 
     const connections = await MentorConnection.find({ mentorId }).sort({
       createdAt: -1,
     });
 
-    // For any connection missing userMemberId (old records), look it up via userId → User.memberId
+    // For any connection missing userMemberId (old records), look it up via userId → User/GoogleUser.memberId
     const enriched = await Promise.all(
       connections.map(async (conn) => {
         const obj = conn.toObject();
         if (!obj.userMemberId && obj.userId) {
           try {
-            const userDoc = await User.findById(obj.userId).select("memberId");
+            const userDoc = (await User.findById(obj.userId).select("memberId")) || (await GoogleUser.findById(obj.userId).select("memberId"));
             if (userDoc?.memberId) {
               obj.userMemberId = userDoc.memberId;
             }

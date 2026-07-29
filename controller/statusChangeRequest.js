@@ -66,7 +66,8 @@ const statusApproved= async (req, res) => {
   // --- NOTIFICATIONS WORKFLOW TRIGGER ---
   try {
     const LoginUser = require("../models/login");
-    const user = await LoginUser.findOne({ memberId: request.requestedBy });
+    const GoogleUser = require("../models/googleUser");
+    const user = (await LoginUser.findOne({ memberId: request.requestedBy })) || (await GoogleUser.findOne({ memberId: request.requestedBy }));
     
     if (user) {
       await triggerNotification({

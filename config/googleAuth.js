@@ -1,6 +1,6 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const Login = require("../models/login");
+const GoogleUser = require("../models/googleUser");
 const Member = require("../models/member");
 
 // Helper: calculate profile completion % from a Member document
@@ -47,25 +47,24 @@ passport.use(
         const email = profile.emails[0].value;
         const googleId = profile.id;
 
-        // ── 1. Find or create the Login (User) record ──
-        let user = await Login.findOne({
+        // ── 1. Find or create in GoogleUser (googleusers collection) ──
+        let user = await GoogleUser.findOne({
           $or: [{ googleId }, { username: email }],
         });
 
         if (!user) {
-          user = await Login.create({
+          user = await GoogleUser.create({
             username: email,
             googleId,
             role: "Candidate",
             profileCompleted: 0,
           });
         } else if (!user.googleId) {
-          // Existing email/password account → attach Google ID
           user.googleId = googleId;
           await user.save();
         }
 
-        // ── 2. Auto-link pre-imported Member data (if not already linked) ──
+        // ── 2. Auto-link pre-imported Member data & sync googleId ──
         if (!user.memberId) {
           const existingMember = await Member.findOne({
             $or: [{ email: email }, { submittingEmail: email }],
@@ -92,7 +91,18 @@ passport.use(
               user.role = typeToRole[existingMember.memberType] || "Candidate";
             }
 
+            // Sync googleId to Member record
+            existingMember.googleId = googleId;
+            await existingMember.save();
+
             await user.save();
+          }
+        } else {
+          // Keep googleId synced on existing linked Member record
+          const linkedMember = await Member.findById(user.memberId);
+          if (linkedMember && linkedMember.googleId !== googleId) {
+            linkedMember.googleId = googleId;
+            await linkedMember.save();
           }
         }
 

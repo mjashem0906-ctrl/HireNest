@@ -1,10 +1,10 @@
 const Member = require("../models/member");   // ✅ IMPORTANT for Linux/Vercel case-sensitive
 const Activity = require("../models/activity");
 const User = require("../models/login");
+const GoogleUser = require("../models/googleUser");
 const Candidate = require("../models/candidate");
 const Recruiter = require("../models/Recruiter");
 const Referee = require("../models/Referee");
-const MemberComments = require("../models/memberComments");
 const MentorConnection = require("../models/mentorConnection");
 const SubTask = require("../models/subTask");
 const Service = require("../models/service");
@@ -176,6 +176,7 @@ const deleteMember = async (req, res) => {
     await Promise.all([
       // Authentication
       User.deleteMany({ $or: [{ memberId: id }, { username: memberEmail }] }),
+      GoogleUser.deleteMany({ $or: [{ memberId: id }, { username: memberEmail }] }),
       
       // Profiles
       Candidate.deleteMany({ email: memberEmail }),
@@ -183,7 +184,6 @@ const deleteMember = async (req, res) => {
       Referee.deleteMany({ email: memberEmail }),
       
       // Member-related data
-      MemberComments.deleteMany({ memberId: id }),
       MentorConnection.deleteMany({ $or: [{ userMemberId: id }, { mentorMemberId: id }] }),
       StatusChangeRequest.deleteMany({ requestedBy: id }),
       SubTask.deleteMany({ assignedTo: id }),

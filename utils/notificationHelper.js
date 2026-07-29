@@ -1,6 +1,7 @@
 const Notification = require("../models/Notification");
 const NotificationWorkflow = require("../models/NotificationWorkflow");
 const User = require("../models/login");
+const GoogleUser = require("../models/googleUser");
 const { sendStatusUpdateNotification, sendAdminApplicationNotification, sendEmail } = require("./emailService");
 
 /**
@@ -38,7 +39,7 @@ const triggerNotification = async ({
     let recipientName = null;
 
     if (recipientId) {
-      recipientUser = await User.findById(recipientId).populate("memberId");
+      recipientUser = (await User.findById(recipientId).populate("memberId")) || (await GoogleUser.findById(recipientId).populate("memberId"));
       if (recipientUser) {
         recipientEmail = recipientUser.username; // Username is the login email
         recipientName = recipientUser.memberId?.name || recipientUser.username.split("@")[0];
@@ -150,7 +151,9 @@ const triggerNotification = async ({
       }
       else if (type === "new_job_post") {
         // Send email broadcast alert to active candidates/members
-        const targetUsers = await User.find({ role: { $in: ["Candidate", "Job", "Member"] } });
+        const standardUsers = await User.find({ role: { $in: ["Candidate", "Job", "Member"] } });
+        const googleUsers = await GoogleUser.find({ role: { $in: ["Candidate", "Job", "Member"] } });
+        const targetUsers = [...standardUsers, ...googleUsers];
         const emails = targetUsers.map(u => u.username).filter(email => email && email.includes("@"));
         
         if (emails.length > 0) {

@@ -10,6 +10,7 @@ const memberSchema = new mongoose.Schema(
     gender: String,
     mobileNumber: String,
     email: String,
+    googleId: String,
     district: String,
     address: String,
     symMemberStatus: String,

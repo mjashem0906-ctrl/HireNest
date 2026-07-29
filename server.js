@@ -42,7 +42,6 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/auth", require("./routes/login"));
 app.use("/api/candidate", require("./routes/candidate"));
 app.use("/member", require("./routes/member"));
-app.use("/memberComments", require("./routes/memberComments"));
 app.use("/project", require("./routes/project"));
 app.use("/task", require("./routes/task"));
 app.use("/subTask", require("./routes/subTask"));
@@ -89,5 +88,13 @@ app.listen(PORT, async() => {
     await seedNotificationWorkflows();
   } catch (err) {
     console.error("Failed to run seedNotificationWorkflows on startup:", err);
+  }
+
+  // Migrate Google Users to googleusers collection
+  try {
+    const migrateGoogleUsers = require("./utils/migrateGoogleUsers");
+    await migrateGoogleUsers();
+  } catch (err) {
+    console.error("Failed to run migrateGoogleUsers on startup:", err);
   }
 });
