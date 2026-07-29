@@ -342,13 +342,19 @@ const applyToService = async (req, res) => {
     console.log('Request Body:', req.body);
 
     const serviceId = req.params.id;
-    let applicantMemberId = req.user?.memberId; // This is the APPLICANT's memberId
+    let applicantMemberId = req.user?.memberId || req.user?.userId || req.user?.id || req.user?._id;
 
     // JWT may be stale (issued before profile setup) — fall back to DB lookup
     if (!applicantMemberId && req.user?.userId) {
       const LoginUser = require("../models/login");
       const loginDoc = await LoginUser.findById(req.user.userId).select("memberId");
       applicantMemberId = loginDoc?.memberId;
+    }
+
+    if (!applicantMemberId && req.user?.email) {
+      const Candidate = require("../models/candidate");
+      const existing = (await Member.findOne({ email: req.user.email })) || (await Candidate.findOne({ email: req.user.email }));
+      if (existing) applicantMemberId = existing._id;
     }
 
     if (!applicantMemberId) {
@@ -395,6 +401,26 @@ const applyToService = async (req, res) => {
       // The validation error will be handled in the save operation
     }
 
+    // Get applicant details
+    console.log('Looking for member:', applicantMemberId);
+    let applicant = await Member.findById(applicantMemberId);
+    if (!applicant) {
+      const Candidate = require("../models/candidate");
+      applicant = await Candidate.findById(applicantMemberId);
+    }
+    if (!applicant && req.user?.email) {
+      const Candidate = require("../models/candidate");
+      applicant = (await Member.findOne({ email: req.user.email })) || (await Candidate.findOne({ email: req.user.email }));
+    }
+    if (!applicant) {
+      console.log('Applicant not found');
+      return res.status(404).json({
+        success: false,
+        message: "Applicant profile not found. Please complete your profile setup first."
+      });
+    }
+    applicantMemberId = applicant._id;
+
     // Check if already applied
     const alreadyApplied = service.appliedMembers.some(
       (a) => String(a.memberId) === String(applicantMemberId)
@@ -405,17 +431,6 @@ const applyToService = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Already applied to this service"
-      });
-    }
-
-    // Get applicant details
-    console.log('Looking for member:', applicantMemberId);
-    const applicant = await Member.findById(applicantMemberId);
-    if (!applicant) {
-      console.log('Applicant not found');
-      return res.status(404).json({
-        success: false,
-        message: "Applicant not found"
       });
     }
 

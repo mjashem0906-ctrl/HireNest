@@ -1,18 +1,42 @@
 const Referee = require('../models/Referee');
+const Member = require('../models/member');
 const Service = require('../models/service');
 const mongoose = require('mongoose');
+
+// Helper to format Member doc as Referee object for frontend
+const formatRefereeFromMember = (m) => ({
+  _id: m._id,
+  name: m.name || '',
+  email: m.email || '',
+  phoneNumber: m.mobileNumber || m.phoneNumber || '',
+  relationship: m.relationship || '',
+  gender: m.gender || '',
+  occupation: m.occupation || '',
+  companyDetails: m.companyDetails || m.currentInstitutionOrCompany || '',
+  referrerStatus: m.referrerStatus || 'Interested in joining',
+  referringOfferType: m.referringOfferType || '',
+  referringSector: m.referringSector || '',
+  referringFor: m.referringFor || '',
+  levelOfSupport: m.levelOfSupport || '',
+  memberType: m.memberType || 'Referee',
+  district: m.district || '',
+  age: m.age || '',
+  photoUrl: m.photoUrl || '',
+  memberReferenceNumber: m.memberReferenceNumber || null,
+  referrerContact: m.referrerContact || '',
+  declaration_Referee: m.declaration_Referee || false,
+  createdAt: m.createdAt,
+  updatedAt: m.updatedAt,
+});
 
 // Function to add a new referee
 const addReferee = async (req, res) => {
   try {
     const {
-      // Existing fields
       name,
       email,
       phoneNumber,
       relationship,
-      
-      // New fields from your frontend
       gender,
       occupation,
       companyDetails,
@@ -30,56 +54,77 @@ const addReferee = async (req, res) => {
       declaration_Referee
     } = req.body;
 
-    // 1. Check if referee already exists (optional)
-    const existingReferee = await Referee.findOne({ email });
-    if (existingReferee) {
+    const cleanEmail = String(email).trim().toLowerCase();
+    const existingMember = await Member.findOne({ email: cleanEmail });
+    if (existingMember) {
       return res.status(400).json({ message: "Referee with this email already exists" });
     }
 
-    // 2. Create new referee instance with all fields
-    const newReferee = new Referee({
-      // Existing fields
+    // 1. Save to Members collection (Primary storage)
+    const newMemberReferee = await Member.create({
       name,
-      email,
-      phoneNumber,
-      relationship,
-      
-      // New fields
+      email: cleanEmail,
+      mobileNumber: phoneNumber,
+      memberType: 'Referee',
       gender,
       occupation,
       companyDetails,
+      currentInstitutionOrCompany: companyDetails,
       referrerStatus,
       referringOfferType,
       referringSector,
       referringFor,
       levelOfSupport,
-      memberType,
       district,
       age,
       photoUrl,
       memberReferenceNumber,
       referrerContact,
-      declaration_Referee
+      declaration_Referee,
+      symMemberStatus: 'Active',
     });
 
-    // 3. Save to database
-    await newReferee.save();
+    // 2. Also save to legacy Referee model
+    let newReferee = null;
+    try {
+      newReferee = new Referee({
+        name,
+        email: cleanEmail,
+        phoneNumber,
+        relationship,
+        gender,
+        occupation,
+        companyDetails,
+        referrerStatus,
+        referringOfferType,
+        referringSector,
+        referringFor,
+        levelOfSupport,
+        memberType,
+        district,
+        age,
+        photoUrl,
+        memberReferenceNumber,
+        referrerContact,
+        declaration_Referee
+      });
+      await newReferee.save();
+    } catch (e) {
+      console.warn("Notice: Saved to Members collection. Referee legacy doc error:", e.message);
+    }
 
     res.status(201).json({ 
       message: "Referee added successfully!", 
-      referee: newReferee 
+      referee: formatRefereeFromMember(newMemberReferee)
     });
     
   } catch (error) {
     console.error("Error adding referee:", error);
-    
-    // Handle duplicate key error (for unique email)
     if (error.code === 11000) {
       return res.status(400).json({ 
         message: "Referee with this email already exists" 
       });
     }
-    
     res.status(500).json({ 
       message: "Server error", 
       error: error.message 
@@ -87,14 +132,27 @@ const addReferee = async (req, res) => {
   }
 };
 
-// Get all referees
+// Get all referees from Members collection
 const getAllReferees = async (req, res) => {
   try {
-    const referees = await Referee.find().sort({ createdAt: -1 });
+    const memberReferees = await Member.find({
+      memberType: { $regex: /referee/i }
+    }).sort({ createdAt: -1 });
+
+    const memberEmails = new Set(memberReferees.map(m => m.email?.toLowerCase()));
+
+    const legacyReferees = await Referee.find().sort({ createdAt: -1 });
+    const additionalReferees = legacyReferees.filter(r => !memberEmails.has(r.email?.toLowerCase()));
+
+    const combined = [
+      ...memberReferees.map(formatRefereeFromMember),
+      ...additionalReferees
+    ];
+
     res.status(200).json({
       success: true,
-      count: referees.length,
-      data: referees
+      count: combined.length,
+      data: combined
     });
   } catch (error) {
     console.error("Error fetching referees:", error);
@@ -106,21 +164,26 @@ const getAllReferees = async (req, res) => {
   }
 };
 
-// Get single referee by ID
+// Get single referee by ID from Members collection
 const getRefereeById = async (req, res) => {
   try {
-    const referee = await Referee.findById(req.params.id);
-    
-    if (!referee) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Referee not found" 
+    const memberDoc = await Member.findById(req.params.id);
+    if (memberDoc) {
+      return res.status(200).json({
+        success: true,
+        data: formatRefereeFromMember(memberDoc)
       });
     }
-    
-    res.status(200).json({
-      success: true,
-      data: referee
+    const legacyDoc = await Referee.findById(req.params.id);
+    if (legacyDoc) {
+      return res.status(200).json({
+        success: true,
+        data: legacyDoc
+      });
+    }
+    return res.status(404).json({ 
+      success: false,
+      message: "Referee not found" 
     });
   } catch (error) {
     console.error("Error fetching referee:", error);
@@ -132,43 +195,66 @@ const getRefereeById = async (req, res) => {
   }
 };
 
-// Update referee
+// Update referee in Members collection
 const updateReferee = async (req, res) => {
   try {
     const updates = req.body;
-    
-    // Add updatedAt timestamp
     updates.updatedAt = Date.now();
-    
-    const referee = await Referee.findByIdAndUpdate(
+
+    const memberUpdates = {
+      name: updates.name,
+      email: updates.email,
+      mobileNumber: updates.phoneNumber || updates.mobileNumber,
+      gender: updates.gender,
+      occupation: updates.occupation,
+      companyDetails: updates.companyDetails,
+      currentInstitutionOrCompany: updates.companyDetails,
+      referrerStatus: updates.referrerStatus,
+      referringOfferType: updates.referringOfferType,
+      referringSector: updates.referringSector,
+      referringFor: updates.referringFor,
+      levelOfSupport: updates.levelOfSupport,
+      district: updates.district,
+      age: updates.age,
+      photoUrl: updates.photoUrl,
+      referrerContact: updates.referrerContact,
+      declaration_Referee: updates.declaration_Referee,
+    };
+    Object.keys(memberUpdates).forEach(k => memberUpdates[k] === undefined && delete memberUpdates[k]);
+
+    let updatedMember = await Member.findByIdAndUpdate(
       req.params.id,
-      updates,
-      { new: true, runValidators: true }
+      { $set: memberUpdates },
+      { new: true }
     );
-    
-    if (!referee) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Referee not found" 
+
+    try {
+      await Referee.findByIdAndUpdate(req.params.id, updates, { new: true });
+    } catch (e) {}
+
+    if (updatedMember) {
+      return res.status(200).json({
+        success: true,
+        message: "Referee updated successfully",
+        data: formatRefereeFromMember(updatedMember)
+      });
+    }
+
+    const legacyUpdated = await Referee.findByIdAndUpdate(req.params.id, updates, { new: true });
+    if (legacyUpdated) {
+      return res.status(200).json({
+        success: true,
+        message: "Referee updated successfully",
+        data: legacyUpdated
       });
     }
     
-    res.status(200).json({
-      success: true,
-      message: "Referee updated successfully",
-      data: referee
+    return res.status(404).json({ 
+      success: false,
+      message: "Referee not found" 
     });
   } catch (error) {
     console.error("Error updating referee:", error);
-    
-    // Handle duplicate key error
-    if (error.code === 11000) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Email already exists" 
-      });
-    }
-    
     res.status(500).json({ 
       success: false,
       message: "Server error", 
@@ -177,21 +263,23 @@ const updateReferee = async (req, res) => {
   }
 };
 
-// Delete referee
+// Delete referee from Members collection
 const deleteReferee = async (req, res) => {
   try {
-    const referee = await Referee.findByIdAndDelete(req.params.id);
+    const deletedMember = await Member.findByIdAndDelete(req.params.id);
+    try {
+      await Referee.findByIdAndDelete(req.params.id);
+    } catch (e) {}
     
-    if (!referee) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Referee not found" 
+    if (deletedMember) {
+      return res.status(200).json({
+        success: true,
+        message: "Referee deleted successfully from Members collection"
       });
     }
-    
-    res.status(200).json({
-      success: true,
-      message: "Referee deleted successfully"
+    return res.status(404).json({ 
+      success: false,
+      message: "Referee not found" 
     });
   } catch (error) {
     console.error("Error deleting referee:", error);
@@ -203,7 +291,7 @@ const deleteReferee = async (req, res) => {
   }
 };
 
-// Search referees with filters
+// Search referees with filters in Members collection
 const searchReferees = async (req, res) => {
   try {
     const { 
@@ -215,31 +303,29 @@ const searchReferees = async (req, res) => {
       limit = 50 
     } = req.query;
     
-    let query = {};
+    let query = {
+      memberType: { $regex: /referee/i }
+    };
     
-    // Search across multiple fields
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
-        { phoneNumber: { $regex: search, $options: 'i' } },
+        { mobileNumber: { $regex: search, $options: 'i' } },
         { district: { $regex: search, $options: 'i' } },
         { occupation: { $regex: search, $options: 'i' } },
         { companyDetails: { $regex: search, $options: 'i' } }
       ];
     }
     
-    // Filter by occupation
     if (occupation) {
       query.occupation = { $regex: occupation, $options: 'i' };
     }
     
-    // Filter by company
     if (company) {
       query.companyDetails = { $regex: company, $options: 'i' };
     }
     
-    // Filter by status
     if (status) {
       query.referrerStatus = status;
     }
@@ -248,20 +334,20 @@ const searchReferees = async (req, res) => {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
     
-    const referees = await Referee.find(query)
+    const memberReferees = await Member.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum);
     
-    const total = await Referee.countDocuments(query);
+    const total = await Member.countDocuments(query);
     
     res.status(200).json({
       success: true,
-      count: referees.length,
+      count: memberReferees.length,
       total,
       page: pageNum,
       pages: Math.ceil(total / limitNum),
-      data: referees
+      data: memberReferees.map(formatRefereeFromMember)
     });
     
   } catch (error) {

@@ -46,7 +46,6 @@ app.use("/memberComments", require("./routes/memberComments"));
 app.use("/project", require("./routes/project"));
 app.use("/task", require("./routes/task"));
 app.use("/subTask", require("./routes/subTask"));
-app.use("/assignFor", require("./routes/assignFor"));
 app.use("/request", require("./routes/statusChangeRequest"));
 app.use("/dropdown", require("./routes/dropdown"));
 app.use("/activityList", require("./routes/activity"));
@@ -74,6 +73,14 @@ app.listen(PORT, async() => {
     await syncDropdowns();
   } catch (err) {
     console.error("Failed to run syncDropdowns on startup:", err);
+  }
+
+  // Sync Mentors, Job Recruiters, and Job Referees to Members collection on startup
+  try {
+    const syncMemberTypes = require("./utils/syncMemberTypes");
+    await syncMemberTypes();
+  } catch (err) {
+    console.error("Failed to run syncMemberTypes on startup:", err);
   }
 
   // Seed default notification workflows

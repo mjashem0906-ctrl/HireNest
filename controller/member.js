@@ -6,7 +6,6 @@ const Recruiter = require("../models/Recruiter");
 const Referee = require("../models/Referee");
 const MemberComments = require("../models/memberComments");
 const MentorConnection = require("../models/mentorConnection");
-const AssignFor = require("../models/assignFor");
 const SubTask = require("../models/subTask");
 const Service = require("../models/service");
 const StatusChangeRequest = require("../models/StatusChangeRequest");
@@ -186,7 +185,6 @@ const deleteMember = async (req, res) => {
       // Member-related data
       MemberComments.deleteMany({ memberId: id }),
       MentorConnection.deleteMany({ $or: [{ userMemberId: id }, { mentorMemberId: id }] }),
-      AssignFor.deleteMany({ memberId: id }),
       StatusChangeRequest.deleteMany({ requestedBy: id }),
       SubTask.deleteMany({ assignedTo: id }),
       Activity.deleteMany({ targetId: id }),
