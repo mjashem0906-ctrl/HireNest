@@ -292,9 +292,9 @@ const KARNATAKA_DISTRICTS = [
   "Shivamogga",
   "Tumakuru",
   "Udupi",
-  "Uttara Kannada (Karwar)",
+  "Uttara Kannada",
   "Vijayanagara",
-  "Vijayapura (Bijapur)",
+  "Vijayapura",
   "Yadgir",
 ];
 

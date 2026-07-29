@@ -433,7 +433,6 @@ function Members() {
     const type = String(member.memberType || '').toLowerCase();
     switch (activeTab) {
       case 'Job Seekers': return type.includes('seeker');
-      case 'Providers': return type.includes('provider');
       case 'Mentors': return type.includes('mentor');
       case 'Recruiters': return type.includes('recruiter');
       case 'Referees': return type.includes('referee');
@@ -469,7 +468,6 @@ function Members() {
   };
 
   const jobSeekers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('seeker')).length;
-  const providers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('provider')).length;
   const mentors = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('mentor')).length;
   const upskillers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('upskill')).length;
   const referees = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('referee')).length;
@@ -660,7 +658,7 @@ function Members() {
     { label: 'Job Referees', value: referees, icon: User, color: '#ec4899', spark: totalTrend, growth: 0, onClick: () => navigate('/referees') },
   ];
 
-  const TABS = ['All Members', 'Job Seekers', 'Providers', 'Mentors', 'Recruiters', 'Referees'];
+  const TABS = ['All Members', 'Job Seekers', 'Mentors', 'Recruiters', 'Referees'];
 
   // page number list
   const getPageNums = () => {

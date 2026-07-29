@@ -21,7 +21,6 @@ function Layout({ children }) {
     '/tasks': 'Tasks',
     '/subtasks': 'Subtasks',
     '/settings': 'Settings',
-    '/memberComments': 'About Members',
     '/mentors': 'Mentors',
     '/referees': 'Job Referees',
     '/recruiters': 'Job Recruiter',

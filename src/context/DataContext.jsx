@@ -7,7 +7,6 @@ const DataContext = createContext()
 export const DataProvider = ({ children }) => {
   const {user} = useAuth(); // get logged in user
   const [memberContext, setMemberContext] = useState([]);
-  const [memberCommentsContext,setMemberCommentsContext] = useState([]);
   const [projectContext,setProjectContext] = useState([]);
   const [taskContext,setTaskContext] = useState([]);
   const [subTaskContext,setSubTaskContext] = useState([]);
@@ -22,12 +21,10 @@ export const DataProvider = ({ children }) => {
       if(user?.role==="Admin"){
         fetchMemberData();
         fetchAllUserData();
-        fetchMemberComments();
         // fetchActivityData();
       }
       else if (user.role === "IT_Member") {
         fetchMemberData();
-        fetchMemberComments(); 
       }
       
       fetchProjectData();
@@ -46,7 +43,6 @@ export const DataProvider = ({ children }) => {
       setUserContext("");
       setAllUserContext([]);
       setPlaceContext([]);
-      setMemberCommentsContext([]);
       setJobContext([]);
     }
    
@@ -83,17 +79,6 @@ export const DataProvider = ({ children }) => {
   
     } catch (err) {
       console.error('Failed to load members:', err)
-    }
-  }
-  const fetchMemberComments = async () => {
-    try {
-      const res = await API.get('/memberComments')
-      const sorted = res.data.data.sort((a, b) => a.customId - b.customId)
-      setMemberCommentsContext(sorted);
-     
-  
-    } catch (err) {
-      console.error('Failed to load member comments:', err)
     }
   }
   const fetchUserData = async ()=>{
@@ -180,7 +165,7 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider value={{
        memberContext, projectContext,taskContext,subTaskContext,activityContext,userContext,allUserContext,placeContext,
-       memberCommentsContext,jobContext,setJobContext,setMemberCommentsContext,setPlaceContext,setMemberContext,setProjectContext,setTaskContext,setSubTaskContext,
+       jobContext,setJobContext,setPlaceContext,setMemberContext,setProjectContext,setTaskContext,setSubTaskContext,
        setActivityContext,setUserContext,setAllUserContext}}>
       {children}
     </DataContext.Provider>
