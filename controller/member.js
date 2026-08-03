@@ -47,6 +47,22 @@ const addMember = async (req, res) => {
   try {
     const payload = cleanPayload(req.body);
 
+    if (!payload.name || !String(payload.name).trim()) {
+      return res.status(400).json({ message: "Full Name is required." });
+    }
+    if (!payload.mobileNumber || !String(payload.mobileNumber).trim()) {
+      return res.status(400).json({ message: "Mobile Number is required." });
+    }
+    if (String(payload.mobileNumber).trim().length !== 10) {
+      return res.status(400).json({ message: "Mobile Number must be exactly 10 digits." });
+    }
+    if (!payload.email || !String(payload.email).trim()) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+    if (!payload.district || !String(payload.district).trim()) {
+      return res.status(400).json({ message: "District is required." });
+    }
+
     // Sync Cloudinary/Local upload paths
     if (payload.photo) payload.photoUrl = payload.photo;
     if (payload.resume) payload.resumeLink = payload.resume;

@@ -11,10 +11,14 @@ const { sendAdminPasswordChangedNotification, sendAdminOtpEmail } = require("../
 const register = async (req, res) => {
   const { memberId, username, password, role } = req.body;
 
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ message: "username and password is required" });
+  if (!memberId) {
+    return res.status(400).json({ message: "Member Name is required" });
+  }
+  if (!username || !String(username).trim()) {
+    return res.status(400).json({ message: "Username is required" });
+  }
+  if (!password || !String(password).trim()) {
+    return res.status(400).json({ message: "Password is required" });
   }
 
   try {
@@ -197,6 +201,24 @@ const check = async (req, res) => {
 const updateProfile = async (req, res) => {
   const { role, profileData } = req.body;
   const userId = req.user.userId;
+
+  if (profileData) {
+    if (profileData.mobileNumber !== undefined) {
+      const mobile = String(profileData.mobileNumber || "").trim();
+      if (!mobile) {
+        return res.status(400).json({ message: "Mobile Number is required." });
+      }
+      if (mobile.length !== 10) {
+        return res.status(400).json({ message: "Mobile Number must be exactly 10 digits." });
+      }
+    }
+    if (profileData.name !== undefined && !String(profileData.name || "").trim()) {
+      return res.status(400).json({ message: "Full Name is required." });
+    }
+    if (profileData.email !== undefined && !String(profileData.email || "").trim()) {
+      return res.status(400).json({ message: "Email is required." });
+    }
+  }
 
   try {
     let user = await User.findById(userId);
