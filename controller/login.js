@@ -204,11 +204,12 @@ const updateProfile = async (req, res) => {
 
   if (profileData) {
     if (profileData.mobileNumber !== undefined) {
-      const mobile = String(profileData.mobileNumber || "").trim();
-      if (!mobile) {
+      const rawMobile = String(profileData.mobileNumber || "").trim();
+      if (!rawMobile) {
         return res.status(400).json({ message: "Mobile Number is required." });
       }
-      if (mobile.length !== 10) {
+      const cleanMobile = rawMobile.replace(/\D/g, "");
+      if (cleanMobile.length !== 10) {
         return res.status(400).json({ message: "Mobile Number must be exactly 10 digits." });
       }
     }

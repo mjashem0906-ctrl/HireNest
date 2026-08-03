@@ -160,8 +160,8 @@ memberSchema.pre("save", async function (next) {
 
   // Sync preferredJobRole_Sector <-> careerProfile.role (both are arrays)
   const toArr = (v) => {
-    if (Array.isArray(v)) return v;
-    if (v && typeof v === 'string' && v.trim()) return [v.trim()];
+    if (Array.isArray(v)) return v.flat(Infinity).map((item) => String(item || "").trim()).filter(Boolean);
+    if (v && typeof v === "string" && v.trim()) return [v.trim()];
     return [];
   };
 

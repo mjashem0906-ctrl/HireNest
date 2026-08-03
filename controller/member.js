@@ -50,17 +50,15 @@ const addMember = async (req, res) => {
     if (!payload.name || !String(payload.name).trim()) {
       return res.status(400).json({ message: "Full Name is required." });
     }
-    if (!payload.mobileNumber || !String(payload.mobileNumber).trim()) {
+
+    const hasMobile = payload.mobileNumber && String(payload.mobileNumber).trim();
+    if (hasMobile) {
+      const cleanMobile = String(payload.mobileNumber).replace(/\D/g, "");
+      if (cleanMobile.length !== 10) {
+        return res.status(400).json({ message: "Mobile Number must be exactly 10 digits." });
+      }
+    } else if (payload.memberType !== "Mentor" && payload.memberType !== "Referee") {
       return res.status(400).json({ message: "Mobile Number is required." });
-    }
-    if (String(payload.mobileNumber).trim().length !== 10) {
-      return res.status(400).json({ message: "Mobile Number must be exactly 10 digits." });
-    }
-    if (!payload.email || !String(payload.email).trim()) {
-      return res.status(400).json({ message: "Email is required." });
-    }
-    if (!payload.district || !String(payload.district).trim()) {
-      return res.status(400).json({ message: "District is required." });
     }
 
     // Sync Cloudinary/Local upload paths
