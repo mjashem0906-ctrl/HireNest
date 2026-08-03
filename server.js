@@ -49,6 +49,7 @@ app.use("/request", require("./routes/statusChangeRequest"));
 app.use("/dropdown", require("./routes/dropdown"));
 app.use("/activityList", require("./routes/activity"));
 app.use("/place", require("./routes/places"));
+app.use("/jobs", require("./routes/jobRoutes"));
 app.use("/service", require("./routes/service"));
 // Add this line to server.js
 app.use("/api/recruiters", require("./routes/recruiterRoutes"));

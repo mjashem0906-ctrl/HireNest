@@ -7,7 +7,8 @@ const Recruiter = require("../models/Recruiter");
 const Referee = require("../models/Referee");
 const MentorConnection = require("../models/mentorConnection");
 const SubTask = require("../models/subTask");
-const Service = require("../models/service");
+const Job = require("../models/job");
+const Service = Job;
 const StatusChangeRequest = require("../models/StatusChangeRequest");
 
 /* ---------------------------------------

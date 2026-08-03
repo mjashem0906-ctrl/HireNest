@@ -4,7 +4,8 @@ const SibApiV3Sdk = require("@getbrevo/brevo");
 require("dotenv").config();
 
 const Member = require("../models/member");
-const Service = require("../models/service");
+const Job = require("../models/job");
+const Service = Job;
 const Recruiter = require("../models/Recruiter");
 
 // Initialize Brevo API

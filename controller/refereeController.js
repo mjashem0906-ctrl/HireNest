@@ -1,6 +1,7 @@
 const Referee = require('../models/Referee');
 const Member = require('../models/member');
-const Service = require('../models/service');
+const Job = require('../models/job');
+const Service = Job;
 const mongoose = require('mongoose');
 
 // Helper to format Member doc as Referee object for frontend
