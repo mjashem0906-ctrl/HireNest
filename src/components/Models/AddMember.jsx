@@ -1458,6 +1458,7 @@ function AddMember({
       };
 
       const res = editMember ? await API.put(`/member/${editMember._id}`, payload) : await API.post("/member", payload);
+      alert(editMember ? "Profile Updated Successfully" : "Successfully Created");
       onSuccess(res.data);
       onClose();
     } catch (err) {

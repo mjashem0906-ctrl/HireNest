@@ -244,7 +244,7 @@ function AddReferee({ onSuccess }) {
     try {
       const res = await API.post("/member", formData);
       if (onSuccess) onSuccess(res.data);
-      alert("Job Referee registered successfully!");
+      alert("Successfully Created");
       toggleModal();
     } catch (err) {
       console.error(err);

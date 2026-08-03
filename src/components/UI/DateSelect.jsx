@@ -96,7 +96,7 @@ export default function DateSelect({
                 // Universal override for all inner text/input tags to prevent color inheritance issues
                 "& *": {
                   color: "var(--ps-text, var(--text-primary)) !important",
-                  "-webkit-text-fill-color": "var(--ps-text, var(--text-primary)) !important",
+                  WebkitTextFillColor: "var(--ps-text, var(--text-primary)) !important",
                 },
                 "& .MuiInputBase-root": {
                   borderRadius: "12px",
@@ -129,7 +129,7 @@ export default function DateSelect({
                 },
                 "& .MuiSvgIcon-root": {
                   color: "var(--ps-muted, var(--icon-color)) !important",
-                  "-webkit-text-fill-color": "var(--ps-muted, var(--icon-color)) !important",
+                  WebkitTextFillColor: "var(--ps-muted, var(--icon-color)) !important",
                 },
               },
             },

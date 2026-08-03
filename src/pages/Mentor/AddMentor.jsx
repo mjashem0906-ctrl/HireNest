@@ -500,6 +500,7 @@ function AddMentor({ onSuccess, isEditing, editData, onClose }) {
         alert("Profile Updated Successfully");
       } else {
         res = await API.post("/member", payload);
+        alert("Successfully Created");
       }
 
       if (onSuccess) onSuccess(res.data);
