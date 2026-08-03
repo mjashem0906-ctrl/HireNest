@@ -1123,6 +1123,44 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
   };
 
   // ── Validation logic ───────────────────────────────────────────────────────
+  const validateBasicTab = () => {
+    const nextErrors = { name: "", district: "" };
+    let hasError = false;
+
+    if (!String(formData.name || "").trim()) {
+      nextErrors.name = "Full Name is required.";
+      hasError = true;
+    }
+    if (!String(formData.district || "").trim()) {
+      nextErrors.district = "District is required.";
+      hasError = true;
+    }
+
+    setErrors((prev) => ({ ...prev, ...nextErrors }));
+    return !hasError;
+  };
+
+  const validatePersonalTab = () => {
+    const nextErrors = { email: "", mobileNumber: "" };
+    let hasError = false;
+
+    if (!String(formData.email || "").trim()) {
+      nextErrors.email = "Email is required.";
+      hasError = true;
+    }
+    const mobile = String(formData.mobileNumber || "").trim();
+    if (!mobile) {
+      nextErrors.mobileNumber = "Mobile Number is required.";
+      hasError = true;
+    } else if (mobile.length !== 10) {
+      nextErrors.mobileNumber = "Mobile number must be exactly 10 digits.";
+      hasError = true;
+    }
+
+    setErrors((prev) => ({ ...prev, ...nextErrors }));
+    return !hasError;
+  };
+
   const validateCareerTab = () => {
     const nextErrors = { designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "" };
     let hasError = false;
@@ -1209,8 +1247,15 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
   const handleSave = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
 
-    if (formData.mobileNumber && formData.mobileNumber.length !== 10) {
-      alert("Mobile number must be exactly 10 digits.");
+    const basicOk = validateBasicTab();
+    if (!basicOk) {
+      setActiveTab("basic");
+      return;
+    }
+
+    const personalOk = validatePersonalTab();
+    if (!personalOk) {
+      setActiveTab("personal");
       return;
     }
 
@@ -1593,8 +1638,12 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
             <FormInput
               label="Full Name"
               value={formData.name}
-              onChange={(v) => setFormData({ ...formData, name: v })}
+              onChange={(v) => {
+                setFormData({ ...formData, name: v });
+                setErrors((p) => ({ ...p, name: "" }));
+              }}
               required
+              error={errors.name}
             />
 
             <DropdownSelect
@@ -1611,8 +1660,12 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
               placeholder="Select your district..."
               category="locationPreferences"
               onCustomAdded={fetchDynamicDropdowns}
-              onChange={(v) => setFormData({ ...formData, district: v })}
+              onChange={(v) => {
+                setFormData({ ...formData, district: v });
+                setErrors((p) => ({ ...p, district: "" }));
+              }}
               required
+              error={errors.district}
             />
           </div>
         )}
@@ -2071,8 +2124,12 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
             <FormInput
               label="Email"
               value={formData.email}
-              onChange={(v) => setFormData({ ...formData, email: v })}
+              onChange={(v) => {
+                setFormData({ ...formData, email: v });
+                setErrors((p) => ({ ...p, email: "" }));
+              }}
               required
+              error={errors.email}
             />
 
             <FormInput
@@ -2081,6 +2138,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
               onChange={handleMobileChange}
               required
               placeholder="10 digit number"
+              error={errors.mobileNumber}
             />
 
             <DateSelect

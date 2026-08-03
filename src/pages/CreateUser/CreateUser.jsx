@@ -87,10 +87,26 @@ const CreateUserForm = ({ isOpen, onClose }) => {
     setMessage("");
     setError(false);
 
+    if (!formData.memberId) {
+      setError(true);
+      setMessage("Please select a Member Name.");
+      return;
+    }
+    if (!String(formData.username || "").trim()) {
+      setError(true);
+      setMessage("Username is required.");
+      return;
+    }
+    if (!String(formData.password || "").trim()) {
+      setError(true);
+      setMessage("Password is required.");
+      return;
+    }
+
     try {
       const res = await API.post("/auth/register", formData);
       setMessage(res.data.message);
-      setFormData({ username: "", password: "", role: "Member" });
+      setFormData({ username: "", password: "", role: "Member", memberId: "" });
     } catch (err) {
       setError(true);
       setMessage(err.response?.data?.message || "Error creating user");

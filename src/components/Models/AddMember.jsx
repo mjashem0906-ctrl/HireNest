@@ -1220,6 +1220,44 @@ function AddMember({
     }));
   };
 
+  const validateBasicTab = () => {
+    const nextErrors = { ...errors, name: "", district: "" };
+    let hasError = false;
+
+    if (!String(formData.name || "").trim()) {
+      nextErrors.name = "Full Name is required.";
+      hasError = true;
+    }
+    if (!String(formData.district || "").trim()) {
+      nextErrors.district = "District is required.";
+      hasError = true;
+    }
+
+    setErrors((prev) => ({ ...prev, ...nextErrors }));
+    return !hasError;
+  };
+
+  const validatePersonalTab = () => {
+    const nextErrors = { ...errors, email: "", mobileNumber: "" };
+    let hasError = false;
+
+    if (!String(formData.email || "").trim()) {
+      nextErrors.email = "Email is required.";
+      hasError = true;
+    }
+    const mobile = String(formData.mobileNumber || "").trim();
+    if (!mobile) {
+      nextErrors.mobileNumber = "Mobile Number is required.";
+      hasError = true;
+    } else if (mobile.length !== 10) {
+      nextErrors.mobileNumber = "Mobile number must be exactly 10 digits.";
+      hasError = true;
+    }
+
+    setErrors((prev) => ({ ...prev, ...nextErrors }));
+    return !hasError;
+  };
+
   const validateCareerTab = () => {
     const nextErrors = { ...errors, designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "" };
     let hasError = false;
@@ -1323,8 +1361,15 @@ function AddMember({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.mobileNumber && formData.mobileNumber.length !== 10) {
-      alert("Mobile number must be exactly 10 digits.");
+    const basicOk = validateBasicTab();
+    if (!basicOk) {
+      setActiveTab("basic");
+      return;
+    }
+
+    const personalOk = validatePersonalTab();
+    if (!personalOk) {
+      setActiveTab("personal");
       return;
     }
 
@@ -1752,7 +1797,16 @@ function AddMember({
                 )}
               </div>
 
-              <FormInput label="Full Name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} required />
+              <FormInput
+                label="Full Name"
+                value={formData.name}
+                onChange={(v) => {
+                  setFormData({ ...formData, name: v });
+                  if (errors.name) setErrors((p) => ({ ...p, name: "" }));
+                }}
+                required
+                error={errors.name}
+              />
 
               <DropdownSelect
                 label="Gender"
@@ -1769,7 +1823,12 @@ function AddMember({
                 category="locationPreferences"
                 onCustomAdded={fetchDynamicDropdowns}
                 onOpenChange={setIsDropdownOpen}
-                onChange={(v) => setFormData({ ...formData, district: v })}
+                onChange={(v) => {
+                  setFormData({ ...formData, district: v });
+                  if (errors.district) setErrors((p) => ({ ...p, district: "" }));
+                }}
+                required
+                error={errors.district}
               />
 
               <DropdownSelect
@@ -2367,21 +2426,27 @@ function AddMember({
               <FormInput
                 label="Email"
                 value={formData.email}
-                onChange={(v) => setFormData({ ...formData, email: v })}
+                onChange={(v) => {
+                  setFormData({ ...formData, email: v });
+                  if (errors.email) setErrors((p) => ({ ...p, email: "" }));
+                }}
                 required
+                error={errors.email}
               />
 
               <FormInput
                 label="Mobile"
                 value={formData.mobileNumber}
-                onChange={(v) =>
+                onChange={(v) => {
                   setFormData({
                     ...formData,
                     mobileNumber: handleMobileChange(v),
-                  })
-                }
+                  });
+                  if (errors.mobileNumber) setErrors((p) => ({ ...p, mobileNumber: "" }));
+                }}
                 required
                 placeholder="10 digit number"
+                error={errors.mobileNumber}
               />
 
               <DateSelect
