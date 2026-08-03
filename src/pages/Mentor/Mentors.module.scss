@@ -2072,7 +2072,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 
   table {
     width: 100%;
-    min-width: 1300px;
+    min-width: 750px;
     border-collapse: collapse;
     table-layout: fixed;
     font-size: 13px;
@@ -2104,94 +2104,78 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     border-bottom: none;
   }
 
-  /* Column widths — 7 columns */
+  /* Column widths — 6 columns for Mentors View */
   thead th:nth-child(1),
   tbody td:nth-child(1) {
-    width: 180px;
+    width: 170px;
+    text-align: left;
   }
 
   thead th:nth-child(2),
   tbody td:nth-child(2) {
-    width: 200px;
+    width: 180px;
+    text-align: left;
   }
 
   thead th:nth-child(3),
   tbody td:nth-child(3) {
-    width: 280px;
+    width: 180px;
     text-align: left;
   }
 
   thead th:nth-child(4),
   tbody td:nth-child(4) {
-    width: 190px;
+    width: 120px;
     text-align: left;
   }
 
   thead th:nth-child(5),
   tbody td:nth-child(5) {
-    width: 140px;
+    width: 170px;
     text-align: left;
   }
 
   thead th:nth-child(6),
   tbody td:nth-child(6) {
-    width: 140px;
-    text-align: left;
-  }
-
-  thead th:nth-child(7),
-  tbody td:nth-child(7) {
-    width: 100px;
+    width: 80px;
     text-align: center;
   }
 
   &.candidateCardTable {
     table {
       width: 100%;
-      min-width: 1000px;
+      min-width: 650px;
     }
 
-    /* Column widths — 4 columns */
+    /* Column widths — 4/5 columns for Candidate View */
     thead th:nth-child(1),
     tbody td:nth-child(1) {
-      width: 250px;
+      width: 160px;
       text-align: left;
     }
 
     thead th:nth-child(2),
     tbody td:nth-child(2) {
-      width: 220px;
+      width: 150px;
       text-align: left;
     }
 
     thead th:nth-child(3),
     tbody td:nth-child(3) {
-      width: 220px;
+      width: 130px;
       text-align: left;
     }
 
     thead th:nth-child(4),
     tbody td:nth-child(4) {
-      width: 150px;
-      text-align: center;
+      width: 160px;
+      text-align: left;
     }
 
     thead th:nth-child(5),
     tbody td:nth-child(5) {
-      width: 120px;
+      width: 80px;
       text-align: center;
-    }
-
-    thead th:nth-child(6),
-    tbody td:nth-child(6) {
-      width: auto;
-      text-align: left;
-    }
-
-    thead th:nth-child(7),
-    tbody td:nth-child(7) {
-      width: auto;
-      text-align: left;
     }
   }
 }
@@ -2209,7 +2193,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 }
 
 .applicantStatus {
-  text-align: center;
+  text-align: left;
 }
 
 .applicantChangeStatus {
@@ -2764,26 +2748,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   background: linear-gradient(135deg, rgba(11, 18, 32, 0.8), rgba(15, 23, 42, 0.8)) !important;
 }
 
-/* ---- Candidate Card Table (Overriding 7-column widths for 6-column layout) ---- */
-.candidateCardTable {
-  thead th:nth-child(4),
-  tbody td:nth-child(4) {
-    width: 170px !important;
-    text-align: left !important;
-  }
 
-  thead th:nth-child(5),
-  tbody td:nth-child(5) {
-    width: 170px !important;
-    text-align: left !important;
-  }
-
-  thead th:nth-child(6),
-  tbody td:nth-child(6) {
-    width: 170px !important;
-    text-align: left !important;
-  }
-}
 
 .skillsListCell {
   display: flex;

@@ -506,7 +506,7 @@ function MemberDashboard() {
           setJobs(jobContext);
           return;
         }
-        const res = await API.get("/service");
+        const res = await API.get("/jobs");
         setJobs(Array.isArray(res.data?.data) ? res.data.data : []);
       } catch (e) {
         console.error("Failed to load jobs in dashboard", e);

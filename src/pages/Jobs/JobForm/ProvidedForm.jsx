@@ -45,7 +45,7 @@ function ProvidedForm( {isOpen, onClose, onSubmit}) {
               setBtnLoading(true);
               try {
                     
-                    const res = await API.post("/service", form);
+                    const res = await API.post("/jobs", form);
 
                     console.log(res.data);
 

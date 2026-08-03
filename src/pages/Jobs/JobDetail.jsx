@@ -167,7 +167,7 @@ function JobDetail() {
         setLoading(false);
       } else {
         try {
-          const res = await API.get(`/service/${id}`);
+          const res = await API.get(`/jobs/${id}`);
           if (res.data.success) setJob(res.data.data);
         } catch (err) { console.error(err); }
         setLoading(false);
@@ -225,7 +225,7 @@ function JobDetail() {
     try {
       let finalResumeLink = user.resumeLink || null;
       if (resumeFile) finalResumeLink = await uploadToServer(resumeFile);
-      const response = await API.post(`/service/${job._id}/apply`, { resumeLink: finalResumeLink });
+      const response = await API.post(`/jobs/${job._id}/apply`, { resumeLink: finalResumeLink });
       if (response.data.success || response.status === 200) {
         const updatedJob = response.data.data;
         setJobContext(prev => prev.map(j => j._id === id ? updatedJob : j));

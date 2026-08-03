@@ -3022,7 +3022,7 @@ function Jobs() {
       setLoadingState((prev) => ({ ...prev, fetching: true }));
       setError(null);
 
-      const res = await API.get("/service");
+      const res = await API.get("/jobs");
       const allJobs = res.data.data;
       setJobPosts(allJobs);
 
@@ -3119,7 +3119,7 @@ function Jobs() {
 
     try {
       setLoadingState((prev) => ({ ...prev, deleting: true }));
-      await API.delete(`/service/${jobId}`);
+      await API.delete(`/jobs/${jobId}`);
       setJobPosts((prev) => prev.filter((job) => job._id !== jobId));
       setMyPost((prev) => prev.filter((job) => job._id !== jobId));
       alert("Job deleted successfully");
@@ -3206,7 +3206,7 @@ function Jobs() {
       let finalResumeLink = null;
       if (resumeFile) finalResumeLink = await uploadToServer(resumeFile);
 
-      await API.post(`/service/${job._id}/apply`, { resumeLink: finalResumeLink });
+      await API.post(`/jobs/${job._id}/apply`, { resumeLink: finalResumeLink });
 
       alert("Applied successfully");
       fetchJobPosts();
@@ -3248,7 +3248,7 @@ function Jobs() {
     const dataToSend = { ...jobData, refereedBy: jobData.refereedBy || null };
 
     try {
-      const response = await API.patch(`/service/${editingJob._id}`, dataToSend);
+      const response = await API.patch(`/jobs/${editingJob._id}`, dataToSend);
       const updatedJob = response.data.data || response.data;
 
       setJobPosts((prev) =>
@@ -3275,7 +3275,7 @@ function Jobs() {
     const dataToSend = { ...jobData, refereedBy: jobData.refereedBy || null };
 
     try {
-      const response = await API.post("/service", dataToSend);
+      const response = await API.post("/jobs", dataToSend);
       const newJob = response.data.data || response.data;
 
       setJobPosts((prev) => [newJob, ...prev]);
@@ -3322,7 +3322,7 @@ function Jobs() {
       }));
 
       // Use the dedicated bulk endpoint to prevent race conditions and duplicate ID errors
-      const response = await API.post("/service/bulk", jobsToSubmit);
+      const response = await API.post("/jobs/bulk", jobsToSubmit);
 
       alert(`Successfully uploaded ${response.data.data.length} jobs!`);
       fetchJobPosts();
@@ -3365,7 +3365,7 @@ function Jobs() {
 
   const handleStatusChange = async (jobId, memberId, newStatus) => {
     try {
-      await API.patch(`/service/status`, { jobId, memberId, status: newStatus });
+      await API.patch(`/jobs/status`, { jobId, memberId, status: newStatus });
       alert(`Status updated to ${newStatus}`);
       fetchJobPosts();
     } catch (error) {

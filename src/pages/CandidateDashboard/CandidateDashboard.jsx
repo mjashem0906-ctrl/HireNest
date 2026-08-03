@@ -669,7 +669,7 @@ const CandidateDashboard = () => {
       try {
         setLoading(true);
         const [jobsRes, membersRes] = await Promise.all([
-          API.get("/service"),
+          API.get("/jobs"),
           API.get("/member"),
         ]);
         const allJobs    = jobsRes.data.data || [];

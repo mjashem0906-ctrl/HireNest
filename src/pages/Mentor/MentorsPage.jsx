@@ -1811,8 +1811,7 @@ const MentorsPage = () => {
                         <div className={styles.applicantsSection}>
                           <div className={styles.applicantsHeader}>
                             <h4>
-                              <Users size={16} /> Applicants (
-                              {mentorApplicants?.length || 0})
+                              <Users size={16} /> <span>Applicants ({mentorApplicants?.length || 0})</span>
                             </h4>
                             <span className={styles.applicantsCount}>
                               {mentorApplicants?.length || 0} total
@@ -1826,11 +1825,11 @@ const MentorsPage = () => {
                                   <tr>
                                     <th>Request Sent Date</th>
                                     <th>Name</th>
-                                    <th>Email</th>
+                                    {/* <th>Email</th> */}
                                     <th>Status</th>
                                     <th>Domain</th>
                                     <th>Skill</th>
-                                    <th>Message</th>
+                                    <th style={{ textAlign: "center" }}>View</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1851,9 +1850,9 @@ const MentorsPage = () => {
                                       <td className={styles.applicantName}>
                                         {app.userDetails?.name || "Unknown Applicant"}
                                       </td>
-                                      <td className={styles.applicantEmail}>
+                                      {/* <td className={styles.applicantEmail}>
                                         {app.userDetails?.email || "N/A"}
-                                      </td>
+                                      </td> */}
                                       <td className={styles.applicantStatus}>
                                         {editingStatusId === app._id ? (
                                           <select

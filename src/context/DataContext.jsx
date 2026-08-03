@@ -62,7 +62,7 @@ export const DataProvider = ({ children }) => {
   // }
   const fetchJobData = async()=>{
     try {
-           const res=  await API.get("/service");
+           const res=  await API.get("/jobs");
            const sorted = res.data.data;
            setJobContext(sorted); 
     }
