@@ -121,6 +121,7 @@ function Filter({ fields = [], onApplyFilters, initialValues = {} }) {
     </span>
   )}
 </div>
+
               {field.type === "select" && (
                     <Select
                       isClearable
