@@ -169,7 +169,7 @@ function EditableDropdown({
                     key={opt}
                     type="button"
                     className={`${styles.edItem} ${norm(opt) === norm(value) ? styles.edItemActive : ""
-                    }`}
+                      }`}
                     onClick={() => commit(opt)}
                     onMouseDown={(e) => e.preventDefault()}
                   >

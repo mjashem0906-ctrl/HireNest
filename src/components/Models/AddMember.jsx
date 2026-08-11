@@ -935,7 +935,8 @@ function AddMember({
       setFormData({
         ...initialState,
         ...editMember,
-        symMemberStatus: editMember.symMemberStatus || "",
+        solidarityMember: editMember.solidarityMember || editMember.symMemberStatus || "",
+        symMemberStatus: editMember.symMemberStatus || editMember.solidarityMember || "",
         branch: editMember.branch || "",
         educationStatus: editMember.educationStatus || "",
         passOutYear: editMember.passOutYear || "",
@@ -1833,11 +1834,15 @@ function AddMember({
               />
 
               <DropdownSelect
-                label="Solidarity Member Status"
-                value={formData.symMemberStatus}
-                options={[{ value: "Yes", label: "Yes" }, { value: "No", label: "No" }]}
+                label="Are you a member of solidarity moment ?"
+                value={formData.solidarityMember || formData.symMemberStatus}
+                options={[
+                  { value: "Yes", label: "Yes" },
+                  { value: "No", label: "No" },
+                  { value: "Interested in Join", label: "Interested in Join" },
+                ]}
                 onOpenChange={setIsDropdownOpen}
-                onChange={(v) => setFormData({ ...formData, symMemberStatus: v })}
+                onChange={(v) => setFormData({ ...formData, solidarityMember: v, symMemberStatus: v })}
               />
             </div>
           )}

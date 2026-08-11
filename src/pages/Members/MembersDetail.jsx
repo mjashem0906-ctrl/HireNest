@@ -189,7 +189,7 @@ function MembersDetail() {
             ) : (
               <div className={styles.avatar}>{getInitials(member.name)}</div>
             )}
-            {member.symMemberStatus === "Active" && (
+            {String(member.solidarityMember || member.symMemberStatus || "").toLowerCase() === "yes" && (
               <div className={styles.statusBadge}></div>
             )}
           </div>
@@ -200,9 +200,9 @@ function MembersDetail() {
               <span className={`${styles.badge} ${styles.typeBadge}`}>
                 {member.memberType}
               </span>
-              {member.symMemberStatus === "Active" && (
+              {String(member.solidarityMember || member.symMemberStatus || "").toLowerCase() === "yes" && (
                 <span className={`${styles.badge} ${styles.activeBadge}`}>
-                  <CheckCircle size={14} /> Active
+                  <CheckCircle size={14} /> Yes
                 </span>
               )}
             </div>

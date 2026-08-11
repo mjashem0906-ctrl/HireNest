@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../axios";
+import { calculateTotalMembersMetrics } from "../../utils/memberMetrics";
 import {
   Users,
   Briefcase,
@@ -337,6 +338,7 @@ function MemberDashboard() {
   const [jobs, setJobs] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [recruitersCount, setRecruitersCount] = useState(0);
+  const [recruitersList, setRecruitersList] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const [hoveredSlice, setHoveredSlice] = useState(null);
@@ -485,12 +487,15 @@ function MemberDashboard() {
         const res = await API.get("/api/recruiters");
         if (res.data && Array.isArray(res.data)) {
           setRecruitersCount(res.data.length);
+          setRecruitersList(res.data);
         } else if (res.data && typeof res.data.total === "number") {
           setRecruitersCount(res.data.total);
+          setRecruitersList(Array.isArray(res.data.data) ? res.data.data : []);
         }
       } catch (e) {
         console.error("Failed to fetch recruiters", e);
         setRecruitersCount(0);
+        setRecruitersList([]);
       }
     };
     if (authLoading) return;
@@ -534,15 +539,29 @@ function MemberDashboard() {
     return isNaN(time) ? 0 : time;
   };
 
+  const isMemberActiveYes = (m) => {
+    const raw = m?.solidarityMember || m?.symMemberStatus;
+    return String(raw || "").trim().toLowerCase() === "yes";
+  };
+
+  const combinedAllMembers = useMemo(() => {
+    const normRecruiters = (recruitersList || []).map(r => ({
+      ...r,
+      solidarityMember: r.solidarityMember || r.symMemberStatus || "Yes",
+      symMemberStatus: r.symMemberStatus || r.solidarityMember || "Yes",
+    }));
+    return [...(members || []), ...normRecruiters];
+  }, [members, recruitersList]);
+
   const activeTrendDash = useMemo(() => {
     return pastMonthsDash.map(m => {
       const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
-      return (members || []).filter(member => {
-        const isActive = String(member?.symMemberStatus || '').toLowerCase() === 'active';
+      return combinedAllMembers.filter(member => {
+        const isActive = isMemberActiveYes(member);
         return isActive && getMemberTimeDash(member) <= endOfMonth;
       }).length;
     });
-  }, [members, pastMonthsDash]);
+  }, [combinedAllMembers, pastMonthsDash]);
 
   const activeGrowthDash = useMemo(() => {
     const len = activeTrendDash.length;
@@ -695,8 +714,12 @@ function MemberDashboard() {
   const experiencedGrowth = getGrowthRate(experiencedList);
   const seekersGrowth = getGrowthRate(seekersList);
 
-  const totalMembers = seekers + recruiters + mentors + upskillers + referees;
-  const activeMembers = members.filter(m => String(m.symMemberStatus || '').toLowerCase() === 'active').length || members.length;
+  const {
+    totalMembers,
+    totalTrend: totalMembersTrend,
+    totalGrowth: totalMembersGrowth,
+  } = calculateTotalMembersMetrics(members, recruitersList);
+  const activeMembers = combinedAllMembers.filter(isMemberActiveYes).length;
   const newThisMonth = members.filter(m => {
     const raw = m.createdAt || m.timestamp;
     if (!raw) return false;
@@ -861,8 +884,8 @@ function MemberDashboard() {
       value: totalMembers,
       icon: Users,
       color: "#2563eb",
-      spark: SP.blue,
-      growth: totalGrowth,
+      spark: totalMembersTrend,
+      growth: totalMembersGrowth,
       onClick: () => navigate("/members"),
     },
     {
@@ -872,7 +895,7 @@ function MemberDashboard() {
       color: "#16a34a",
       spark: SP.green,
       growth: activeGrowthDash,
-      onClick: () => navigate("/members"),
+      onClick: () => navigate("/members", { state: { exactStatus: "Yes" } }),
     },
     {
       label: "New This Month",
@@ -881,7 +904,7 @@ function MemberDashboard() {
       color: "#7c3aed",
       spark: SP.purple,
       growth: newGrowthDash,
-      onClick: () => navigate("/members"),
+      onClick: () => navigate("/members", { state: { newThisMonth: true } }),
     },
     {
       label: "Active Job Openings",

@@ -837,6 +837,8 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     mobileNumber: initialData.mobileNumber || "",
     email: initialData.email || "",
     gender: initialData.gender || "",
+    solidarityMember: initialData.solidarityMember || initialData.symMemberStatus || "",
+    symMemberStatus: initialData.symMemberStatus || initialData.solidarityMember || "",
     dateOfBirth: initialData.dateOfBirth ? new Date(initialData.dateOfBirth) : null,
     district: initialData.district || "",
     currentInstitutionOrCompany: initialData.currentInstitutionOrCompany || "",
@@ -1666,6 +1668,17 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
               }}
               required
               error={errors.district}
+            />
+
+            <DropdownSelect
+              label="Are you a member of solidarity moment ?"
+              value={formData.solidarityMember}
+              options={[
+                { value: "Yes", label: "Yes" },
+                { value: "No", label: "No" },
+                { value: "Interested in Join", label: "Interested in Join" },
+              ]}
+              onChange={(v) => setFormData({ ...formData, solidarityMember: v, symMemberStatus: v })}
             />
           </div>
         )}

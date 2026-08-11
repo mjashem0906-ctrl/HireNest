@@ -1384,7 +1384,18 @@ const RecruitersPage = () => {
                           <td data-label="Role" className={styles.cellMuted}>{r.designation || r.contactPerson || '—'}</td>
                           <td data-label="Email" className={styles.cellMuted}>{r.email}</td>
                           <td data-label="Industry" className={styles.cellMuted}>{r.department || 'General'}</td>
-                          <td data-label="Status"><span className={`${styles.statusBadge} ${styles.status_active}`}>Active</span></td>
+                          <td data-label="Status">
+                            {(() => {
+                              const rawSt = r.solidarityMember || r.symMemberStatus || r.status;
+                              const stVal = (!rawSt || String(rawSt).toLowerCase() === 'active') ? 'Yes' : rawSt;
+                              const isNo = String(stVal).toLowerCase() === 'no';
+                              return (
+                                <span className={`${styles.statusBadge} ${isNo ? styles.statusNo : styles.status_active}`}>
+                                  {stVal}
+                                </span>
+                              );
+                            })()}
+                          </td>
                           <td data-label="Joined" className={styles.cellMuted}>{formatDate(r.createdAt)}</td>
                           <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
                             <div className={styles.actionsCell}>
@@ -1446,9 +1457,16 @@ const RecruitersPage = () => {
                         <span className={styles.cardDomainBadge}>
                           {r.department || "General"}
                         </span>
-                        <span className={`${styles.statusBadge} ${styles.status_active}`}>
-                          Active
-                        </span>
+                        {(() => {
+                          const rawSt = r.solidarityMember || r.symMemberStatus || r.status;
+                          const stVal = (!rawSt || String(rawSt).toLowerCase() === 'active') ? 'Yes' : rawSt;
+                          const isNo = String(stVal).toLowerCase() === 'no';
+                          return (
+                            <span className={`${styles.statusBadge} ${isNo ? styles.statusNo : styles.status_active}`}>
+                              {stVal}
+                            </span>
+                          );
+                        })()}
                       </div>
 
                       <div className={styles.cardContentList}>

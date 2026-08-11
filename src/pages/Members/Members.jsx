@@ -17,6 +17,7 @@ import API from '../../axios';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { parseDOB } from '../../utils/dateUtils';
+import { calculateTotalMembersMetrics } from '../../utils/memberMetrics';
 import styles from './Members.module.scss';
 
 // ── sparkline ────────────────────────────────────────────────────────────────
@@ -173,21 +174,25 @@ function Members() {
     return age ? `${age.years} years, ${age.months} months` : '—';
   };
 
-  const normalizeRecruiter = (r) => ({
-    _id: r._id,
-    name: r.fullName || r.name || '',
-    email: r.email || '',
-    mobileNumber: r.phone || r.mobileNumber || '',
-    memberType: 'Recruiter',
-    symMemberStatus: 'Active',
-    district: r.location || '',
-    profession: r.designation || '',
-    timestamp: r.createdAt || r.timestamp || '',
-    createdAt: r.createdAt || '',
-    photoUrl: r.profilePicture || '',
-    memberReferenceNumber: r.memberReferenceNumber || null,
-    _isRecruiter: true,
-  });
+  const normalizeRecruiter = (r) => {
+    const statusVal = r.solidarityMember || r.symMemberStatus || 'Yes';
+    return {
+      _id: r._id,
+      name: r.fullName || r.name || '',
+      email: r.email || '',
+      mobileNumber: r.phone || r.mobileNumber || '',
+      memberType: 'Recruiter',
+      symMemberStatus: statusVal,
+      solidarityMember: statusVal,
+      district: r.location || '',
+      profession: r.designation || '',
+      timestamp: r.createdAt || r.timestamp || '',
+      createdAt: r.createdAt || '',
+      photoUrl: r.profilePicture || '',
+      memberReferenceNumber: r.memberReferenceNumber || null,
+      _isRecruiter: true,
+    };
+  };
 
   const fetchData = () => {
     const normalizedRecruiters = recruiters.map(normalizeRecruiter);
@@ -253,6 +258,21 @@ function Members() {
         initialDisplayData = initialDisplayData.filter(m => m.memberType === location.state.exactMemberType);
         dashboardFilterValues = { memberType: location.state.exactMemberType };
         dashboardActiveFilters = { memberType: location.state.exactMemberType };
+      } else if (location.state.exactStatus || location.state.symMemberStatus) {
+        const targetStatus = location.state.exactStatus || location.state.symMemberStatus;
+        initialDisplayData = initialDisplayData.filter(m => {
+          const st = m.solidarityMember || m.symMemberStatus || "";
+          return String(st).trim().toLowerCase() === String(targetStatus).trim().toLowerCase();
+        });
+        dashboardFilterValues = { symMemberStatus: targetStatus };
+        dashboardActiveFilters = { symMemberStatus: targetStatus };
+      } else if (location.state.newThisMonth) {
+        initialDisplayData = initialDisplayData.filter(m => {
+          const raw = m.createdAt || m.timestamp;
+          if (!raw) return false;
+          const d = new Date(raw), now = new Date();
+          return !isNaN(d.getTime()) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
       }
     }
 
@@ -321,6 +341,11 @@ function Members() {
       if (filters[key]) {
         if (key === 'memberType') {
           filtered = filtered.filter(p => (p.memberType || "").includes(filters[key]));
+        } else if (key === 'symMemberStatus') {
+          filtered = filtered.filter(p => {
+            const st = p.solidarityMember || p.symMemberStatus || "";
+            return String(st).trim().toLowerCase() === String(filters.symMemberStatus).trim().toLowerCase();
+          });
         } else if (key === 'preferredJobRole_Sector') {
           filtered = filtered.filter(p => {
             const role = p.preferredJobRole_Sector || [];
@@ -474,7 +499,11 @@ function Members() {
   const recruitersCount = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('recruiter')).length || 6;
 
   // stats
-  const totalMembers = jobSeekers + recruitersCount + mentors + upskillers + referees;
+  const {
+    totalMembers,
+    totalTrend,
+    totalGrowth,
+  } = useMemo(() => calculateTotalMembersMetrics(allMembers, recruiters), [allMembers, recruiters]);
 
   const seekerMembers = allMembers.filter((m) => String(m.memberType || "").toLowerCase().includes("job seeker"));
 
@@ -528,13 +557,6 @@ function Members() {
     return isNaN(time) ? 0 : time;
   };
 
-  const totalTrend = useMemo(() => {
-    return pastMonths.map(m => {
-      const endOfMonth = new Date(m.year, m.month + 1, 0, 23, 59, 59, 999).getTime();
-      return allMembers.filter(member => getMemberTime(member) <= endOfMonth).length;
-    });
-  }, [allMembers, pastMonths]);
-
   const activeTrend = useMemo(() => {
     return pastMonths.map(m => {
       const endOfMonth = new Date(m.year, m.month + 1, 0, 23, 59, 59, 999).getTime();
@@ -565,14 +587,6 @@ function Members() {
       }).length;
     });
   }, [allMembers, pastMonths]);
-
-  const totalGrowth = useMemo(() => {
-    const len = totalTrend.length;
-    if (len < 2) return 0;
-    const current = totalTrend[len - 1];
-    const previous = totalTrend[len - 2] || 1;
-    return Math.round(((current - previous) / previous) * 100);
-  }, [totalTrend]);
 
   const activeGrowth = useMemo(() => {
     const len = activeTrend.length;
@@ -886,7 +900,7 @@ function Members() {
                     }}
                   >
                     <option value="">All Status</option>
-                    {unique(allMembers.map(m => m.symMemberStatus)).map(status => (
+                    {unique(allMembers.map(m => m.solidarityMember || m.symMemberStatus).filter(s => s && String(s).toLowerCase() !== 'active')).map(status => (
                       <option key={status} value={status}>
                         {status.length > 15 ? `${status.substring(0, 15)}...` : status}
                       </option>
@@ -1080,10 +1094,17 @@ function Members() {
                           </div>
                         </td>
                         <td data-label="Status">
-                          <span className={`${styles.statusBadge} ${String(member.symMemberStatus || '').toLowerCase() === 'no' ? styles.statusNo : ''}`}>
-                            <span className={`${styles.statusDot} ${String(member.symMemberStatus || '').toLowerCase() === 'no' ? styles.statusDotNo : ''}`} />
-                            {member.symMemberStatus || 'Yes'}
-                          </span>
+                          {(() => {
+                            const rawStatus = member.solidarityMember || member.symMemberStatus;
+                            const displayStatus = rawStatus || 'Yes';
+                            const isNo = String(displayStatus).toLowerCase() === 'no';
+                            return (
+                              <span className={`${styles.statusBadge} ${isNo ? styles.statusNo : ''}`}>
+                                <span className={`${styles.statusDot} ${isNo ? styles.statusDotNo : ''}`} />
+                                {displayStatus}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td data-label="Joined On" className={styles.cellMuted}>{formatJoinedDate(member.timestamp, member.createdAt)}</td>
                         <td data-label="Actions">

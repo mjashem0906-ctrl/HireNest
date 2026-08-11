@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import { 
-  Search, 
-  Mail, 
-  Phone, 
-  Briefcase, 
-  GraduationCap, 
-  MapPin, 
-  FileSpreadsheet, 
-  Download, 
-  Plus, 
-  FileText, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Mail,
+  Phone,
+  Briefcase,
+  GraduationCap,
+  MapPin,
+  FileSpreadsheet,
+  Download,
+  Plus,
+  FileText,
+  Edit,
+  Trash2,
   ExternalLink,
   Users,
   Filter,
@@ -80,17 +80,17 @@ const JobSeekersPage = () => {
       if (location.state.expFilter) {
         setExperienceTab(location.state.expFilter);
       }
-      
+
       if (location.state.exactEdu) {
         initialFilterValues.highest_education = location.state.exactEdu;
         initialActiveFilters.highest_education = location.state.exactEdu;
       }
-      
+
       if (location.state.exactDistrict) {
         initialFilterValues.district = location.state.exactDistrict;
         initialActiveFilters.district = location.state.exactDistrict;
       }
-      
+
       if (location.state.exactSkill) {
         initialFilterValues.skills = location.state.exactSkill;
         initialActiveFilters.skills = location.state.exactSkill;
@@ -110,10 +110,10 @@ const JobSeekersPage = () => {
   // Load Seekers from Context
   useEffect(() => {
     if (memberContext && memberContext.length > 0) {
-      const filtered = memberContext.filter(m => 
+      const filtered = memberContext.filter(m =>
         (m.memberType || "").toLowerCase().includes("job seeker")
       );
-      
+
       // Sort by reference number ascending
       const sorted = [...filtered].sort((a, b) => (a.memberReferenceNumber ?? 0) - (b.memberReferenceNumber ?? 0));
       setSeekers(sorted);
@@ -250,14 +250,14 @@ const JobSeekersPage = () => {
   const seekerFilterConfig = {
     labels: {
       name: 'Name', initialNumber: 'Min Age', finalNumber: 'Max Age', district: 'District',
-      gender: 'Gender', symMemberStatus: 'Solidarity Member Status', highest_education: 'Highest Education', 
-      preferredJobRole_Sector: 'Preferred Job Role', relocationStatus: 'Relocation Status', 
-      referrerStatus: 'Referrer Status', startDate: 'Member Since From', endDate: 'Member Since To', 
+      gender: 'Gender', symMemberStatus: 'Solidarity Member Status', highest_education: 'Highest Education',
+      preferredJobRole_Sector: 'Preferred Job Role', relocationStatus: 'Relocation Status',
+      referrerStatus: 'Referrer Status', startDate: 'Member Since From', endDate: 'Member Since To',
       skills: 'Skills', experienceTab: 'Experience'
     },
     fieldTypes: {
       name: 'string', initialNumber: 'number', finalNumber: 'number', district: 'string',
-      gender: 'string', symMemberStatus: 'string', highest_education: 'string', 
+      gender: 'string', symMemberStatus: 'string', highest_education: 'string',
       preferredJobRole_Sector: 'string', relocationStatus: 'string', referrerStatus: 'string',
       startDate: 'date', endDate: 'date', skills: 'string', experienceTab: 'string'
     },
@@ -435,16 +435,16 @@ const JobSeekersPage = () => {
       <div className={styles.topToolbar}>
         <div className={styles.searchWrapper}>
           <Search className={styles.searchIcon} size={20} />
-          <input 
-            type="text" 
-            placeholder="Search seekers by name, role, education or district..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
+          <input
+            type="text"
+            placeholder="Search seekers by name, role, education or district..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className={styles.actionGroup}>
-          <button 
+          <button
             className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
             onClick={() => setShowFilters(!showFilters)}
             title={showFilters ? "Hide Filters" : "Show Filters"}
@@ -459,7 +459,7 @@ const JobSeekersPage = () => {
           <button onClick={() => exportData('csv')} className={`${styles.btn} ${styles.csv}`}>
             <Download size={18} /> CSV
           </button>
-          
+
           <button onClick={() => { setEditMember(null); setShowModal(true); }} className={`${styles.btn} ${styles.add}`}>
             <Plus size={18} /> Add Seeker
           </button>
@@ -471,7 +471,7 @@ const JobSeekersPage = () => {
         <div className={styles.horizontalFilterContainer}>
           <div className={styles.filterRowWithScroll}>
             <div className={styles.filterRowContent}>
-              
+
               {/* Name Filter */}
               <div className={styles.filterField}>
                 <label>NAME</label>
@@ -669,7 +669,7 @@ const JobSeekersPage = () => {
                 </select>
               </div>
 
-              <button 
+              <button
                 className={styles.clearAllButton}
                 onClick={clearAllFilters}
               >
@@ -708,22 +708,22 @@ const JobSeekersPage = () => {
             const fresherStatus = isFresher(member);
             const branchText = member.branch || member.highestEducationSpecialization || "";
             const passedOutText = member.passOutYear || member.highestEducationPassedOutYear || "";
-            
+
             return (
-              <div 
-                key={member._id} 
+              <div
+                key={member._id}
                 className={styles.seekerCard}
                 onClick={() => navigate(`/member/${member._id}`)}
                 style={{ animationDelay: `${index * 0.03}s` }}
               >
                 <div className={styles.avatarWrapper}>
-                  <img 
+                  <img
                     src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
                     alt=""
                     onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
                   />
                 </div>
-                
+
                 <div className={styles.content}>
                   <div className={styles.badgeRow}>
                     <div className={styles.statusBadge}>
@@ -735,25 +735,25 @@ const JobSeekersPage = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <h3>{member.name}</h3>
-                  
+
                   <div className={styles.infoList}>
                     <div className={styles.infoItem}>
-                      <GraduationCap size={14} /> 
-                      <strong>Education:</strong> {member.highest_education || "N/A"} 
+                      <GraduationCap size={14} />
+                      <strong>Education:</strong> {member.highest_education || "N/A"}
                       {branchText ? ` (${branchText})` : ""}
                       {passedOutText ? ` - ${passedOutText}` : ""}
                     </div>
-                    
+
                     <div className={styles.infoItem}>
-                      <Briefcase size={14} /> 
+                      <Briefcase size={14} />
                       <strong>Preferred Role:</strong> {Array.isArray(member.preferredJobRole_Sector) ? member.preferredJobRole_Sector.join(", ") : (member.preferredJobRole_Sector || "Not Specified")}
                     </div>
 
                     {member.preferredJobLocation && (
                       <div className={styles.infoItem}>
-                        <MapPin size={14} /> 
+                        <MapPin size={14} />
                         <strong>Preferred Location:</strong> {member.preferredJobLocation}
                         {member.relocationStatus ? ` (${member.relocationStatus})` : ""}
                       </div>
@@ -774,10 +774,10 @@ const JobSeekersPage = () => {
 
                   <div className={styles.cardActions}>
                     {member.resumeLink ? (
-                      <a 
-                        href={member.resumeLink} 
-                        target="_blank" 
-                        rel="noreferrer" 
+                      <a
+                        href={member.resumeLink}
+                        target="_blank"
+                        rel="noreferrer"
                         className={styles.resumeLink}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -791,14 +791,14 @@ const JobSeekersPage = () => {
 
                     {isAdmin && (
                       <div className={styles.adminTools}>
-                        <button 
+                        <button
                           className={`${styles.actionBtn} ${styles.edit}`}
                           onClick={(e) => handleEdit(e, member)}
                           title="Edit Profile"
                         >
                           <Edit size={16} />
                         </button>
-                        <button 
+                        <button
                           className={`${styles.actionBtn} ${styles.delete}`}
                           onClick={(e) => handleDelete(e, member._id)}
                           title="Delete Profile"
