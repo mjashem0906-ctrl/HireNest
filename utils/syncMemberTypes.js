@@ -36,7 +36,8 @@ const syncMemberTypes = async () => {
         teamSize: r.teamSize || '',
         employeeId: r.employeeId || 'N/A',
         memberReferenceNumber: r.memberReferenceNumber || null,
-        symMemberStatus: 'Active',
+        symMemberStatus: 'Yes',
+        solidarityMember: 'Yes',
       };
 
       if (existingMember) {
@@ -82,7 +83,8 @@ const syncMemberTypes = async () => {
         memberReferenceNumber: ref.memberReferenceNumber || null,
         referrerContact: ref.referrerContact || '',
         declaration_Referee: ref.declaration_Referee || false,
-        symMemberStatus: 'Active',
+        symMemberStatus: 'Yes',
+        solidarityMember: 'Yes',
       };
 
       if (existingMember) {

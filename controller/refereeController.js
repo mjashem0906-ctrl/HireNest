@@ -82,7 +82,8 @@ const addReferee = async (req, res) => {
       memberReferenceNumber,
       referrerContact,
       declaration_Referee,
-      symMemberStatus: 'Active',
+      symMemberStatus: 'Yes',
+      solidarityMember: 'Yes',
     });
 
     // 2. Also save to legacy Referee model

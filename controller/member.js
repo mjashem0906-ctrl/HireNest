@@ -326,6 +326,7 @@ function cleanPayload(data) {
     // System
     "memberReferenceNumber",
     "symMemberStatus",
+    "solidarityMember",
 
     // ✅ Naukri-style fields
     "careerProfile",
@@ -347,6 +348,12 @@ function cleanPayload(data) {
       payload[key] = data[key];
     }
   });
+
+  const statusVal = payload.solidarityMember || payload.symMemberStatus;
+  if (statusVal !== undefined) {
+    payload.solidarityMember = statusVal;
+    payload.symMemberStatus = statusVal;
+  }
 
   return payload;
 }

@@ -13,7 +13,8 @@ const memberSchema = new mongoose.Schema(
     googleId: String,
     district: String,
     address: String,
-    symMemberStatus: String,
+    symMemberStatus: { type: String, default: "Yes" },
+    solidarityMember: { type: String, default: "Yes" },
     memberType: String,
     photoUrl: String,
 
@@ -64,7 +65,7 @@ const memberSchema = new mongoose.Schema(
     ],
 
     languages: [String],
-    
+
     // ✅ NEW: Added skills array so MongoDB actually saves it!
     skills: [String],
 
@@ -186,10 +187,10 @@ memberSchema.pre("save", async function (next) {
     try {
       const MemberModel = mongoose.models.Member || mongoose.model("Member");
       const RecruiterModel = mongoose.models.Recruiter || require("./Recruiter");
-      
+
       const allMembers = await MemberModel.find().select('memberReferenceNumber').lean();
       const allRecruiters = await RecruiterModel.find().select('memberReferenceNumber').lean();
-      
+
       let maxRefNo = 0;
       for (const m of [...allMembers, ...allRecruiters]) {
         if (m.memberReferenceNumber) {

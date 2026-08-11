@@ -85,7 +85,8 @@ const addRecruiter = async (req, res) => {
       teamSize,
       employeeId: employeeId || 'N/A',
       memberReferenceNumber,
-      symMemberStatus: 'Active',
+      symMemberStatus: 'Yes',
+      solidarityMember: 'Yes',
       registeredVia: registeredVia || 'admin',
     });
 

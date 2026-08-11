@@ -245,6 +245,8 @@ const updateProfile = async (req, res) => {
     }
 
     if (!member) {
+      const statusVal = profileData.solidarityMember || profileData.symMemberStatus;
+
       member = new Member({
         email: user.username,
         googleId: user.googleId || undefined,
@@ -253,6 +255,8 @@ const updateProfile = async (req, res) => {
             ? "Mentor"
             : "Job Seeker",
         ...profileData,
+        solidarityMember: statusVal || undefined,
+        symMemberStatus: statusVal || undefined,
       });
 
       await member.save();
@@ -271,6 +275,12 @@ const updateProfile = async (req, res) => {
           member[key] = profileData[key];
         }
       });
+
+      const statusVal = profileData.solidarityMember || profileData.symMemberStatus;
+      if (statusVal !== undefined) {
+        member.solidarityMember = statusVal;
+        member.symMemberStatus = statusVal;
+      }
 
       await member.save();
     }
