@@ -25,6 +25,7 @@ import {
   XCircle,
   Send,
   Download,
+  ChevronDown,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import API from "../../axios";
@@ -50,7 +51,60 @@ const MentorDetails = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectMessage, setConnectMessage] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("");
-  const [selectedSkill, setSelectedSkill] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [isSkillsOpen, setIsSkillsOpen] = useState(false);
+
+  const availableConnectDomains = React.useMemo(() => {
+    if (!mentor) return ["General"];
+    const set = new Set();
+    const add = (val) => {
+      if (!val) return;
+      if (Array.isArray(val)) {
+        val.forEach((item) => add(item));
+      } else if (typeof val === "string") {
+        val.split(",").forEach((item) => {
+          const trimmed = item.trim();
+          if (trimmed && trimmed.toLowerCase() !== "n/a" && trimmed.toLowerCase() !== "none") {
+            set.add(trimmed);
+          }
+        });
+      }
+    };
+    add(mentor.fieldofStudy_Interest);
+    add(mentor.branch);
+    add(mentor.domain);
+    add(mentor.domains);
+    add(mentor.careerProfile?.industry);
+    add(mentor.careerProfile?.department);
+    add(mentor.offeringSector);
+    add(mentor.preferredJobRole_Sector);
+
+    const list = Array.from(set).sort();
+    return list.length > 0 ? list : ["General"];
+  }, [mentor]);
+
+  const availableConnectSkills = React.useMemo(() => {
+    if (!mentor) return ["Mentorship", "Career Guidance"];
+    const set = new Set();
+    const add = (val) => {
+      if (!val) return;
+      if (Array.isArray(val)) {
+        val.forEach((item) => add(item));
+      } else if (typeof val === "string") {
+        val.split(",").forEach((item) => {
+          const trimmed = item.trim();
+          if (trimmed && trimmed.toLowerCase() !== "n/a" && trimmed.toLowerCase() !== "none") {
+            set.add(trimmed);
+          }
+        });
+      }
+    };
+    add(mentor.skills);
+    add(mentor.skillsToImprove);
+
+    const list = Array.from(set).sort();
+    return list.length > 0 ? list : ["Mentorship", "Career Guidance"];
+  }, [mentor]);
 
   // ── 3D tilt refs & handlers ─────────────────────────────
   const mainCardRef = useRef(null);
@@ -239,20 +293,38 @@ const MentorDetails = () => {
 
   const handleConnectClick = () => {
     setConnectMessage("");
+    setSelectedDomain("");
+    setSelectedSkills([]);
+    setIsSkillsOpen(false);
     setShowConnectModal(true);
   };
 
   const handleSendConnection = async () => {
+    if (!selectedDomain || !selectedDomain.trim()) {
+      alert("Please select a Domain.");
+      return;
+    }
+
+    if (!selectedSkills || selectedSkills.length === 0) {
+      alert("Please select at least one Skill.");
+      return;
+    }
+
     try {
       setConnectingId(id);
       const response = await API.post("/api/mentor-connections", {
         mentorId: id,
         message: connectMessage,
+        domain: selectedDomain,
+        skill: selectedSkills.join(", "),
       });
       if (response.status === 201) {
         setConnectStatus("pending");
         setShowConnectModal(false);
         setConnectMessage("");
+        setSelectedDomain("");
+        setSelectedSkills([]);
+        setIsSkillsOpen(false);
         alert("Connection request sent successfully!");
       }
     } catch (error) {
@@ -601,45 +673,155 @@ const MentorDetails = () => {
 
       {/* Connect Modal */}
       {showConnectModal && mentor && (
-        <div className={styles.modalOverlay} onClick={() => setShowConnectModal(false)}>
+        <div className={styles.modalOverlay} onClick={() => { setShowConnectModal(false); setIsSkillsOpen(false); }}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <h2>Connect with {mentor.name}</h2>
             <p>Send a message to {mentor.designation || "this mentor"} (optional)</p>
-            <select
-              value={selectedDomain}
-              onChange={(e) => setSelectedDomain(e.target.value)}
-              className={styles.selectInput}
-              style={{ marginBottom: "10px" }}
-            >
-              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Domains</option>
-              {mentor?.fieldofStudy_Interest?.split(",").map((domain, idx) => (
-                <option key={`domain-${idx}`} value={domain.trim()} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
-                  {domain.trim()}
+            
+            {/* Required Domain Field */}
+            <div style={{ marginBottom: "12px" }}>
+              <select
+                value={selectedDomain}
+                onChange={(e) => setSelectedDomain(e.target.value)}
+                className={styles.selectInput}
+                required
+              >
+                <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                  Domains *
                 </option>
-              ))}
-            </select>
-            <select
-              value={selectedSkill}
-              onChange={(e) => setSelectedSkill(e.target.value)}
-              className={styles.selectInput}
-              style={{ marginBottom: "10px" }}
-            >
-              <option value="" disabled hidden style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>Skills</option>
-              {mentor?.skills?.map((skill, idx) => (
-                <option key={`skill-${idx}`} value={skill} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
-                  {skill}
-                </option>
-              ))}
-            </select>
+                {availableConnectDomains.map((domain, idx) => (
+                  <option key={`domain-${idx}`} value={domain} style={{ backgroundColor: "var(--md-card-solid)", color: "var(--md-text)" }}>
+                    {domain}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Required Multi-Select Skills Field */}
+            <div style={{ marginBottom: "12px", position: "relative" }}>
+              <div
+                className={styles.selectInput}
+                onClick={() => setIsSkillsOpen(!isSkillsOpen)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  minHeight: "40px",
+                  height: "auto",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                  userSelect: "none"
+                }}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                  {selectedSkills.length === 0 ? (
+                    <span style={{ opacity: 0.6 }}>Skills *</span>
+                  ) : (
+                    selectedSkills.map((skill) => (
+                      <span
+                        key={skill}
+                        style={{
+                          backgroundColor: "rgba(59, 130, 246, 0.2)",
+                          color: "var(--md-text, #fff)",
+                          border: "1px solid rgba(59, 130, 246, 0.4)",
+                          borderRadius: "4px",
+                          padding: "2px 8px",
+                          fontSize: "0.8rem",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSkills((prev) => prev.filter((s) => s !== skill));
+                        }}
+                      >
+                        {skill}
+                        <span style={{ marginLeft: "2px", fontWeight: "bold", cursor: "pointer" }}>&times;</span>
+                      </span>
+                    ))
+                  )}
+                </div>
+                <ChevronDown
+                  size={14}
+                  style={{
+                    opacity: 0.7,
+                    marginLeft: "8px",
+                    flexShrink: 0,
+                    transition: "transform 0.2s ease",
+                    transform: isSkillsOpen ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
+                />
+              </div>
+
+              {isSkillsOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    zIndex: 100,
+                    marginTop: "4px",
+                    backgroundColor: "var(--md-card-solid, #1e293b)",
+                    border: "1px solid var(--md-border, #334155)",
+                    borderRadius: "8px",
+                    maxHeight: "180px",
+                    overflowY: "auto",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+                    padding: "6px 0"
+                  }}
+                >
+                  {availableConnectSkills.length === 0 ? (
+                    <div style={{ padding: "8px 12px", fontSize: "0.85rem", opacity: 0.7 }}>No skills listed for this mentor</div>
+                  ) : (
+                    availableConnectSkills.map((skill) => {
+                      const isSelected = selectedSkills.includes(skill);
+                      return (
+                        <label
+                          key={skill}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            fontSize: "0.88rem",
+                            color: "var(--md-text, #fff)",
+                            backgroundColor: isSelected ? "rgba(59, 130, 246, 0.15)" : "transparent"
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              if (isSelected) {
+                                setSelectedSkills((prev) => prev.filter((s) => s !== skill));
+                              } else {
+                                setSelectedSkills((prev) => [...prev, skill]);
+                              }
+                            }}
+                            style={{ cursor: "pointer" }}
+                          />
+                          <span>{skill}</span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
             <textarea
-              placeholder="Tell them why you'd like to connect..."
+              placeholder="Tell them why you'd like to connect... (optional)"
               value={connectMessage}
               onChange={(e) => setConnectMessage(e.target.value)}
               className={styles.messageInput}
               rows={4}
             />
             <div className={styles.modalActions}>
-              <button onClick={() => setShowConnectModal(false)} className={styles.cancelBtn}>
+              <button onClick={() => { setShowConnectModal(false); setIsSkillsOpen(false); }} className={styles.cancelBtn}>
                 Cancel
               </button>
               <button

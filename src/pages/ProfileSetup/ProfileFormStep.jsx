@@ -1188,10 +1188,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
       nextErrors.location = "Location Preference is required.";
       hasError = true;
     }
-    if (!String(formData.linkedinUrl || "").trim()) {
-      nextErrors.linkedinUrl = "LinkedIn Profile URL is required.";
-      hasError = true;
-    }
+
 
     setErrors((prev) => ({ ...prev, ...nextErrors }));
     return !hasError;
@@ -1833,7 +1830,6 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                 setErrors((prev) => ({ ...prev, linkedinUrl: "" }));
               }}
               placeholder="https://linkedin.com/in/your-profile"
-              required
               error={errors.linkedinUrl}
             />
 

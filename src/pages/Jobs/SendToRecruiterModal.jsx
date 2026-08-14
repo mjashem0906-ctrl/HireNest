@@ -25,7 +25,7 @@ const SendToRecruiterModal = ({ isOpen, onClose, applicant, job }) => {
     const fetchRecruiters = async () => {
       setLoadingRecruiters(true);
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
+        const res = await API.get("/api/recruiters");
         const list = res.data || [];
         setRecruiters(list);
 
@@ -96,10 +96,10 @@ Connecting Talent with Opportunities
 
   useEffect(() => {
     if (isOpen && applicant && job) {
-      const name = selectedRecruiter?.fullName || "Recruiter";
+      const name = selectedRecruiter?.fullName || selectedRecruiter?.name || "Recruiter";
       setEmailText(getEmailTemplate(name));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, applicant?.memberId?._id, job?._id, selectedRecruiter]);
 
   if (!isOpen || !applicant || !job) return null;
@@ -118,6 +118,8 @@ Connecting Talent with Opportunities
         memberId: applicant.memberId?._id,
         jobId: job._id,
         recruiterId: selectedRecruiter._id,
+        recruiterEmail: selectedRecruiter.email,
+        recruiterName: selectedRecruiter.fullName || selectedRecruiter.name,
         customText: emailText,
       });
       setStatus("success");

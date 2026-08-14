@@ -1284,10 +1284,7 @@ function AddMember({
       nextErrors.location = "Location Preference is required.";
       hasError = true;
     }
-    if (!String(formData.linkedinUrl || "").trim()) {
-      nextErrors.linkedinUrl = "LinkedIn Profile URL is required.";
-      hasError = true;
-    }
+
 
     setErrors(nextErrors);
     return !hasError;
@@ -1952,7 +1949,6 @@ function AddMember({
                   if (errors.linkedinUrl) setErrors({ ...errors, linkedinUrl: "" });
                 }}
                 placeholder="https://linkedin.com/in/your-profile"
-                required
                 error={errors.linkedinUrl}
               />
 

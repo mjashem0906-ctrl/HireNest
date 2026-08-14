@@ -49,124 +49,14 @@ export const initializeGlobalEffects = () => {
 };
 
 /**
- * 1. CURSOR GLOW TRAIL
+ * 1. CURSOR GLOW TRAIL (DISABLED - RESTORED NORMAL BROWSER CURSOR)
  */
 function initCursorGlow() {
-  if (!document.body) {
-    window.addEventListener('DOMContentLoaded', initCursorGlow);
-    return;
-  }
-
-  // Prevent initialization on touch devices or small screens to avoid stuck/floating cursor dots/rings on mobile
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || window.innerWidth <= 768;
-  if (isTouchDevice) {
-    return;
-  }
-
-  if (document.querySelector('.custom-cursor-dot')) return;
-
-  const dot = document.createElement('div');
-  dot.className = 'custom-cursor-dot';
-
-  const ring = document.createElement('div');
-  ring.className = 'custom-cursor-ring';
-
-  const glow = document.createElement('div');
-  glow.className = 'custom-cursor-glow';
-
-  // Append glow first so it sits beneath dot and ring
-  document.body.appendChild(glow);
-  document.body.appendChild(dot);
-  document.body.appendChild(ring);
-
-  document.body.classList.add('custom-cursor-active');
-
-  let mouseX = 0, mouseY = 0;
-  let dotX = 0, dotY = 0;
-  let ringX = 0, ringY = 0;
-  let glowX = 0, glowY = 0;
-  let isHidden = false;
-
-  // Track real mouse position
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-
-    if (isHidden) {
-      isHidden = false;
-      document.body.classList.remove('custom-cursor-hidden');
-    }
-  });
-
-  // Linear Interpolation (lerp) loop for high performance GPU-accelerated positions
-  function updateCursor() {
-    dotX += (mouseX - dotX) * 0.35;
-    dotY += (mouseY - dotY) * 0.35;
-
-    ringX += (mouseX - ringX) * 0.15;
-    ringY += (mouseY - ringY) * 0.15;
-
-    // Organic slow-follow drag for the big glowing radial light aura (spotlight effect)
-    glowX += (mouseX - glowX) * 0.08;
-    glowY += (mouseY - glowY) * 0.08;
-
-    dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
-    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-    glow.style.transform = `translate3d(${glowX}px, ${glowY}px, 0) translate(-50%, -50%)`;
-
-    requestAnimationFrame(updateCursor);
-  }
-  requestAnimationFrame(updateCursor);
-
-  // Dynamic Event Delegation for hover states across the SPA
-  document.addEventListener('mouseover', (e) => {
-    const target = e.target;
-    if (!target) return;
-
-    const clickable = target.closest('a, button, input, select, textarea, [role="button"], .clickable, .job-card, [onclick], .viewAllBtn, .lp-signin-btn, .lp-google-btn');
-
-    if (clickable) {
-      ring.classList.add('cursor-hover');
-      dot.classList.add('cursor-hover');
-      glow.classList.add('cursor-hover');
-    }
-  });
-
-  document.addEventListener('mouseout', (e) => {
-    const target = e.target;
-    if (!target) return;
-
-    const clickable = target.closest('a, button, input, select, textarea, [role="button"], .clickable, .job-card, [onclick], .viewAllBtn, .lp-signin-btn, .lp-google-btn');
-
-    if (clickable) {
-      const relatedTarget = e.relatedTarget;
-      if (!relatedTarget || !relatedTarget.closest('a, button, input, select, textarea, [role="button"], .clickable, .job-card, [onclick], .viewAllBtn, .lp-signin-btn, .lp-google-btn')) {
-        ring.classList.remove('cursor-hover');
-        dot.classList.remove('cursor-hover');
-        glow.classList.remove('cursor-hover');
-      }
-    }
-  });
-
-  // Click Interactions
-  document.addEventListener('mousedown', () => {
-    ring.classList.add('cursor-clicked');
-  });
-
-  document.addEventListener('mouseup', () => {
-    ring.classList.remove('cursor-clicked');
-  });
-
-  // Viewport Leave/Enter smooth handling
-  document.addEventListener('mouseleave', () => {
-    isHidden = true;
-    document.body.classList.add('custom-cursor-hidden');
-  });
-
-  document.addEventListener('mouseenter', () => {
-    isHidden = false;
-    document.body.classList.remove('custom-cursor-hidden');
-  });
+  if (!document.body) return;
+  // Clean up any existing custom cursor DOM elements if present
+  const elements = document.querySelectorAll('.custom-cursor-dot, .custom-cursor-ring, .custom-cursor-glow');
+  elements.forEach((el) => el.remove());
+  document.body.classList.remove('custom-cursor-active', 'custom-cursor-hidden');
 }
 
 /**
