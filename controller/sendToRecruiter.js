@@ -36,28 +36,53 @@ const sendCandidateToRecruiter = async (req, res) => {
       });
     }
 
-    const { memberId, jobId, recruiterId, customText } = req.body;
+    const { memberId, jobId, recruiterId, recruiterEmail, recruiterName, customText } = req.body;
 
-    if (!memberId || !recruiterId || !jobId) {
+    if (!memberId || !jobId || (!recruiterId && !recruiterEmail)) {
       return res.status(400).json({
         success: false,
-        message: "memberId, jobId and recruiterId are required",
+        message: "memberId, jobId and recruiterId/recruiterEmail are required",
       });
     }
 
-    // --- Fetch data ---
-    const [member, recruiter, service] = await Promise.all([
+    // --- Fetch candidate member & service/job ---
+    const [member, service] = await Promise.all([
       Member.findById(memberId),
-      Recruiter.findById(recruiterId),
       Service.findById(jobId).select("title appliedMembers"),
     ]);
 
     if (!member) {
       return res.status(404).json({ success: false, message: "Member not found" });
     }
-    if (!recruiter) {
-      return res.status(404).json({ success: false, message: "Recruiter not found" });
+
+    // --- Resolve Recruiter object & recipient email ---
+    let recruiter = null;
+    if (recruiterId) {
+      recruiter = await Member.findById(recruiterId);
+      if (!recruiter) {
+        recruiter = await Recruiter.findById(recruiterId);
+      }
     }
+
+    const targetEmail = (
+      recruiterEmail ||
+      recruiter?.email ||
+      recruiter?.companyEmail
+    )?.trim()?.toLowerCase();
+
+    if (!recruiter && targetEmail) {
+      recruiter = await Member.findOne({ email: targetEmail }) ||
+                  await Recruiter.findOne({ email: targetEmail });
+    }
+
+    if (!targetEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "The selected recruiter does not have a valid email address.",
+      });
+    }
+
+    const targetName = recruiterName || recruiter?.fullName || recruiter?.name || "Recruiter";
 
     const jobTitle = service?.title || "the position";
     const candidateName = member.name || "Candidate";
@@ -89,7 +114,6 @@ const sendCandidateToRecruiter = async (req, res) => {
          </p>`
       : `<br/><br/><p style="color:#64748b; font-size:13px;"><em>No resume available for this candidate.</em></p>`;
 
-    // --- Build professional HTML email body ---
     // --- Build professional HTML email body ---
     let htmlContent = "";
 
@@ -190,25 +214,25 @@ const sendCandidateToRecruiter = async (req, res) => {
     sendSmtpEmail.subject = `Candidate Profile: ${candidateName} — Applied for ${jobTitle}`;
     sendSmtpEmail.htmlContent = htmlContent;
     sendSmtpEmail.sender = sender;
-    sendSmtpEmail.to = [{ email: recruiter.email, name: recruiter.fullName }];
-    // CC to sender (record keeping)
-    sendSmtpEmail.cc = [{ email: process.env.BREVO_SENDER_EMAIL, name: process.env.BREVO_SENDER_NAME }];
+    sendSmtpEmail.to = [{ email: targetEmail, name: targetName }];
 
     // --- Send email ---
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log("✅ Candidate email sent to recruiter:", data.messageId);
+    const messageId = data?.body?.messageId || data?.messageId || "sent";
+    console.log(`✅ Candidate email sent to recruiter ${targetName} (${targetEmail}):`, messageId);
 
     return res.status(200).json({
       success: true,
-      message: `Email sent to ${recruiter.fullName} (${recruiter.email}) successfully`,
-      messageId: data.messageId,
+      message: `Email sent to ${targetName} (${targetEmail}) successfully`,
+      messageId: messageId,
     });
   } catch (error) {
-    console.error("sendCandidateToRecruiter error:", error);
+    const errorDetails = error.response?.data?.message || error.response?.body?.message || error.message;
+    console.error("sendCandidateToRecruiter error:", errorDetails, error);
     return res.status(500).json({
       success: false,
-      message: "Failed to send email",
-      error: error.message,
+      message: `Failed to send email: ${errorDetails}`,
+      error: errorDetails,
     });
   }
 };

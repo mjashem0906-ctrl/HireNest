@@ -22,6 +22,18 @@ exports.createMentorConnection = async (req, res) => {
       });
     }
 
+    if (!domain || (typeof domain === "string" && !domain.trim())) {
+      return res.status(400).json({
+        error: "Please select a Domain.",
+      });
+    }
+
+    if (!skill || (Array.isArray(skill) && skill.length === 0) || (typeof skill === "string" && !skill.trim())) {
+      return res.status(400).json({
+        error: "Please select at least one Skill.",
+      });
+    }
+
     // Check if connection already exists
     const existingConnection = await MentorConnection.findOne({
       userId,

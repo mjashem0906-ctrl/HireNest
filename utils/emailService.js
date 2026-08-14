@@ -23,7 +23,8 @@ const sendEmail = async (to, subject, htmlContent) => {
     sendSmtpEmail.to = [{ email: to }];
 
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log("Email sent successfully:", data.messageId);
+    const messageId = data?.body?.messageId || data?.messageId;
+    console.log("Email sent successfully:", messageId);
     return data;
   } catch (error) {
     console.error("Error sending email:", error);
@@ -44,7 +45,8 @@ const sendBulkEmail = async (toEmails, subject, htmlContent) => {
     sendSmtpEmail.to = toEmails.map(email => ({ email }));
 
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log("Bulk email sent successfully:", data.messageId);
+    const messageId = data?.body?.messageId || data?.messageId;
+    console.log("Bulk email sent successfully:", messageId);
     return data;
   } catch (error) {
     console.error("Error sending bulk email:", error);
@@ -109,7 +111,7 @@ const sendStatusUpdateNotification = async (memberEmail, memberName, jobTitle, n
 const sendAdminApplicationNotification = async (adminEmail, candidateInfo, jobTitle) => {
   // We use candidateInfo.name and candidateInfo.email based on what we send from the controller
   const subject = `New Application Received: ${jobTitle}`;
-  
+
   const htmlContent = `
     <h1>New Job Application</h1>
     <p>A new candidate has applied for a position.</p>
@@ -130,7 +132,7 @@ const sendAdminApplicationNotification = async (adminEmail, candidateInfo, jobTi
  */
 const sendAdminPasswordChangedNotification = async (adminEmail, adminName) => {
   const subject = `Your Admin Password has been updated`;
-  
+
   const htmlContent = `
     <h1>Password Change Successful</h1>
     <p>Dear ${adminName},</p>
