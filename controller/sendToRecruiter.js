@@ -72,7 +72,7 @@ const sendCandidateToRecruiter = async (req, res) => {
 
     if (!recruiter && targetEmail) {
       recruiter = await Member.findOne({ email: targetEmail }) ||
-                  await Recruiter.findOne({ email: targetEmail });
+        await Recruiter.findOne({ email: targetEmail });
     }
 
     if (!targetEmail) {
