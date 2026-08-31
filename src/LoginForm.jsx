@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
 import { FcGoogle } from "react-icons/fc";
+import { recordPortalVisit } from "./utils/portalAnalytics";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -32,6 +33,7 @@ const LoginForm = () => {
       const res = await API.post("/auth/login", formData);
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
+        recordPortalVisit();
         const userData = res.data.user;
         login(userData);
         if (

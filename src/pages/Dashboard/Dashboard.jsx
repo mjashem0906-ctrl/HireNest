@@ -23,6 +23,7 @@ import {
   UserPlus,
   Settings,
   HelpCircle,
+  Eye,
   Briefcase as BriefcaseIcon,
   Shield,
   ArrowUpRight,
@@ -345,6 +346,14 @@ function MemberDashboard() {
   const [growthPeriod, setGrowthPeriod] = useState("year"); // "year" | "month" | "week"
   const [showGrowthDropdown, setShowGrowthDropdown] = useState(false);
   const growthDropdownRef = React.useRef(null);
+  const [viewStats, setViewStats] = useState({
+    totalViews: 0,
+    todayViews: 0,
+    dailyGrowth: 0,
+    totalGrowth: 0,
+    dailySpark: SP.pink,
+    totalSpark: SP.cyan,
+  });
 
   // Close dropdown on outside click
   React.useEffect(() => {
@@ -522,6 +531,36 @@ function MemberDashboard() {
       loadJobs();
     }
   }, [jobContext, user, authLoading]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchViewStats = async () => {
+      try {
+        const res = await API.get("/api/portal-views/stats");
+        if (isMounted && res.data?.success) {
+          setViewStats({
+            totalViews: res.data.totalViews || 0,
+            todayViews: res.data.todayViews || 0,
+            dailyGrowth: res.data.dailyGrowth || 0,
+            totalGrowth: res.data.totalGrowth || 0,
+            dailySpark: Array.isArray(res.data.dailySpark) && res.data.dailySpark.length > 1 ? res.data.dailySpark : SP.pink,
+            totalSpark: Array.isArray(res.data.totalSpark) && res.data.totalSpark.length > 1 ? res.data.totalSpark : SP.cyan,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to fetch view stats in dashboard", e);
+      }
+    };
+
+    fetchViewStats();
+    const timer = setInterval(fetchViewStats, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, []);
 
   const pastMonthsDash = useMemo(() => {
     const months = [];
@@ -915,6 +954,24 @@ function MemberDashboard() {
       growth: jobsGrowthDash,
       onClick: () => navigate("/jobs"),
     },
+    {
+      label: "Total View Counts",
+      value: viewStats.totalViews,
+      icon: Eye,
+      color: "#06b6d4",
+      spark: viewStats.totalSpark,
+      growth: viewStats.totalGrowth,
+      trendLabel: "from last month",
+    },
+    {
+      label: "View Count Per Day",
+      value: viewStats.todayViews,
+      icon: TrendingUp,
+      color: "#ec4899",
+      spark: viewStats.dailySpark,
+      growth: viewStats.dailyGrowth,
+      trendLabel: "from yesterday",
+    },
   ];
 
 
@@ -974,7 +1031,7 @@ function MemberDashboard() {
                 {Number(s.growth) > 0 ? (
                   <ArrowUpRight size={11} style={{ display: "inline", marginRight: 2 }} />
                 ) : null}
-                {s.growth}% from last month
+                {s.growth}% {s.trendLabel || "from last month"}
               </div>
               <div className={styles.sparklineWrap}>
                 <Sparkline points={s.spark} color={s.color} />

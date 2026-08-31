@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import API from "../axios";
+import { clearPortalSession } from "../utils/portalAnalytics";
 
 const AuthContext = createContext();
 
@@ -142,6 +143,7 @@ export const AuthProvider = ({ children }) => {
     }
     setUser(null);
     localStorage.removeItem("token");
+    clearPortalSession();
   };
 
   return (

@@ -1666,17 +1666,6 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
               required
               error={errors.district}
             />
-
-            <DropdownSelect
-              label="Are you a member of solidarity moment ?"
-              value={formData.solidarityMember}
-              options={[
-                { value: "Yes", label: "Yes" },
-                { value: "No", label: "No" },
-                { value: "Interested in Join", label: "Interested in Join" },
-              ]}
-              onChange={(v) => setFormData({ ...formData, solidarityMember: v, symMemberStatus: v })}
-            />
           </div>
         )}
 

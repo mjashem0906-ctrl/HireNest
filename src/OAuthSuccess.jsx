@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import API from "./axios";
+import { recordPortalVisit } from "./utils/portalAnalytics";
 
 function OAuthSuccess() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ function OAuthSuccess() {
         if (urlToken) {
           console.log("[OAuth] Token found in URL, saving to storage...");
           localStorage.setItem("token", urlToken);
+          recordPortalVisit();
         }
 
         const res = await API.get("/auth/check");

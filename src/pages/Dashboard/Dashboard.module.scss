@@ -643,14 +643,12 @@
 /* ── STAT CARDS ── */
 .statRow {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
-@media (max-width: 1700px) { .statRow { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 1200px) { .statRow { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 800px)  { .statRow { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px)  { .statRow { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .statRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px)  { .statRow { grid-template-columns: 1fr; } }
 
 .statCard {
   background: var(--card-bg);

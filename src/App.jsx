@@ -38,6 +38,7 @@ import Settings from './pages/Settings/Settings';
 
 // ✅ Job Seekers
 import JobSeekersPage from './pages/JobSeeker/JobSeekersPage';
+import { recordPortalVisit } from './utils/portalAnalytics';
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
     initializeGlobalEffects();
+    recordPortalVisit();
   }, []);
 
   return (
