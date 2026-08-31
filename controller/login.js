@@ -6,6 +6,7 @@ const Activity = require("../models/activity");
 const Member = require("../models/member");
 const AdminOtp = require("../models/otp");
 const { sendAdminPasswordChangedNotification, sendAdminOtpEmail } = require("../utils/emailService");
+const { recordAccessSession } = require("../utils/portalAccessTracker");
 
 // Register new user
 const register = async (req, res) => {

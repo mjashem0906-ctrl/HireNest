@@ -24,6 +24,7 @@
 const router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const { recordAccessSession } = require("../utils/portalAccessTracker");
 
 // URL: /api/auth/google
 router.get(
@@ -35,7 +36,7 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", { session: false }),
-  (req, res) => {
+  async (req, res) => {
     const token = jwt.sign(
       {
         userId: req.user._id,

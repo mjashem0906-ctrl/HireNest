@@ -58,6 +58,7 @@ app.use("/api/mentor-connections", require("./routes/mentorConnection"));
 app.use("/referee", require("./routes/refereeRoutes"));
 app.use("/api/notifications", require("./routes/notification"));
 app.use("/api/send-to-recruiter", require("./routes/sendToRecruiter"));
+app.use("/api/portal-views", require("./routes/portalViewRoutes"));
 
 // Health check
 app.get('/health', (req, res) => {
