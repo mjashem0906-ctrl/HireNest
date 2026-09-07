@@ -1,11 +1,13 @@
 const Job = require("../models/job");
 const Member = require("../models/member");
+const Recruiter = require("../models/Recruiter");
 const {
   sendJobPostNotification,
   sendStatusUpdateNotification,
   sendAdminApplicationNotification
 } = require("../utils/emailService");
 const { triggerNotification } = require("../utils/notificationHelper");
+const { processJobMatchAndNotify } = require("../services/jobNotificationService");
 
 // Helper function to generate Job ID in YYMMXXX format
 const generateJobId = async () => {
@@ -77,6 +79,23 @@ const addServicePost = async (req, res) => {
 
     const normalizedEmploymentType = normalizeEmploymentType(employmentType);
 
+    // Validate that role and keySkills are provided
+    if (!role || !String(role).trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: ["'Job Role' is required."]
+      });
+    }
+
+    if (!keySkills || !String(keySkills).trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: ["'Key Skills' is required."]
+      });
+    }
+
     // Validate that at least one of refereedBy or jobPosted is provided
     if (!refereedBy && !jobPosted) {
       return res.status(400).json({
@@ -146,11 +165,16 @@ const addServicePost = async (req, res) => {
       .populate("refereedBy", "name email")
       .populate("jobPosted", "fullName email");
 
-    // --- NOTIFICATIONS WORKFLOW TRIGGER ---
+    // --- TRIGGER DYNAMIC RELEVANT JOB SEEKER EMAIL NOTIFICATIONS ---
+    processJobMatchAndNotify(service._id).catch((err) => {
+      console.error("[jobController] Background job notification error:", err);
+    });
+
+    // --- IN-APP NOTIFICATIONS WORKFLOW TRIGGER ---
     try {
       await triggerNotification({
         type: "new_job_post",
-        recipientId: null, // Broadcast to all candidates
+        recipientId: null,
         title: "New Job Posted",
         message: `A new job "${title}" at "${companyName || 'Verified Employer'}" has been posted.`,
         relatedId: service._id,
@@ -162,7 +186,7 @@ const addServicePost = async (req, res) => {
         }
       });
     } catch (notificationError) {
-      console.error("Failed to trigger new job post notification:", notificationError);
+      console.error("Failed to trigger in-app job post notification:", notificationError);
     }
 
     res.status(201).json({
@@ -785,6 +809,13 @@ const bulkCreateServices = async (req, res) => {
       createdServices.push(service);
     }
 
+    // Trigger dynamic notifications for each created job in bulk
+    for (const createdJob of createdServices) {
+      processJobMatchAndNotify(createdJob._id).catch((err) => {
+        console.error(`[jobController] Bulk notification error for ${createdJob._id}:`, err);
+      });
+    }
+
     try {
       if (createdServices.length > 0) {
         const jobsCount = createdServices.length;
@@ -805,7 +836,7 @@ const bulkCreateServices = async (req, res) => {
         });
       }
     } catch (notificationError) {
-      console.error("Failed to trigger bulk new job post notification:", notificationError);
+      console.error("Failed to trigger bulk in-app notification:", notificationError);
     }
 
     res.status(201).json({

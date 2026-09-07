@@ -149,53 +149,7 @@ const triggerNotification = async ({
           data.jobTitle || "Job Post"
         );
       }
-      else if (type === "new_job_post") {
-        // Send email broadcast alert to active candidates/members
-        const standardUsers = await User.find({ role: { $in: ["Candidate", "Job", "Member"] } });
-        const googleUsers = await GoogleUser.find({ role: { $in: ["Candidate", "Job", "Member"] } });
-        const targetUsers = [...standardUsers, ...googleUsers];
-        const emails = targetUsers.map(u => u.username).filter(email => email && email.includes("@"));
-        
-        if (emails.length > 0) {
-          const subject = `New Job Opportunity: ${data.jobTitle || "Job Openings"}`;
-          const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <h2 style="color: #4f46e5; margin-bottom: 20px;">New Job Posted</h2>
-              <p>Hi there,</p>
-              <p>A new job opportunity has been posted that might interest you:</p>
-              <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Role:</strong> ${data.jobTitle || "N/A"}</p>
-                <p style="margin: 5px 0;"><strong>Company:</strong> ${data.companyName || "N/A"}</p>
-                <p style="margin: 5px 0;"><strong>Location:</strong> ${data.location || "N/A"}</p>
-              </div>
-              <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to log in to your dashboard and apply!</p>
-              <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
-            </div>
-          `;
 
-          // Batch emails to bypass single envelope limits in Brevo
-          const SibApiV3Sdk = require("@getbrevo/brevo");
-          const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-          apiInstance.setApiKey(SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
-          const sender = { email: process.env.BREVO_SENDER_EMAIL, name: process.env.BREVO_SENDER_NAME };
-
-          const batchSize = 90;
-          for (let i = 0; i < emails.length; i += batchSize) {
-            const batch = emails.slice(i, i + batchSize);
-            const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-            sendSmtpEmail.subject = subject;
-            sendSmtpEmail.htmlContent = html;
-            sendSmtpEmail.sender = sender;
-            sendSmtpEmail.to = batch.map(email => ({ email }));
-            try {
-              await apiInstance.sendTransacEmail(sendSmtpEmail);
-            } catch (err) {
-              console.error(`[Notification] Bulk email batch failed: ${err.message}`);
-            }
-          }
-        }
-      }
       else if (type === "pending_action" || type === "system_notification") {
         const adminEmail = process.env.ADMIN_EMAIL || "jobbridgekarnataka@gmail.com";
         const subject = `Admin Alert: ${title}`;

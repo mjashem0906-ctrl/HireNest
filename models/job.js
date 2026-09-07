@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+require('./member');
+require('./Recruiter');
 
 const jobSchema = new mongoose.Schema({
     // --- Job Details ---
@@ -61,12 +63,12 @@ const jobSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        default: "",
+        required: [true, 'Job role is required'],
         trim: true
     },
     keySkills: {
         type: String,
-        default: "",
+        required: [true, 'Key skills are required'],
         trim: true
     },
 
