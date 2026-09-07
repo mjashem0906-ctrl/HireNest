@@ -467,6 +467,8 @@ function TagInputField({
   value = [],
   placeholder = "Type language and press Enter",
   options = [],
+  required = false,
+  error = "",
   onChange,
 }) {
   const [text, setText] = useState("");
@@ -524,11 +526,13 @@ function TagInputField({
 
   return (
     <div ref={wrapRef} className={styles.edWrap}>
-      <label className={styles.edLabel}>{label}</label>
+      <label className={styles.edLabel}>
+        {label} {required && <span className={styles.edReq}>*</span>}
+      </label>
 
       <div className={styles.edControl}>
         <div
-          className={styles.edField}
+          className={`${styles.edField} ${error ? styles.edFieldError : ""}`}
           onClick={() => {
             inputRef.current?.focus();
             if (options && options.length > 0) setOpen(true);
@@ -702,6 +706,7 @@ function TagInputField({
       >
         Press <b>Enter</b> to add. Backspace to remove last tag.
       </div>
+      {error && <p className={styles.edErrorText}>{error}</p>}
     </div>
   );
 }
@@ -920,7 +925,8 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     workExp: "",
     role: "",
     industry: "",
-    location: ""
+    location: "",
+    skills: "",
   });
 
   const photoInputRef = useRef(null);
@@ -1164,7 +1170,7 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
   };
 
   const validateCareerTab = () => {
-    const nextErrors = { designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "" };
+    const nextErrors = { designation: "", workExp: "", role: "", industry: "", location: "", linkedinUrl: "", skills: "" };
     let hasError = false;
 
     if (!String(formData.designation || "").trim()) {
@@ -1188,7 +1194,10 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
       nextErrors.location = "Location Preference is required.";
       hasError = true;
     }
-
+    if (!formData.skills || !Array.isArray(formData.skills) || formData.skills.filter((s) => String(s || "").trim()).length === 0) {
+      nextErrors.skills = "Skills is required. Please add at least one skill.";
+      hasError = true;
+    }
 
     setErrors((prev) => ({ ...prev, ...nextErrors }));
     return !hasError;
@@ -1237,9 +1246,10 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
     if (formData.careerProfile?.role && formData.careerProfile.role.length > 0) completedCount++;
     if (formData.careerProfile?.industry && String(formData.careerProfile.industry).trim().length > 0) completedCount++;
     if (formData.careerProfile?.location && String(formData.careerProfile.location).trim().length > 0) completedCount++;
+    if (formData.skills && formData.skills.filter((s) => String(s || "").trim()).length > 0) completedCount++;
     if (photoFile || formData.photoUrl) completedCount++;
 
-    return Math.min(100, Math.round((completedCount / 12) * 100));
+    return Math.min(100, Math.round((completedCount / 13) * 100));
   }, [formData, photoFile]);
 
   // ── Save action handler ────────────────────────────────────────────────────
@@ -1825,9 +1835,16 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
             <div style={{ gridColumn: "1 / -1", marginTop: "20px" }}>
               <TagInputField
                 label="Skills"
+                required
+                error={errors.skills}
                 value={formData.skills || []}
                 placeholder="Type a skill (e.g. React, Java, Python) and press Enter"
-                onChange={(next) => setFormData((p) => ({ ...p, skills: next }))}
+                onChange={(next) => {
+                  setFormData((p) => ({ ...p, skills: next }));
+                  if (next && next.length > 0) {
+                    setErrors((p) => ({ ...p, skills: "" }));
+                  }
+                }}
               />
             </div>
 

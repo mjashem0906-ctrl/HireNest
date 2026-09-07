@@ -1502,6 +1502,16 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!role?.trim()) {
+      alert("Job Role is required.");
+      return;
+    }
+
+    if (!keySkills?.trim()) {
+      alert("Key Skills is required.");
+      return;
+    }
+
     if (!refereedBy && !jobPosted) {
       alert("Please select either a Refereed Person or a Job Posted By (Recruiter).");
       return;
@@ -1707,13 +1717,15 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
 
             <div className={styles.formGroup}>
               <label>
-                <Target size={14} /> Job Role
+                <Target size={14} /> Job Role{" "}
+                <span className={styles.required}>*</span>
               </label>
               <input
                 className={styles.formInput}
                 type="text"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
+                required
               />
             </div>
 
@@ -1862,13 +1874,15 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
 
             <div className={`${styles.formGroup} ${styles.fullRow}`}>
               <label>
-                <Sparkles size={14} /> Key Skills
+                <Sparkles size={14} /> Key Skills{" "}
+                <span className={styles.required}>*</span>
               </label>
               <input
                 className={styles.formInput}
                 type="text"
                 value={keySkills}
                 onChange={(e) => setKeySkills(e.target.value)}
+                required
               />
             </div>
 
@@ -3262,7 +3276,8 @@ function Jobs() {
       handleCloseModal();
     } catch (error) {
       console.error("Error updating Job:", error);
-      alert("Failed to update job.");
+      const errMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || "Failed to update job.";
+      alert(errMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -3285,7 +3300,8 @@ function Jobs() {
       alert("Job posted successfully!");
     } catch (error) {
       console.error("Error adding Job:", error);
-      alert("Failed to save job.");
+      const errMsg = error.response?.data?.errors?.[0] || error.response?.data?.message || "Failed to save job.";
+      alert(errMsg);
     } finally {
       setIsSubmitting(false);
     }
