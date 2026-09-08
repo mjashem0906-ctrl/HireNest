@@ -1,24 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const SibApiV3Sdk = require("@getbrevo/brevo");
 require("dotenv").config();
 
 const Member = require("../models/member");
 const Job = require("../models/job");
 const Service = Job;
 const Recruiter = require("../models/Recruiter");
-
-// Initialize Brevo API
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-apiInstance.setApiKey(
-  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
-  process.env.BREVO_API_KEY
-);
-
-const sender = {
-  email: process.env.BREVO_SENDER_EMAIL,
-  name: process.env.BREVO_SENDER_NAME,
-};
+const { sendEmail } = require("../utils/emailService");
 
 /**
  * POST /api/send-to-recruiter
@@ -209,15 +197,9 @@ const sendCandidateToRecruiter = async (req, res) => {
 </html>`;
     }
 
-    // --- Build SendSmtpEmail object ---
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    sendSmtpEmail.subject = `Candidate Profile: ${candidateName} — Applied for ${jobTitle}`;
-    sendSmtpEmail.htmlContent = htmlContent;
-    sendSmtpEmail.sender = sender;
-    sendSmtpEmail.to = [{ email: targetEmail, name: targetName }];
-
-    // --- Send email ---
-    const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    // --- Send email via unified emailService ---
+    const subject = `Candidate Profile: ${candidateName} — Applied for ${jobTitle}`;
+    const data = await sendEmail(targetEmail, subject, htmlContent);
     const messageId = data?.body?.messageId || data?.messageId || "sent";
     console.log(`✅ Candidate email sent to recruiter ${targetName} (${targetEmail}):`, messageId);
 
