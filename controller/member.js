@@ -94,7 +94,7 @@ const addMember = async (req, res) => {
     const allMembers = await Member.find().select('memberReferenceNumber');
     const allRecruiters = await Recruiter.find().select('memberReferenceNumber');
     let maxRefNo = 0;
-    
+
     for (const m of [...allMembers, ...allRecruiters]) {
       if (m.memberReferenceNumber) {
         const parsed = parseInt(m.memberReferenceNumber, 10);
@@ -106,6 +106,43 @@ const addMember = async (req, res) => {
     payload.memberReferenceNumber = (maxRefNo + 1).toString();
 
     const member = await Member.create(payload);
+
+    // Sync with Recruiter collection if memberType is Recruiter
+    if (member.memberType === 'Recruiter' || member.memberType === 'Oppurtunity Provider') {
+      try {
+        const canonicalRecruiterData = {
+          name: member.name || member.fullName || '',
+          email: member.email,
+          mobileNumber: member.mobileNumber || member.phone || '',
+          memberType: 'Recruiter',
+          designation: member.designation || 'Recruiter',
+          department: member.department || '',
+          currentInstitutionOrCompany: member.currentInstitutionOrCompany || member.companyName || '',
+          companyGST: member.companyGST || '',
+          companyEmail: member.companyEmail || member.email,
+          district: member.district || member.location || '',
+          industries: member.industries || [],
+          roleTypes: member.roleTypes || [],
+          hiringVolume: member.hiringVolume || '',
+          teamSize: member.teamSize || '',
+          employeeId: member.employeeId || 'N/A',
+          memberReferenceNumber: member.memberReferenceNumber,
+          registeredVia: member.registeredVia || 'admin',
+          symMemberStatus: member.symMemberStatus,
+          solidarityMember: member.solidarityMember,
+        };
+        await Recruiter.findOneAndUpdate(
+          { $or: [{ email: member.email }, { memberReferenceNumber: member.memberReferenceNumber }] },
+          {
+            $set: canonicalRecruiterData,
+            $unset: { fullName: "", phone: "", location: "", companyName: "", password: "" }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.warn("Could not auto-sync new recruiter to Recruiter collection:", err.message);
+      }
+    }
 
     await Activity.create({
       type: "MEMBER",
@@ -159,12 +196,54 @@ const updateMember = async (req, res) => {
 
     const updatedMember = await Member.findByIdAndUpdate(
       req.params.id,
-      { $set: payload },
+      {
+        $set: payload,
+        ...(payload.memberType === 'Recruiter' || payload.memberType === 'Oppurtunity Provider' ? {
+          $unset: { fullName: "", phone: "", location: "", companyName: "", password: "" }
+        } : {})
+      },
       { new: true, runValidators: true }
     );
 
     if (!updatedMember) {
       return res.status(404).json({ message: "Member not found" });
+    }
+
+    // Sync with Recruiter collection if memberType is Recruiter
+    if (updatedMember.memberType === 'Recruiter' || updatedMember.memberType === 'Oppurtunity Provider') {
+      try {
+        const canonicalRecruiterData = {
+          name: updatedMember.name || updatedMember.fullName || '',
+          email: updatedMember.email,
+          mobileNumber: updatedMember.mobileNumber || updatedMember.phone || '',
+          memberType: 'Recruiter',
+          designation: updatedMember.designation || 'Recruiter',
+          department: updatedMember.department || '',
+          currentInstitutionOrCompany: updatedMember.currentInstitutionOrCompany || updatedMember.companyName || '',
+          companyGST: updatedMember.companyGST || '',
+          companyEmail: updatedMember.companyEmail || updatedMember.email,
+          district: updatedMember.district || updatedMember.location || '',
+          industries: updatedMember.industries || [],
+          roleTypes: updatedMember.roleTypes || [],
+          hiringVolume: updatedMember.hiringVolume || '',
+          teamSize: updatedMember.teamSize || '',
+          employeeId: updatedMember.employeeId || 'N/A',
+          memberReferenceNumber: updatedMember.memberReferenceNumber,
+          registeredVia: updatedMember.registeredVia || 'admin',
+          symMemberStatus: updatedMember.symMemberStatus,
+          solidarityMember: updatedMember.solidarityMember,
+        };
+        await Recruiter.findOneAndUpdate(
+          { $or: [{ email: updatedMember.email }, { memberReferenceNumber: updatedMember.memberReferenceNumber }] },
+          {
+            $set: canonicalRecruiterData,
+            $unset: { fullName: "", phone: "", location: "", companyName: "", password: "" }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (err) {
+        console.warn("Could not auto-sync updated recruiter to Recruiter collection:", err.message);
+      }
     }
 
     res.status(200).json(updatedMember);
@@ -192,18 +271,18 @@ const deleteMember = async (req, res) => {
       // Authentication
       User.deleteMany({ $or: [{ memberId: id }, { username: memberEmail }] }),
       GoogleUser.deleteMany({ $or: [{ memberId: id }, { username: memberEmail }] }),
-      
+
       // Profiles
       Candidate.deleteMany({ email: memberEmail }),
       Recruiter.deleteMany({ email: memberEmail }),
       Referee.deleteMany({ email: memberEmail }),
-      
+
       // Member-related data
       MentorConnection.deleteMany({ $or: [{ userMemberId: id }, { mentorMemberId: id }] }),
       StatusChangeRequest.deleteMany({ requestedBy: id }),
       SubTask.deleteMany({ assignedTo: id }),
       Activity.deleteMany({ targetId: id }),
-      
+
       // Jobs (Service) logic
       // - Delete jobs posted by this member
       Service.deleteMany({ memberId: id }),
@@ -211,7 +290,7 @@ const deleteMember = async (req, res) => {
       Service.updateMany({}, { $pull: { appliedMembers: { memberId: id } } }),
       // - Unset referral references
       Service.updateMany({ refereedBy: id }, { $set: { refereedBy: null } }),
-      
+
       // Finally delete the member record
       Member.findByIdAndDelete(id)
     ]);
@@ -323,6 +402,17 @@ function cleanPayload(data) {
     "interest_SkillBuildingProgram",
     "skillsToImprove",
 
+    // Recruiter fields (Canonical)
+    "department",
+    "employeeId",
+    "companyGST",
+    "companyEmail",
+    "industries",
+    "roleTypes",
+    "hiringVolume",
+    "teamSize",
+    "registeredVia",
+
     // System
     "memberReferenceNumber",
     "symMemberStatus",
@@ -358,9 +448,23 @@ function cleanPayload(data) {
   return payload;
 }
 
+/* ---------------------------------------
+   Get Active Members Count (solidarityMember: "Yes")
+---------------------------------------- */
+const getActiveMembersCount = async (req, res) => {
+  try {
+    const count = await Member.countDocuments({ solidarityMember: "Yes" });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Error fetching active members count:", error);
+    res.status(500).json({ message: "Server error fetching active members count" });
+  }
+};
+
 module.exports = {
   getAllMembers,
   getMemberById,
+  getActiveMembersCount,
   addMember,
   updateMember,
   deleteMember,

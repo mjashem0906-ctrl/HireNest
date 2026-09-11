@@ -1,43 +1,75 @@
 const Recruiter = require('../models/Recruiter');
 const Member = require('../models/member');
 
-// Helper to format Member doc as Recruiter object for frontend
-const formatRecruiterFromMember = (m) => ({
-  _id: m._id,
-  fullName: m.name || m.fullName || '',
-  email: m.email || '',
-  phone: m.mobileNumber || m.phone || '',
-  designation: m.designation || 'Recruiter',
-  department: m.department || '',
-  companyName: m.currentInstitutionOrCompany || m.companyName || '',
-  companyGST: m.companyGST || '',
-  companyEmail: m.companyEmail || m.email || '',
-  location: m.district || m.location || '',
-  industries: Array.isArray(m.industries) ? m.industries : (m.industries ? [m.industries] : []),
-  hiringVolume: m.hiringVolume || '',
-  teamSize: m.teamSize || '',
-  employeeId: m.employeeId || 'N/A',
-  memberReferenceNumber: m.memberReferenceNumber || null,
-  registeredVia: m.registeredVia || 'admin',
-  createdAt: m.createdAt,
-  updatedAt: m.updatedAt,
-});
+// Helper to format Recruiter doc for frontend UI compatibility
+const formatRecruiterDoc = (m) => {
+  const canonicalName = m.name || m.fullName || '';
+  const canonicalPhone = m.mobileNumber || m.phone || '';
+  const canonicalCompany = m.currentInstitutionOrCompany || m.companyName || '';
+  const canonicalDistrict = m.district || m.location || '';
 
-// @desc    Register a new recruiter
+  return {
+    _id: m._id,
+    name: canonicalName,
+    fullName: canonicalName,
+    email: m.email || '',
+    mobileNumber: canonicalPhone,
+    phone: canonicalPhone,
+    designation: m.designation || 'Recruiter',
+    department: m.department || '',
+    currentInstitutionOrCompany: canonicalCompany,
+    companyName: canonicalCompany,
+    companyGST: m.companyGST || '',
+    companyEmail: m.companyEmail || m.email || '',
+    district: canonicalDistrict,
+    location: canonicalDistrict,
+    industries: Array.isArray(m.industries) ? m.industries : (m.industries ? [m.industries] : []),
+    roleTypes: Array.isArray(m.roleTypes) ? m.roleTypes : [],
+    hiringVolume: m.hiringVolume || '',
+    teamSize: m.teamSize || '',
+    employeeId: m.employeeId || 'N/A',
+    memberReferenceNumber: m.memberReferenceNumber ? String(m.memberReferenceNumber) : null,
+    registeredVia: m.registeredVia || 'admin',
+    memberType: 'Recruiter',
+    symMemberStatus: m.symMemberStatus || m.solidarityMember || undefined,
+    solidarityMember: m.solidarityMember || m.symMemberStatus || undefined,
+    createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  };
+};
+
+// @desc    Register a new recruiter (Stored exclusively in MongoDB Recruiter collection)
 // @route   POST /api/recruiters
 const addRecruiter = async (req, res) => {
   try {
-    console.log("📥 Received Data:", req.body);
+    console.log("📥 Received Recruiter Registration Data:", req.body);
 
     const { 
-      fullName, email, phone, designation, department,
-      employeeId, companyName, companyGST, companyEmail, location, industries, roleTypes, hiringVolume, teamSize, registeredVia
+      fullName, name, email, phone, mobileNumber, designation, department,
+      employeeId, companyName, currentInstitutionOrCompany, companyGST, companyEmail,
+      location, district, industries, roleTypes, hiringVolume, teamSize, registeredVia
     } = req.body;
 
+    const recruiterName = (name || fullName || '').trim();
+    const recruiterEmail = String(email || '').trim().toLowerCase();
+    const recruiterPhone = String(mobileNumber || phone || '').trim();
+    const recruiterDesignation = (designation || '').trim();
+    const recruiterDept = (department || '').trim();
+    const recruiterCompany = (currentInstitutionOrCompany || companyName || '').trim();
+    const recruiterCompanyEmail = (companyEmail || recruiterEmail || '').trim().toLowerCase();
+    const recruiterDistrict = (district || location || '').trim();
+    const recruiterHiringVolume = (hiringVolume || '').trim();
+    const recruiterTeamSize = (teamSize || '').trim();
+    const recruiterIndustries = Array.isArray(industries) 
+      ? industries 
+      : (typeof industries === 'string' && industries.trim() 
+          ? industries.split(',').map(item => item.trim()).filter(Boolean)
+          : []);
+
     if (
-      !fullName || !email || !phone || !designation || !department || 
-      !companyName || !companyEmail || !location || !hiringVolume || !teamSize ||
-      !industries || (Array.isArray(industries) && industries.length === 0)
+      !recruiterName || !recruiterEmail || !recruiterPhone || !recruiterDesignation || !recruiterDept || 
+      !recruiterCompany || !recruiterCompanyEmail || !recruiterDistrict || !recruiterHiringVolume || !recruiterTeamSize ||
+      !recruiterIndustries || recruiterIndustries.length === 0
     ) {
       console.log("❌ Validation Failed: Missing required fields");
       return res.status(400).json({ 
@@ -45,186 +77,156 @@ const addRecruiter = async (req, res) => {
       });
     }
 
-    const cleanEmail = String(email).trim().toLowerCase();
-    const recruiterExists = (await Member.findOne({ email: cleanEmail })) || (await Recruiter.findOne({ email: cleanEmail }));
-    if (recruiterExists) {
+    // Check if recruiter already exists in Recruiter collection with the same email
+    const existingRecruiterByEmail = await Recruiter.findOne({ 
+      $or: [
+        { email: recruiterEmail },
+        { email: { $regex: new RegExp(`^${recruiterEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+      ]
+    });
+
+    if (existingRecruiterByEmail) {
       return res.status(400).json({ message: "This email is already registered" });
     }
 
     // Auto-generate sequential memberReferenceNumber across Members & Recruiters
-    const allMembers = await Member.find().select('memberReferenceNumber');
-    const allRecruiters = await Recruiter.find().select('memberReferenceNumber');
-    let maxRefNo = 0;
-    
-    for (const m of [...allMembers, ...allRecruiters]) {
-      if (m.memberReferenceNumber) {
-        const parsed = parseInt(m.memberReferenceNumber, 10);
-        if (!isNaN(parsed) && parsed > maxRefNo) {
-          maxRefNo = parsed;
+    let memberReferenceNumber = req.body.memberReferenceNumber ? String(req.body.memberReferenceNumber).trim() : null;
+    if (!memberReferenceNumber) {
+      const allMembers = await Member.find().select('memberReferenceNumber').lean();
+      const allRecruiters = await Recruiter.find().select('memberReferenceNumber').lean();
+      let maxRefNo = 0;
+      
+      for (const m of [...allMembers, ...allRecruiters]) {
+        if (m.memberReferenceNumber) {
+          const parsed = parseInt(m.memberReferenceNumber, 10);
+          if (!isNaN(parsed) && parsed > maxRefNo) {
+            maxRefNo = parsed;
+          }
         }
       }
+      memberReferenceNumber = (maxRefNo + 1).toString();
     }
-    const memberReferenceNumber = (maxRefNo + 1).toString();
 
-    // 1. Create in Members collection (Primary storage)
-    const memberRecruiter = await Member.create({
-      name: fullName,
-      email: cleanEmail,
-      mobileNumber: phone,
-      memberType: 'Oppurtunity Provider',
-      designation,
-      department,
-      currentInstitutionOrCompany: companyName,
-      companyName,
+    const statusVal = req.body.solidarityMember || req.body.symMemberStatus || undefined;
+
+    // Canonical Recruiter Data Only (Stored exclusively in Recruiter collection)
+    const canonicalData = {
+      name: recruiterName,
+      email: recruiterEmail,
+      mobileNumber: recruiterPhone,
+      memberType: 'Recruiter',
+      designation: recruiterDesignation,
+      department: recruiterDept,
+      currentInstitutionOrCompany: recruiterCompany,
       companyGST: companyGST || '',
-      companyEmail: companyEmail || cleanEmail,
-      district: location,
-      location,
-      industries: Array.isArray(industries) ? industries : [industries],
-      hiringVolume,
-      teamSize,
+      companyEmail: recruiterCompanyEmail,
+      district: recruiterDistrict,
+      industries: recruiterIndustries,
+      roleTypes: Array.isArray(roleTypes) ? roleTypes : [],
+      hiringVolume: recruiterHiringVolume,
+      teamSize: recruiterTeamSize,
       employeeId: employeeId || 'N/A',
       memberReferenceNumber,
-      symMemberStatus: 'Yes',
-      solidarityMember: 'Yes',
       registeredVia: registeredVia || 'admin',
-    });
+      ...(statusVal ? { symMemberStatus: statusVal, solidarityMember: statusVal } : {}),
+    };
 
-    // 2. Also save to Recruiter collection for backward compatibility
-    let recruiterDoc = null;
-    try {
-      recruiterDoc = await Recruiter.create({
-        memberReferenceNumber,
-        fullName,
-        email: cleanEmail,
-        phone,
-        designation,
-        department,
-        companyName,
-        companyGST: companyGST || '',
-        companyEmail: companyEmail || cleanEmail,
-        location,
-        industries: Array.isArray(industries) ? industries : [industries],
-        hiringVolume,
-        teamSize,
-        employeeId: employeeId || "N/A",
-        roleTypes: roleTypes || [],
-        registeredVia: registeredVia || "admin",
-        password: "secretPassword123" 
-      });
-    } catch (e) {
-      console.warn("Notice: Saved to Members collection. Recruiter legacy doc error:", e.message);
-    }
+    // Store exclusively in MongoDB Recruiter collection (No write to Member or other collections)
+    const createdRecruiter = await Recruiter.create(canonicalData);
+    console.log("✅ Stored Recruiter exclusively in Recruiter collection:", createdRecruiter._id);
 
-    console.log("✅ Recruiter Created in Members Collection:", memberRecruiter._id);
     res.status(201).json({
-      _id: memberRecruiter._id,
-      fullName: memberRecruiter.name,
-      email: memberRecruiter.email,
-      message: "Recruiter added successfully!"
+      _id: createdRecruiter._id,
+      fullName: createdRecruiter.name,
+      email: createdRecruiter.email,
+      memberReferenceNumber: createdRecruiter.memberReferenceNumber,
+      message: "Recruiter registered successfully!"
     });
 
   } catch (error) {
     console.error("Error adding recruiter:", error); 
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: error.message || "Server Error adding recruiter" });
   }
 };
 
-// @desc    Get all recruiters from Members collection
+// @desc    Get all recruiters exclusively from Recruiter collection
 // @route   GET /api/recruiters
 const getRecruiters = async (req, res) => {
   try {
-    // Primary source: Members collection with memberType Oppurtunity Provider / Recruiter
-    const memberRecruiters = await Member.find({
-      memberType: { $regex: /oppurtunity provider|recruiter/i }
-    }).sort({ createdAt: -1 });
-
-    const memberEmails = new Set(memberRecruiters.map(m => m.email?.toLowerCase()));
-
-    // Legacy fallback: Any recruiters from Recruiter collection not yet in Member
-    const legacyRecruiters = await Recruiter.find({}).sort({ createdAt: -1 });
-    const additionalRecruiters = legacyRecruiters.filter(r => !memberEmails.has(r.email?.toLowerCase()));
-
-    const combinedList = [
-      ...memberRecruiters.map(formatRecruiterFromMember),
-      ...additionalRecruiters
-    ];
-
-    res.json(combinedList);
+    const recruiters = await Recruiter.find({}).sort({ createdAt: -1 }).lean();
+    res.json(recruiters.map(formatRecruiterDoc));
   } catch (error) {
     console.error("Error fetching recruiters:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server Error fetching recruiters" });
   }
 };
 
-// @desc    Get single recruiter from Members collection
+// @desc    Get single recruiter by ID exclusively from Recruiter collection
 // @route   GET /api/recruiters/:id
 const getRecruiterById = async (req, res) => {
   try {
-    let memberDoc = await Member.findById(req.params.id);
-    if (memberDoc) {
-      return res.json(formatRecruiterFromMember(memberDoc));
-    }
-    const legacyDoc = await Recruiter.findById(req.params.id);
-    if (legacyDoc) {
-      return res.json(legacyDoc);
+    const doc = await Recruiter.findById(req.params.id).lean();
+    if (doc) {
+      return res.json(formatRecruiterDoc(doc));
     }
     res.status(404).json({ message: 'Recruiter not found' });
   } catch (error) {
+    console.error("Error fetching recruiter by ID:", error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
 
-// @desc    Update recruiter details in Members collection
+// @desc    Update recruiter details exclusively in Recruiter collection
 // @route   PUT /api/recruiters/:id
 const updateRecruiter = async (req, res) => {
   try {
     const body = req.body;
-    const updateMemberData = {
-      name: body.fullName || body.name,
-      email: body.email,
-      mobileNumber: body.phone || body.phoneNumber || body.mobileNumber,
+    const nameVal = (body.name || body.fullName || '').trim() || undefined;
+    const phoneVal = (body.mobileNumber || body.phone || body.phoneNumber || '').trim() || undefined;
+    const companyVal = (body.currentInstitutionOrCompany || body.companyName || '').trim() || undefined;
+    const districtVal = (body.district || body.location || '').trim() || undefined;
+
+    const industriesVal = Array.isArray(body.industries)
+      ? body.industries
+      : typeof body.industries === 'string' && body.industries.trim()
+      ? body.industries.split(',').map(s => s.trim()).filter(Boolean)
+      : body.industries;
+
+    const updateData = {
+      name: nameVal,
+      email: body.email ? String(body.email).trim().toLowerCase() : undefined,
+      mobileNumber: phoneVal,
+      memberType: 'Recruiter',
       designation: body.designation,
       department: body.department,
-      currentInstitutionOrCompany: body.companyName,
-      companyName: body.companyName,
+      currentInstitutionOrCompany: companyVal,
       companyGST: body.companyGST,
       companyEmail: body.companyEmail,
-      district: body.location || body.district,
-      location: body.location || body.district,
-      industries: Array.isArray(body.industries)
-        ? body.industries
-        : typeof body.industries === 'string'
-        ? body.industries.split(',').map(s => s.trim())
-        : body.industries,
+      district: districtVal,
+      industries: industriesVal,
+      roleTypes: body.roleTypes,
       hiringVolume: body.hiringVolume,
       teamSize: body.teamSize,
       employeeId: body.employeeId,
+      ...(body.memberReferenceNumber ? { memberReferenceNumber: String(body.memberReferenceNumber) } : {}),
+      ...(body.symMemberStatus || body.solidarityMember ? {
+        symMemberStatus: body.symMemberStatus || body.solidarityMember,
+        solidarityMember: body.solidarityMember || body.symMemberStatus,
+      } : {}),
     };
 
     // Clean undefined keys
-    Object.keys(updateMemberData).forEach(k => updateMemberData[k] === undefined && delete updateMemberData[k]);
+    Object.keys(updateData).forEach(k => updateData[k] === undefined && delete updateData[k]);
 
-    let updatedMember = await Member.findByIdAndUpdate(
+    // Update exclusively in Recruiter collection
+    const updatedRecruiter = await Recruiter.findByIdAndUpdate(
       req.params.id,
-      { $set: updateMemberData },
+      { $set: updateData },
       { new: true }
     );
 
-    // Also update in legacy Recruiter model if present
-    try {
-      await Recruiter.findByIdAndUpdate(req.params.id, body, { new: true });
-    } catch (e) {
-      // Ignored if ID is from Member model
-    }
-
-    if (updatedMember) {
-      return res.json(formatRecruiterFromMember(updatedMember));
-    }
-
-    const legacyUpdated = await Recruiter.findByIdAndUpdate(req.params.id, body, { new: true });
-    if (legacyUpdated) {
-      return res.json(legacyUpdated);
+    if (updatedRecruiter) {
+      return res.json(formatRecruiterDoc(updatedRecruiter));
     }
 
     res.status(404).json({ message: 'Recruiter not found' });
@@ -234,20 +236,17 @@ const updateRecruiter = async (req, res) => {
   }
 };
 
-// @desc    Delete a recruiter from Members collection
+// @desc    Delete a recruiter exclusively from Recruiter collection
 // @route   DELETE /api/recruiters/:id
 const deleteRecruiter = async (req, res) => {
   try {
-    const deletedMember = await Member.findByIdAndDelete(req.params.id);
-    try {
-      await Recruiter.findByIdAndDelete(req.params.id);
-    } catch (e) {}
-
-    if (deletedMember) {
-      return res.json({ message: "Recruiter removed from Members collection" });
+    const deleted = await Recruiter.findByIdAndDelete(req.params.id);
+    if (deleted) {
+      return res.status(200).json({ message: "Recruiter removed from Recruiter collection successfully" });
     }
-    res.status(404).json({ message: 'Recruiter not found' });
+    res.status(404).json({ message: "Recruiter not found" });
   } catch (error) {
+    console.error("Error deleting recruiter:", error);
     res.status(500).json({ message: "Error deleting recruiter" });
   }
 };

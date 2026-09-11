@@ -13,8 +13,8 @@ const memberSchema = new mongoose.Schema(
     googleId: String,
     district: String,
     address: String,
-    symMemberStatus: { type: String, default: "Yes" },
-    solidarityMember: { type: String, default: "Yes" },
+    symMemberStatus: String,
+    solidarityMember: String,
     memberType: String,
     photoUrl: String,
 
@@ -124,6 +124,17 @@ const memberSchema = new mongoose.Schema(
 
     submittingEmail: String,
     linkedinUrl: String,
+
+    // Recruiter specific fields (Canonical)
+    department: String,
+    employeeId: String,
+    companyGST: String,
+    companyEmail: String,
+    industries: [String],
+    roleTypes: [String],
+    hiringVolume: String,
+    teamSize: String,
+    registeredVia: String,
   },
   { timestamps: true }
 );

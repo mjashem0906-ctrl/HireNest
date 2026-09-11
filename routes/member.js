@@ -51,6 +51,7 @@ const router = express.Router();
 const {
   getAllMembers,
   getMemberById,
+  getActiveMembersCount,
   updateMember,
   deleteMember,
   addMember,
@@ -79,6 +80,7 @@ const uploadFields = upload.fields([
 ]);
 
 // --- 2. Routes ---
+router.get("/active-count", verifyToken, getActiveMembersCount);
 router.get("/", verifyToken, getAllMembers);
 router.get("/:id", verifyToken, getMemberById);
 

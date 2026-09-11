@@ -61,6 +61,8 @@ const addReferee = async (req, res) => {
       return res.status(400).json({ message: "Referee with this email already exists" });
     }
 
+    const statusVal = req.body.solidarityMember || req.body.symMemberStatus || undefined;
+
     // 1. Save to Members collection (Primary storage)
     const newMemberReferee = await Member.create({
       name,
@@ -82,8 +84,7 @@ const addReferee = async (req, res) => {
       memberReferenceNumber,
       referrerContact,
       declaration_Referee,
-      symMemberStatus: 'Yes',
-      solidarityMember: 'Yes',
+      ...(statusVal ? { symMemberStatus: statusVal, solidarityMember: statusVal } : {}),
     });
 
     // 2. Also save to legacy Referee model
