@@ -336,6 +336,7 @@ function MemberDashboard() {
   const { memberContext, jobContext } = useData();
 
   const [members, setMembers] = useState([]);
+  const [activeMembersCount, setActiveMembersCount] = useState(0);
   const [jobs, setJobs] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [recruitersCount, setRecruitersCount] = useState(0);
@@ -562,6 +563,23 @@ function MemberDashboard() {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchActiveCount = async () => {
+      try {
+        const res = await API.get("/member/active-count");
+        if (typeof res.data?.count === "number") {
+          setActiveMembersCount(res.data.count);
+        }
+      } catch (e) {
+        console.error("Failed to fetch active members count", e);
+      }
+    };
+    if (authLoading) return;
+    if (user && !["Candidate", "Member", "Mentor", "Job"].includes(user?.role)) {
+      fetchActiveCount();
+    }
+  }, [user, authLoading]);
+
   const pastMonthsDash = useMemo(() => {
     const months = [];
     const now = new Date();
@@ -579,8 +597,7 @@ function MemberDashboard() {
   };
 
   const isMemberActiveYes = (m) => {
-    const raw = m?.solidarityMember || m?.symMemberStatus;
-    return String(raw || "").trim().toLowerCase() === "yes";
+    return m?.solidarityMember === "Yes";
   };
 
   const combinedAllMembers = useMemo(() => {
@@ -595,12 +612,12 @@ function MemberDashboard() {
   const activeTrendDash = useMemo(() => {
     return pastMonthsDash.map(m => {
       const endOfMonth = new Date(m.getFullYear(), m.getMonth() + 1, 0, 23, 59, 59, 999).getTime();
-      return combinedAllMembers.filter(member => {
+      return (members || []).filter(member => {
         const isActive = isMemberActiveYes(member);
         return isActive && getMemberTimeDash(member) <= endOfMonth;
       }).length;
     });
-  }, [combinedAllMembers, pastMonthsDash]);
+  }, [members, pastMonthsDash]);
 
   const activeGrowthDash = useMemo(() => {
     const len = activeTrendDash.length;
@@ -758,7 +775,7 @@ function MemberDashboard() {
     totalTrend: totalMembersTrend,
     totalGrowth: totalMembersGrowth,
   } = calculateTotalMembersMetrics(members, recruitersList);
-  const activeMembers = combinedAllMembers.filter(isMemberActiveYes).length;
+  const activeMembers = activeMembersCount || (Array.isArray(members) ? members.filter(m => m.solidarityMember === "Yes").length : 0);
   const newThisMonth = members.filter(m => {
     const raw = m.createdAt || m.timestamp;
     if (!raw) return false;
@@ -934,7 +951,7 @@ function MemberDashboard() {
       color: "#16a34a",
       spark: SP.green,
       growth: activeGrowthDash,
-      onClick: () => navigate("/members", { state: { exactStatus: "Yes" } }),
+      onClick: () => navigate("/members", { state: { statusTabsView: true, initialTab: "Active" } }),
     },
     {
       label: "New This Month",

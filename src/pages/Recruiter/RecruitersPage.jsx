@@ -739,7 +739,7 @@ const RecruitersPage = () => {
   const [activeFilters, setActiveFilters] = useState({});
   const [sortBy, setSortBy] = useState('Newest');
   const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(5);
+  const [rowsPerPage] = useState(12);
   const [actionMenuOpen, setActionMenuOpen] = useState(null);
   const [viewType, setViewType] = useState('list');
 

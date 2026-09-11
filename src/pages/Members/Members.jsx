@@ -258,6 +258,8 @@ function Members() {
         initialDisplayData = initialDisplayData.filter(m => m.memberType === location.state.exactMemberType);
         dashboardFilterValues = { memberType: location.state.exactMemberType };
         dashboardActiveFilters = { memberType: location.state.exactMemberType };
+      } else if (location.state.statusTabsView) {
+        setActiveTab(location.state.initialTab || 'Active');
       } else if (location.state.exactStatus || location.state.symMemberStatus) {
         const targetStatus = location.state.exactStatus || location.state.symMemberStatus;
         initialDisplayData = initialDisplayData.filter(m => {
@@ -409,7 +411,7 @@ function Members() {
 
   const clearAllFilters = () => {
     setMembersData(allMembers); setActiveFilters({}); setFilterValues({});
-    setActiveTab('All Members'); setPage(1);
+    setActiveTab(isStatusTabsView ? 'Active' : 'All Members'); setPage(1);
     if (location.state) window.history.replaceState({}, document.title);
   };
 
@@ -454,7 +456,24 @@ function Members() {
     return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   };
 
+  const isStatusTabsView = Boolean(location.state?.statusTabsView);
+
   const filterByTab = (member) => {
+    if (isStatusTabsView) {
+      const isRealMember = !member._isRecruiter;
+      const rawStatus = member.solidarityMember || member.symMemberStatus;
+      const status = String(rawStatus || '').trim().toLowerCase();
+      switch (activeTab) {
+        case 'Active':
+          return isRealMember && (member.solidarityMember === 'Yes' || status === 'yes');
+        case 'Inactive':
+          return isRealMember && (member.solidarityMember === 'No' || status === 'no');
+        case 'Interested in Join':
+          return isRealMember && (member.solidarityMember === 'Interested in Join' || status === 'interested in join');
+        default:
+          return true;
+      }
+    }
     const type = String(member.memberType || '').toLowerCase();
     switch (activeTab) {
       case 'Job Seekers': return type.includes('seeker');
@@ -672,7 +691,9 @@ function Members() {
     { label: 'Job Referees', value: referees, icon: User, color: '#ec4899', spark: totalTrend, growth: 0, onClick: () => navigate('/referees') },
   ];
 
-  const TABS = ['All Members', 'Job Seekers', 'Mentors', 'Recruiters', 'Referees'];
+  const TABS = isStatusTabsView
+    ? ['Active', 'Inactive', 'Interested in Join']
+    : ['All Members', 'Job Seekers', 'Mentors', 'Recruiters', 'Referees'];
 
   // page number list
   const getPageNums = () => {
