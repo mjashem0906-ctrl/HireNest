@@ -457,6 +457,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
+import API from '../../axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Plus, Search, Download, Briefcase, Building, Building2, UserCircle,
@@ -785,8 +786,8 @@ const RecruitersPage = () => {
   const fetchRecruiters = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/recruiters`);
-      setRecruiters(response.data);
+      const response = await API.get('/api/recruiters');
+      setRecruiters(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching recruiters:", error);
     } finally {
@@ -798,7 +799,7 @@ const RecruitersPage = () => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to permanently remove this recruiter?")) {
       try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/recruiters/${id}`);
+        await API.delete(`/api/recruiters/${id}`);
         fetchRecruiters();
       } catch (error) {
         console.error("Error deleting recruiter:", error);

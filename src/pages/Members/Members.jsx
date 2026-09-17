@@ -515,7 +515,7 @@ function Members() {
   const mentors = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('mentor')).length;
   const upskillers = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('upskill')).length;
   const referees = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('referee')).length;
-  const recruitersCount = allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('recruiter')).length || 6;
+  const recruitersCount = recruiters.length > 0 ? recruiters.length : allMembers.filter(m => String(m.memberType || '').toLowerCase().includes('recruiter')).length;
 
   // stats
   const {

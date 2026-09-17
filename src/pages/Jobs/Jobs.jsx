@@ -1122,9 +1122,22 @@ const normalizeEmploymentType = (type) => {
 // =========================================================================================
 // ProvidedForm
 // =========================================================================================
-const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, getFileUrl }) => {
+export const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, getFileUrl }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
+  const resolveFileUrl = (url) => {
+    if (getFileUrl) return getFileUrl(url);
+    if (!url) return "#";
+    if (url.startsWith("uploads") || url.includes("\\")) {
+      const backendUrl =
+        import.meta.env.VITE_API_URL ||
+        (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+          ? "http://localhost:5000"
+          : "https://jobbridgenode.com");
+      return `${backendUrl}/${url.replace(/\\/g, "/")}`;
+    }
+    return url;
+  };
   const todayLocalString = useMemo(() => {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -1684,7 +1697,7 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
                 {companyLogo ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <img
-                      src={companyLogo.startsWith("uploads") || companyLogo.includes("\\") || companyLogo.startsWith("http") ? getFileUrl(companyLogo) : companyLogo}
+                      src={companyLogo.startsWith("uploads") || companyLogo.includes("\\") || companyLogo.startsWith("http") ? resolveFileUrl(companyLogo) : companyLogo}
                       alt="Company Logo Preview"
                       style={{
                         width: '40px',
@@ -1899,22 +1912,20 @@ const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkTheme, get
               />
             </div>
 
-            {isAdmin && (
-              <div className={styles.formGroup}>
-                <label>
-                  <Calendar size={14} /> Application End Date{" "}
-                  <span className={styles.required}>*</span>
-                </label>
-                <input
-                  className={styles.formInput}
-                  type="date"
-                  value={applicationEndDate}
-                  onChange={(e) => setApplicationEndDate(e.target.value)}
-                  min={todayLocalString}
-                  required
-                />
-              </div>
-            )}
+            <div className={styles.formGroup}>
+              <label>
+                <Calendar size={14} /> Application End Date{" "}
+                <span className={styles.required}>*</span>
+              </label>
+              <input
+                className={styles.formInput}
+                type="date"
+                value={applicationEndDate}
+                onChange={(e) => setApplicationEndDate(e.target.value)}
+                min={todayLocalString}
+                required
+              />
+            </div>
 
             <div className={`${styles.modalFooter} ${styles.fullRow}`}>
               <button type="submit" className={styles.submitButton}>
@@ -2557,6 +2568,26 @@ function Jobs() {
     });
   };
 
+  const isRecruiterJob = useCallback(
+    (job) => {
+      if (!user) return false;
+      const currentRecruiterId = String(
+        user?.recruiterId || user?.memberId || user?.userId || user?._id || user?.id || ""
+      ).trim();
+      if (!currentRecruiterId) return false;
+
+      const postedId = job?.jobPosted?._id
+        ? String(job.jobPosted._id).trim()
+        : String(job?.jobPosted || "").trim();
+      const memberId = job?.memberId?._id
+        ? String(job.memberId._id).trim()
+        : String(job?.memberId || "").trim();
+
+      return Boolean(postedId === currentRecruiterId || memberId === currentRecruiterId);
+    },
+    [user]
+  );
+
   const isApplied = (job) => checkIsApplied(job, user?.memberId);
 
   const getMyApplicationStatus = (job) => {
@@ -2780,7 +2811,7 @@ function Jobs() {
 
   const filteredMyPost = useMemo(() => {
     if (view !== "myPost") return [];
-    if (user?.role === "Admin") return applyFilters(jobPosts);
+    if (user?.role === "Admin" || user?.role === "Recruiter") return applyFilters(jobPosts);
 
     if (!user) return [];
     const memberJobs = jobPosts.filter((job) => checkIsApplied(job, user?.memberId));
@@ -3037,17 +3068,31 @@ function Jobs() {
       setError(null);
 
       const res = await API.get("/jobs");
-      const allJobs = res.data.data;
-      setJobPosts(allJobs);
+      const allJobs = Array.isArray(res.data?.data) ? res.data.data : [];
 
-      if (user) {
-        if (user?.role === "Admin") setMyPost(allJobs);
-        else setMyPost(allJobs.filter((job) => checkIsApplied(job, user?.memberId)));
+      if (user?.role === "Recruiter") {
+        const recruiterJobs = allJobs.filter(isRecruiterJob);
+        setJobPosts(recruiterJobs);
+        setMyPost(recruiterJobs);
+      } else {
+        setJobPosts(allJobs);
+        if (user) {
+          if (user?.role === "Admin") setMyPost(allJobs);
+          else setMyPost(allJobs.filter((job) => checkIsApplied(job, user?.memberId)));
+        }
       }
     } catch (error) {
       console.error("Error fetching jobs:", error);
       setError("Unable to load jobs. Please try again later.");
-      if (jobContext?.length) setJobPosts(jobContext);
+      if (jobContext?.length) {
+        if (user?.role === "Recruiter") {
+          const recruiterJobs = jobContext.filter(isRecruiterJob);
+          setJobPosts(recruiterJobs);
+          setMyPost(recruiterJobs);
+        } else {
+          setJobPosts(jobContext);
+        }
+      }
     } finally {
       setLoadingState((prev) => ({ ...prev, fetching: false }));
     }
@@ -3294,7 +3339,9 @@ function Jobs() {
       const newJob = response.data.data || response.data;
 
       setJobPosts((prev) => [newJob, ...prev]);
-      if (user?.role === "Admin") setMyPost((prev) => [newJob, ...prev]);
+      if (user?.role === "Admin" || user?.role === "Recruiter") {
+        setMyPost((prev) => [newJob, ...prev]);
+      }
 
       handleCloseModal();
       alert("Job posted successfully!");
@@ -3494,7 +3541,7 @@ function Jobs() {
                   <BriefcaseBusiness size={22} />
                 </div>
                 <button type="button" className={styles.tabLabel}>
-                  {user?.role === "Admin" ? "Applicants" : "My Jobs"}
+                  {user?.role === "Admin" || user?.role === "Recruiter" ? "Applicants" : "My Jobs"}
                 </button>
               </div>
             </div>
@@ -3511,7 +3558,7 @@ function Jobs() {
                   <><Filter size={15} /> Show Filters</>
                 )}
               </button>
-              {user?.role === "Admin" && (
+              {(user?.role === "Admin" || user?.role === "Recruiter") && (
                 <>
                   <button
                     onClick={exportJobsToExcel}
@@ -3647,7 +3694,7 @@ function Jobs() {
         </div>
 
         {/* Stat Card 4: Applicants */}
-        {user?.role === "Admin" && (
+        {(user?.role === "Admin" || user?.role === "Recruiter") && (
           <div className={styles.premiumStatCard}>
             <div className={classNames(styles.statIconWrapper, styles.greenIcon)}>
               <Users size={24} />
@@ -4157,7 +4204,7 @@ function Jobs() {
                                       Inactive
                                     </span>
                                   )}
-                                  {user?.role === "Admin" && (
+                                  {(user?.role === "Admin" || user?.role === "Recruiter") && (
                                     <span className={styles.applicantsCountLabel}>
                                       {job.appliedMembers?.length || 0} Applicants
                                     </span>
@@ -4241,7 +4288,7 @@ function Jobs() {
                               View
                             </button>
 
-                            {user?.role === "Admin" &&
+                            {(user?.role === "Admin" || user?.role === "Recruiter") &&
                               renderAdminActionButtons(job)}
                           </div>
                         </div>
@@ -4255,7 +4302,7 @@ function Jobs() {
                 <div className={styles.jobsContainer}>
                   <div className={styles.mainContentHeader}>
                     <h2 className={styles.sectionTitle}>
-                      {user?.role === "Admin" ? (
+                      {user?.role === "Admin" || user?.role === "Recruiter" ? (
                         <>
                           <BriefcaseBusiness size={24} /> Manage Applications
                         </>
@@ -4270,19 +4317,19 @@ function Jobs() {
                   {filteredMyPost.length === 0 ? (
                     <div className={styles.noResults}>
                       <div className={styles.noResultsIcon}>
-                        {user?.role === "Admin" ? "📭" : "📋"}
+                        {user?.role === "Admin" || user?.role === "Recruiter" ? "📭" : "📋"}
                       </div>
                       <h3>
-                        {user?.role === "Admin"
+                        {user?.role === "Admin" || user?.role === "Recruiter"
                           ? "No jobs posted yet"
                           : "You haven't applied to any jobs yet"}
                       </h3>
                       <p>
-                        {user?.role === "Admin"
+                        {user?.role === "Admin" || user?.role === "Recruiter"
                           ? "Create your first job post to get started"
                           : "Browse jobs and apply to get started"}
                       </p>
-                      {user?.role === "Admin" && (
+                      {(user?.role === "Admin" || user?.role === "Recruiter") && (
                         <button
                           onClick={() => {
                             setEditingJob(null);
@@ -4346,7 +4393,7 @@ function Jobs() {
                                 </div>
                               </div>
 
-                              {user?.role === "Admin" &&
+                              {(user?.role === "Admin" || user?.role === "Recruiter") &&
                                 renderAdminActionButtons(request)}
                             </div>
 
@@ -4383,7 +4430,7 @@ function Jobs() {
                                 </div>
                               )}
 
-                            {user?.role === "Admin" && (
+                            {(user?.role === "Admin" || user?.role === "Recruiter") && (
                               <div className={styles.applicantsSection}>
                                 <div className={styles.applicantsHeader}>
                                   <h4>
@@ -4403,7 +4450,9 @@ function Jobs() {
                                           <th>Name</th>
                                           <th>Resume</th>
                                           <th>Status</th>
-                                          <th>Email To Recruiter</th>
+                                          {user?.role !== "Recruiter" && (
+                                            <th>Email To Recruiter</th>
+                                          )}
                                         </tr>
                                       </thead>
                                       <tbody>
@@ -4478,21 +4527,23 @@ function Jobs() {
                                                 </div>
                                               )}
                                             </td>
-                                            <td className={styles.applicantEmailAction}>
-                                              <button
-                                                className={styles.sendRecruiterBtn}
-                                                onClick={() => {
-                                                  setSelectedApplicant(app);
-                                                  setSelectedJobForRecruiter(request);
-                                                  setShowSendToRecruiterModal(true);
-                                                }}
-                                                title="Send to Recruiter"
-                                                type="button"
-                                              >
-                                                <Mail size={14} />
-                                                <span>Send</span>
-                                              </button>
-                                            </td>
+                                            {user?.role !== "Recruiter" && (
+                                              <td className={styles.applicantEmailAction}>
+                                                <button
+                                                  className={styles.sendRecruiterBtn}
+                                                  onClick={() => {
+                                                    setSelectedApplicant(app);
+                                                    setSelectedJobForRecruiter(request);
+                                                    setShowSendToRecruiterModal(true);
+                                                  }}
+                                                  title="Send to Recruiter"
+                                                  type="button"
+                                                >
+                                                  <Mail size={14} />
+                                                  <span>Send</span>
+                                                </button>
+                                              </td>
+                                            )}
                                           </tr>
                                         ))}
                                       </tbody>
@@ -4521,7 +4572,7 @@ function Jobs() {
         </main>
       </div>
 
-      {user?.role === "Admin" && (
+      {(user?.role === "Admin" || user?.role === "Recruiter") && (
         <button
           className={styles.floatingAddButton}
           onClick={() => {

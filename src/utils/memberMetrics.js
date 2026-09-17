@@ -17,8 +17,8 @@ export function calculateTotalMembersMetrics(membersList = [], recruitersList = 
   const upskillersCount = countByRole(safeMembers, "upskill");
   const refereesCount = countByRole(safeMembers, "referee");
   
-  const recruitersFromMembers = countByRole(safeMembers, "recruiter");
-  const recruitersCount = recruitersFromMembers > 0 ? recruitersFromMembers : (safeRecruiters.length || 6);
+  // Direct recruiter count from MongoDB recruiters collection
+  const recruitersCount = safeRecruiters.length > 0 ? safeRecruiters.length : countByRole(safeMembers, "recruiter");
 
   // Total Members sum formula as explicitly requested
   const totalMembers = seekersCount + recruitersCount + mentorsCount + upskillersCount + refereesCount;
@@ -56,7 +56,7 @@ export function calculateTotalMembersMetrics(membersList = [], recruitersList = 
     const u = countByRole(membersUpToMonth, "upskill");
     const r = countByRole(membersUpToMonth, "referee");
     const recMem = countByRole(membersUpToMonth, "recruiter");
-    const rec = recMem > 0 ? recMem : recruitersUpToMonth.length;
+    const rec = recruitersUpToMonth.length > 0 ? recruitersUpToMonth.length : recMem;
 
     return s + rec + m + u + r;
   });

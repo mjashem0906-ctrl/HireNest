@@ -1,9 +1,9 @@
 
 //-----------------------6/2-------------3.11--------------
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { X, User, Briefcase, Globe, Users } from 'lucide-react';
+import { X, User, Briefcase, Globe, Users, Eye, EyeOff } from 'lucide-react';
 import styles from './AddRecruiterModal.module.scss';
 
 const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
@@ -14,7 +14,12 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [showCredentialsSection, setShowCredentialsSection] = useState(false);
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const isEditMode = Boolean(recruiterToEdit);
+  const formBodyRef = useRef(null);
+  const credentialsRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -27,9 +32,22 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
             ? recruiterToEdit.industries.join(', ')
             : recruiterToEdit.industries || '',
         });
+        setCredentials({
+          username: recruiterToEdit.username || recruiterToEdit.email || '',
+          password:
+            recruiterToEdit.plainPassword ||
+            recruiterToEdit.rawPassword ||
+            (recruiterToEdit.password && !recruiterToEdit.password.startsWith('$2')
+              ? recruiterToEdit.password
+              : ''),
+        });
+        setShowCredentialsSection(false);
       } else {
         setFormData(initialFormState);
+        setCredentials({ username: '', password: '' });
+        setShowCredentialsSection(false);
       }
+      setShowPassword(false);
     }
   }, [isOpen, isEditMode, recruiterToEdit]);
 
@@ -38,20 +56,84 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
     if (name === 'phone') {
       value = value.replace(/\D/g, '').slice(0, 10);
     }
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'email' && (!credentials.username || credentials.username === prev.email)) {
+        setCredentials((c) => ({ ...c, username: value }));
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. Validate primary recruiter fields
+    const nameVal = formData.fullName || formData.name;
+    if (
+      !nameVal || !formData.email || !formData.phone || !formData.designation ||
+      !formData.department || !formData.location || !formData.hiringVolume ||
+      !formData.teamSize || !formData.companyName || !formData.companyEmail || !formData.industries
+    ) {
+      alert("Please fill in all required fields marked with *.");
+      return;
+    }
+
     if (formData.phone && formData.phone.length !== 10) {
       alert("Mobile Number must be exactly 10 digits.");
       return;
     }
+
+    // 2. If credentials section is not revealed yet, open it directly below the form
+    if (!showCredentialsSection) {
+      setCredentials((prev) => ({
+        ...prev,
+        username: prev.username || formData.email || '',
+        password:
+          prev.password !== undefined && prev.password !== ''
+            ? prev.password
+            : recruiterToEdit?.plainPassword ||
+              recruiterToEdit?.rawPassword ||
+              (recruiterToEdit?.password && !recruiterToEdit?.password.startsWith('$2')
+                ? recruiterToEdit?.password
+                : ''),
+      }));
+      setShowCredentialsSection(true);
+
+      setTimeout(() => {
+        if (credentialsRef.current) {
+          credentialsRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else if (formBodyRef.current) {
+          formBodyRef.current.scrollTo({
+            top: formBodyRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
+      return;
+    }
+
+    // 3. Validate credentials before saving
+    if (!credentials.username || !String(credentials.username).trim()) {
+      alert("Please enter a valid Email or Username for recruiter login.");
+      return;
+    }
+
+    if (!isEditMode && (!credentials.password || !String(credentials.password).trim())) {
+      alert("Please enter a password for the recruiter to login.");
+      return;
+    }
+
     try {
       const dataToSend = {
         ...formData,
+        username: String(credentials.username).trim(),
+        loginUsername: String(credentials.username).trim(),
+        ...(credentials.password && String(credentials.password).trim()
+          ? { password: String(credentials.password).trim() }
+          : {}),
         industries: typeof formData.industries === 'string'
-          ? formData.industries.split(',').map(item => item.trim())
+          ? formData.industries.split(',').map((item) => item.trim()).filter(Boolean)
           : formData.industries,
       };
 
@@ -81,9 +163,9 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.formBody}>
+        <form onSubmit={handleSubmit} className={styles.formBody} ref={formBodyRef}>
           <div className={styles.formGrid}>
-            
+
             {/* --- SECTION 1 --- */}
             <div className={styles.sectionTitle}>Personal Details</div>
 
@@ -158,7 +240,7 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
 
             <div className={styles.inputGroup}>
               <label>Company GST</label>
-              <input type="text" name="companyGST" value={formData.companyGST || ''} onChange={handleChange} placeholder="e.g. 29AAAAA1111A1Z1"  />
+              <input type="text" name="companyGST" value={formData.companyGST || ''} onChange={handleChange} placeholder="e.g. 29AAAAA1111A1Z1" />
             </div>
 
             <div className={styles.inputGroup}>
@@ -177,6 +259,50 @@ const AddRecruiterModal = ({ isOpen, onClose, onSuccess, recruiterToEdit }) => {
                 required
               />
             </div>
+
+            {/* --- SECTION 3: RECRUITER'S CREDENTIALS --- */}
+            {showCredentialsSection && (
+              <>
+                <div ref={credentialsRef} className={styles.sectionTitle}>
+                  Recruiter's Credentials
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label>Email or Username *</label>
+                  <input
+                    type="text"
+                    name="loginUsername"
+                    value={credentials.username}
+                    onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                    placeholder="e.g. john@company.com or john_recruiter"
+                    required
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label>Password {isEditMode ? '(leave blank to keep current)' : '*'}</label>
+                  <div className={styles.pwWrap}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="loginPassword"
+                      value={credentials.password}
+                      onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                      placeholder="••••••••••"
+                      className={styles.pwInput}
+                      required={!isEditMode}
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeBtn}
+                      onClick={() => setShowPassword((p) => !p)}
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
           </div>
         </form>

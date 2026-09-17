@@ -34,6 +34,7 @@ import MentorConnectionsAdmin from './pages/Mentor/MentorConnectionsAdmin';
 import RecruitersPage from './pages/Recruiter/RecruitersPage';
 import RecruiterDetail from './pages/Recruiter/RecruiterDetail';
 import AddRecruiterPage from './pages/Recruiter/AddRecruiterPage';
+import RecruiterDashboard from './pages/RecruiterDashboard/RecruiterDashboard';
 import Settings from './pages/Settings/Settings';
 
 // ✅ Job Seekers
@@ -130,9 +131,17 @@ function App() {
 
             {/* Recruiters */}
             <Route
+              path="recruiter-dashboard"
+              element={
+                <PrivateRoute roles={['Admin', 'Recruiter']}>
+                  <RecruiterDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="recruiters"
               element={
-                <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate']}>
+                <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate', 'Recruiter']}>
                   <RecruitersPage />
                 </PrivateRoute>
               }
@@ -142,7 +151,7 @@ function App() {
             <Route
               path="recruiters/:id"
               element={
-                <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate']}>
+                <PrivateRoute roles={['Admin', 'IT_Member', 'Member', 'Job', 'Candidate', 'Recruiter']}>
                   <RecruiterDetail />
                 </PrivateRoute>
               }

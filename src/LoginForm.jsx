@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./index.css";
 import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { ShieldCheck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "./axios";
 import { useAuth } from "./context/AuthContext";
@@ -9,6 +10,7 @@ import { FcGoogle } from "react-icons/fc";
 import { recordPortalVisit } from "./utils/portalAnalytics";
 
 const LoginForm = () => {
+  const [roleType, setRoleType] = useState("Admin"); // 'Admin' | 'Recruiter'
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -30,13 +32,18 @@ const LoginForm = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await API.post("/auth/login", formData);
+      const res = await API.post("/auth/login", {
+        ...formData,
+        role: roleType,
+      });
       if (res.data.success) {
         localStorage.setItem("token", res.data.token);
         recordPortalVisit();
         const userData = res.data.user;
         login(userData);
-        if (
+        if (roleType === "Recruiter" || userData.role === "Recruiter") {
+          navigate("/recruiter-dashboard");
+        } else if (
           userData.role !== "Admin" &&
           (!userData.memberId || userData.profileCompleted === 0)
         ) {
@@ -252,17 +259,51 @@ const LoginForm = () => {
               <img src="/Logo.png" alt="JobBridgeNode" />
             </div>
 
+            {/* Role Toggle: Admin / Recruiter */}
+            <div className="lp-role-toggle">
+              <button
+                type="button"
+                className={`lp-role-btn ${roleType === "Admin" ? "active" : ""}`}
+                onClick={() => {
+                  setRoleType("Admin");
+                  setError("");
+                }}
+              >
+                <ShieldCheck size={16} />
+                <span>Admin</span>
+              </button>
+              <button
+                type="button"
+                className={`lp-role-btn ${roleType === "Recruiter" ? "active" : ""}`}
+                onClick={() => {
+                  setRoleType("Recruiter");
+                  setError("");
+                }}
+              >
+                <Building2 size={16} />
+                <span>Recruiter</span>
+              </button>
+            </div>
+
             {!isForgotPassword ? (
               <>
                 <h2 className="lp-card-title">Welcome Back</h2>
-                <p className="lp-card-sub">Sign in to your account</p>
+                <p className="lp-card-sub">
+                  {roleType === "Recruiter"
+                    ? "Sign in to Recruiter Portal"
+                    : "Sign in to your account"}
+                </p>
 
                 <form onSubmit={handleLogin} className="lp-form">
                   <div className="lp-field">
                     <label>Email or Username</label>
                     <input
                       type="text"
-                      placeholder="admin"
+                      placeholder={
+                        roleType === "Recruiter"
+                          ? "Enter your email"
+                          : "admin"
+                      }
                       value={formData.username}
                       onChange={(e) =>
                         setFormData({ ...formData, username: e.target.value })
@@ -346,10 +387,10 @@ const LoginForm = () => {
                   {fpStep === "email" && (
                     <>
                       <div className="lp-field">
-                        <label>Admin Email</label>
+                        <label>{roleType === "Recruiter" ? "Recruiter Email" : "Admin Email"}</label>
                         <input
                           type="email"
-                          placeholder="Enter Admin Email"
+                          placeholder={roleType === "Recruiter" ? "Enter Recruiter Email" : "Enter Admin Email"}
                           value={fpEmail}
                           onChange={(e) => setFpEmail(e.target.value)}
                           required
@@ -369,7 +410,7 @@ const LoginForm = () => {
                   {fpStep === "otp" && (
                     <>
                       <div className="lp-field">
-                        <label>Admin Email</label>
+                        <label>{roleType === "Recruiter" ? "Recruiter Email" : "Admin Email"}</label>
                         <input type="email" value={fpEmail} disabled style={{ opacity: 0.75 }} />
                       </div>
                       <div className="lp-field">

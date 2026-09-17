@@ -42,6 +42,13 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
       { path: '/settings', icon: Settings, label: 'Settings' },
     ];
+  } else if (user.role === "Recruiter") {
+    const recruiterProfilePath = user.recruiterId ? `/recruiters/${user.recruiterId}` : '/recruiters';
+    menuItems = [
+      { path: '/recruiter-dashboard', icon: Home, label: 'Dashboard' },
+      { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' },
+      { path: recruiterProfilePath, icon: Building, label: 'Profile' },
+    ];
   } else if (["Member", "Mentor", "Job", "Candidate"].includes(user.role)) {
     // Ensure memberId is valid before using it in the path
     const profilePath = (user.memberId && user.memberId !== 'null' && user.memberId !== 'undefined')

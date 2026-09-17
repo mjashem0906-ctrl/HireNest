@@ -28,8 +28,8 @@ const PrivateRoute = ({ children, roles }) => {
   }
 
   // Redirect new users (no memberId or incomplete profile) to profile setup
-  // Admins do not need to complete a profile.
-  if (user.role !== 'Admin' && (!user.memberId || user.profileCompleted === 0)) {
+  // Admins and Recruiters do not need to complete a candidate profile.
+  if (user.role !== 'Admin' && user.role !== 'Recruiter' && (!user.memberId || user.profileCompleted === 0)) {
     // Allow access to /profile-setup itself to avoid infinite redirect
     if (window.location.pathname !== "/profile-setup") {
       return <Navigate to="/profile-setup" replace />;

@@ -35,6 +35,7 @@ import styles from "./Dashboard.module.scss";
 import { useData } from "../../context/DataContext";
 import { useAuth } from "../../context/AuthContext";
 import CandidateDashboard from "../CandidateDashboard/CandidateDashboard";
+import RecruiterDashboard from "../RecruiterDashboard/RecruiterDashboard";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function countBy(array, key) {
@@ -334,6 +335,10 @@ function MemberDashboard() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { memberContext, jobContext } = useData();
+
+  if (user?.role === "Recruiter") {
+    return <RecruiterDashboard />;
+  }
 
   const [members, setMembers] = useState([]);
   const [activeMembersCount, setActiveMembersCount] = useState(0);

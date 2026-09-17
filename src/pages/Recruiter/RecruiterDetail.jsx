@@ -58,9 +58,6 @@ const RecruiterDetail = () => {
             <button className={styles.editButton} onClick={() => setIsEditOpen(true)}>
               <Edit size={16} /> Edit Recruiter
             </button>
-            <button className={styles.deleteButton} onClick={handleDelete}>
-              <Trash2 size={16} /> Delete Recruiter
-            </button>
           </div>
         </div>
       </div>

@@ -283,6 +283,36 @@
   }
 }
 
+.pwWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .pwInput {
+    width: 100%;
+    padding-right: 44px !important;
+  }
+
+  .eyeBtn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #e11d48;
+    }
+  }
+}
+
 .footer {
   padding: 24px 32px;
   background: #f8fafc;
