@@ -23,7 +23,11 @@ const recruiterSchema = mongoose.Schema({
   memberReferenceNumber: { type: String, default: null },
   symMemberStatus: { type: String },
   solidarityMember: { type: String },
-  memberType: { type: String, default: "Recruiter" }
+  memberType: { type: String, default: "Recruiter" },
+  username: { type: String },
+  password: { type: String },
+  plainPassword: { type: String },
+  rawPassword: { type: String }
 }, {
   timestamps: true
 });
@@ -33,10 +37,10 @@ recruiterSchema.pre("save", async function (next) {
     try {
       const MemberModel = mongoose.models.Member || require("./member");
       const RecruiterModel = mongoose.models.Recruiter || mongoose.model("Recruiter");
-      
+
       const allMembers = await MemberModel.find().select('memberReferenceNumber').lean();
       const allRecruiters = await RecruiterModel.find().select('memberReferenceNumber').lean();
-      
+
       let maxRefNo = 0;
       for (const m of [...allMembers, ...allRecruiters]) {
         if (m.memberReferenceNumber) {

@@ -1,5 +1,7 @@
 const Recruiter = require('../models/Recruiter');
 const Member = require('../models/member');
+const User = require('../models/login');
+const bcrypt = require('bcryptjs');
 
 // Helper to format Recruiter doc for frontend UI compatibility
 const formatRecruiterDoc = (m) => {
@@ -7,12 +9,16 @@ const formatRecruiterDoc = (m) => {
   const canonicalPhone = m.mobileNumber || m.phone || '';
   const canonicalCompany = m.currentInstitutionOrCompany || m.companyName || '';
   const canonicalDistrict = m.district || m.location || '';
+  const existingPwd = m.plainPassword || m.rawPassword || (m.password && !m.password.startsWith('$2') ? m.password : '') || '';
 
   return {
     _id: m._id,
     name: canonicalName,
     fullName: canonicalName,
     email: m.email || '',
+    username: m.username || m.email || '',
+    password: existingPwd,
+    plainPassword: existingPwd,
     mobileNumber: canonicalPhone,
     phone: canonicalPhone,
     designation: m.designation || 'Recruiter',
@@ -24,7 +30,7 @@ const formatRecruiterDoc = (m) => {
     district: canonicalDistrict,
     location: canonicalDistrict,
     industries: Array.isArray(m.industries) ? m.industries : (m.industries ? [m.industries] : []),
-    roleTypes: Array.isArray(m.roleTypes) ? m.roleTypes : [],
+    roleTypes: Array.isArray(m.roleTypes) ? m.roleTypes : (m.roleTypes ? [m.roleTypes] : []),
     hiringVolume: m.hiringVolume || '',
     teamSize: m.teamSize || '',
     employeeId: m.employeeId || 'N/A',
@@ -38,13 +44,25 @@ const formatRecruiterDoc = (m) => {
   };
 };
 
+// @desc    Get total count of recruiters directly from MongoDB recruiters collection
+// @route   GET /api/recruiters/count
+const getRecruitersCount = async (req, res) => {
+  try {
+    const count = await Recruiter.countDocuments({});
+    res.status(200).json({ count, total: count });
+  } catch (error) {
+    console.error("Error getting recruiters count:", error);
+    res.status(500).json({ message: "Error counting recruiters", count: 0 });
+  }
+};
+
 // @desc    Register a new recruiter (Stored exclusively in MongoDB Recruiter collection)
 // @route   POST /api/recruiters
 const addRecruiter = async (req, res) => {
   try {
     console.log("📥 Received Recruiter Registration Data:", req.body);
 
-    const { 
+    const {
       fullName, name, email, phone, mobileNumber, designation, department,
       employeeId, companyName, currentInstitutionOrCompany, companyGST, companyEmail,
       location, district, industries, roleTypes, hiringVolume, teamSize, registeredVia
@@ -60,25 +78,25 @@ const addRecruiter = async (req, res) => {
     const recruiterDistrict = (district || location || '').trim();
     const recruiterHiringVolume = (hiringVolume || '').trim();
     const recruiterTeamSize = (teamSize || '').trim();
-    const recruiterIndustries = Array.isArray(industries) 
-      ? industries 
-      : (typeof industries === 'string' && industries.trim() 
-          ? industries.split(',').map(item => item.trim()).filter(Boolean)
-          : []);
+    const recruiterIndustries = Array.isArray(industries)
+      ? industries
+      : (typeof industries === 'string' && industries.trim()
+        ? industries.split(',').map(item => item.trim()).filter(Boolean)
+        : []);
 
     if (
-      !recruiterName || !recruiterEmail || !recruiterPhone || !recruiterDesignation || !recruiterDept || 
+      !recruiterName || !recruiterEmail || !recruiterPhone || !recruiterDesignation || !recruiterDept ||
       !recruiterCompany || !recruiterCompanyEmail || !recruiterDistrict || !recruiterHiringVolume || !recruiterTeamSize ||
       !recruiterIndustries || recruiterIndustries.length === 0
     ) {
       console.log("❌ Validation Failed: Missing required fields");
-      return res.status(400).json({ 
-        message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept, Company Name, Company Email, Hiring Region, Monthly Hiring Volume, Team Size, Industries)" 
+      return res.status(400).json({
+        message: "Please fill in all required fields (Name, Email, Phone, Designation, Dept, Company Name, Company Email, Hiring Region, Monthly Hiring Volume, Team Size, Industries)"
       });
     }
 
     // Check if recruiter already exists in Recruiter collection with the same email
-    const existingRecruiterByEmail = await Recruiter.findOne({ 
+    const existingRecruiterByEmail = await Recruiter.findOne({
       $or: [
         { email: recruiterEmail },
         { email: { $regex: new RegExp(`^${recruiterEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
@@ -95,7 +113,7 @@ const addRecruiter = async (req, res) => {
       const allMembers = await Member.find().select('memberReferenceNumber').lean();
       const allRecruiters = await Recruiter.find().select('memberReferenceNumber').lean();
       let maxRefNo = 0;
-      
+
       for (const m of [...allMembers, ...allRecruiters]) {
         if (m.memberReferenceNumber) {
           const parsed = parseInt(m.memberReferenceNumber, 10);
@@ -108,11 +126,19 @@ const addRecruiter = async (req, res) => {
     }
 
     const statusVal = req.body.solidarityMember || req.body.symMemberStatus || undefined;
+    const loginUser = String(req.body.username || req.body.loginUsername || recruiterEmail).trim();
+    let hashPwd = undefined;
+    let plainPwd = undefined;
+    if (req.body.password && String(req.body.password).trim()) {
+      plainPwd = String(req.body.password).trim();
+      hashPwd = await bcrypt.hash(plainPwd, 10);
+    }
 
     // Canonical Recruiter Data Only (Stored exclusively in Recruiter collection)
     const canonicalData = {
       name: recruiterName,
       email: recruiterEmail,
+      username: loginUser,
       mobileNumber: recruiterPhone,
       memberType: 'Recruiter',
       designation: recruiterDesignation,
@@ -128,23 +154,45 @@ const addRecruiter = async (req, res) => {
       employeeId: employeeId || 'N/A',
       memberReferenceNumber,
       registeredVia: registeredVia || 'admin',
+      ...(hashPwd ? { password: hashPwd } : {}),
+      ...(plainPwd ? { plainPassword: plainPwd, rawPassword: plainPwd } : {}),
       ...(statusVal ? { symMemberStatus: statusVal, solidarityMember: statusVal } : {}),
     };
 
-    // Store exclusively in MongoDB Recruiter collection (No write to Member or other collections)
+    // Store in MongoDB Recruiter collection
     const createdRecruiter = await Recruiter.create(canonicalData);
     console.log("✅ Stored Recruiter exclusively in Recruiter collection:", createdRecruiter._id);
+
+    // If credentials provided, sync to User collection for seamless authentication
+    if (hashPwd && loginUser) {
+      try {
+        await User.findOneAndUpdate(
+          { $or: [{ username: loginUser }, { memberId: createdRecruiter._id }] },
+          {
+            username: loginUser,
+            password: hashPwd,
+            role: "Recruiter",
+            memberId: createdRecruiter._id,
+            profileCompleted: 1,
+          },
+          { upsert: true, new: true }
+        );
+      } catch (userErr) {
+        console.error("Error syncing recruiter to User model:", userErr);
+      }
+    }
 
     res.status(201).json({
       _id: createdRecruiter._id,
       fullName: createdRecruiter.name,
       email: createdRecruiter.email,
+      username: createdRecruiter.username,
       memberReferenceNumber: createdRecruiter.memberReferenceNumber,
       message: "Recruiter registered successfully!"
     });
 
   } catch (error) {
-    console.error("Error adding recruiter:", error); 
+    console.error("Error adding recruiter:", error);
     res.status(500).json({ message: error.message || "Server Error adding recruiter" });
   }
 };
@@ -189,12 +237,22 @@ const updateRecruiter = async (req, res) => {
     const industriesVal = Array.isArray(body.industries)
       ? body.industries
       : typeof body.industries === 'string' && body.industries.trim()
-      ? body.industries.split(',').map(s => s.trim()).filter(Boolean)
-      : body.industries;
+        ? body.industries.split(',').map(s => s.trim()).filter(Boolean)
+        : body.industries;
+
+    let hashPwd = undefined;
+    let plainPwd = undefined;
+    if (body.password && String(body.password).trim()) {
+      plainPwd = String(body.password).trim();
+      hashPwd = await bcrypt.hash(plainPwd, 10);
+    }
+
+    const loginUser = (body.username || body.loginUsername || body.email ? String(body.username || body.loginUsername || body.email).trim() : undefined);
 
     const updateData = {
       name: nameVal,
       email: body.email ? String(body.email).trim().toLowerCase() : undefined,
+      username: loginUser,
       mobileNumber: phoneVal,
       memberType: 'Recruiter',
       designation: body.designation,
@@ -208,6 +266,8 @@ const updateRecruiter = async (req, res) => {
       hiringVolume: body.hiringVolume,
       teamSize: body.teamSize,
       employeeId: body.employeeId,
+      ...(hashPwd ? { password: hashPwd } : {}),
+      ...(plainPwd ? { plainPassword: plainPwd, rawPassword: plainPwd } : {}),
       ...(body.memberReferenceNumber ? { memberReferenceNumber: String(body.memberReferenceNumber) } : {}),
       ...(body.symMemberStatus || body.solidarityMember ? {
         symMemberStatus: body.symMemberStatus || body.solidarityMember,
@@ -226,6 +286,29 @@ const updateRecruiter = async (req, res) => {
     );
 
     if (updatedRecruiter) {
+      // Sync to User collection if password or username updated
+      if (hashPwd || loginUser) {
+        try {
+          const uName = loginUser || updatedRecruiter.username || updatedRecruiter.email;
+          const userFields = {
+            username: uName,
+            role: "Recruiter",
+            memberId: updatedRecruiter._id,
+            profileCompleted: 1,
+          };
+          if (hashPwd) {
+            userFields.password = hashPwd;
+          }
+          await User.findOneAndUpdate(
+            { $or: [{ memberId: updatedRecruiter._id }, { username: uName }] },
+            { $set: userFields },
+            { upsert: true, new: true }
+          );
+        } catch (uErr) {
+          console.error("Error syncing updated recruiter to User collection:", uErr);
+        }
+      }
+
       return res.json(formatRecruiterDoc(updatedRecruiter));
     }
 
@@ -251,10 +334,11 @@ const deleteRecruiter = async (req, res) => {
   }
 };
 
-module.exports = { 
-  addRecruiter, 
-  getRecruiters, 
-  getRecruiterById, 
-  updateRecruiter, 
-  deleteRecruiter 
+module.exports = {
+  addRecruiter,
+  getRecruiters,
+  getRecruitersCount,
+  getRecruiterById,
+  updateRecruiter,
+  deleteRecruiter
 };

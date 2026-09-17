@@ -96,8 +96,13 @@ const addServicePost = async (req, res) => {
       });
     }
 
+    let effectiveJobPosted = jobPosted;
+    if (req.user?.role === "Recruiter" && !effectiveJobPosted) {
+      effectiveJobPosted = req.user?.recruiterId || req.user?.userId;
+    }
+
     // Validate that at least one of refereedBy or jobPosted is provided
-    if (!refereedBy && !jobPosted) {
+    if (!refereedBy && !effectiveJobPosted) {
       return res.status(400).json({
         success: false,
         message: "Validation error",
@@ -154,7 +159,7 @@ const addServicePost = async (req, res) => {
       role,
       keySkills,
       refereedBy,
-      jobPosted,
+      jobPosted: effectiveJobPosted,
       memberId,
       jobId,
       applicationEndDate,
@@ -289,17 +294,10 @@ const getServicePost = async (req, res) => {
   }
 };
 
-/* -------------------- DELETE SERVICE / JOB (ADMIN ONLY) -------------------- */
+/* -------------------- DELETE SERVICE / JOB -------------------- */
 const deleteServicePost = async (req, res) => {
   try {
-    if (req.user?.role !== "Admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Only admin can delete services",
-      });
-    }
-
-    const service = await Job.findByIdAndDelete(req.params.id);
+    const service = await Job.findById(req.params.id);
 
     if (!service) {
       return res.status(404).json({
@@ -307,6 +305,19 @@ const deleteServicePost = async (req, res) => {
         message: "Service not found",
       });
     }
+
+    const isRecruiterOwner = req.user?.role === "Recruiter" &&
+      (String(service.jobPosted) === String(req.user?.recruiterId || req.user?.userId) ||
+       String(service.memberId) === String(req.user?.recruiterId || req.user?.userId));
+
+    if (req.user?.role !== "Admin" && !isRecruiterOwner) {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin or job owner can delete services",
+      });
+    }
+
+    await Job.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
@@ -533,7 +544,7 @@ const applyToService = async (req, res) => {
   }
 };
 
-/* -------------------- UPDATE APPLICATION STATUS (ADMIN) -------------------- */
+/* -------------------- UPDATE APPLICATION STATUS -------------------- */
 const updateStatus = async (req, res) => {
   try {
     const { jobId, memberId, status } = req.body;
@@ -543,6 +554,25 @@ const updateStatus = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid status"
+      });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found"
+      });
+    }
+
+    const isRecruiterOwner = req.user?.role === "Recruiter" &&
+      (String(job.jobPosted) === String(req.user?.recruiterId || req.user?.userId) ||
+       String(job.memberId) === String(req.user?.recruiterId || req.user?.userId));
+
+    if (req.user?.role !== "Admin" && !isRecruiterOwner) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update application status for this job"
       });
     }
 
@@ -562,7 +592,7 @@ const updateStatus = async (req, res) => {
     if (!updatedJob) {
       return res.status(404).json({
         success: false,
-        message: "Job or Applicant not found"
+        message: "Applicant not found in this job"
       });
     }
 
@@ -654,8 +684,13 @@ const updateServicePost = async (req, res) => {
       }
     }
 
+    const isRecruiterOwner = req.user?.role === "Recruiter" &&
+      (String(existingService.jobPosted) === String(req.user?.recruiterId || req.user?.userId) ||
+       String(existingService.memberId) === String(req.user?.recruiterId || req.user?.userId));
+
     if (req.user?.role !== "Admin" &&
-      String(existingService.memberId) !== String(req.user?.memberId)) {
+      String(existingService.memberId) !== String(req.user?.memberId) &&
+      !isRecruiterOwner) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this service",
@@ -675,7 +710,8 @@ const updateServicePost = async (req, res) => {
       id,
       {
         title, description, companyName, companyLogo, employmentType, location, industry,
-        education, passedOutYear, experience, salary, role, keySkills, refereedBy, jobPosted,
+        education, passedOutYear, experience, salary, role, keySkills, refereedBy,
+        ...(jobPosted ? { jobPosted } : {}),
         applicationEndDate,
         ...(isActive !== undefined ? { isActive } : {}),
         updatedAt: new Date()
@@ -718,29 +754,33 @@ const updateServicePost = async (req, res) => {
   }
 };
 
-/* -------------------- GET APPLICATIONS FOR A SERVICE / JOB (ADMIN) -------------------- */
+/* -------------------- GET APPLICATIONS FOR A SERVICE / JOB -------------------- */
 const getServiceApplications = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (req.user?.role !== "Admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Only admin can view applications",
-      });
-    }
 
     const service = await Job.findById(id)
       .populate({
         path: "appliedMembers.memberId",
         select: "name email phone mobileNumber role photoUrl resumeLink experience skills highest_education highestEducationSpecialization careerProfile workExp district address"
       })
-      .select("title appliedMembers");
+      .select("title appliedMembers jobPosted memberId");
 
     if (!service) {
       return res.status(404).json({
         success: false,
         message: "Service not found",
+      });
+    }
+
+    const isRecruiterOwner = req.user?.role === "Recruiter" &&
+      (String(service.jobPosted) === String(req.user?.recruiterId || req.user?.userId) ||
+       String(service.memberId) === String(req.user?.recruiterId || req.user?.userId));
+
+    if (req.user?.role !== "Admin" && !isRecruiterOwner) {
+      return res.status(403).json({
+        success: false,
+        message: "Only admin or job recruiter owner can view applications",
       });
     }
 

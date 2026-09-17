@@ -6,6 +6,7 @@ const router = express.Router();
 const { 
   addRecruiter, 
   getRecruiters, 
+  getRecruitersCount,
   getRecruiterById,
   updateRecruiter, // New
   deleteRecruiter  // New
@@ -17,7 +18,10 @@ router.post('/', addRecruiter);
 // 2. GET /api/recruiters (List All)
 router.get('/', getRecruiters);
 
-// 3. GET /api/recruiters/:id (Get Single Detail)
+// 3. GET /api/recruiters/count (Direct count from MongoDB recruiters collection)
+router.get('/count', getRecruitersCount);
+
+// 4. GET /api/recruiters/:id (Get Single Detail)
 router.get('/:id', getRecruiterById);
 
 // 4. PUT /api/recruiters/:id (Update/Edit)

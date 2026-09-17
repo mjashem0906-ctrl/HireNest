@@ -1,5 +1,6 @@
 const User = require("../models/login");
 const GoogleUser = require("../models/googleUser");
+const Recruiter = require("../models/Recruiter");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Activity = require("../models/activity");
@@ -57,10 +58,100 @@ const register = async (req, res) => {
 
 // LOGIN
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, role } = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const rawUsername = String(username || "").trim();
+    const normalizedUsername = rawUsername.toLowerCase();
+
+    // ── RECRUITER LOGIN ──
+    if (role === "Recruiter") {
+      let recruiter = await Recruiter.findOne({
+        $or: [
+          { email: normalizedUsername },
+          { email: { $regex: new RegExp(`^${normalizedUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
+          { username: rawUsername },
+          { username: { $regex: new RegExp(`^${rawUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+        ]
+      });
+
+      let user = null;
+      if (!recruiter) {
+        user = await User.findOne({ username: rawUsername, role: "Recruiter" }) ||
+               await User.findOne({ username: normalizedUsername, role: "Recruiter" });
+        if (user && user.memberId) {
+          recruiter = await Recruiter.findById(user.memberId);
+        }
+      }
+
+      if (!recruiter && !user) {
+        return res.status(404).json({
+          success: false,
+          message: "Recruiter account not found. Please check your credentials.",
+        });
+      }
+
+      const storedPassword = recruiter?.password || user?.password;
+      if (storedPassword) {
+        const isMatch = await bcrypt.compare(password, storedPassword);
+        if (!isMatch) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid credentials",
+          });
+        }
+      } else {
+        // If no password exists yet on this recruiter record, set and hash it for future logins
+        const hashPwd = await bcrypt.hash(password, 10);
+        if (recruiter) {
+          recruiter.password = hashPwd;
+          await recruiter.save();
+        }
+        if (user) {
+          user.password = hashPwd;
+          await user.save();
+        }
+      }
+
+      const recruiterId = recruiter?._id || user?._id;
+      const token = jwt.sign(
+        {
+          userId: recruiterId,
+          role: "Recruiter",
+          recruiterId: recruiterId,
+          memberId: recruiterId,
+        },
+        process.env.SECRET_KEY,
+        {
+          expiresIn: "7d",
+        }
+      );
+
+      return res
+        .cookie("token", token, {
+          httpOnly: true,
+          sameSite: "None",
+          secure: true,
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+        .json({
+          message: "Login successful",
+          success: true,
+          token,
+          user: {
+            role: "Recruiter",
+            username: recruiter?.email || recruiter?.name || user?.username,
+            name: recruiter?.name || user?.username,
+            recruiterId: recruiterId,
+            memberId: recruiterId,
+            companyName: recruiter?.currentInstitutionOrCompany || "",
+            profileCompleted: 1,
+          },
+        });
+    }
+
+    // ── ADMIN & OTHER USERS LOGIN ──
+    const user = await User.findOne({ username: rawUsername });
 
     if (!user) {
       return res.status(404).json({
@@ -153,6 +244,26 @@ const logOut = (req, res) => {
 // CHECK AUTH
 const check = async (req, res) => {
   try {
+    if (req.user?.role === "Recruiter") {
+      let recruiter = await Recruiter.findById(req.user.userId || req.user.recruiterId);
+      if (!recruiter) {
+        recruiter = await User.findById(req.user.userId);
+      }
+      if (recruiter) {
+        return res.json({
+          userId: recruiter._id,
+          role: "Recruiter",
+          recruiterId: recruiter._id,
+          memberId: recruiter._id,
+          username: recruiter.email || recruiter.name || recruiter.username,
+          name: recruiter.name || recruiter.username,
+          companyName: recruiter.currentInstitutionOrCompany || "",
+          profileCompleted: 1,
+          isGoogleUser: false,
+        });
+      }
+    }
+
     let user = await User.findById(req.user.userId).populate(
       "memberId",
       "resumeLink name photoUrl"
@@ -429,7 +540,19 @@ const verifyAdminEmail = async (req, res) => {
     }
 
     if (!isValidAdminEmail) {
-      return res.status(400).json({ success: false, message: "Invalid email address. Email does not match any registered admin account." });
+      const recruiter = await Recruiter.findOne({
+        $or: [
+          { email: normalizedEmail },
+          { email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+        ]
+      });
+      if (recruiter) {
+        isValidAdminEmail = true;
+      }
+    }
+
+    if (!isValidAdminEmail) {
+      return res.status(400).json({ success: false, message: "Invalid email address. Email does not match any registered account." });
     }
 
     // Generate 6-digit OTP
@@ -453,7 +576,7 @@ const verifyAdminEmail = async (req, res) => {
 
     res.json({ success: true, message: "6-digit OTP sent to your registered email address." });
   } catch (err) {
-    console.error("Verify Admin Email Error:", err);
+    console.error("Verify Email Error:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -484,7 +607,7 @@ const verifyAdminOtp = async (req, res) => {
 
     res.json({ success: true, message: "OTP verified successfully. You can now set your new password." });
   } catch (err) {
-    console.error("Verify Admin OTP Error:", err);
+    console.error("Verify OTP Error:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -505,6 +628,23 @@ const changePasswordByEmail = async (req, res) => {
       return res.status(400).json({ success: false, message: "OTP verification failed or expired. Please verify OTP first." });
     }
 
+    const hashPwd = await bcrypt.hash(newPassword, 10);
+    let updated = false;
+
+    // Check Recruiter
+    const recruiter = await Recruiter.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { email: { $regex: new RegExp(`^${normalizedEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+      ]
+    });
+    if (recruiter) {
+      recruiter.password = hashPwd;
+      await recruiter.save();
+      updated = true;
+    }
+
+    // Check User model
     let user = null;
     if (req.user?.userId) {
       user = await User.findById(req.user.userId);
@@ -515,23 +655,25 @@ const changePasswordByEmail = async (req, res) => {
         user = await User.findOne({ memberId: member._id });
       }
     }
-    if (!user) {
+    if (!user && !updated) {
       user = await User.findOne({ role: "Admin" });
     }
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: "Admin account not found." });
+    if (user) {
+      user.password = hashPwd;
+      await user.save();
+      updated = true;
     }
 
-    const hashPwd = await bcrypt.hash(newPassword, 10);
-    user.password = hashPwd;
-    await user.save();
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Account not found." });
+    }
 
     // Clear OTP record after successful password change
     await AdminOtp.deleteMany({ email: normalizedEmail });
 
     try {
-      await sendAdminPasswordChangedNotification(normalizedEmail, user.username || 'Admin');
+      await sendAdminPasswordChangedNotification(normalizedEmail, recruiter?.name || user?.username || 'User');
     } catch (emailErr) {
       console.error("Failed to send password change notification:", emailErr);
     }
