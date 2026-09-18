@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import {
   Search,
@@ -16,7 +16,13 @@ import {
   ExternalLink,
   Users,
   Filter,
-  X
+  X,
+  LayoutGrid,
+  List,
+  ChevronDown,
+  ArrowDown,
+  ArrowUp,
+  Eye
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -27,6 +33,104 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import AddMember from '../../components/Models/AddMember';
 import FilterStatus from '../../components/Filter/FIlterStatus';
+
+// ── avatar helpers (matching Members module) ───────────────────
+const AVATAR_PALETTE = [
+  '#6366f1', '#2563eb', '#0891b2', '#16a34a', '#d97706', '#c0392b', '#7c3aed', '#ec4899', '#0d9488', '#78716c',
+];
+
+function getInitials(name) {
+  if (!name) return 'NA';
+  return name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+function avatarColor(name) {
+  if (!name) return AVATAR_PALETTE[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+}
+
+function AvatarCircle({ name, size = 38, photo }) {
+  const [imgErr, setImgErr] = useState(false);
+  if (photo && !imgErr) {
+    return (
+      <img src={photo} alt={name} onError={() => setImgErr(true)}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+    );
+  }
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: avatarColor(name),
+      color: '#fff', fontWeight: 800, fontSize: size * 0.35,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {getInitials(name)}
+    </div>
+  );
+}
+
+const formatJoinedDate = (timestamp, createdAt) => {
+  const d = createdAt || timestamp;
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return '—';
+  }
+};
+
+const PreferredRolesCell = ({ roles }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const rolesArray = useMemo(() => {
+    if (!roles) return [];
+    if (Array.isArray(roles)) {
+      return roles.flatMap(r => {
+        if (typeof r === 'string') {
+          return r.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        return r ? [String(r).trim()] : [];
+      }).filter(Boolean);
+    }
+    if (typeof roles === 'string') {
+      return roles.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, [roles]);
+
+  if (!rolesArray || rolesArray.length === 0) {
+    return <span className={styles.cellMuted}>—</span>;
+  }
+
+  const displayedRoles = expanded ? rolesArray : rolesArray.slice(0, 5);
+  const hasMore = rolesArray.length > 5;
+
+  return (
+    <div className={styles.roleListCell} onClick={(e) => e.stopPropagation()}>
+      {displayedRoles.map((role, idx) => (
+        <span key={idx} className={styles.roleBadgeMini}>
+          {role}
+        </span>
+      ))}
+      {hasMore && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((prev) => !prev);
+          }}
+          className={styles.seeAllRolesBtn}
+        >
+          {expanded ? "See less" : `See all (+${rolesArray.length - 5})`}
+        </button>
+      )}
+    </div>
+  );
+};
 
 const JobSeekersPage = () => {
   const context = useOutletContext();
@@ -41,6 +145,9 @@ const JobSeekersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [experienceTab, setExperienceTab] = useState("all"); // "all" | "fresher" | "experienced"
+  const [view, setView] = useState("card"); // "card" | "table" (matching Members module)
+  const [sortBy, setSortBy] = useState("Recent"); // "Recent" | "Ascending" | "Descending" | "A→Z" | "Z→A"
+  const [isScrolledDown, setIsScrolledDown] = useState(false);
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -50,6 +157,24 @@ const JobSeekersPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState({});
   const [filterValues, setFilterValues] = useState({});
+
+  // Scroll listener for floating scroll button
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPos = window.scrollY || document.documentElement.scrollTop;
+      setIsScrolledDown(scrollPos > 250);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleScrollClick = () => {
+    if (isScrolledDown) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+    }
+  };
 
   // Parse Google Drive urls to direct image URLs
   const getDirectImageUrl = (driveUrl) => {
@@ -394,9 +519,32 @@ const JobSeekersPage = () => {
     return true;
   });
 
+  // --- SORTING PIPELINE ---
+  const sortedSeekers = [...filteredSeekers].sort((a, b) => {
+    if (sortBy === 'Recent') {
+      const timeA = new Date(a.createdAt || a.timestamp || 0).getTime() || 0;
+      const timeB = new Date(b.createdAt || b.timestamp || 0).getTime() || 0;
+      if (timeA !== timeB) return timeB - timeA;
+      return (Number(b.memberReferenceNumber) || 0) - (Number(a.memberReferenceNumber) || 0);
+    }
+    if (sortBy === 'Ascending') {
+      return (Number(a.memberReferenceNumber) || 0) - (Number(b.memberReferenceNumber) || 0);
+    }
+    if (sortBy === 'Descending') {
+      return (Number(b.memberReferenceNumber) || 0) - (Number(a.memberReferenceNumber) || 0);
+    }
+    if (sortBy === 'A→Z' || sortBy === 'A->Z') {
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (sortBy === 'Z→A' || sortBy === 'Z->A') {
+      return (b.name || '').localeCompare(a.name || '');
+    }
+    return 0;
+  });
+
   // Export Data
   const exportData = (type) => {
-    const data = filteredSeekers.map(m => ({
+    const data = sortedSeekers.map(m => ({
       'Reference No': m.memberReferenceNumber || '',
       Name: m.name || '',
       Email: m.email || '',
@@ -444,6 +592,23 @@ const JobSeekersPage = () => {
         </div>
 
         <div className={styles.actionGroup}>
+          {/* Sort control immediately before Show Filters */}
+          <div className={styles.sortWrapper}>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className={styles.sortSelect}
+              title="Sort Seekers"
+            >
+              <option value="Recent">Recent</option>
+              <option value="Ascending">Ascending</option>
+              <option value="Descending">Descending</option>
+              <option value="A→Z">A→Z</option>
+              <option value="Z→A">Z→A</option>
+            </select>
+            <ChevronDown size={14} className={styles.sortChevron} />
+          </div>
+
           <button
             className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
             onClick={() => setShowFilters(!showFilters)}
@@ -689,11 +854,29 @@ const JobSeekersPage = () => {
         data-page-type="seekers"
       />
 
-      {/* Count Info Panel */}
+      {/* Count Info Panel + View Switch (identical to Members module pattern) */}
       <div className={styles.countInfo}>
         <span className={styles.countText}>
-          Showing <strong>{filteredSeekers.length}</strong> of <strong>{seekers.length}</strong> job seekers
+          Showing <strong>{sortedSeekers.length}</strong> of <strong>{seekers.length}</strong> job seekers
         </span>
+        <div className={styles.viewSwitch}>
+          <button
+            className={`${styles.viewBtn} ${view === 'table' ? styles.viewBtnActive : ''}`}
+            onClick={() => setView('table')}
+            type="button"
+            title="Table view"
+          >
+            <List size={16} />
+          </button>
+          <button
+            className={`${styles.viewBtn} ${view === 'card' ? styles.viewBtnActive : ''}`}
+            onClick={() => setView('card')}
+            type="button"
+            title="Card view"
+          >
+            <LayoutGrid size={16} />
+          </button>
+        </div>
       </div>
 
       {/* 2. CONDITIONAL RENDERING */}
@@ -702,117 +885,236 @@ const JobSeekersPage = () => {
           <div className={styles.spinner}></div>
           <p>Syncing Seeker Database...</p>
         </div>
-      ) : filteredSeekers.length > 0 ? (
-        <div className={styles.seekerGrid}>
-          {filteredSeekers.map((member, index) => {
-            const fresherStatus = isFresher(member);
-            const branchText = member.branch || member.highestEducationSpecialization || "";
-            const passedOutText = member.passOutYear || member.highestEducationPassedOutYear || "";
-
-            return (
-              <div
-                key={member._id}
-                className={styles.seekerCard}
-                onClick={() => navigate(`/member/${member._id}`)}
-                style={{ animationDelay: `${index * 0.03}s` }}
-              >
-                <div className={styles.avatarWrapper}>
-                  <img
-                    src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
-                    alt=""
-                    onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
-                  />
-                </div>
-
-                <div className={styles.content}>
-                  <div className={styles.badgeRow}>
-                    <div className={styles.statusBadge}>
-                      {fresherStatus ? "Fresher" : `${member.workExp || "Experienced"}`}
-                    </div>
-                    {member.memberReferenceNumber && (
-                      <div className={styles.refBadge}>
-                        Ref: {member.memberReferenceNumber}
+      ) : sortedSeekers.length > 0 ? (
+        view === 'table' ? (
+          <div className={styles.tableWrapper}>
+            <table className={styles.membersTable}>
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>EMAIL</th>
+                  <th>MOBILE</th>
+                  <th>Experience</th>
+                  <th>Industry</th>
+                  <th>Preferred Job Role</th>
+                  <th>Location Preference</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSeekers.map((member) => (
+                  <tr key={member._id} className={styles.tableRow} onClick={() => navigate(`/member/${member._id}`)}>
+                    <td data-label="Member">
+                      <div className={styles.memberCell}>
+                        <AvatarCircle
+                          name={member.name}
+                          photo={member.photoUrl ? getDirectImageUrl(member.photoUrl) : null}
+                          size={38}
+                        />
+                        <div className={styles.memberIdentity}>
+                          <strong>{member.name || 'Unnamed Member'}</strong>
+                          <span>Ref No: {member.memberReferenceNumber || '—'}</span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  <h3>{member.name}</h3>
-
-                  <div className={styles.infoList}>
-                    <div className={styles.infoItem}>
-                      <GraduationCap size={14} />
-                      <strong>Education:</strong> {member.highest_education || "N/A"}
-                      {branchText ? ` (${branchText})` : ""}
-                      {passedOutText ? ` - ${passedOutText}` : ""}
-                    </div>
-
-                    <div className={styles.infoItem}>
-                      <Briefcase size={14} />
-                      <strong>Preferred Role:</strong> {Array.isArray(member.preferredJobRole_Sector) ? member.preferredJobRole_Sector.join(", ") : (member.preferredJobRole_Sector || "Not Specified")}
-                    </div>
-
-                    {member.preferredJobLocation && (
-                      <div className={styles.infoItem}>
-                        <MapPin size={14} />
-                        <strong>Preferred Location:</strong> {member.preferredJobLocation}
-                        {member.relocationStatus ? ` (${member.relocationStatus})` : ""}
+                    </td>
+                    <td data-label="EMAIL" className={styles.cellMuted}>
+                      {member.email || '—'}
+                    </td>
+                    <td data-label="MOBILE">
+                      <div className={styles.inlineIconText}>
+                        <Phone size={13} />
+                        <span>{member.mobileNumber || '—'}</span>
                       </div>
-                    )}
-
-                    <div className={styles.infoItem}>
-                      <Mail size={14} /> {member.email || "No Email"}
-                    </div>
-
-                    <div className={styles.infoItem}>
-                      <Phone size={14} /> {member.mobileNumber || "No Phone"}
-                    </div>
-
-                    <div className={styles.infoItem}>
-                      <MapPin size={14} /> <strong>Current District:</strong> {member.district || "N/A"}
-                    </div>
-                  </div>
-
-                  <div className={styles.cardActions}>
-                    {member.resumeLink ? (
-                      <a
-                        href={member.resumeLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={styles.resumeLink}
-                        onClick={(e) => e.stopPropagation()}
+                    </td>
+                    <td data-label="Experience">
+                      <span
+                        className={styles.roleBadge}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/member/${member._id}`); }}
+                        style={{ cursor: 'pointer' }}
+                        title="View profile"
                       >
-                        <FileText size={14} /> Resume <ExternalLink size={10} />
-                      </a>
-                    ) : (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--l-muted)', fontWeight: 500, fontStyle: 'italic' }}>
-                        No Resume Uploaded
+                        {isFresher(member) ? "Fresher" : `${member.workExp || "Experienced"}`}
                       </span>
-                    )}
-
-                    {isAdmin && (
-                      <div className={styles.adminTools}>
-                        <button
-                          className={`${styles.actionBtn} ${styles.edit}`}
-                          onClick={(e) => handleEdit(e, member)}
-                          title="Edit Profile"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          className={`${styles.actionBtn} ${styles.delete}`}
-                          onClick={(e) => handleDelete(e, member._id)}
-                          title="Delete Profile"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                    </td>
+                    <td data-label="Industry" className={styles.cellMuted}>
+                      {member.industry || member.careerProfile?.industry || member.branch || member.fieldofStudy_Interest || member.highestEducationSpecialization || '—'}
+                    </td>
+                    <td data-label="Preferred Job Role">
+                      <PreferredRolesCell
+                        roles={member.preferredJobRole_Sector || member.careerProfile?.role}
+                      />
+                    </td>
+                    <td data-label="Location Preference">
+                      <div className={styles.inlineIconText}>
+                        <MapPin size={13} />
+                        <span>
+                          {member.preferredJobLocation || (member.relocationStatus ? `${member.district || 'Any'} (${member.relocationStatus})` : member.district) || '—'}
+                        </span>
                       </div>
-                    )}
+                    </td>
+                    <td data-label="Status">
+                      {(() => {
+                        const rawStatus = member.solidarityMember || member.symMemberStatus;
+                        const displayStatus = rawStatus || 'Yes';
+                        const isNo = String(displayStatus).toLowerCase() === 'no';
+                        return (
+                          <span className={`${styles.tableStatusBadge} ${isNo ? styles.tableStatusNo : ''}`}>
+                            <span className={`${styles.tableStatusDot} ${isNo ? styles.tableStatusDotNo : ''}`} />
+                            {displayStatus}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td data-label="Actions" onClick={(e) => e.stopPropagation()}>
+                      <div className={styles.actionButtons}>
+                        <button
+                          className={styles.actionIconBtn}
+                          title="View Profile"
+                          onClick={() => navigate(`/member/${member._id}`)}
+                          type="button"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        {isAdmin && (
+                          <>
+                            <button
+                              className={styles.actionIconBtn}
+                              title="Edit"
+                              onClick={(e) => handleEdit(e, member)}
+                              type="button"
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button
+                              className={`${styles.actionIconBtn} ${styles.actionIconBtnDel}`}
+                              title="Delete"
+                              onClick={(e) => handleDelete(e, member._id)}
+                              type="button"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className={styles.seekerGrid}>
+            {sortedSeekers.map((member, index) => {
+              const fresherStatus = isFresher(member);
+              const branchText = member.branch || member.highestEducationSpecialization || "";
+              const passedOutText = member.passOutYear || member.highestEducationPassedOutYear || "";
+
+              return (
+                <div
+                  key={member._id}
+                  className={styles.seekerCard}
+                  onClick={() => navigate(`/member/${member._id}`)}
+                  style={{ animationDelay: `${index * 0.03}s` }}
+                >
+                  <div className={styles.avatarWrapper}>
+                    <img
+                      src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
+                      alt=""
+                      onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
+                    />
+                  </div>
+
+                  <div className={styles.content}>
+                    <div className={styles.badgeRow}>
+                      <div className={styles.statusBadge}>
+                        {fresherStatus ? "Fresher" : `${member.workExp || "Experienced"}`}
+                      </div>
+                      {member.memberReferenceNumber && (
+                        <div className={styles.refBadge}>
+                          Ref: {member.memberReferenceNumber}
+                        </div>
+                      )}
+                    </div>
+
+                    <h3>{member.name}</h3>
+
+                    <div className={styles.infoList}>
+                      <div className={styles.infoItem}>
+                        <GraduationCap size={14} />
+                        <strong>Education:</strong> {member.highest_education || "N/A"}
+                        {branchText ? ` (${branchText})` : ""}
+                        {passedOutText ? ` - ${passedOutText}` : ""}
+                      </div>
+
+                      <div className={styles.infoItem}>
+                        <Briefcase size={14} />
+                        <strong>Preferred Role:</strong> {Array.isArray(member.preferredJobRole_Sector) ? member.preferredJobRole_Sector.join(", ") : (member.preferredJobRole_Sector || "Not Specified")}
+                      </div>
+
+                      {member.preferredJobLocation && (
+                        <div className={styles.infoItem}>
+                          <MapPin size={14} />
+                          <strong>Preferred Location:</strong> {member.preferredJobLocation}
+                          {member.relocationStatus ? ` (${member.relocationStatus})` : ""}
+                        </div>
+                      )}
+
+                      <div className={styles.infoItem}>
+                        <Mail size={14} /> {member.email || "No Email"}
+                      </div>
+
+                      <div className={styles.infoItem}>
+                        <Phone size={14} /> {member.mobileNumber || "No Phone"}
+                      </div>
+
+                      <div className={styles.infoItem}>
+                        <MapPin size={14} /> <strong>Current District:</strong> {member.district || "N/A"}
+                      </div>
+                    </div>
+
+                    <div className={styles.cardActions}>
+                      {member.resumeLink ? (
+                        <a
+                          href={member.resumeLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={styles.resumeLink}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FileText size={14} /> Resume <ExternalLink size={10} />
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--l-muted)', fontWeight: 500, fontStyle: 'italic' }}>
+                          No Resume Uploaded
+                        </span>
+                      )}
+
+                      {isAdmin && (
+                        <div className={styles.adminTools}>
+                          <button
+                            className={`${styles.actionBtn} ${styles.edit}`}
+                            onClick={(e) => handleEdit(e, member)}
+                            title="Edit Profile"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            className={`${styles.actionBtn} ${styles.delete}`}
+                            onClick={(e) => handleDelete(e, member._id)}
+                            title="Delete Profile"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )
       ) : (
         <div className={styles.emptyState}>
           <Users size={60} strokeWidth={1} />
@@ -823,6 +1125,17 @@ const JobSeekersPage = () => {
           </button>
         </div>
       )}
+
+      {/* Floating Right-Side Up/Down Immediate Scroll Button */}
+      <button
+        type="button"
+        onClick={handleScrollClick}
+        className={styles.floatingScrollBtn}
+        title={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
+        aria-label={isScrolledDown ? "Scroll to Top" : "Scroll to Bottom"}
+      >
+        {isScrolledDown ? <ArrowUp size={20} /> : <ArrowDown size={20} />}
+      </button>
 
       {/* 3. ADD / EDIT DIALOG */}
       <AddMember

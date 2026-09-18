@@ -4,10 +4,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
 // ─── Brand colours ─────────────────────────────────────────
-$red:     #e11d48;
-$red2:    #be123c;
+$red: #e11d48;
+$red2: #be123c;
 $redSoft: rgba(225, 29, 72, 0.08);
-$redMid:  rgba(225, 29, 72, 0.15);
+$redMid: rgba(225, 29, 72, 0.15);
 
 // ─── Shadows ───────────────────────────────────────────────
 $shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
@@ -171,6 +171,54 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   flex-wrap: wrap;
 }
 
+/* Sort Select Dropdown (placed before Show Filters) */
+.sortWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+}
+
+.sortSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 36px;
+  padding: 0 28px 0 12px;
+  border-radius: var(--js-radius-sm);
+  border: 1px solid var(--js-border);
+  background: var(--js-surface);
+  color: var(--js-text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.18s var(--js-ease);
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--js-primary);
+    color: var(--js-primary);
+  }
+
+  &:focus {
+    border-color: var(--js-primary);
+    box-shadow: 0 0 0 3px var(--js-primary-soft);
+  }
+
+  option {
+    background: var(--js-surface);
+    color: var(--js-text-primary);
+  }
+}
+
+.sortChevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--js-text-muted);
+}
+
 /* Filter Toggle Button */
 .filterToggleButton {
   display: inline-flex;
@@ -313,6 +361,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -330,9 +379,11 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   &::-webkit-scrollbar {
     height: 6px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--js-border);
     border-radius: 3px;
@@ -369,9 +420,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     height: 38px;
     border: 1px solid var(--js-border);
     border-radius: var(--js-radius-sm);
-    background: var(--js-surface)
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
-      no-repeat right 10px center;
+    background: var(--js-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
     padding: 0 30px 0 12px;
     color: var(--js-text-primary);
     font-size: 0.78rem;
@@ -438,7 +487,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
 }
 
 /* ==========================================================================
-   COUNT INFO PANEL
+   COUNT INFO PANEL & VIEW SWITCH
    ========================================================================== */
 .countInfo {
   width: 100%;
@@ -446,11 +495,13 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   margin: 0 auto;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   background: var(--js-surface);
   border-radius: var(--js-radius-md);
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: 1.5px dashed var(--js-border);
   box-shadow: var(--js-shadow-sm);
+  gap: 12px;
 }
 
 .countText {
@@ -462,6 +513,412 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
   strong {
     color: var(--js-primary);
     font-weight: 800;
+  }
+}
+
+/* View Switch (matching Members module exactly) */
+.viewSwitch {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.viewBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--js-border);
+  background: var(--js-surface);
+  color: var(--js-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &:hover {
+    border-color: var(--js-primary);
+    color: var(--js-primary);
+  }
+}
+
+.viewBtnActive {
+  background: var(--js-primary) !important;
+  border-color: var(--js-primary) !important;
+  color: #fff !important;
+}
+
+/* ==========================================================================
+   TABLE / LIST VIEW (matching Members module exactly)
+   ========================================================================== */
+.tableWrapper {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow-x: auto;
+  background: var(--js-surface);
+  border: 1px solid var(--js-border);
+  border-radius: var(--js-radius-xl);
+  box-shadow: var(--js-shadow-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--js-border) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--js-border);
+    border-radius: 3px;
+  }
+}
+
+.membersTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
+  font-size: 0.8rem;
+
+  thead tr {
+    background: rgba(148, 163, 184, 0.07);
+    border-bottom: 1px solid var(--js-border);
+  }
+
+  th {
+    text-align: left;
+    padding: 0.65rem 1rem;
+    font-size: 0.67rem;
+    font-weight: 700;
+    color: var(--js-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--js-border);
+    vertical-align: middle;
+  }
+}
+
+/* Preferred Roles Pill List & See all (+N) */
+.roleListCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.roleBadgeMini {
+  background: rgba(225, 29, 72, 0.08);
+  color: var(--js-primary);
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  display: inline-block;
+  transition: all 0.15s ease;
+}
+
+:global([data-theme="dark"]) .roleBadgeMini,
+:global(:root[data-theme="dark"]) .roleBadgeMini {
+  background: rgba(225, 29, 72, 0.14);
+  color: #fda4af;
+}
+
+.seeAllRolesBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc !important;
+  border: 1px dashed rgba(248, 250, 252, 0.4) !important;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  outline: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22) !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+  }
+}
+
+:global([data-theme="dark"]) .seeAllRolesBtn,
+:global(:root[data-theme="dark"]) .seeAllRolesBtn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  border-color: rgba(248, 250, 252, 0.4) !important;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+  }
+}
+
+.tableRow {
+  transition: background 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(148, 163, 184, 0.07);
+  }
+  &:hover .memberIdentity strong {
+    color: var(--js-primary);
+  }
+  &:last-child td {
+    border-bottom: none;
+  }
+}
+
+.memberCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.memberIdentity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    transition: color 0.15s;
+  }
+
+  span {
+    font-size: 0.67rem;
+    color: var(--js-text-muted);
+  }
+}
+
+:global(:root:not([data-theme="dark"])) .memberIdentity strong {
+  color: #1e293b;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+:global(:root[data-theme="dark"]) .roleBadge,
+:global(html[data-theme="dark"]) .roleBadge {
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+}
+
+.cellMuted {
+  color: var(--js-text-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.inlineIconText {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--js-text-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+
+  svg {
+    color: var(--js-text-muted);
+    flex-shrink: 0;
+  }
+}
+
+.tableStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: capitalize;
+
+  &::before {
+    display: none !important;
+  }
+}
+
+:global(:root[data-theme="dark"]) .tableStatusBadge,
+:global(html[data-theme="dark"]) .tableStatusBadge {
+  background: rgba(22, 163, 74, 0.15);
+  color: #4ade80;
+}
+
+.tableStatusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #16a34a;
+  flex-shrink: 0;
+}
+
+:global(:root[data-theme="dark"]) .tableStatusDot,
+:global(html[data-theme="dark"]) .tableStatusDot {
+  background: #4ade80;
+}
+
+.tableStatusNo {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+:global(:root[data-theme="dark"]) .tableStatusNo,
+:global(html[data-theme="dark"]) .tableStatusNo {
+  background: rgba(220, 38, 38, 0.18) !important;
+  color: #f87171 !important;
+}
+
+.tableStatusDotNo {
+  background: #dc2626 !important;
+}
+
+:global(:root[data-theme="dark"]) .tableStatusDotNo,
+:global(html[data-theme="dark"]) .tableStatusDotNo {
+  background: #f87171 !important;
+}
+
+/* Action icon buttons (matching Members module exactly) */
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.actionIconBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--js-border);
+  background: rgba(148, 163, 184, 0.07);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+    transform: scale(1.08);
+  }
+}
+
+:global(:root[data-theme="dark"]) .actionIconBtn,
+:global(html[data-theme="dark"]) .actionIconBtn {
+  background: rgba(148, 163, 184, 0.07);
+  border-color: var(--js-border);
+  color: #93c5fd;
+
+  &:hover {
+    background: rgba(37, 99, 235, 0.15);
+    border-color: #93c5fd;
+  }
+}
+
+.actionIconBtnDel {
+  color: #dc2626 !important;
+
+  &:hover {
+    background: #fee2e2 !important;
+    border-color: #dc2626 !important;
+  }
+}
+
+:global(:root[data-theme="dark"]) .actionIconBtnDel,
+:global(html[data-theme="dark"]) .actionIconBtnDel {
+  color: #f87171 !important;
+  &:hover {
+    background: rgba(220, 38, 38, 0.15) !important;
+    border-color: #f87171 !important;
+  }
+}
+
+:global(:root[data-theme="dark"]) .actionIconBtn,
+:global(html[data-theme="dark"]) .actionIconBtn {
+  color: #93c5fd;
+  &:hover {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: #3b82f6;
+  }
+}
+
+.actionIconBtnDel {
+  color: #dc2626 !important;
+
+  &:hover {
+    background: #fef2f2 !important;
+    border-color: #dc2626 !important;
+    transform: scale(1.06);
+  }
+}
+
+:global(:root[data-theme="dark"]) .actionIconBtnDel,
+:global(html[data-theme="dark"]) .actionIconBtnDel {
+  color: #f87171 !important;
+  &:hover {
+    background: rgba(220, 38, 38, 0.2) !important;
+    border-color: #ef4444 !important;
+  }
+}
+
+/* ==========================================================================
+   FLOATING SCROLL BUTTON (Right-side up/down scroll)
+   ========================================================================== */
+.floatingScrollBtn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--js-surface);
+  color: var(--js-primary);
+  border: 1.5px solid var(--js-border);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.22s var(--js-ease);
+  outline: none;
+
+  &:hover {
+    background: var(--js-primary);
+    color: #fff;
+    border-color: var(--js-primary);
+    transform: translateY(-3px) scale(1.06);
+    box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.96);
   }
 }
 
@@ -804,6 +1261,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -834,10 +1292,16 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     align-items: stretch;
     gap: 8px;
 
-    .btn, .filterToggleButton {
+    .btn,
+    .filterToggleButton,
+    .sortWrapper {
       width: 100%;
       justify-content: center;
       box-sizing: border-box;
+    }
+
+    .sortSelect {
+      width: 100%;
     }
   }
 
@@ -876,6 +1340,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     span {
       display: none;
     }
+
     padding: 10px 14px;
   }
 }
@@ -899,7 +1364,7 @@ $shadow-lg: 0 12px 40px rgba(225, 29, 72, 0.10);
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+
     h3 {
       text-align: center;
       white-space: normal;

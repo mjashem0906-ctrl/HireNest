@@ -2445,9 +2445,15 @@ const MentorsPage = () => {
                   <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Name</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{selectedMsgConnection.userDetails?.name || "N/A"}</span>
                 </div>
-                <div style={{ gridColumn: "span 2" }}>
+                <div>
                   <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Email</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)", wordBreak: "break-all" }}>{selectedMsgConnection.userDetails?.email || "N/A"}</span>
+                </div>
+                <div>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Phone Number</strong>
+                  <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>
+                    {selectedMsgConnection.userDetails?.phone || selectedMsgConnection.userDetails?.mobileNumber || selectedMsgConnection.userDetails?.phoneNumber || selectedMsgConnection.phone || selectedMsgConnection.mobileNumber || "N/A"}
+                  </span>
                 </div>
                 <div>
                   <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Status</strong>
@@ -2459,7 +2465,7 @@ const MentorsPage = () => {
                   <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Domain</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{domainVal}</span>
                 </div>
-                <div>
+                <div style={{ gridColumn: "span 2" }}>
                   <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Skill</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{skillVal}</span>
                 </div>
