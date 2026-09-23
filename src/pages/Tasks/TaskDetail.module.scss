@@ -1,6 +1,6 @@
 .projectBoard {
   padding: 16px;
-  font-family: sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .header {
@@ -27,7 +27,7 @@
   transition: background 0.3s ease;
 
   &:hover {
-    background-color: #07f7ff;
+    background-color: var(--accent-hover);
   }
 }
 .addButton {
@@ -126,10 +126,9 @@
 //Task scss
 .column {
   min-width: 220px;
- 
-  background-color: #eafdfd;
-  //border: 1px solid #ccc;
-  border-radius: 10px;
+  background-color: #f8fafb;
+  border: 1px solid #e8edf5;
+  border-radius: 12px;
   margin-right: 10px;
   padding: 20px;
   flex-shrink: 0; // Keeps consistent width in horizontal scroll
@@ -153,10 +152,10 @@
 //subtask
 
 .card {
-  background-color: rgb(214, 248, 216);
- // border: 1px solid #ccc;
+  background-color: #ffffff;
+  border: 1px solid #e8edf5;
   border-radius: 10px;
-  padding: 40px;
+  padding: 20px;
   margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   font-size: 14px;
@@ -200,7 +199,7 @@
 }
 
 .loader {
-  --c:no-repeat linear-gradient(rgb(0, 53, 151) 0 0);
+  --c:no-repeat linear-gradient(#215E61 0 0);
   background: 
     var(--c),var(--c),var(--c),
     var(--c),var(--c),var(--c),

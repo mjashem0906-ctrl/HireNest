@@ -191,7 +191,7 @@
 //         </div>
 //       </div>
 
-//       {/* ✅ About Job Bridge (Premium 3D Tilt + Float + Parallax) */}
+//       {/* ✅ About Hirenest (Premium 3D Tilt + Float + Parallax) */}
 //       <section
 //         ref={aboutCardRef}
 //         className={styles.aboutCard3D}
@@ -210,7 +210,7 @@
 //               </div>
 
 //               <div className={styles.aboutHeaderText}>
-//                 <h3 className={styles.aboutTitle}>About Job Bridge</h3>
+//                 <h3 className={styles.aboutTitle}>About Hirenest</h3>
 //                 <p className={styles.aboutSub}>
 //                   Verified opportunities • mentor-led career support.
 //                 </p>
@@ -228,7 +228,7 @@
 
 //           <div className={styles.aboutDescBox3D}>
 //             <p className={styles.aboutDesc}>
-//               Job Bridge Initiative by Solidarity Youth Movement connects job
+//               Hirenest Initiative by Solidarity Youth Movement connects job
 //               seekers with{" "}
 //               <span className={styles.verifiedText}>verified job providers</span>{" "}
 //               through a trusted database. The platform also enables referrals and
@@ -895,7 +895,7 @@ const CandidateDashboard = () => {
         {/* ── TOP GRID: About + Profile ──────────────────── */}
         <div className={styles.topGrid}>
 
-          {/* About Job Bridge */}
+          {/* About Hirenest */}
           <section
             ref={cardRefs.about}
             className={styles.aboutCard}
@@ -913,7 +913,7 @@ const CandidateDashboard = () => {
                     <Briefcase size={20} />
                   </div>
                   <div>
-                    <h2 className={styles.aboutTitle}>About Job Bridge Node</h2>
+                    <h2 className={styles.aboutTitle}>About Hirenest</h2>
                     <p className={styles.aboutSub}>Verified opportunities • Mentor-led career support.</p>
                   </div>
                 </div>
@@ -925,11 +925,11 @@ const CandidateDashboard = () => {
               {/* Info rows */}
               <div className={styles.aboutInfoList}>
                 <div className={styles.aboutInfoRow}>
-                  <div className={styles.aboutInfoIcon} style={{ background: "rgba(225, 29, 72, 0.08)", color: "#e11d48" }}>
+                  <div className={styles.aboutInfoIcon} style={{ background: "rgba(33, 94, 97, 0.08)", color: "#215E61" }}>
                     <ShieldCheck size={16} />
                   </div>
                   <p>
-                    Job Bridge Initiative by Solidarity Youth Movement connects job seekers with{" "}
+                    Hirenest Initiative by Solidarity Youth Movement connects job seekers with{" "}
                     <span className={styles.redBold}>verified job providers</span>{" "}
                     through a trusted database. The platform also enables referrals and recommendations
                     to improve access to opportunities.
@@ -1042,7 +1042,7 @@ const CandidateDashboard = () => {
 
             <div className={styles.cardInner}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionIconBox} style={{ background: "rgba(225, 29, 72, 0.08)", color: "#e11d48" }}>
+                <div className={styles.sectionIconBox} style={{ background: "rgba(33, 94, 97, 0.08)", color: "#215E61" }}>
                   <Briefcase size={18} />
                 </div>
                 <h2 className={styles.sectionTitle}>Latest Job Opportunities</h2>
@@ -1120,7 +1120,7 @@ const CandidateDashboard = () => {
 
             <div className={styles.cardInner}>
               <div className={styles.sectionHeader}>
-                <div className={styles.sectionIconBox} style={{ background: "rgba(225, 29, 72, 0.08)", color: "#e11d48" }}>
+                <div className={styles.sectionIconBox} style={{ background: "rgba(33, 94, 97, 0.08)", color: "#215E61" }}>
                   <Users size={18} />
                 </div>
                 <h2 className={styles.sectionTitle}>Recommended Mentors</h2>

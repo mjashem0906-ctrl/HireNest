@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./index.css";
 import { FaEye, FaEyeSlash, FaCheck, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -19,6 +19,14 @@ const LoginForm = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev === 3 ? 1 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -175,332 +183,95 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="lp-root">
-      {/* Decorative blobs */}
-      <div className="lp-blob lp-blob-tr" />
-      <div className="lp-blob lp-blob-bl" />
-
-      {/* Two-column body */}
-      <div className="lp-body">
-
-        {/* ── LEFT ── */}
-        <div className="lp-left">
-          <h1 className="lp-headline">Welcome to JobBridgeNode</h1>
-          <p className="lp-tagline">
-            Connect talent with opportunity. Build your career or find the
-            perfect candidate.
-          </p>
-
-          <ul className="lp-features">
-            <li>
-              <span className="lp-feat-icon"><FaCheck /></span>
-              <div>
-                <strong>Smart Matching</strong>
-                <span>AI-powered job matching for perfect fits</span>
-              </div>
-            </li>
-            <li>
-              <span className="lp-feat-icon"><FaCheck /></span>
-              <div>
-                <strong>Easy Tracking</strong>
-                <span>Track applications and projects seamlessly</span>
-              </div>
-            </li>
-            <li>
-              <span className="lp-feat-icon"><FaCheck /></span>
-              <div>
-                <strong>Build Networks</strong>
-                <span>Connect with mentors and professionals</span>
-              </div>
-            </li>
-          </ul>
-
-          {/* ── Social Media Links ── */}
-          <div className="lp-social-links">
-            <span className="lp-social-label">Follow us on</span>
-            <div className="lp-social-icons">
-              <a
-                href="https://www.facebook.com/profile.php?id=61591040098250"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lp-social-icon lp-social-fb"
-                aria-label="Facebook"
-              >
-                <FaFacebookF />
-              </a>
-              <a
-                href="https://www.instagram.com/jobbridgenode/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lp-social-icon lp-social-ig"
-                aria-label="Instagram"
-              >
-                <FaInstagram />
-              </a>
-              <a
-                href="https://x.com/JobBridgeNode"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lp-social-icon lp-social-x"
-                aria-label="X (Twitter)"
-              >
-                <FaXTwitter />
-              </a>
-            </div>
-          </div>
-
+    <div className="auth-layout">
+      {/* ── LEFT PANEL ── */}
+      <div className="auth-left">
+        <div className="auth-logo">
+          <img src="/Logo.png" alt="Hirenest" />
         </div>
 
-        {/* ── RIGHT (card) ── */}
-        <div className="lp-right">
-          <div className="lp-card">
-            {/* Logo inside the card header */}
-            <div className="lp-logo">
-              <img src="/Logo.png" alt="JobBridgeNode" />
-            </div>
+        <div className="auth-hero">
+          <div className="auth-pill">
+            Connect Talent with Opportunity 🤩
+          </div>
+          <h1 className="auth-headline">Start your Journey</h1>
+          <p className="auth-subline">
+            Follow these simple steps to set up your account and find the perfect candidate.
+          </p>
+        </div>
 
-            {/* Role Toggle: Admin / Recruiter */}
-            <div className="lp-role-toggle">
-              <button
-                type="button"
-                className={`lp-role-btn ${roleType === "Admin" ? "active" : ""}`}
-                onClick={() => {
-                  setRoleType("Admin");
-                  setError("");
-                }}
-              >
-                <ShieldCheck size={16} />
-                <span>Admin</span>
-              </button>
-              <button
-                type="button"
-                className={`lp-role-btn ${roleType === "Recruiter" ? "active" : ""}`}
-                onClick={() => {
-                  setRoleType("Recruiter");
-                  setError("");
-                }}
-              >
-                <Building2 size={16} />
-                <span>Recruiter</span>
-              </button>
-            </div>
+        <div className="auth-steps">
+          <div className={`auth-step-card ${activeStep === 1 ? 'active' : ''}`}>
+            <div className="auth-step-num">1</div>
+            <div className="auth-step-text">Choose your<br />Role</div>
+          </div>
+          <div className={`auth-step-card ${activeStep === 2 ? 'active' : ''}`}>
+            <div className="auth-step-num">2</div>
+            <div className="auth-step-text">Sign in to your<br />account</div>
+          </div>
+          <div className={`auth-step-card ${activeStep === 3 ? 'active' : ''}`}>
+            <div className="auth-step-num">3</div>
+            <div className="auth-step-text">Connect with<br />candidates</div>
+          </div>
+        </div>
+      </div>
 
-            {!isForgotPassword ? (
-              <>
-                <h2 className="lp-card-title">Welcome Back</h2>
-                <p className="lp-card-sub">
-                  {roleType === "Recruiter"
-                    ? "Sign in to Recruiter Portal"
-                    : "Sign in to your account"}
-                </p>
+      {/* ── RIGHT PANEL ── */}
+      <div className="auth-right">
+        <div className="auth-form-container">
+          <h2 className="auth-title">Welcome Back</h2>
 
-                <form onSubmit={handleLogin} className="lp-form">
-                  <div className="lp-field">
-                    <label>Email or Username</label>
-                    <input
-                      type="text"
-                      placeholder={
-                        roleType === "Recruiter"
-                          ? "Enter your email"
-                          : "admin"
-                      }
-                      value={formData.username}
-                      onChange={(e) =>
-                        setFormData({ ...formData, username: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
+          {/* Role Toggle */}
+          <div className="auth-role-toggle">
+            <button
+              type="button"
+              className={`auth-role-btn ${roleType === "Admin" ? "active" : ""}`}
+              onClick={() => {
+                setRoleType("Admin");
+                setError("");
+              }}
+            >
+              <ShieldCheck size={16} /> Admin
+            </button>
+            <button
+              type="button"
+              className={`auth-role-btn ${roleType === "Recruiter" ? "active" : ""}`}
+              onClick={() => {
+                setRoleType("Recruiter");
+                setError("");
+              }}
+            >
+              <Building2 size={16} /> Recruiter
+            </button>
+          </div>
 
-                  <div className="lp-field">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <label>Password</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsForgotPassword(true);
-                          setFpStep("email");
-                          setFpEmail("");
-                          setFpOtp("");
-                          setFpNewPassword("");
-                          setFpConfirmPassword("");
-                          setFpError("");
-                          setFpSuccess("");
-                        }}
-                        style={{ background: 'none', border: 'none', color: '#1a78c2', fontSize: '12px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
-                      >
-                        Forgot Password
-                      </button>
-                    </div>
-                    <div className="lp-pw-wrap">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••••"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        className="lp-pw-input"
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="lp-eye"
-                        onClick={() => setShowPassword((p) => !p)}
-                        aria-label="Toggle password visibility"
-                      >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                      </button>
-                    </div>
-                  </div>
+          {!isForgotPassword ? (
+            <form onSubmit={handleLogin}>
+              <div className="auth-field">
+                <div className="auth-field-header">
+                  <label className="auth-label">Email or Username</label>
+                </div>
+                <div className="auth-input-wrap">
+                  <input
+                    type="text"
+                    className="auth-input"
+                    placeholder={
+                      roleType === "Recruiter" ? "Enter your email" : "admin"
+                    }
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
 
-                  {error && <p className="lp-error">{error}</p>}
-
-                  <button className="lp-signin-btn" disabled={loading} type="submit">
-                    {loading ? "Signing in..." : "Sign In"}
-                  </button>
-
-                  <div className="lp-divider"><span>or</span></div>
-
-                  <p className="lp-register" style={{ textAlign: "center", margin: "4px 0 -8px", fontWeight: "600", color: "#4b5563" }}>
-                    For Job Seeker
-                  </p>
-                  <button
-                    type="button"
-                    className="lp-google-btn"
-                    onClick={loginWithGoogle}
-                  >
-                    <FcGoogle size={20} />
-                    <span>Continue with Google</span>
-                  </button>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2 className="lp-card-title">Forgot Password</h2>
-                <p className="lp-card-sub">Reset your account password via Email OTP</p>
-
-                <div className="lp-form">
-                  {fpError && <p className="lp-error">{fpError}</p>}
-                  {fpSuccess && <p style={{ color: "#16a34a", fontSize: "13px", margin: "4px 0", fontWeight: 600 }}>{fpSuccess}</p>}
-
-                  {fpStep === "email" && (
-                    <>
-                      <div className="lp-field">
-                        <label>{roleType === "Recruiter" ? "Recruiter Email" : "Admin Email"}</label>
-                        <input
-                          type="email"
-                          placeholder={roleType === "Recruiter" ? "Enter Recruiter Email" : "Enter Admin Email"}
-                          value={fpEmail}
-                          onChange={(e) => setFpEmail(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="lp-signin-btn"
-                        onClick={handleFpSendOtp}
-                        disabled={fpLoading || !fpEmail}
-                      >
-                        {fpLoading ? "Sending OTP..." : "Verify Email"}
-                      </button>
-                    </>
-                  )}
-
-                  {fpStep === "otp" && (
-                    <>
-                      <div className="lp-field">
-                        <label>{roleType === "Recruiter" ? "Recruiter Email" : "Admin Email"}</label>
-                        <input type="email" value={fpEmail} disabled style={{ opacity: 0.75 }} />
-                      </div>
-                      <div className="lp-field">
-                        <label>6-Digit OTP</label>
-                        <input
-                          type="text"
-                          placeholder="Enter 6-Digit OTP"
-                          maxLength={6}
-                          value={fpOtp}
-                          onChange={(e) => setFpOtp(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="lp-signin-btn"
-                        onClick={handleFpVerifyOtp}
-                        disabled={fpLoading || !fpOtp}
-                      >
-                        {fpLoading ? "Verifying..." : "Verify OTP"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setFpStep("email"); setFpError(""); setFpSuccess(""); }}
-                        style={{ background: 'none', border: 'none', color: '#1a78c2', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '4px' }}
-                      >
-                        Change Email
-                      </button>
-                    </>
-                  )}
-
-                  {fpStep === "password" && (
-                    <>
-                      <div className="lp-field">
-                        <label>New Password</label>
-                        <div className="lp-pw-wrap">
-                          <input
-                            type={fpShowNewPassword ? "text" : "password"}
-                            placeholder="••••••••••"
-                            value={fpNewPassword}
-                            onChange={(e) => setFpNewPassword(e.target.value)}
-                            className="lp-pw-input"
-                            required
-                          />
-                          <button
-                            type="button"
-                            className="lp-eye"
-                            onClick={() => setFpShowNewPassword((p) => !p)}
-                          >
-                            {fpShowNewPassword ? <FaEyeSlash /> : <FaEye />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="lp-field">
-                        <label>Confirm New Password</label>
-                        <div className="lp-pw-wrap">
-                          <input
-                            type={fpShowConfirmPassword ? "text" : "password"}
-                            placeholder="••••••••••"
-                            value={fpConfirmPassword}
-                            onChange={(e) => setFpConfirmPassword(e.target.value)}
-                            className="lp-pw-input"
-                            required
-                          />
-                          <button
-                            type="button"
-                            className="lp-eye"
-                            onClick={() => setFpShowConfirmPassword((p) => !p)}
-                          >
-                            {fpShowConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                          </button>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="lp-signin-btn"
-                        onClick={handleFpUpdatePassword}
-                        disabled={fpLoading}
-                      >
-                        {fpLoading ? "Updating..." : "Update Password"}
-                      </button>
-                    </>
-                  )}
-
+              <div className="auth-field">
+                <div className="auth-field-header">
+                  <label className="auth-label">Password</label>
                   <button
                     type="button"
                     onClick={() => {
-                      setIsForgotPassword(false);
+                      setIsForgotPassword(true);
                       setFpStep("email");
                       setFpEmail("");
                       setFpOtp("");
@@ -509,71 +280,176 @@ const LoginForm = () => {
                       setFpError("");
                       setFpSuccess("");
                     }}
-                    style={{ background: 'none', border: 'none', color: '#4b5563', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '12px' }}
+                    style={{ background: 'none', border: 'none', color: '#215E61', fontSize: '13px', fontWeight: '600', cursor: 'pointer', padding: 0 }}
                   >
-                    ← Back to Sign In
+                    Forgot Password
                   </button>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+                <div className="auth-input-wrap">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="auth-input"
+                    placeholder="••••••••••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="auth-eye"
+                    onClick={() => setShowPassword((p) => !p)}
+                  >
+                    {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  </button>
+                </div>
+              </div>
 
-      </div>
+              {error && <p className="auth-error">{error}</p>}
 
-      {/* ── FOOTER ── */}
-      <footer className="lp-footer">
-        <div className="lp-footer-left">
-          <h4>Solidarity Youth Movement Karnataka</h4>
-          <p>Connecting talent with opportunity across Karnataka</p>
-        </div>
+              <button className="auth-submit-btn" disabled={loading} type="submit">
+                {loading ? "Signing in..." : "Continue"}
+              </button>
 
-        <div className="lp-footer-right">
-          <div className="lp-footer-item">
-            <div className="lp-footer-icon-wrap">
-              <FaMapMarkerAlt className="lp-footer-icon" />
-            </div>
-            <div className="lp-footer-text">
-              <span className="lp-footer-label">Address</span>
-              <span className="lp-footer-address">
-                #273 2nd Main, 1st Block, 1st Floor, R.T.Nagar, Bangalore
-              </span>
-              <a
-                href="https://maps.app.goo.gl/15mQX57rUR1vgws37?g_st=aw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lp-footer-location-btn"
+              <div className="auth-divider">Or</div>
+
+              <button
+                type="button"
+                className="auth-google-btn"
+                onClick={loginWithGoogle}
               >
-                View Location
-              </a>
-            </div>
-          </div>
+                <FcGoogle size={20} /> Continue with Google
+              </button>
+              
+              <p className="auth-disclaimer">
+                For Job Seeker support or inquiries, please contact us at <a href="mailto:info@hirenest.com">info@hirenest.com</a>.
+                <br /><br />
+                Solidarity Youth Movement Karnataka<br />
+                #273 2nd Main, 1st Block, 1st Floor, R.T.Nagar, Bangalore
+              </p>
+            </form>
+          ) : (
+            <div>
+              {fpError && <p className="auth-error">{fpError}</p>}
+              {fpSuccess && <p className="auth-success">{fpSuccess}</p>}
 
-          <div className="lp-footer-item">
-            <div className="lp-footer-icon-wrap">
-              <FaPhoneAlt className="lp-footer-icon" />
-            </div>
-            <div className="lp-footer-text">
-              <span className="lp-footer-label">Mobile</span>
-              <a href="tel:6366234200" className="lp-footer-link">
-                6366234200
-              </a>
-            </div>
-          </div>
+              {fpStep === "email" && (
+                <>
+                  <div className="auth-field">
+                    <div className="auth-field-header">
+                      <label className="auth-label">{roleType === "Recruiter" ? "Recruiter Email" : "Admin Email"}</label>
+                    </div>
+                    <input
+                      type="email"
+                      className="auth-input"
+                      placeholder={roleType === "Recruiter" ? "Enter Recruiter Email" : "Enter Admin Email"}
+                      value={fpEmail}
+                      onChange={(e) => setFpEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="auth-submit-btn"
+                    onClick={handleFpSendOtp}
+                    disabled={fpLoading || !fpEmail}
+                  >
+                    {fpLoading ? "Sending OTP..." : "Verify Email"}
+                  </button>
+                </>
+              )}
 
-          <div className="lp-footer-item">
-            <div className="lp-footer-icon-wrap">
-              <FaEnvelope className="lp-footer-icon" />
+              {fpStep === "otp" && (
+                <>
+                  <div className="auth-field">
+                    <div className="auth-field-header">
+                      <label className="auth-label">6-Digit OTP</label>
+                    </div>
+                    <input
+                      type="text"
+                      className="auth-input"
+                      placeholder="Enter 6-Digit OTP"
+                      maxLength={6}
+                      value={fpOtp}
+                      onChange={(e) => setFpOtp(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="auth-submit-btn"
+                    onClick={handleFpVerifyOtp}
+                    disabled={fpLoading || !fpOtp}
+                  >
+                    {fpLoading ? "Verifying..." : "Verify OTP"}
+                  </button>
+                </>
+              )}
+
+              {fpStep === "password" && (
+                <>
+                  <div className="auth-field">
+                    <div className="auth-field-header">
+                      <label className="auth-label">New Password</label>
+                    </div>
+                    <div className="auth-input-wrap">
+                      <input
+                        type={fpShowNewPassword ? "text" : "password"}
+                        className="auth-input"
+                        placeholder="••••••••••••••••"
+                        value={fpNewPassword}
+                        onChange={(e) => setFpNewPassword(e.target.value)}
+                        required
+                      />
+                      <button type="button" className="auth-eye" onClick={() => setFpShowNewPassword((p) => !p)}>
+                        {fpShowNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="auth-field">
+                    <div className="auth-field-header">
+                      <label className="auth-label">Confirm New Password</label>
+                    </div>
+                    <div className="auth-input-wrap">
+                      <input
+                        type={fpShowConfirmPassword ? "text" : "password"}
+                        className="auth-input"
+                        placeholder="••••••••••••••••"
+                        value={fpConfirmPassword}
+                        onChange={(e) => setFpConfirmPassword(e.target.value)}
+                        required
+                      />
+                      <button type="button" className="auth-eye" onClick={() => setFpShowConfirmPassword((p) => !p)}>
+                        {fpShowConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="auth-submit-btn"
+                    onClick={handleFpUpdatePassword}
+                    disabled={fpLoading}
+                  >
+                    {fpLoading ? "Updating..." : "Update Password"}
+                  </button>
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setFpStep("email");
+                }}
+                style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '13px', fontWeight: '600', cursor: 'pointer', marginTop: '24px', width: '100%' }}
+              >
+                ← Back to Sign In
+              </button>
             </div>
-            <div className="lp-footer-text">
-              <span className="lp-footer-label">Email</span>
-              <a href="mailto:Info.jobbridge@solidaritykarnataka.org" className="lp-footer-link">
-                Info.jobbridge@solidaritykarnataka.org
-              </a>
-            </div>
-          </div>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   );
 };

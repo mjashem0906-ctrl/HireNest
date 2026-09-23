@@ -1,6 +1,6 @@
 {
-  "name": "JOB BRIDGE Node",
-  "short_name": "JOB BRIDGE",
+  "name": "JobBridge",
+  "short_name": "JobBridge",
   "description": "Connecting Seekers and recruiters seamlessly in Karnataka.",
   "start_url": "/",
   "scope": "/",

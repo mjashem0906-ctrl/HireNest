@@ -146,7 +146,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(225, 29, 72, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(33, 94, 97, 0.2) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   display: flex;
@@ -175,16 +175,16 @@
   --jr-card: #ffffff;
   --jr-card2: #f8fafc;
 
-  --jr-text: #0f172a;
+  --jr-text: #222222;
   --jr-text2: #334155;
-  --jr-muted: #64748b;
+  --jr-muted: #767676;
 
   --jr-border: #e2e8f0;
   --jr-border2: #f1f5f9;
 
-  --jr-focus: rgba(225, 29, 72, 0.08);
-  --jr-purple: #e11d48;
-  --jr-purple2: #be123c;
+  --jr-focus: rgba(33, 94, 97, 0.12);
+  --jr-purple: #215E61;
+  --jr-purple2: #184649;
 
   --jr-danger: #ef4444;
   --jr-dangerBg: #fee2e2;
@@ -196,13 +196,13 @@
   max-width: 900px;
   border-radius: 28px;
   box-shadow: 
-    0 25px 70px rgba(225, 29, 72, 0.25),
-    0 10px 30px rgba(190, 18, 60, 0.15),
-    0 0 1px rgba(225, 29, 72, 0.2) inset,
+    0 25px 70px rgba(33, 94, 97, 0.15),
+    0 10px 30px rgba(15, 23, 42, 0.08),
+    0 0 1px rgba(33, 94, 97, 0.15) inset,
     inset 0 1px 2px rgba(255, 255, 255, 0.6);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(225, 29, 72, 0.12);
+  border: 1px solid rgba(33, 94, 97, 0.12);
   max-height: 92vh;
   overflow-y: auto;
   position: relative;
@@ -225,7 +225,7 @@
   --jr-border: rgba(148, 163, 184, 0.16);
   --jr-border2: rgba(148, 163, 184, 0.10);
 
-  --jr-focus: rgba(225, 29, 72, 0.08);
+  --jr-focus: rgba(33, 94, 97, 0.08);
 
   --jr-dangerBg: rgba(239, 68, 68, 0.14);
   --jr-scroll: rgba(148, 163, 184, 0.22);
@@ -244,7 +244,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(225, 29, 72, 0.12);
+  border-bottom: 1px solid rgba(33, 94, 97, 0.12);
   background: var(--jr-card);
   backdrop-filter: blur(8px);
   position: sticky;
@@ -294,7 +294,7 @@
   letter-spacing: 0.1em;
   margin: 35px 0 15px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(225, 29, 72, 0.08);
+  border-bottom: 1px solid rgba(33, 94, 97, 0.08);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -353,7 +353,7 @@
   }
 
   .submitButton {
-    background: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #a00f31 100%);
+    background: linear-gradient(135deg, #FF8735 0%, #e06f24 100%);
     border: none;
     color: white;
     padding: 12px 35px;
@@ -362,8 +362,8 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 
-      0 12px 24px rgba(225, 29, 72, 0.3),
-      0 4px 12px rgba(190, 18, 60, 0.15),
+      0 12px 24px rgba(255, 135, 53, 0.3),
+      0 4px 12px rgba(255, 135, 53, 0.15),
       inset 0 1px 2px rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
@@ -382,8 +382,8 @@
     &:hover {
       transform: translateY(-2px);
       box-shadow: 
-        0 16px 32px rgba(225, 29, 72, 0.4),
-        0 8px 20px rgba(190, 18, 60, 0.2),
+        0 16px 32px rgba(255, 135, 53, 0.4),
+        0 8px 20px rgba(255, 135, 53, 0.2),
         inset 0 1px 3px rgba(255, 255, 255, 0.25);
 
       &::before {
@@ -394,7 +394,7 @@
     &:active {
       transform: translateY(0);
       box-shadow: 
-        0 6px 12px rgba(225, 29, 72, 0.2),
+        0 6px 12px rgba(255, 135, 53, 0.2),
         inset 0 1px 2px rgba(255, 255, 255, 0.15);
     }
 
@@ -448,8 +448,8 @@
 
 .edField:hover,
 .edField:focus-within {
-  border-color: #e11d48;
-  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.12);
+  border-color: #215E61;
+  box-shadow: 0 0 0 4px rgba(33, 94, 97, 0.12);
 }
 
 .edFieldError {
@@ -512,7 +512,7 @@
 }
 
 .edBtn:hover {
-  background: rgba(225, 29, 72, 0.08);
+  background: rgba(33, 94, 97, 0.08);
   color: var(--jr-purple);
 }
 
@@ -551,12 +551,12 @@
 }
 
 .edItem:hover {
-  background: rgba(225, 29, 72, 0.08);
+  background: rgba(33, 94, 97, 0.08);
   color: var(--jr-text);
 }
 
 .edItemActive {
-  background: rgba(225, 29, 72, 0.12);
+  background: rgba(33, 94, 97, 0.12);
   color: var(--jr-purple);
   font-weight: 700;
 }
@@ -629,7 +629,7 @@
   transition: all 0.2s ease;
   
   &:hover:not(:focus) {
-    border-color: rgba(225, 29, 72, 0.35) !important;
+    border-color: rgba(33, 94, 97, 0.35) !important;
   }
   
   &:focus {
@@ -644,7 +644,7 @@
   transition: all 0.2s ease;
   
   &:hover {
-    border-color: rgba(225, 29, 72, 0.35) !important;
+    border-color: rgba(33, 94, 97, 0.35) !important;
   }
   
   &[class*="open_"], &:global(.custom-dropdown-open) {
@@ -662,12 +662,12 @@
     color: white !important;
     
     &:hover {
-      background-color: var(--jr-purple2, #be123c) !important;
+      background-color: var(--jr-purple2, #184649) !important;
     }
   }
   
   &:hover:not([class*="selected_"]):not(:global(.custom-dropdown-selected)) {
-    background-color: rgba(225, 29, 72, 0.08) !important;
+    background-color: rgba(33, 94, 97, 0.08) !important;
     color: var(--jr-purple) !important;
   }
 }

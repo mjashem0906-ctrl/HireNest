@@ -1,31 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-
 /* ============================================================
-   JOBDETAIL.MODULE.SCSS — PREMIUM REDESIGN
+   JOBDETAIL.MODULE.SCSS — PREMIUM SAAS REDESIGN
+   Brand: #215E61 | Accent: #FF8735
 ============================================================ */
 
-$rose:   #e11d48;
-$rose-d: #be123c;
-$rose-dd:#9f1239;
-$violet: #7c3aed;
-$blue:   #2563eb;
+$rose:   #215E61;
+$rose-d: #184749;
+$rose-dd:#13393b;
+$violet: #FF8735;
+$blue:   #215E61;
 
 /* ---- Page Wrapper ---- */
 .pageWrapper {
   min-height: 100vh;
-  padding: 32px 16px 80px;
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-  background: var(--bg-primary, #f8fafc);
+  padding: 1.35rem 32px 2rem 32px;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary, #f8fafb);
   transition: background 0.3s ease;
+  box-sizing: border-box;
 }
 
 :global([data-theme="dark"]) .pageWrapper {
-  background: #080e1a;
+  background: var(--bg-primary);
 }
 
 .container {
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 0;
+  width: 100%;
 }
 
 /* ============================================================

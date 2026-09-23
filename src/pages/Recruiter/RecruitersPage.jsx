@@ -425,7 +425,7 @@
 //                 </div>
 
 //                 <div className={styles.meta}>
-//                   <p><strong><Building size={14} style={{marginRight: '5px'}}/> Company:</strong> {recruiter.companyName || 'JobBridge Karnataka'}</p>
+//                   <p><strong><Building size={14} style={{marginRight: '5px'}}/> Company:</strong> {recruiter.companyName || 'JobBridge'}</p>
 //                   <p><strong><Building2 size={14} style={{marginRight: '5px'}}/> Dept:</strong> {recruiter.department || 'General'}</p>
 //                   <p><strong><Briefcase size={14} style={{marginRight: '5px'}}/> Role:</strong> {recruiter.designation || 'Specialist'}</p>
 //                   {recruiter.registeredVia && recruiter.registeredVia !== 'admin' && (
@@ -467,6 +467,8 @@ import {
 } from 'lucide-react';
 import AddRecruiterModal from './AddRecruiterModal';
 import FilterStatus from '../../components/Filter/FIlterStatus';
+import MetricGrid from '../../components/Common/MetricGrid';
+import DashboardDonutChart from '../../components/Common/DashboardDonutChart';
 import styles from './RecruitersPage.module.scss';
 
 // ----------------------------------------------------------------------
@@ -530,6 +532,8 @@ function DonutChart({ data, size = 160, thickness = 30 }) {
       }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
         style={{ display: 'block', overflow: 'visible', cursor: 'pointer' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke="rgba(148, 163, 184, 0.15)" strokeWidth={thickness} />
         {segments.map((seg) => {
           const isHov = hovered === seg.index;
           const rr = isHov ? r + 4 : r;
@@ -972,10 +976,13 @@ const RecruitersPage = () => {
   const totalInd = topIndustries.reduce((s, i) => s + i.value, 0) || 1;
   const IND_COLORS = ['#2563eb', '#0891b2', '#7c3aed', '#d97706', '#16a34a', '#9ca3af'];
 
+  const isDarkMode = typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark";
+
   const donutData = [
-    { name: 'Active', value: activeCount || totalRecruiters, color: '#22c55e' },
-    { name: 'Inactive', value: inactiveCount || 0, color: '#ef4444' },
-    { name: 'Pending', value: pendingCount || 0, color: '#f97316' },
+    { name: 'Active', value: activeCount || totalRecruiters, color: isDarkMode ? "#3D8B8F" : "#215E61" },
+    { name: 'Inactive', value: inactiveCount || 0, color: isDarkMode ? "#FF9A52" : "#FF8735" },
+    { name: 'Pending', value: pendingCount || 0, color: isDarkMode ? "#7A8F94" : "#94A3B8" },
   ];
 
   const recentRecruiters = [...recruiters]
@@ -1191,52 +1198,34 @@ const RecruitersPage = () => {
 
 
         {/* Stat Cards */}
-        <div className={styles.statRow}>
-          {[
+        <MetricGrid
+          cards={[
             {
               label: 'Total Recruiters',
               value: totalRecruiters,
               icon: Users,
-              color: '#2563eb',
+              color: '#215E61',
               spark: getCumulativeTrend(recruiters),
-              growth: getGrowthRate(recruiters)
+              growth: getGrowthRate(recruiters),
             },
             {
               label: 'Active Recruiters',
               value: activeCount,
               icon: Building2,
-              color: '#0891b2',
+              color: '#215E61',
               spark: getActiveTrend(recruiters),
-              growth: getActiveGrowthRate(recruiters)
+              growth: getActiveGrowthRate(recruiters),
             },
             {
               label: 'New Recruiters (30d)',
               value: newRecruitersCount,
               icon: UserPlus,
-              color: '#d97706',
+              color: '#FF8735',
               spark: getNewTrend(recruiters),
-              growth: getNewGrowthRate(recruiters)
+              growth: getNewGrowthRate(recruiters),
             },
-          ].map((s, i) => (
-            <div key={i} className={styles.statCard}>
-              <div className={styles.statCardTop}>
-                <div className={styles.statNumbers}>
-                  <div className={styles.statLabel}>{s.label}</div>
-                  <div className={styles.statValue}>{s.value.toLocaleString()}</div>
-                </div>
-                <div className={styles.statIcon} style={{ background: `${s.color}15`, color: s.color }}>
-                  <s.icon size={22} />
-                </div>
-              </div>
-              <div className={`${styles.statTrend} ${s.growth >= 0 ? styles.trendUp : styles.trendDown}`}>
-                {s.growth >= 0 ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />} {Math.abs(s.growth)}% <span>from last month</span>
-              </div>
-              <div className={styles.sparkWrap}>
-                <Sparkline points={s.spark} color={s.color} />
-              </div>
-            </div>
-          ))}
-        </div>
+          ]}
+        />
 
         {/* Mid Row: Donut | Industries | Recent */}
         <div className={styles.midRow}>
@@ -1244,18 +1233,13 @@ const RecruitersPage = () => {
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Recruiters by Status</span>
             </div>
-            <div className={styles.donutSection}>
-              <DonutChart data={donutData} size={170} thickness={32} />
-              <div className={styles.donutLegend}>
-                {donutData.map((d, i) => (
-                  <div key={i} className={styles.legendRow}>
-                    <span className={styles.legendDot} style={{ background: d.color }} />
-                    <span className={styles.legendName}>{d.name}</span>
-                    <span className={styles.legendVal}>{d.value} ({Math.round(d.value / (totalRecruiters || 1) * 100)}%)</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <DashboardDonutChart
+              data={donutData}
+              size={140}
+              thickness={24}
+              centerValue={totalRecruiters}
+              centerLabel="Total"
+            />
           </div>
 
           <div className={styles.card}>
@@ -1377,7 +1361,7 @@ const RecruitersPage = () => {
                                   )}
                                 </div>
                                 <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>
-                                  {r.companyName || 'JobBridge Karnataka'}
+                                  {r.companyName || 'JobBridge'}
                                 </span>
                               </div>
                             </div>
@@ -1473,7 +1457,7 @@ const RecruitersPage = () => {
                       <div className={styles.cardContentList}>
                         <div className={styles.cardContentItem}>
                           <Building size={13} />
-                          <span>{r.companyName || 'JobBridge Karnataka'}</span>
+                          <span>{r.companyName || 'JobBridge'}</span>
                         </div>
                         <div className={styles.cardContentItem}>
                           <Briefcase size={13} />

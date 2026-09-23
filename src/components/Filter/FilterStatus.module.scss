@@ -1,195 +1,140 @@
-.filterStatus {
-    background-color: var(--surface-elevated);
-    border-radius: 12px;
-    padding: 16px;
-    margin: 12px 0;
-    width: 100%;
-    box-shadow: 0 4px 12px var(--shadow-medium);
-    transition: box-shadow 0.2s ease;
-    border: 1px solid var(--border-light);
-    color: var(--text-primary);
+/* ════════════════════════════════════════════════════════════════
+   FilterStatus.module.scss — Active Filter Pills & Badges
+   Brand: #215E61 | Accent: #FF8735
+   ════════════════════════════════════════════════════════════════ */
 
-    &:hover {
-        box-shadow: 0 6px 16px var(--shadow-medium);
-    }
+.filterStatus {
+  background-color: var(--surface-elevated);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  margin: 12px 0;
+  width: 100%;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition-fast);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+
+  &:hover {
+    box-shadow: var(--shadow-sm);
+  }
 }
 
 .filterStatusHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-weight: 600;
 
-    span {
-        color: var(--accent-primary); // Deep blue adaptation
-        font-weight: bold;
-        font-size: 14px;
-    }
+  span {
+    color: var(--brand-primary);
+    font-weight: 600;
+    font-size: 13px;
+  }
 }
 
 .clearAllButton {
-    background: var(--bg-tertiary); // light gray background
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 13px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    transition: all 0.2s ease;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
 
-    &:hover {
-        color: var(--text-primary);
-        background-color: var(--border-medium);
-    }
+  &:hover {
+    color: var(--text-primary);
+    background-color: var(--border-medium);
+  }
 }
 
 .filterTags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .filterTag {
-    display: flex;
-    align-items: center;
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 20px;
-    // Default fallback
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 12.5px;
+  border-radius: var(--radius-full);
+  background-color: var(--brand-light);
+  color: var(--brand-primary);
+  border: 1px solid rgba(33, 94, 97, 0.2);
+  transition: all var(--transition-fast);
 
-    box-shadow: 0 2px 4px var(--shadow-medium);
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
-    border: 1px solid var(--border-light);
+  &:hover {
+    border-color: var(--brand-primary);
+  }
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px var(--shadow-medium);
-    }
+  &[data-filter-type="priority"] {
+    background-color: var(--accent-light);
+    color: var(--accent-primary);
+    border-color: rgba(255, 135, 53, 0.25);
+  }
 
-    // Specific styling for types, adapting to be more subtle or using variables if available
-    // For now, these hardcoded colors might look okay in dark mode if they are light enough, 
-    // but better to ensure text contrast. 
-    // Ideally update these to use --accent-primary etc or specific tag variables.
+  &[data-filter-type="status"] {
+    background-color: var(--brand-light);
+    color: var(--brand-primary);
+    border-color: rgba(33, 94, 97, 0.25);
+  }
 
-    &[data-filter-type="priority"] {
-        background-color: rgba(255, 247, 237, 0.1); // subtle orange tint
-        color: #ea580c; // orange-600
-        border-color: rgba(255, 247, 237, 0.2);
-    }
-
-    &[data-filter-type="status"] {
-        background-color: rgba(224, 242, 254, 0.1); // subtle blue tint
-        color: var(--accent-primary);
-        border-color: rgba(224, 242, 254, 0.2);
-    }
-
-    &[data-filter-type="date"] {
-        background-color: rgba(236, 253, 245, 0.1); // subtle green tint
-        color: var(--success);
-        border-color: rgba(236, 253, 245, 0.2);
-    }
+  &[data-filter-type="date"] {
+    background-color: var(--success-bg);
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.25);
+  }
 }
 
 .filterLabel {
-    font-weight: 600;
-    margin-right: 4px;
-    opacity: 0.8;
+  font-weight: 600;
+  margin-right: 4px;
+  opacity: 0.85;
 }
 
 .filterValue {
-    margin-right: 6px;
-    max-width: 180px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  margin-right: 6px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clearFilterButton {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-secondary);
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: inherit;
+  opacity: 0.7;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: opacity var(--transition-fast);
 
-    &:hover {
-        background-color: var(--border-medium);
-        color: var(--text-primary);
-    }
+  &:hover {
+    opacity: 1;
+  }
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
-    .filterStatus {
-        padding: 12px;
-    }
+  .filterStatus {
+    padding: 10px 14px;
+  }
 
-    .filterTag {
-        font-size: 12px;
-        padding: 4px 8px;
-    }
+  .filterTag {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
 
-    .filterValue {
-        max-width: 100px;
-    }
-}
-
-
-/* =========================
-   DARK MODE OVERRIDES (Premium Slate Theme)
-   ========================= */
-:global([data-theme="dark"]) {
-    .filterStatus {
-        background-color: rgba(15, 23, 42, 0.85);
-        /* Dark slate background */
-        border-color: rgba(148, 163, 184, 0.25);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    .filterStatusHeader span {
-        color: #60a5fa;
-        /* Lighter blue for better contrast on dark */
-    }
-
-    .clearAllButton {
-        background-color: rgba(30, 41, 59, 0.8);
-        color: #cbd5e1;
-        border: 1px solid rgba(148, 163, 184, 0.2);
-
-        &:hover {
-            background-color: rgba(51, 65, 85, 0.9);
-            color: #f1f5f9;
-            border-color: rgba(59, 130, 246, 0.4);
-        }
-    }
-
-    .filterTag {
-        background-color: rgba(30, 41, 59, 0.6);
-        border-color: rgba(148, 163, 184, 0.2);
-        color: #e2e8f0;
-
-        &:hover {
-            background-color: rgba(51, 65, 85, 0.8);
-            border-color: rgba(96, 165, 250, 0.4);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-    }
-
-    .clearFilterButton {
-        color: #94a3b8;
-
-        &:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #f1f5f9;
-        }
-    }
+  .filterValue {
+    max-width: 110px;
+  }
 }

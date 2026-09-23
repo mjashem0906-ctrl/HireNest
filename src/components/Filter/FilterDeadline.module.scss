@@ -1,157 +1,165 @@
+/* ════════════════════════════════════════════════════════════════
+   FilterDeadline.module.scss — Deadline List & Status Badges
+   Brand: #215E61 | Accent: #FF8735
+   ════════════════════════════════════════════════════════════════ */
 
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; // allow wrapping on smaller screens
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 1rem;
 }
 
 .datePicker {
-  padding: 10px 12px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  color: #333;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   width: 180px;
   cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
 
   &:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-subtle);
   }
 
   @media (max-width: 600px) {
     width: 100%;
-    font-size: 15px;
   }
 }
 
 .customCalendar {
-  border-radius: 12px;
-  border: 1px solid #e1e1e1;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
   font-family: 'Inter', sans-serif;
+  background: var(--surface-elevated);
 }
 
 .deadlineList {
   max-height: 500px;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 6px;
 
-  // @media (max-width: 600px) {
-  //   max-height: unset; // allow full scroll on mobile
-  // }
-}
-
-/** Optional: Custom scrollbar */
-.deadlineList::-webkit-scrollbar {
-  width: 6px;
-}
-.deadlineList::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 4px;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-medium);
+    border-radius: 4px;
+  }
 }
 
 .deadlineItem {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--bg-tertiary);
+  }
 
   @media (max-width: 600px) {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 6px;
   }
 }
 
 .deadlineInfo h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .date {
-  font-size: 13px;
-  color: #888;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .priority {
-  padding: 4px var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 
   &.high {
-    background-color: #00ff2aff;
-   
+    background-color: var(--accent-light);
+    color: var(--accent-primary);
   }
 
   &.medium {
-    background-color:#63b5ecff;
-   
+    background-color: var(--info-bg);
+    color: var(--info);
   }
 
   &.low {
-    background-color: #d0e03bff;
-   
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
   }
-  &.urgent{
-    background-color:#fd3300ff ;
+
+  &.urgent {
+    background-color: var(--error-bg);
+    color: var(--error);
   }
 }
 
 .status {
-  padding: 4px var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 
   &.planning {
-    background-color: #fbff00ff;
-   
+    background-color: var(--warning-bg);
+    color: var(--warning);
   }
+
   &.in-progress {
-    background-color: #3daae9ff;
-    
+    background-color: var(--brand-light);
+    color: var(--brand-primary);
   }
 
   &.completed {
-    background-color: #1ef102ff;
-   
+    background-color: var(--success-bg);
+    color: var(--success);
   }
 
-  &.on-hold {
-    background-color: #f72525ff;
-    
+  &.on-hold,
+  &.dropped {
+    background-color: var(--error-bg);
+    color: var(--error);
   }
 
   &.Assigned {
-    background-color: #a5ee74ff;
-    
-  }
-
-  &.dropped {
-    background-color: #f72525ff;
-    
+    background-color: var(--info-bg);
+    color: var(--info);
   }
 
   &.Idea {
-    background-color: #ff9100c5;
-    
+    background-color: var(--accent-light);
+    color: var(--accent-primary);
   }
 }
 
 .noSubtasks {
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
-  color: #777;
-  padding: 12px;
+  color: var(--text-muted);
+  padding: 16px;
 }

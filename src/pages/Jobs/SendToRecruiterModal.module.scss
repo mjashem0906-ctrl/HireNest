@@ -43,13 +43,13 @@
   justify-content: space-between;
   padding: 20px 24px 16px;
   border-bottom: 1px solid var(--jb-border, #e2e8f0);
-  background: linear-gradient(135deg, rgba(190, 18, 60, 0.06) 0%, rgba(159, 18, 57, 0.03) 100%);
+  background: linear-gradient(135deg, rgba(33, 94, 97, 0.08) 0%, rgba(33, 94, 97, 0.03) 100%);
   flex-shrink: 0;
 }
 
 :global([data-theme="dark"]) .header {
   border-bottom-color: var(--jb-border, rgba(148, 163, 184, 0.18));
-  background: linear-gradient(135deg, rgba(190, 18, 60, 0.12) 0%, rgba(159, 18, 57, 0.06) 100%);
+  background: linear-gradient(135deg, rgba(33, 94, 97, 0.14) 0%, rgba(33, 94, 97, 0.06) 100%);
 }
 
 .headerLeft {
@@ -62,17 +62,17 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  background: #215E61;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.25);
+  box-shadow: 0 4px 14px rgba(33, 94, 97, 0.25);
 }
 
 :global([data-theme="dark"]) .headerIcon {
-  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.35);
+  box-shadow: 0 4px 14px rgba(33, 94, 97, 0.35);
 }
 
 .title {
@@ -511,20 +511,21 @@
   padding: 10px 22px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  background: var(--accent-primary, #FF8735);
   color: #fff;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.18s;
   font-family: inherit;
-  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.25);
+  box-shadow: 0 4px 14px rgba(255, 135, 53, 0.35);
   min-width: 130px;
   justify-content: center;
 
   &:hover:not(:disabled) {
+    background: var(--accent-hover, #e57427);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(190, 18, 60, 0.35);
+    box-shadow: 0 6px 20px rgba(255, 135, 53, 0.45);
   }
 
   &:disabled {
@@ -535,10 +536,10 @@
 }
 
 :global([data-theme="dark"]) .sendBtn {
-  box-shadow: 0 4px 14px rgba(190, 18, 60, 0.35);
+  box-shadow: 0 4px 14px rgba(255, 135, 53, 0.35);
 
   &:hover:not(:disabled) {
-    box-shadow: 0 6px 20px rgba(190, 18, 60, 0.45);
+    box-shadow: 0 6px 20px rgba(255, 135, 53, 0.45);
   }
 }
 

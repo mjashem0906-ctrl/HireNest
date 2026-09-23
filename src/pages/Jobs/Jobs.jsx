@@ -51,6 +51,7 @@ import { saveAs } from "file-saver";
 import debounce from "lodash/debounce";
 import PropTypes from "prop-types";
 import Select from "react-select";
+import MetricGrid from "../../components/Common/MetricGrid";
 
 // Google Login Component
 const GoogleLoginButton = ({ onLoginSuccess, onLoginError }) => {
@@ -1133,7 +1134,7 @@ export const ProvidedForm = ({ isOpen, onClose, onSubmit, initialData, isDarkThe
         import.meta.env.VITE_API_URL ||
         (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
           ? "http://localhost:5000"
-          : "https://jobbridgenode.com");
+          : "https://jobbridge.com");
       return `${backendUrl}/${url.replace(/\\/g, "/")}`;
     }
     return url;
@@ -2504,7 +2505,7 @@ function Jobs() {
     import.meta.env.VITE_API_URL ||
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      : "https://jobbridgenode.com");
+      : "https://jobbridge.com");
   const JOBS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -3457,7 +3458,8 @@ function Jobs() {
         })}
       >
         <div className={styles.headerInner}>
-          <div className={styles.topSearchBar}>
+          {/* TOP ROW: Search & Location */}
+          <div className={styles.topRow}>
             <div className={styles.cardSearch}>
               <div className={styles.searchIcon}>
                 <Search size={20} />
@@ -3493,56 +3495,82 @@ function Jobs() {
                 Search Jobs
               </button>
             </div>
+          </div>
 
-            <div className={styles.tabsContainer}>
-              <div
-                className={classNames(styles.tab, {
-                  [styles.active]: view === "request",
-                })}
-                onClick={() => {
-                  setView("request");
-                  setShowFilters(false);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setView("request");
-                    setShowFilters(false);
-                  }
-                }}
-              >
-                <div className={styles.tabIcon}>
-                  <NotebookPen size={22} />
-                </div>
-                <button type="button" className={styles.tabLabel}>
-                  Job Posts
+          {/* BOTTOM ROW: Toggles, Tabs, Exports */}
+          <div className={styles.bottomRow}>
+            <div className={styles.leftActions}>
+              <div className={styles.statusToggleContainer}>
+                <button
+                  type="button"
+                  className={classNames(styles.statusToggleBtn, {
+                    [styles.statusToggleActive]: statusFilter === "active"
+                  })}
+                  onClick={() => setStatusFilter("active")}
+                >
+                  Active
+                </button>
+                <button
+                  type="button"
+                  className={classNames(styles.statusToggleBtn, {
+                    [styles.statusToggleActive]: statusFilter === "inactive"
+                  })}
+                  onClick={() => setStatusFilter("inactive")}
+                >
+                  Inactive
                 </button>
               </div>
 
-              <div
-                className={classNames(styles.tab, {
-                  [styles.active]: view === "myPost",
-                })}
-                onClick={() => {
-                  setView("myPost");
-                  setShowFilters(false);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+              <div className={styles.tabsContainer}>
+                <div
+                  className={classNames(styles.tab, {
+                    [styles.active]: view === "request",
+                  })}
+                  onClick={() => {
+                    setView("request");
+                    setShowFilters(false);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setView("request");
+                      setShowFilters(false);
+                    }
+                  }}
+                >
+                  <div className={styles.tabIcon}>
+                    <NotebookPen size={18} />
+                  </div>
+                  <button type="button" className={styles.tabLabel}>
+                    Job Posts
+                  </button>
+                </div>
+
+                <div
+                  className={classNames(styles.tab, {
+                    [styles.active]: view === "myPost",
+                  })}
+                  onClick={() => {
                     setView("myPost");
                     setShowFilters(false);
-                  }
-                }}
-              >
-                <div className={styles.tabIcon}>
-                  <BriefcaseBusiness size={22} />
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setView("myPost");
+                      setShowFilters(false);
+                    }
+                  }}
+                >
+                  <div className={styles.tabIcon}>
+                    <BriefcaseBusiness size={18} />
+                  </div>
+                  <button type="button" className={styles.tabLabel}>
+                    {user?.role === "Admin" || user?.role === "Recruiter" ? "Applicants" : "My Jobs"}
+                  </button>
                 </div>
-                <button type="button" className={styles.tabLabel}>
-                  {user?.role === "Admin" || user?.role === "Recruiter" ? "Applicants" : "My Jobs"}
-                </button>
               </div>
             </div>
 
@@ -3578,27 +3606,6 @@ function Jobs() {
               )}
             </div>
           </div>
-
-          <div className={styles.statusToggleContainer}>
-            <button
-              type="button"
-              className={classNames(styles.statusToggleBtn, {
-                [styles.statusToggleActive]: statusFilter === "active"
-              })}
-              onClick={() => setStatusFilter("active")}
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              className={classNames(styles.statusToggleBtn, {
-                [styles.statusToggleActive]: statusFilter === "inactive"
-              })}
-              onClick={() => setStatusFilter("inactive")}
-            >
-              Inactive
-            </button>
-          </div>
         </div>
       </div>
 
@@ -3620,105 +3627,47 @@ function Jobs() {
         </div>
       )}
 
-      <div className={styles.premiumStatsGrid}>
-        {/* Stat Card 1: Jobs Found */}
-        <div className={styles.premiumStatCard}>
-          <div className={classNames(styles.statIconWrapper, styles.pinkIcon)}>
-            <BriefcaseBusiness size={24} />
-          </div>
-          <div className={styles.statText}>
-            <span className={styles.statCardLabel}>Jobs Found</span>
-            <h3 className={styles.statCardValue}>{totalJobs}</h3>
-            <span className={styles.statTrendGreen}>↑ from last month</span>
-          </div>
-          <div className={classNames(styles.sparklineChart, styles.pinkSparkline)}>
-            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="pinkGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              <path d="M0,25 Q15,5 30,20 T60,5 T90,15 T100,5 L100,30 L0,30 Z" fill="url(#pinkGrad)" />
-              <path d="M0,25 Q15,5 30,20 T60,5 T90,15 T100,5" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Stat Card 2: Total Jobs */}
-        <div className={styles.premiumStatCard}>
-          <div className={classNames(styles.statIconWrapper, styles.goldIcon)}>
-            <NotebookPen size={24} />
-          </div>
-          <div className={styles.statText}>
-            <span className={styles.statCardLabel}>Total Jobs</span>
-            <h3 className={styles.statCardValue}>{totalAllJobs}</h3>
-            <span className={styles.statTrendGreen}>↑ from last month</span>
-          </div>
-          <div className={classNames(styles.sparklineChart, styles.goldSparkline)}>
-            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              <path d="M0,25 Q20,15 40,25 T70,10 T100,5 L100,30 L0,30 Z" fill="url(#goldGrad)" />
-              <path d="M0,25 Q20,15 40,25 T70,10 T100,5" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Stat Card 3: Companies */}
-        <div className={styles.premiumStatCard}>
-          <div className={classNames(styles.statIconWrapper, styles.blueIcon)}>
-            <Building size={24} />
-          </div>
-          <div className={styles.statText}>
-            <span className={styles.statCardLabel}>Companies</span>
-            <h3 className={styles.statCardValue}>{companiesCount}</h3>
-            <span className={styles.statTrendGreen}>↑ from last month</span>
-          </div>
-          <div className={classNames(styles.sparklineChart, styles.blueSparkline)}>
-            <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              <path d="M0,20 Q15,25 35,10 T70,20 T100,5 L100,30 L0,30 Z" fill="url(#blueGrad)" />
-              <path d="M0,20 Q15,25 35,10 T70,20 T100,5" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Stat Card 4: Applicants */}
-        {(user?.role === "Admin" || user?.role === "Recruiter") && (
-          <div className={styles.premiumStatCard}>
-            <div className={classNames(styles.statIconWrapper, styles.greenIcon)}>
-              <Users size={24} />
-            </div>
-            <div className={styles.statText}>
-              <span className={styles.statCardLabel}>Applicants</span>
-              <h3 className={styles.statCardValue}>{totalApplicants}</h3>
-              <span className={styles.statTrendGreen}>↑ from last month</span>
-            </div>
-            <div className={classNames(styles.sparklineChart, styles.greenSparkline)}>
-              <svg viewBox="0 0 100 30" width="100%" height="40" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
-                  </linearGradient>
-                </defs>
-                <path d="M0,25 Q15,20 30,10 T60,25 T90,5 T100,10 L100,30 L0,30 Z" fill="url(#greenGrad)" />
-                <path d="M0,25 Q15,20 30,10 T60,25 T90,5 T100,10" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* ── METRIC CARDS (Rule 6: Exactly 4 cards -> Straight 4-Column Layout) ── */}
+      <MetricGrid
+        cards={[
+          {
+            label: "Jobs Found",
+            value: totalJobs,
+            icon: BriefcaseBusiness,
+            color: "#215E61",
+            growth: 12,
+            trendLabel: "from last month",
+          },
+          {
+            label: "Total Jobs",
+            value: totalAllJobs,
+            icon: NotebookPen,
+            color: "#215E61",
+            growth: 24,
+            trendLabel: "from last month",
+          },
+          {
+            label: "Companies",
+            value: companiesCount,
+            icon: Building,
+            color: "#215E61",
+            growth: 8,
+            trendLabel: "from last month",
+          },
+          ...(user?.role === "Admin" || user?.role === "Recruiter"
+            ? [
+                {
+                  label: "Applicants",
+                  value: totalApplicants,
+                  icon: Users,
+                  color: "#FF8735",
+                  growth: 18,
+                  trendLabel: "from last month",
+                },
+              ]
+            : []),
+        ]}
+      />
 
       <div
         className={classNames(styles.pageBody, {
@@ -4103,7 +4052,9 @@ function Jobs() {
 
                   {paginatedJobs.length === 0 ? (
                     <div className={styles.noResults}>
-                      <div className={styles.noResultsIcon}>🔍</div>
+                      <div className={styles.noResultsIcon}>
+                        <Search size={48} color="var(--primary)" />
+                      </div>
                       <h3>No jobs found</h3>
                       <p>Try adjusting your filters or search terms</p>
                       <button

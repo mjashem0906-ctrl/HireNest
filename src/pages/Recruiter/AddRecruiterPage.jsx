@@ -56,7 +56,7 @@ const AddRecruiterPage = () => {
       </div>
 
       <div className={styles.pageHeader}>
-        <img src="/Logo.png" alt="JobBridge Logo" className={styles.logo} />
+        <img src="/Logo.png" alt="Hirenest Logo" className={styles.logo} />
         <h1>Register New Recruiter</h1>
         <p>Fill in the details below to add a new recruiter to the directory.</p>
       </div>

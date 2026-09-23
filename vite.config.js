@@ -18,8 +18,8 @@
 //     VitePWA({
 //       registerType: 'autoUpdate',
 //       manifest: {
-//         name: 'JOB BRIDGE Node',
-//         short_name: 'JOB BRIDGE',
+//         name: 'JobBridge',
+//         short_name: 'JobBridge',
 //         description: 'Connecting Seekers and recruiters seamlessly in Karnataka.',
 //         start_url: '/',
 //         display: 'standalone',
@@ -63,8 +63,8 @@ export default defineConfig({
       },
 
       manifest: {
-        name: 'JOB BRIDGE Node',
-        short_name: 'JOB BRIDGE',
+        name: 'JobBridge',
+        short_name: 'JobBridge',
         description: 'Connecting Seekers and recruiters seamlessly in Karnataka.',
         start_url: '/',
         display: 'standalone',

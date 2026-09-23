@@ -37,14 +37,15 @@
   background-color: var(--bg-primary);
   padding: 40px 32px;
 
-  // Rose Theme Variables
-  --accent-primary: #e11d48;
-  --accent-hover: #be123c;
-  --border-light-rose: #ffe4e6;
-  --focus-ring-color: rgba(225, 29, 72, 0.15);
-  --accent-primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
-  --accent-hover-gradient: linear-gradient(135deg, #be123c 0%, #a21132 100%);
-  --shadow-rose: rgba(225, 29, 72, 0.35);
+  // Brand & Accent Theme Variables
+  --brand-primary: #215E61;
+  --accent-primary: #FF8735;
+  --accent-hover: #e06f24;
+  --border-light-rose: #e2e8f0;
+  --focus-ring-color: rgba(33, 94, 97, 0.15);
+  --accent-primary-gradient: linear-gradient(135deg, #FF8735 0%, #e06f24 100%);
+  --accent-hover-gradient: linear-gradient(135deg, #e06f24 0%, #c95c18 100%);
+  --shadow-rose: rgba(255, 135, 53, 0.35);
 }
 
 // ── Page Header ─────────────────────────────────────────
@@ -132,10 +133,8 @@
 // ── Section Title ────────────────────────────────────────
 .sectionTitle {
   grid-column: 1 / -1;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--accent-primary);
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border-light-rose);
@@ -149,11 +148,9 @@
   gap: 6px;
 
   label {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
   input,
@@ -227,7 +224,7 @@
   &:hover:not(:disabled) {
     background: var(--accent-hover-gradient, var(--accent-hover));
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--shadow-rose, rgba(225, 29, 72, 0.35));
+    box-shadow: 0 4px 12px var(--shadow-rose, rgba(33, 94, 97, 0.35));
   }
 
   &:disabled {
@@ -242,11 +239,21 @@
 :global(#root.dark) .pageWrapper,
 :global(.dark) .pageWrapper,
 :global([data-theme="dark"]) .pageWrapper {
-  --accent-primary: #fda4af;
-  --accent-hover: #f43f5e;
-  --border-light-rose: rgba(225, 29, 72, 0.22);
-  --focus-ring-color: rgba(225, 29, 72, 0.18);
-  --accent-primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
-  --accent-hover-gradient: linear-gradient(135deg, #be123c 0%, #a21132 100%);
-  --shadow-rose: rgba(225, 29, 72, 0.55);
+  --bg-primary: #0B0F10;
+  --bg-secondary: #181E20;
+  --bg-tertiary: #1C2325;
+  --border-light: rgba(255, 255, 255, 0.10);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --text-primary: #F3F5F5;
+  --text-secondary: #A8B2B6;
+  --text-muted: #A8B2B6;
+  --brand-primary: #3D8B8F;
+  --accent-primary: #FF9A52;
+  --accent-hover: #e06f24;
+  --border-light-rose: rgba(255, 255, 255, 0.10);
+  --focus-ring-color: rgba(61, 139, 143, 0.25);
+  --accent-primary-gradient: linear-gradient(135deg, #FF8735 0%, #e06f24 100%);
+  --accent-hover-gradient: linear-gradient(135deg, #e06f24 0%, #c95c18 100%);
+  --shadow-rose: rgba(255, 135, 53, 0.45);
+  --shadow-medium: rgba(0, 0, 0, 0.18);
 }

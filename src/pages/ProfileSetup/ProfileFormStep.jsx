@@ -1605,13 +1605,13 @@ const ProfileFormStep = ({ initialData = {}, resumeUrl = "", onSaved, onBack }) 
                     onClick={() => photoInputRef.current?.click()}
                     style={{
                       border: "none",
-                      background: "linear-gradient(135deg, #e11d48, #be123c)",
+                      background: "#215E61",
                       color: "white",
                       padding: "10px 14px",
                       borderRadius: 12,
                       fontWeight: 800,
                       cursor: "pointer",
-                      boxShadow: "0 4px 12px rgba(225, 29, 72, 0.3)",
+                      boxShadow: "0 4px 12px rgba(33, 94, 97, 0.25)",
                     }}
                   >
                     {photoFile ? "Replace" : "Upload"}

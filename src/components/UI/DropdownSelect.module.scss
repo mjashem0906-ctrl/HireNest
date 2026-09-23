@@ -1,8 +1,12 @@
+/* ════════════════════════════════════════════════════════════════
+   DropdownSelect.module.scss — Clean SaaS Select Component
+   Brand: #215E61 | Accent: #FF8735
+   ════════════════════════════════════════════════════════════════ */
 
 .dropdown {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .selectWrap {
@@ -12,7 +16,7 @@
 .label {
   font-weight: 500;
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 13px;
 }
 
 .required {
@@ -24,35 +28,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  min-height: 52px;
+  padding: 0 14px;
+  min-height: 42px;
   border: 1px solid var(--border-medium);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background-color: var(--surface-elevated);
   cursor: pointer;
-  transition: var(--transition-fast);
-  
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
   &:hover {
-    border-color: var(--text-muted);
+    border-color: var(--border-focus);
   }
-  
-  &:focus, &:focus-visible {
+
+  &:focus,
+  &:focus-visible {
     outline: none;
-    border-color: var(--accent-primary, #e11d48);
-    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-subtle);
   }
-  
+
   &.open {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-subtle);
   }
-  
+
   &.error {
     border-color: var(--error);
-    
-    &:focus, &.open {
+
+    &:focus,
+    &.open {
       border-color: var(--error);
-      box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.1);
+      box-shadow: 0 0 0 2px var(--error-bg);
     }
   }
 }
@@ -60,7 +66,7 @@
 .chosenValue {
   flex: 1;
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 13.5px;
 }
 
 .optionContent {
@@ -70,16 +76,16 @@
 }
 
 .colorDot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .chevron {
   color: var(--text-muted);
-  transition: var(--transition-fast);
-  
+  transition: transform var(--transition-fast);
+
   &.rotated {
     transform: rotate(180deg);
   }
@@ -93,7 +99,7 @@
   background-color: var(--surface-elevated);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px var(--shadow-light);
+  box-shadow: var(--shadow-lg);
   z-index: 50;
   overflow: hidden;
 }
@@ -102,21 +108,21 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border-light);
-  
+
   svg {
     color: var(--text-muted);
   }
-  
+
   input {
     flex: 1;
     border: none;
     outline: none;
     background: none;
     color: var(--text-primary);
-    font-size: 0.875rem;
-    
+    font-size: 13px;
+
     &::placeholder {
       color: var(--text-muted);
     }
@@ -124,7 +130,7 @@
 }
 
 .optionsList {
-  max-height: 300px;
+  max-height: 260px;
   overflow-y: auto;
 }
 
@@ -132,34 +138,36 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  padding: 10px 14px;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: background-color var(--transition-fast);
   color: var(--text-primary);
-  font-size: 0.875rem;
-  
-  &:hover, &.focused {
-    background-color: var(--bg-tertiary, rgba(225, 29, 72, 0.08));
+  font-size: 13.5px;
+
+  &:hover,
+  &.focused {
+    background-color: var(--bg-tertiary);
   }
-  
+
   &.selected {
-    background-color: var(--accent-primary);
-    color: white;
-    
-    &:hover, &.focused {
-      background-color: var(--accent-hover, #be123c);
+    background-color: var(--brand-primary);
+    color: #ffffff;
+
+    &:hover,
+    &.focused {
+      background-color: var(--brand-hover);
     }
   }
 }
 
 .errorText {
   color: var(--error);
-  font-size: 0.75rem;
+  font-size: 12px;
 }
 
 .avatar {
-  width: 50px;
-  height: 50px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   margin-right: 6px;
   object-fit: cover;
@@ -174,18 +182,21 @@
 .chip {
   display: flex;
   align-items: center;
-  background: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 12px;
+  background: var(--brand-light);
+  color: var(--brand-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
   font-size: 12px;
+  font-weight: 500;
 }
+
 .removeIcon {
   margin-left: 4px;
-  color: red;
+  color: var(--error);
   cursor: pointer;
 }
 
 .checkIcon {
   margin-left: auto;
-  color: green;
+  color: var(--success);
 }

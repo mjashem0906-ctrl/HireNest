@@ -66,9 +66,9 @@ const SendToRecruiterModal = ({ isOpen, onClose, applicant, job }) => {
   const getEmailTemplate = (recruiterName = "Recruiter") => {
     return `Dear ${recruiterName},
 
-Greetings from Job Bridge Node.
+Greetings from JobBridge.
 
-We are pleased to share the profile of a candidate who has applied for the position of ${jobTitle} at your organization through our Job Bridge Node platform.
+We are pleased to share the profile of a candidate who has applied for the position of ${jobTitle} at your organization through our JobBridge platform.
 
 Please find the candidate's resume attached for your review.
 
@@ -87,11 +87,11 @@ Thank you for your time and consideration.
 
 Best Regards,
 
-Job Bridge Node Team
+JobBridge Team
 Connecting Talent with Opportunities
-📧 info.jobbridge@solidaritykarnataka.org
+📧 info@hirenest.com
 📞 6366234200
-🌐 Job Bridge Node`;
+🌐 JobBridge`;
   };
 
   useEffect(() => {

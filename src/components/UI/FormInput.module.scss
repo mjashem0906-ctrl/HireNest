@@ -1,14 +1,18 @@
+/* ════════════════════════════════════════════════════════════════
+   FormInput.module.scss — Clean SaaS Input Component
+   Brand: #215E61 | Accent: #FF8735
+   ════════════════════════════════════════════════════════════════ */
 
 .formInput {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
 }
 
 .label {
   font-weight: 500;
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 13px;
 }
 
 .required {
@@ -24,40 +28,42 @@
 
 .icon {
   position: absolute;
-  left: var(--spacing-md);
+  left: 12px;
   color: var(--text-muted);
   z-index: 1;
 }
 
 .input {
   width: 100%;
-  padding: 0 16px;
-  min-height: 52px;
+  padding: 0 14px;
+  min-height: 42px;
   border: 1px solid var(--border-medium);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background-color: var(--surface-elevated);
   color: var(--text-primary);
-  font-size: 0.875rem;
-  transition: var(--transition-fast);
-  
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
   &.withIcon {
-    padding-left: 2.75rem;
+    padding-left: 38px;
   }
-  
+
   &:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 2px var(--brand-subtle);
+    outline: none;
   }
-  
+
   &.error {
     border-color: var(--error);
-    
+
     &:focus {
       border-color: var(--error);
-      box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.1);
+      box-shadow: 0 0 0 2px var(--error-bg);
     }
   }
-  
+
   &::placeholder {
     color: var(--text-muted);
   }
@@ -79,48 +85,48 @@
 
 .stepperContainer {
   position: absolute;
-  right: 12px;
+  right: 8px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   align-items: center;
   justify-content: center;
-  height: calc(100% - 16px);
+  height: calc(100% - 12px);
 }
 
 .stepperBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  color: var(--text-muted);
-  width: 26px;
-  height: 18px;
-  border-radius: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  width: 24px;
+  height: 16px;
+  border-radius: 3px;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease-in-out;
+  transition: all var(--transition-fast);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--border-medium);
     color: var(--text-primary);
-    border-color: var(--accent-primary);
+    border-color: var(--brand-primary);
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
 }
 
 .textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 90px;
+  padding: 10px 14px;
   font-family: inherit;
 }
 
 .errorText {
   color: var(--error);
-  font-size: 0.75rem;
-  margin-top: calc(var(--spacing-xs) * -1);
+  font-size: 12px;
 }

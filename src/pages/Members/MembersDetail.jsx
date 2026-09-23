@@ -46,7 +46,7 @@ function MembersDetail() {
     import.meta.env.VITE_API_URL ||
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      : "https://jobbridgenode.com");
+      : "https://jobbridge.com");
 
   useEffect(() => {
     fetchMember();
@@ -588,13 +588,14 @@ function MembersDetail() {
                   style={{
                     display: "block",
                     textAlign: "center",
-                    background: "linear-gradient(135deg, #e11d48, #be123c)",
+                    background: "#215E61",
                     color: "white",
                     padding: 12,
                     borderRadius: 12,
                     fontWeight: 700,
                     textDecoration: "none",
-                    boxShadow: "0 4px 12px rgba(225, 29, 72, 0.2)",
+                    boxShadow: "0 4px 12px rgba(33, 94, 97, 0.25)",
+                    transition: "all 0.2s ease",
                   }}
                 >
                   View CV

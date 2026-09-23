@@ -69,8 +69,8 @@ const RecruiterDetail = () => {
             {recruiter.profilePicture ? (
               <img src={recruiter.profilePicture} alt="" className={styles.avatar} />
             ) : (
-              <div className={styles.avatar} style={{display:'flex', alignItems:'center', justifyContent:'center', background:'#fff5f5'}}>
-                <User size={64} color="#e11d48" />
+              <div className={styles.avatar} style={{display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(33, 94, 97, 0.1)'}}>
+                <User size={64} color="var(--primary, #215E61)" />
               </div>
             )}
             <div className={styles.roleBadge}>RECRUITER</div>
@@ -81,7 +81,7 @@ const RecruiterDetail = () => {
             <p className={styles.designationText}>{recruiter.designation}</p>
             <div className={styles.badgesRow}>
                 <span className={styles.infoBadge}><MapPin size={14} /> {recruiter.location || "Online"}</span>
-                <span className={styles.infoBadge}><Building size={14} /> {recruiter.companyName || "JobBridge Karnataka"}</span>
+                <span className={styles.infoBadge}><Building size={14} /> {recruiter.companyName || "JobBridge"}</span>
                 <span className={styles.infoBadge}><CheckCircle size={14} color="#22c55e"/> Verified</span>
               </div>
           </div>
@@ -128,7 +128,7 @@ const RecruiterDetail = () => {
               </div>
               <div className={styles.item}>
                 <label>Company / Institution / Organization Name</label>
-                <div className={styles.value}>{recruiter.companyName || "JobBridge Karnataka"}</div>
+                <div className={styles.value}>{recruiter.companyName || "JobBridge"}</div>
               </div>
               <div className={styles.item}>
                 <label>Company GST</label>

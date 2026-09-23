@@ -1,8 +1,5 @@
-
-//--------------------------------19/01--------------------5.21-----------------
-
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Home,
   Users,
@@ -16,17 +13,36 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
-  Settings
+  Settings,
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-react';
 import styles from './Sidebar.module.scss';
 import logo from '/Logo.png';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   // Safety check: if user data isn't loaded yet, don't crash
   if (!user) return null;
+
+  const handleLogout = async () => {
+    const confirmLogout = window.confirm("Are you sure you want to logout?");
+    if (!confirmLogout) return;
+
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+      alert("Something went wrong while logging out.");
+    }
+  };
 
   let menuItems = [];
 
@@ -50,7 +66,6 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: recruiterProfilePath, icon: Building, label: 'Profile' },
     ];
   } else if (["Member", "Mentor", "Job", "Candidate"].includes(user.role)) {
-    // Ensure memberId is valid before using it in the path
     const profilePath = (user.memberId && user.memberId !== 'null' && user.memberId !== 'undefined')
       ? `/member/${user.memberId}`
       : '/member/me';
@@ -61,9 +76,7 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
       { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
       { path: '/jobs', icon: BriefcaseBusiness, label: 'Jobs' }
     ];
-  }
-  else if (user.role === "IT_Member") {
-    // Optional: Add logic for IT_Member if they have a different view
+  } else if (user.role === "IT_Member") {
     menuItems = [
       { path: '/', icon: Home, label: 'Dashboard' },
       { path: '/members', icon: Users, label: 'Members' },
@@ -74,35 +87,103 @@ function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
 
   return (
     <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''} ${isCollapsed ? styles.collapsed : ''}`}>
+      {/* Header with Logo Emblem, Title & Collapse Toggle */}
       <div className={styles.header}>
-        <div className={`${styles.logo} ${isCollapsed ? styles.hideLogo : ''}`}>
-          <img src={logo} alt="JobBridge Logo" width={200} className={styles.logoImg} />
+        <div className={styles.brandWrapper}>
+          <div className={styles.logoBadge}>
+            <img src={logo} alt="Hirenest" className={styles.logoEmblem} />
+          </div>
+          {!isCollapsed && <span className={styles.brandTitle}>Hirenest</span>}
         </div>
 
-        <div className={styles.collapseToggle}>
-          <button className={styles.collapseIcon} onClick={onToggleCollapse}>
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.collapseBtn}
+          onClick={onToggleCollapse}
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
 
-        <button className={styles.closeButton} onClick={onClose}>
-          <X size={20} />
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="Close sidebar"
+        >
+          <X size={18} />
         </button>
       </div>
 
+      {/* Navigation list */}
       <nav className={styles.nav}>
         {menuItems.filter(item => !item.hidden).map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-            onClick={onClose} // Closes sidebar on mobile when clicked
+            onClick={onClose}
+            title={isCollapsed ? item.label : undefined}
           >
-            <item.icon size={20} className={styles.icon} />
+            <item.icon size={19} className={styles.icon} />
             {!isCollapsed && <span className={styles.label}>{item.label}</span>}
           </NavLink>
         ))}
       </nav>
+
+      {/* Footer Area: Logout & Theme Toggle Switch */}
+      <div className={styles.footer}>
+        <button
+          type="button"
+          className={styles.logoutBtn}
+          onClick={handleLogout}
+          title={isCollapsed ? "Log out" : undefined}
+        >
+          <LogOut size={19} className={styles.icon} />
+          {!isCollapsed && <span className={styles.label}>Log out</span>}
+        </button>
+
+        <div className={styles.themeToggleWrapper}>
+          {!isCollapsed ? (
+            <div
+              className={styles.themeSwitchPill}
+              onClick={toggleTheme}
+              role="button"
+              tabIndex={0}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') toggleTheme();
+              }}
+            >
+              <div
+                className={`${styles.themeOption} ${
+                  theme !== 'dark' ? styles.activeThemeOption : ''
+                }`}
+              >
+                <Sun size={15} />
+              </div>
+              <div
+                className={`${styles.themeOption} ${
+                  theme === 'dark' ? styles.activeThemeOption : ''
+                }`}
+              >
+                <Moon size={15} />
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className={styles.collapsedThemeBtn}
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+          )}
+        </div>
+      </div>
     </aside>
   );
 }

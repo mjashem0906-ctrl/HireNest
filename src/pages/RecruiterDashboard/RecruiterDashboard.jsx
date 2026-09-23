@@ -30,10 +30,8 @@ import styles from "./RecruiterDashboard.module.scss";
 
 // ─── Sparklines ───────────────────────────────────────────────────────────────
 const SP = {
-  blue: [20, 25, 22, 28, 30, 27, 35, 32, 38, 40],
-  green: [12, 15, 13, 18, 16, 20, 18, 22, 21, 25],
-  purple: [15, 18, 14, 20, 19, 22, 20, 25, 23, 28],
-  amber: [40, 38, 42, 45, 43, 48, 50, 52, 55, 58],
+  teal: [20, 25, 22, 28, 30, 27, 35, 32, 38, 40],
+  orange: [15, 18, 14, 20, 19, 22, 20, 25, 23, 28],
 };
 
 function Sparkline({ points, color }) {
@@ -184,8 +182,8 @@ function GrowthChart({ data }) {
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "130px", overflow: "visible" }}>
       <defs>
         <linearGradient id="rec_growth_grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c0392b" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#c0392b" stopOpacity="0" />
+          <stop offset="0%" stopColor="#215E61" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#215E61" stopOpacity="0" />
         </linearGradient>
       </defs>
       {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
@@ -206,7 +204,7 @@ function GrowthChart({ data }) {
         </text>
       ))}
       <path d={area} fill="url(#rec_growth_grad)" />
-      <path d={line} fill="none" stroke="#c0392b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={line} fill="none" stroke="#215E61" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       {data.map((d, i) => {
         const isLast = i === data.length - 1;
         const isHov = tooltip?.i === i;
@@ -226,14 +224,14 @@ function GrowthChart({ data }) {
               cx={xs[i]}
               cy={ys[i]}
               r={isHov ? 5 : isLast ? 4 : 2.5}
-              fill={isHov || isLast ? "#c0392b" : "#fff"}
-              stroke="#c0392b"
+              fill={isHov || isLast ? "#215E61" : "#fff"}
+              stroke="#215E61"
               strokeWidth="1.5"
               style={{ transition: "r 0.15s", pointerEvents: "none" }}
             />
             {isLast && !isHov && (
               <>
-                <rect x={xs[i] - 14} y={ys[i] - 17} width="28" height="13" rx="4" fill="#c0392b" />
+                <rect x={xs[i] - 14} y={ys[i] - 17} width="28" height="13" rx="4" fill="#215E61" />
                 <text x={xs[i]} y={ys[i] - 7} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">
                   {d.value}
                 </text>
@@ -241,7 +239,7 @@ function GrowthChart({ data }) {
             )}
             {isHov && (
               <>
-                <line x1={xs[i]} y1={pad.t} x2={xs[i]} y2={pad.t + ih} stroke="#c0392b" strokeWidth="1" strokeDasharray="3 2" />
+                <line x1={xs[i]} y1={pad.t} x2={xs[i]} y2={pad.t + ih} stroke="#215E61" strokeWidth="1" strokeDasharray="3 2" />
                 <rect x={xs[i] - 18} y={ys[i] - 22} width="36" height="17" rx="4" fill="#1e293b" />
                 <text x={xs[i]} y={ys[i] - 11} textAnchor="middle" fontSize="9" fill="#fff" fontWeight="700">
                   {d.value}
@@ -477,8 +475,8 @@ const RecruiterDashboard = () => {
       label: "Total Jobs Posted",
       value: stats.totalJobs,
       icon: Briefcase,
-      color: "#2563eb",
-      spark: SP.blue,
+      color: "#215E61",
+      spark: SP.teal,
       growth: stats.totalJobs > 0 ? 100 : 0,
       trendLabel: "from last month",
       onClick: () => navigate("/jobs"),
@@ -487,8 +485,8 @@ const RecruiterDashboard = () => {
       label: "Active Jobs",
       value: stats.activeJobs,
       icon: CheckCircle2,
-      color: "#16a34a",
-      spark: SP.green,
+      color: "#FF8735",
+      spark: SP.orange,
       growth: stats.activeJobs > 0 ? 100 : 0,
       trendLabel: "currently active",
       onClick: () => navigate("/jobs", { state: { status: "active" } }),
@@ -497,8 +495,8 @@ const RecruiterDashboard = () => {
       label: "Applications Received",
       value: stats.totalApps,
       icon: Users,
-      color: "#8b5cf6",
-      spark: SP.purple,
+      color: "#215E61",
+      spark: SP.teal,
       growth: stats.totalApps > 0 ? 100 : 0,
       trendLabel: "from candidates",
       onClick: () => navigate("/jobs", { state: { view: "myPost" } }),
@@ -522,11 +520,11 @@ const RecruiterDashboard = () => {
     });
 
     return [
-      { name: "Applied", value: counts.Applied || 0, color: "#3b82f6", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
-      { name: "Under Review", value: counts.Review || 0, color: "#d97706", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
-      { name: "Shortlisted", value: counts.Shortlisted || 0, color: "#8b5cf6", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
-      { name: "Hired / Offers", value: (counts.Offer || 0) + (counts.Accepted || 0), color: "#10b981", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
-      { name: "Rejected", value: counts.Rejected || 0, color: "#ef4444", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
+      { name: "Applied", value: counts.Applied || 0, color: "#215E61", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
+      { name: "Under Review", value: counts.Review || 0, color: "#FF8735", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
+      { name: "Shortlisted", value: counts.Shortlisted || 0, color: "#1A4B4D", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
+      { name: "Hired / Offers", value: (counts.Offer || 0) + (counts.Accepted || 0), color: "#FF9E59", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
+      { name: "Rejected", value: counts.Rejected || 0, color: "#767676", nav: () => navigate("/jobs", { state: { view: "myPost" } }) },
     ];
   }, [allApplications, navigate]);
 
@@ -564,14 +562,14 @@ const RecruiterDashboard = () => {
     });
 
     const colors = {
-      "Full-time": "#c0392b",
-      "Part-time": "#2563eb",
-      Contract: "#8b5cf6",
-      Internship: "#d97706",
-      Remote: "#10b981",
-      Freelance: "#06b6d4",
-      Temporary: "#ec4899",
-      Other: "#64748b",
+      "Full-time": "#215E61",
+      "Part-time": "#FF8735",
+      Contract: "#1A4B4D",
+      Internship: "#FF9E59",
+      Remote: "#338E93",
+      Freelance: "#FFB47D",
+      Temporary: "#767676",
+      Other: "#222222",
     };
 
     const total = jobs.length || 1;
@@ -590,8 +588,8 @@ const RecruiterDashboard = () => {
     {
       icon: Plus,
       label: "Post Job",
-      color: "#c0392b",
-      bg: "#fef2f2",
+      color: "#215E61",
+      bg: "rgba(33, 94, 97, 0.1)",
       onClick: () => {
         setEditingJob(null);
         setIsModalOpen(true);
@@ -600,36 +598,36 @@ const RecruiterDashboard = () => {
     {
       icon: Briefcase,
       label: "View Jobs",
-      color: "#2563eb",
-      bg: "#eff6ff",
+      color: "#FF8735",
+      bg: "rgba(255, 135, 53, 0.1)",
       onClick: () => navigate("/jobs"),
     },
     {
       icon: Users,
       label: "Applicants",
-      color: "#8b5cf6",
-      bg: "#f5f3ff",
+      color: "#215E61",
+      bg: "rgba(33, 94, 97, 0.1)",
       onClick: () => navigate("/jobs", { state: { view: "myPost" } }),
     },
     {
       icon: CheckCircle2,
       label: "Active Jobs",
-      color: "#16a34a",
-      bg: "#f0fdf4",
+      color: "#FF8735",
+      bg: "rgba(255, 135, 53, 0.1)",
       onClick: () => navigate("/jobs", { state: { status: "active" } }),
     },
     {
       icon: Building,
       label: "Profile",
-      color: "#d97706",
-      bg: "#fffbeb",
+      color: "#215E61",
+      bg: "rgba(33, 94, 97, 0.1)",
       onClick: () => navigate(user?.recruiterId ? `/recruiters/${user.recruiterId}` : "/recruiters"),
     },
     {
       icon: RefreshCw,
       label: "Refresh",
-      color: "#06b6d4",
-      bg: "#ecfeff",
+      color: "#767676",
+      bg: "rgba(118, 118, 118, 0.1)",
       onClick: () => fetchRecruiterData(),
     },
   ];
@@ -717,8 +715,8 @@ const RecruiterDashboard = () => {
 
       {/* ── CONTENT ── */}
       <div className={styles.content}>
-        {/* ── STAT CARDS ROW (3 CARDS) ── */}
-        <div className={styles.statRow}>
+        <div className={styles.bentoGrid}>
+          {/* ── STAT CARDS ── */}
           {statCards.map((s, i) => (
             <div
               key={i}
@@ -753,11 +751,7 @@ const RecruiterDashboard = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* ── MID ROW (3 CARDS) ── */}
-        <div className={styles.midRow}>
-          {/* Card 1: Applications Pipeline (Donut Chart) */}
+          {/* Card: Applications Pipeline (Donut Chart) */}
           <div className={styles.card}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Application Pipeline</span>
@@ -841,7 +835,7 @@ const RecruiterDashboard = () => {
             </button>
           </div>
 
-          {/* Card 2: Top Job Postings (Ranked Progress Bars) */}
+          {/* Card: Top Job Postings */}
           <div className={styles.card}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Top Job Postings</span>
@@ -877,15 +871,14 @@ const RecruiterDashboard = () => {
               )}
             </div>
             <button
-              className={styles.viewAllBtn}
-              style={{ borderColor: "var(--border, #e8edf5)", color: "var(--text-muted, #64748b)" }}
+              className={`${styles.viewAllBtn} ${styles.viewAllBtnMuted}`}
               onClick={() => navigate("/jobs")}
             >
               View All Jobs <ChevronRight size={13} />
             </button>
           </div>
 
-          {/* Card 3: Top Skills in Demand (Ranked Gradient Progress Bars) */}
+          {/* Card: Top Skills in Demand */}
           <div className={styles.card}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Skills in Demand</span>
@@ -916,20 +909,16 @@ const RecruiterDashboard = () => {
               )}
             </div>
             <button
-              className={styles.viewAllBtn}
-              style={{ borderColor: "var(--border, #e8edf5)", color: "var(--text-muted, #64748b)" }}
+              className={`${styles.viewAllBtn} ${styles.viewAllBtnMuted}`}
               onClick={() => navigate("/jobs")}
             >
               View All in Jobs <ChevronRight size={13} />
             </button>
           </div>
-        </div>
-
-        {/* ── BOTTOM ROW (3 CARDS) ── */}
-        <div className={styles.bottomRow}>
-          {/* Card 1: Jobs Overview */}
+          {/* Group: Jobs Overview & Quick Actions */}
+          {/* Card: Jobs Overview */}
           <div className={styles.card}>
-            <div className={styles.cardHead}>
+              <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Jobs & Hiring Overview</span>
               <button className={styles.viewAllLink} onClick={() => navigate("/jobs")}>
                 View All
@@ -1003,132 +992,129 @@ const RecruiterDashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Card 2: Applications Growth Trend */}
+          {/* Card: Quick Actions & Recent Activity */}
           <div className={styles.card}>
             <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Application Growth</span>
-              {/* Period dropdown */}
-              <div ref={growthDropdownRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setShowGrowthDropdown((p) => !p)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    background: "var(--soft-bg, #f8fafc)",
-                    border: "1px solid var(--border, #e8edf5)",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    padding: "4px 10px",
-                    color: "var(--text-muted, #64748b)",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                  }}
-                >
-                  {selectedGrowthLabel} <ChevronDown size={12} />
+              <span className={styles.cardTitle}>Quick Actions</span>
+            </div>
+            <div className={styles.quickGrid}>
+              {quickActions.map((qa, i) => (
+                <button key={i} className={styles.quickItem} onClick={qa.onClick} title={qa.label}>
+                  <div className={styles.quickIcon} style={{ background: qa.bg, color: qa.color }}>
+                    <qa.icon size={16} />
+                  </div>
+                  <span className={styles.quickLabel}>{qa.label}</span>
                 </button>
-                {showGrowthDropdown && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "calc(100% + 6px)",
-                      right: 0,
-                      background: "var(--card-bg, #0f172a)",
-                      border: "1px solid var(--border, rgba(148, 163, 184, 0.2))",
-                      borderRadius: 10,
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-                      zIndex: 100,
-                      overflow: "hidden",
-                      minWidth: 120,
-                    }}
-                  >
-                    {GROWTH_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.key}
-                        onClick={() => {
-                          setGrowthPeriod(opt.key);
-                          setShowGrowthDropdown(false);
-                        }}
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          textAlign: "left",
-                          padding: "8px 12px",
-                          border: "none",
-                          background: growthPeriod === opt.key ? "var(--primary, #c0392b)" : "transparent",
-                          color: growthPeriod === opt.key ? "#fff" : "var(--text-main, #e5e7eb)",
-                          fontWeight: 700,
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                        }}
+              ))}
+            </div>
+
+            {/* Recent Applicants Sub-feed */}
+            {recentApplicants.length > 0 && (
+              <div className={styles.activityList}>
+                <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted, #64748b)", textTransform: "uppercase" }}>
+                  Recent Applicants
+                </div>
+                {recentApplicants.map((app, idx) => {
+                  const cand = app.candidate || {};
+                  return (
+                    <div key={idx} className={styles.activityItem}>
+                      <div
+                        className={styles.activityIcon}
+                        style={{ background: "rgba(37, 99, 235, 0.12)", color: "#2563eb" }}
                       >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <GrowthChart data={growthData} />
-            <div className={styles.growthFooter}>
-              <span className={styles.growthBadge}>
-                <TrendingUp size={13} /> {dynamicGrowthPct}% growth this period
-              </span>
-            </div>
-          </div>
-
-          {/* Card 3: Quick Actions & Recent Activity */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-            <div className={styles.card}>
-              <div className={styles.cardHead}>
-                <span className={styles.cardTitle}>Quick Actions</span>
-              </div>
-              <div className={styles.quickGrid}>
-                {quickActions.map((qa, i) => (
-                  <button key={i} className={styles.quickItem} onClick={qa.onClick} title={qa.label}>
-                    <div className={styles.quickIcon} style={{ background: qa.bg, color: qa.color }}>
-                      <qa.icon size={16} />
-                    </div>
-                    <span className={styles.quickLabel}>{qa.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Recent Applicants Sub-feed */}
-              {recentApplicants.length > 0 && (
-                <div className={styles.activityList}>
-                  <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted, #64748b)", textTransform: "uppercase" }}>
-                    Recent Applicants
-                  </div>
-                  {recentApplicants.map((app, idx) => {
-                    const cand = app.candidate || {};
-                    return (
-                      <div key={idx} className={styles.activityItem}>
-                        <div
-                          className={styles.activityIcon}
-                          style={{ background: "rgba(37, 99, 235, 0.12)", color: "#2563eb" }}
-                        >
-                          <User size={14} />
-                        </div>
-                        <div className={styles.activityBody}>
-                          <div className={styles.activityTitle}>{cand.name || "Candidate"}</div>
-                          <div className={styles.activitySub}>
-                            Applied for <strong style={{ color: "var(--text-main)" }}>{app.jobTitle}</strong>
-                          </div>
-                        </div>
-                        <div className={styles.activityTime}>
-                          {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : ""}
+                        <User size={14} />
+                      </div>
+                      <div className={styles.activityBody}>
+                        <div className={styles.activityTitle}>{cand.name || "Candidate"}</div>
+                        <div className={styles.activitySub}>
+                          Applied for <strong style={{ color: "var(--text-main)" }}>{app.jobTitle}</strong>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className={styles.activityTime}>
+                        {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : ""}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+        {/* Card: Applications Growth Trend */}
+        <div className={styles.card}>
+          <div className={styles.cardHead}>
+            <span className={styles.cardTitle}>Application Growth</span>
+            {/* Period dropdown */}
+            <div ref={growthDropdownRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowGrowthDropdown((p) => !p)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "var(--soft-bg, #f8fafc)",
+                  border: "1px solid var(--border, #e8edf5)",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  padding: "4px 10px",
+                  color: "var(--text-muted, #64748b)",
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                }}
+              >
+                {selectedGrowthLabel} <ChevronDown size={12} />
+              </button>
+              {showGrowthDropdown && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    right: 0,
+                    background: "var(--card-bg, #0f172a)",
+                    border: "1px solid var(--border, rgba(148, 163, 184, 0.2))",
+                    borderRadius: 10,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                    zIndex: 100,
+                    overflow: "hidden",
+                    minWidth: 120,
+                  }}
+                >
+                  {GROWTH_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      onClick={() => {
+                        setGrowthPeriod(opt.key);
+                        setShowGrowthDropdown(false);
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "8px 12px",
+                        border: "none",
+                        background: growthPeriod === opt.key ? "var(--primary, #c0392b)" : "transparent",
+                        color: growthPeriod === opt.key ? "#fff" : "var(--text-main, #e5e7eb)",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>
           </div>
+          <GrowthChart data={growthData} />
+          <div className={styles.growthFooter}>
+            <span className={styles.growthBadge}>
+              <TrendingUp size={13} /> {dynamicGrowthPct}% growth this period
+            </span>
+          </div>
         </div>
       </div>
+    </div>
 
       {/* ── POST / EDIT JOB MODAL ── */}
       <ProvidedForm

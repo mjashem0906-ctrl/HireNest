@@ -71,7 +71,7 @@ export default function DateSelect({
                   color: "#fff !important",
                 },
                 "& .MuiPickersDay-root.Mui-selected:hover": {
-                  backgroundColor: "var(--ps-primary-dark, var(--m-primary-hover, #be123c)) !important",
+                  backgroundColor: "var(--ps-primary-dark, var(--m-primary-hover, #184749)) !important",
                   color: "#fff !important",
                 },
                 "& .MuiDayCalendar-weekDayLabel": {

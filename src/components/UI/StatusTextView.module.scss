@@ -1,12 +1,11 @@
+/* ════════════════════════════════════════════════════════════════
+   StatusTextView.module.scss — Status Metric Badges Grid
+   ════════════════════════════════════════════════════════════════ */
+
 .statusContainer {
-//   display: flex;
-//   flex-wrap: wrap;
-//   gap: 0.75rem;
-//   margin-top: 1rem;
-//   justify-content: flex-start;
-display: grid;
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
+  gap: 12px;
   margin-top: 1rem;
 
   @media (max-width: 768px) {
@@ -19,47 +18,47 @@ display: grid;
 .statusItem {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border-radius: 2rem;
-//  background-color: #f0f0f0;
-  background-color: var(--bg-tertiary); /* ✅ theme */
-  font-size: 0.9rem;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-tertiary);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-light);
 
   &:hover {
-    background-color: var(--bg-secondary); /* ✅ theme */
-    //background-color: #e0e0e0;
-    transform: scale(1.02);
-    border-color: #ccc;
-    border-color: var(--border-light); /* ✅ theme */
+    background-color: var(--bg-secondary);
+    border-color: var(--border-medium);
+    box-shadow: var(--shadow-xs);
   }
-   @media (max-width: 768px) {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    flex: 1 1 calc(50% - 1rem); // 2 items per row on tablets/mobiles
+
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 12.5px;
+    flex: 1 1 calc(50% - 8px);
     justify-content: center;
   }
 
   @media (max-width: 480px) {
-    flex: 1 1 100%; // 1 item per row on very small screens
+    flex: 1 1 100%;
   }
 }
 
 .label {
-  text-transform: capitalize;
+  color: var(--text-primary);
 }
 
 .count {
-  font-weight: bold;
-  //color: #555;
-   color: var(--text-secondary); /* ✅ theme */
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-left: auto;
 }
-.statusColor{
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
+
+.statusColor {
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
 }

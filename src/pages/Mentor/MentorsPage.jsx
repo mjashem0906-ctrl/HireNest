@@ -36,6 +36,7 @@ import AddMentor from "./AddMentor";
 import { useAuth } from "../../context/AuthContext";
 import FilterStatus from "../../components/Filter/FIlterStatus";
 import MentorConnectionsAdmin from "./MentorConnectionsAdmin";
+import MetricGrid from "../../components/Common/MetricGrid";
 
 /* ==========================================================================
    SPARKLINE CHART COMPONENT (Inline SVG Gradients)
@@ -1261,99 +1262,42 @@ const MentorsPage = () => {
          ANALYTICS METRIC CARDS PANEL
          ========================================================================== */}
 
-      <div className={styles.metricsGrid}>
-        {/* Card 1: Total Mentors */}
-        <div
-          data-card-id="metric-total"
-          onMouseMove={handleCardMouseMoveDirect}
-          onMouseLeave={handleCardMouseLeaveDirect}
-          className={styles.metricCard}
-        >
-          <div className={styles.cardShine} />
-          <div className={styles.cardHeaderInfo}>
-            <div className={styles.metricMeta}>
-              <span className={styles.metricLabel}>Total Mentors</span>
-              <span className={styles.metricValue}>{totalMentors}</span>
-            </div>
-            <div className={`${styles.iconContainer} ${styles.redTheme}`}>
-              <Shield size={20} />
-            </div>
-          </div>
-          <div className={`${styles.trendIndicator} ${styles.up}`}>
-            <TrendingUp size={12} /> 12% from last month
-          </div>
-          <Sparkline color="#ef4444" />
-        </div>
-
-        {/* Card 2: Active Mentors */}
-        <div
-          data-card-id="metric-active"
-          onMouseMove={handleCardMouseMoveDirect}
-          onMouseLeave={handleCardMouseLeaveDirect}
-          className={styles.metricCard}
-        >
-          <div className={styles.cardShine} />
-          <div className={styles.cardHeaderInfo}>
-            <div className={styles.metricMeta}>
-              <span className={styles.metricLabel}>Active Mentors</span>
-              <span className={styles.metricValue}>{activeMentors}</span>
-            </div>
-            <div className={`${styles.iconContainer} ${styles.greenTheme}`}>
-              <Shield size={20} />
-            </div>
-          </div>
-          <div className={`${styles.trendIndicator} ${styles.up}`}>
-            <TrendingUp size={12} /> 18% from last month
-          </div>
-          <Sparkline color="#10b981" />
-        </div>
-
-        {/* Card 3: New Mentors */}
-        <div
-          data-card-id="metric-new"
-          onMouseMove={handleCardMouseMoveDirect}
-          onMouseLeave={handleCardMouseLeaveDirect}
-          className={styles.metricCard}
-        >
-          <div className={styles.cardShine} />
-          <div className={styles.cardHeaderInfo}>
-            <div className={styles.metricMeta}>
-              <span className={styles.metricLabel}>New Mentors</span>
-              <span className={styles.metricValue}>{newMentors}</span>
-            </div>
-            <div className={`${styles.iconContainer} ${styles.purpleTheme}`}>
-              <UserPlus size={20} />
-            </div>
-          </div>
-          <div className={`${styles.trendIndicator} ${styles.up}`}>
-            <TrendingUp size={12} /> 8% from last month
-          </div>
-          <Sparkline color="#8b5cf6" />
-        </div>
-
-        {/* Card 4: Average Experience */}
-        <div
-          data-card-id="metric-avg"
-          onMouseMove={handleCardMouseMoveDirect}
-          onMouseLeave={handleCardMouseLeaveDirect}
-          className={styles.metricCard}
-        >
-          <div className={styles.cardShine} />
-          <div className={styles.cardHeaderInfo}>
-            <div className={styles.metricMeta}>
-              <span className={styles.metricLabel}>Avg. Experience</span>
-              <span className={styles.metricValue}>{avgExperience} Yrs</span>
-            </div>
-            <div className={`${styles.iconContainer} ${styles.orangeTheme}`}>
-              <Star size={20} />
-            </div>
-          </div>
-          <div className={`${styles.trendIndicator} ${styles.up}`}>
-            <TrendingUp size={12} /> 5% from last month
-          </div>
-          <Sparkline color="#f97316" />
-        </div>
-      </div>
+      <MetricGrid
+        cards={[
+          {
+            label: "TOTAL MENTORS",
+            value: totalMentors,
+            growth: 12,
+            trendLabel: "from last month",
+            color: "#215E61",
+            icon: Shield,
+          },
+          {
+            label: "ACTIVE MENTORS",
+            value: activeMentors,
+            growth: 18,
+            trendLabel: "from last month",
+            color: "#FF8735",
+            icon: Shield,
+          },
+          {
+            label: "NEW MENTORS",
+            value: newMentors,
+            growth: 8,
+            trendLabel: "from last month",
+            color: "#215E61",
+            icon: UserPlus,
+          },
+          {
+            label: "AVG. EXPERIENCE",
+            value: `${avgExperience} Yrs`,
+            growth: 5,
+            trendLabel: "from last month",
+            color: "#FF8735",
+            icon: Star,
+          },
+        ]}
+      />
 
       {/* ==========================================================================
        DIRECTORY SECTION HEADER (WITH VIEW TOGGLE)
@@ -2265,7 +2209,7 @@ const MentorsPage = () => {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Date</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", marginBottom: "4px" }}>Date</label>
                 <input 
                   type="date" 
                   value={meetingDate}
@@ -2275,7 +2219,7 @@ const MentorsPage = () => {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Time</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", marginBottom: "4px" }}>Time</label>
                 <input 
                   type="time" 
                   value={meetingTime}
@@ -2285,7 +2229,7 @@ const MentorsPage = () => {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Message</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", marginBottom: "4px" }}>Message</label>
                 <textarea 
                   placeholder="Enter message for the candidate..."
                   value={meetingMessage}
@@ -2296,7 +2240,7 @@ const MentorsPage = () => {
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", textTransform: "uppercase", marginBottom: "4px" }}>Meeting Link</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--m-primary)", marginBottom: "4px" }}>Meeting Link</label>
                 <input 
                   type="text" 
                   placeholder="https://zoom.us/j/..."
@@ -2347,15 +2291,15 @@ const MentorsPage = () => {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", margin: "16px 0" }}>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Date</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Meeting Date</strong>
                 <span style={{ fontSize: "14px", fontWeight: "600" }}>{selectedMeeting.meetingDate}</span>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Time</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Meeting Time</strong>
                 <span style={{ fontSize: "14px", fontWeight: "600" }}>{selectedMeeting.meetingTime}</span>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Domain</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Domain</strong>
                 <span style={{ fontSize: "14px", fontWeight: "600" }}>
                   {selectedMeeting.createdAt && new Date(selectedMeeting.createdAt) < new Date("2026-07-14T00:00:00Z")
                     ? "-"
@@ -2363,7 +2307,7 @@ const MentorsPage = () => {
                 </span>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Skill</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Skill</strong>
                 <span style={{ fontSize: "14px", fontWeight: "600" }}>
                   {selectedMeeting.createdAt && new Date(selectedMeeting.createdAt) < new Date("2026-07-14T00:00:00Z")
                     ? "-"
@@ -2371,11 +2315,11 @@ const MentorsPage = () => {
                 </span>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Message</strong>
                 <p style={{ margin: "4px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>{selectedMeeting.meetingMessage}</p>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)", textTransform: "uppercase" }}>Meeting Link</strong>
+                <strong style={{ display: "block", fontSize: "12px", color: "var(--m-primary)" }}>Meeting Link</strong>
                 <a 
                   href={selectedMeeting.meetingLink} 
                   target="_blank" 
@@ -2438,41 +2382,41 @@ const MentorsPage = () => {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", margin: "20px 0" }}>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Request Sent Date</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Request Sent Date</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{formattedDate}</span>
                 </div>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Name</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Name</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{selectedMsgConnection.userDetails?.name || "N/A"}</span>
                 </div>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Email</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Email</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)", wordBreak: "break-all" }}>{selectedMsgConnection.userDetails?.email || "N/A"}</span>
                 </div>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Phone Number</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Phone Number</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>
                     {selectedMsgConnection.userDetails?.phone || selectedMsgConnection.userDetails?.mobileNumber || selectedMsgConnection.userDetails?.phoneNumber || selectedMsgConnection.phone || selectedMsgConnection.mobileNumber || "N/A"}
                   </span>
                 </div>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Status</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Status</strong>
                   <div style={{ marginTop: "4px" }}>
                     {renderStatusBadge(selectedMsgConnection.status || "pending")}
                   </div>
                 </div>
                 <div>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Domain</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Domain</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{domainVal}</span>
                 </div>
                 <div style={{ gridColumn: "span 2" }}>
-                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Skill</strong>
+                  <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Skill</strong>
                   <span style={{ fontSize: "14px", color: "var(--m-text-muted)" }}>{skillVal}</span>
                 </div>
               </div>
 
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "14px", marginTop: "14px" }}>
-                <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)", textTransform: "uppercase" }}>Message</strong>
+                <strong style={{ display: "block", fontSize: "11px", color: "var(--m-primary)" }}>Message</strong>
                 <p style={{ margin: "6px 0 0 0", fontSize: "14px", whiteSpace: "pre-wrap", color: "var(--m-text-muted)" }}>
                   {selectedMsgConnection.message || "No message provided."}
                 </p>

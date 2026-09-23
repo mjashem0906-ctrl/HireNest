@@ -5,7 +5,7 @@ const API = axios.create({
     import.meta.env.VITE_API_URL ||
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
       ? "http://localhost:5000"
-      : "https://jobbridgenode.com"),
+      : "https://jobbridge.com"),
   withCredentials: true
 });
 

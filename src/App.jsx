@@ -43,9 +43,11 @@ import { recordPortalVisit } from './utils/portalAnalytics';
 
 function App() {
 
-  // ✅ THIS IS THE FIX (DARK THEME ACTIVATION) & GLOBAL EFFECTS INJECTION
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", "dark");
+    const savedTheme = localStorage.getItem("theme") || "light";
+    if (!document.documentElement.getAttribute("data-theme")) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    }
     initializeGlobalEffects();
     recordPortalVisit();
   }, []);

@@ -18,6 +18,7 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { parseDOB } from '../../utils/dateUtils';
 import { calculateTotalMembersMetrics } from '../../utils/memberMetrics';
+import MetricGrid from '../../components/Common/MetricGrid';
 import styles from './Members.module.scss';
 
 // ── sparkline ────────────────────────────────────────────────────────────────
@@ -681,14 +682,16 @@ function Members() {
   );
 
   const statCards = [
-    { label: 'Total Members', value: totalMembers, icon: Users, color: '#c0392b', spark: totalTrend, growth: totalGrowth, onClick: () => { setFilterValues({}); setDisplayData(allMembers); setActiveTab('All Members'); } },
-    { label: 'Job Seekers', value: jobSeekers, icon: Briefcase, color: '#2563eb', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers') },
-    { label: 'Freshers', value: freshersCount, icon: GraduationCap, color: '#7c3aed', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'fresher' } }) },
-    { label: 'Experienced', value: experiencedCount, icon: Star, color: '#d97706', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'experienced' } }) },
-    { label: 'Job Recruiters', value: recruitersCount, icon: Building2, color: '#8b5cf6', spark: totalTrend, growth: 4, onClick: () => navigate('/recruiters') },
-    { label: 'Mentors', value: mentors, icon: UserCheck, color: '#0891b2', spark: totalTrend, growth: 100, onClick: () => navigate('/mentors') },
-    { label: 'Upskillers', value: upskillers, icon: BookOpen, color: '#16a34a', spark: totalTrend, growth: 0, onClick: () => { setFilterValues({ memberType: 'In need of Upskilling' }); applyFilters({ memberType: 'In need of Upskilling' }); } },
-    { label: 'Job Referees', value: referees, icon: User, color: '#ec4899', spark: totalTrend, growth: 0, onClick: () => navigate('/referees') },
+    // Row 1: Core Stakeholders (4 cards)
+    { label: 'Total Members', value: totalMembers, icon: Users, color: '#215E61', spark: totalTrend, growth: totalGrowth, onClick: () => { setFilterValues({}); setDisplayData(allMembers); setActiveTab('All Members'); } },
+    { label: 'Job Seekers', value: jobSeekers, icon: Briefcase, color: '#215E61', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers') },
+    { label: 'Job Recruiters', value: recruitersCount, icon: Building2, color: '#215E61', spark: totalTrend, growth: 4, onClick: () => navigate('/recruiters') },
+    { label: 'Mentors', value: mentors, icon: UserCheck, color: '#215E61', spark: totalTrend, growth: 100, onClick: () => navigate('/mentors') },
+    // Row 2: Segments & Specializations (4 cards)
+    { label: 'Freshers', value: freshersCount, icon: GraduationCap, color: '#FF8735', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'fresher' } }) },
+    { label: 'Experienced', value: experiencedCount, icon: Star, color: '#215E61', spark: seekerTrend, growth: seekerGrowth, onClick: () => navigate('/job-seekers', { state: { expFilter: 'experienced' } }) },
+    { label: 'Upskillers', value: upskillers, icon: BookOpen, color: '#FF8735', spark: totalTrend, growth: 0, onClick: () => { setFilterValues({ memberType: 'In need of Upskilling' }); applyFilters({ memberType: 'In need of Upskilling' }); } },
+    { label: 'Job Referees', value: referees, icon: User, color: '#215E61', spark: totalTrend, growth: 0, onClick: () => navigate('/referees') },
   ];
 
   const TABS = isStatusTabsView
@@ -734,28 +737,8 @@ function Members() {
           </div>
         </div>
 
-        {/* ── stat cards ── */}
-        <div className={styles.statsGrid}>
-          {statCards.map((s, i) => (
-            <div key={i} className={styles.statCard} onClick={s.onClick} style={{ cursor: s.onClick ? 'pointer' : 'default' }}>
-              <div className={styles.statCardTop}>
-                <div className={styles.statIconWrap} style={{ background: `${s.color}15`, color: s.color }}>
-                  <s.icon size={22} />
-                </div>
-                <div className={styles.statNumbers}>
-                  <span className={styles.statLabel}>{s.label}</span>
-                  <h3 className={styles.statValue}>{s.value.toLocaleString()}</h3>
-                </div>
-              </div>
-              <div className={styles.statTrend} style={{ color: s.growth >= 0 ? '#16a34a' : '#dc2626' }}>
-                {s.growth >= 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} {Math.abs(s.growth)}% <span>from last month</span>
-              </div>
-              <div className={styles.sparkWrap}>
-                <Sparkline points={s.spark} color={s.color} />
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* ── METRICS BENTO GRID (Rule 6: >4 cards -> Dashboard Bento) ── */}
+        <MetricGrid cards={statCards} />
 
         {/* ── PRESERVED HORIZONTAL SCROLLABLE FILTER PANEL ── */}
         {showFilters && (

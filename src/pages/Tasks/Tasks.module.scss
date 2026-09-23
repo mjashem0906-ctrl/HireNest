@@ -230,7 +230,7 @@
   color: var(--accent-primary);
 
   &:hover {
-    background-color: rgba(26, 115, 232, 0.1);
+    background-color: rgba(33, 94, 97, 0.1);
   }
 }
 
@@ -290,7 +290,7 @@
   }
 }
 .loader {
-  --c:no-repeat linear-gradient(rgb(0, 53, 151) 0 0);
+  --c:no-repeat linear-gradient(#215E61 0 0);
   background: 
     var(--c),var(--c),var(--c),
     var(--c),var(--c),var(--c),

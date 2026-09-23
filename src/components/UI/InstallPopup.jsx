@@ -67,7 +67,7 @@ export default function InstallPopup() {
         gap: 12,
       }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600 }}>Install Job Bridge Node</div>
+          <div style={{ fontWeight: 600 }}>Install Hirenest</div>
           <div style={{ fontSize: 13, color: "#444", marginTop: 4 }}>
             Add this app to your device for faster access.
           </div>

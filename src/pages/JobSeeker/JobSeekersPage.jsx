@@ -83,6 +83,96 @@ const formatJoinedDate = (timestamp, createdAt) => {
   }
 };
 
+// ── Data-cleaning helpers for email/phone separation ───
+const extractCleanEmail = (rawEmail) => {
+  if (!rawEmail || typeof rawEmail !== 'string') return '—';
+  const trimmed = rawEmail.trim();
+  const match = trimmed.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
+  if (match) {
+    return match[1];
+  }
+  return trimmed || '—';
+};
+
+const extractCleanPhone = (rawPhone, rawEmail) => {
+  if (rawPhone) {
+    const pStr = String(rawPhone).trim();
+    if (pStr && pStr !== 'null' && pStr !== 'undefined' && pStr !== '—') {
+      return pStr;
+    }
+  }
+  if (rawEmail && typeof rawEmail === 'string') {
+    const phoneMatch = rawEmail.trim().match(/^(\+?[0-9]{10,13})/);
+    if (phoneMatch) {
+      return phoneMatch[1];
+    }
+  }
+  return '—';
+};
+
+// ── Wrapped role tags: max 3 visible + "+N more" chip ───
+const RoleTags = ({ roles }) => {
+  const [showAll, setShowAll] = useState(false);
+
+  const parsedRoles = useMemo(() => {
+    if (!roles) return [];
+    let list = [];
+    if (Array.isArray(roles)) {
+      list = roles.flatMap((r) =>
+        typeof r === 'string'
+          ? r.split(',').map((s) => s.trim()).filter(Boolean)
+          : r ? [String(r).trim()] : []
+      );
+    } else if (typeof roles === 'string') {
+      list = roles.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    return [...new Set(list)];
+  }, [roles]);
+
+  if (!parsedRoles || parsedRoles.length === 0) {
+    return <span className={styles.roleTagMuted}>Not Specified</span>;
+  }
+
+  const visibleRoles = showAll ? parsedRoles : parsedRoles.slice(0, 3);
+  const remainingCount = parsedRoles.length - 3;
+
+  return (
+    <div className={styles.roleTagsWrap} onClick={(e) => e.stopPropagation()}>
+      {visibleRoles.map((role, idx) => (
+        <span key={idx} className={styles.roleTag} title={role}>
+          {role}
+        </span>
+      ))}
+      {!showAll && remainingCount > 0 && (
+        <button
+          type="button"
+          className={styles.moreRoleTag}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowAll(true);
+          }}
+          title={`View ${remainingCount} more roles`}
+        >
+          +{remainingCount} more
+        </button>
+      )}
+      {showAll && remainingCount > 0 && (
+        <button
+          type="button"
+          className={styles.moreRoleTag}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowAll(false);
+          }}
+          title="Show fewer roles"
+        >
+          Show less
+        </button>
+      )}
+    </div>
+  );
+};
+
 const PreferredRolesCell = ({ roles }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -582,7 +672,7 @@ const JobSeekersPage = () => {
       {/* 1. TOP TOOLBAR */}
       <div className={styles.topToolbar}>
         <div className={styles.searchWrapper}>
-          <Search className={styles.searchIcon} size={20} />
+          <Search className={styles.searchIcon} size={18} />
           <input
             type="text"
             placeholder="Search seekers by name, role, education or district..."
@@ -591,43 +681,67 @@ const JobSeekersPage = () => {
           />
         </div>
 
-        <div className={styles.actionGroup}>
-          {/* Sort control immediately before Show Filters */}
-          <div className={styles.sortWrapper}>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className={styles.sortSelect}
-              title="Sort Seekers"
+        <div className={styles.toolbarActionCluster}>
+          {/* Group 1: Sort + Show Filters (8px gap) */}
+          <div className={styles.filterControlGroup}>
+            <div className={styles.sortWrapper}>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className={styles.sortSelect}
+                title="Sort Seekers"
+              >
+                <option value="Recent">Recent</option>
+                <option value="Ascending">Ascending</option>
+                <option value="Descending">Descending</option>
+                <option value="A→Z">A→Z</option>
+                <option value="Z→A">Z→A</option>
+              </select>
+              <ChevronDown size={14} className={styles.sortChevron} />
+            </div>
+
+            <button
+              type="button"
+              className={`${styles.filterOutlineBtn} ${showFilters ? styles.filterOutlineBtnActive : ''}`}
+              onClick={() => setShowFilters(!showFilters)}
+              title={showFilters ? "Hide Filters" : "Show Filters"}
             >
-              <option value="Recent">Recent</option>
-              <option value="Ascending">Ascending</option>
-              <option value="Descending">Descending</option>
-              <option value="A→Z">A→Z</option>
-              <option value="Z→A">Z→A</option>
-            </select>
-            <ChevronDown size={14} className={styles.sortChevron} />
+              {showFilters ? <X size={15} /> : <Filter size={15} />}
+              <span>{showFilters ? "Hide Filters" : "Show Filters"}</span>
+            </button>
           </div>
 
-          <button
-            className={`${styles.filterToggleButton} ${showFilters ? styles.filterToggleButtonActive : ''}`}
-            onClick={() => setShowFilters(!showFilters)}
-            title={showFilters ? "Hide Filters" : "Show Filters"}
-          >
-            {showFilters ? <X size={15} /> : <Filter size={15} />}
-            <span>{showFilters ? "Hide Filters" : "Show Filters"}</span>
-          </button>
+          {/* Group 2: Excel, CSV, + Add Seeker (8px gap) */}
+          <div className={styles.exportAddGroup}>
+            <button
+              type="button"
+              onClick={() => exportData('excel')}
+              className={styles.excelBtn}
+              title="Export to Excel"
+            >
+              <FileSpreadsheet size={17} className={styles.excelIcon} />
+              <span>Excel</span>
+            </button>
 
-          <button onClick={() => exportData('excel')} className={`${styles.btn} ${styles.excel}`}>
-            <FileSpreadsheet size={18} /> Excel
-          </button>
-          <button onClick={() => exportData('csv')} className={`${styles.btn} ${styles.csv}`}>
-            <Download size={18} /> CSV
-          </button>
+            <button
+              type="button"
+              onClick={() => exportData('csv')}
+              className={styles.csvBtn}
+              title="Export to CSV"
+            >
+              <Download size={17} className={styles.csvIcon} />
+              <span>CSV</span>
+            </button>
 
-          <button onClick={() => { setEditMember(null); setShowModal(true); }} className={`${styles.btn} ${styles.add}`}>
-            <Plus size={18} /> Add Seeker
-          </button>
+            <button
+              type="button"
+              onClick={() => { setEditMember(null); setShowModal(true); }}
+              className={styles.addSeekerBtn}
+            >
+              <Plus size={17} strokeWidth={2.5} />
+              <span>Add Seeker</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -854,27 +968,27 @@ const JobSeekersPage = () => {
         data-page-type="seekers"
       />
 
-      {/* Count Info Panel + View Switch (identical to Members module pattern) */}
-      <div className={styles.countInfo}>
-        <span className={styles.countText}>
+      {/* 2. RESULTS BAR */}
+      <div className={styles.resultsBar}>
+        <span className={styles.resultsCount}>
           Showing <strong>{sortedSeekers.length}</strong> of <strong>{seekers.length}</strong> job seekers
         </span>
-        <div className={styles.viewSwitch}>
+        <div className={styles.viewToggleGroup}>
           <button
-            className={`${styles.viewBtn} ${view === 'table' ? styles.viewBtnActive : ''}`}
-            onClick={() => setView('table')}
-            type="button"
-            title="Table view"
-          >
-            <List size={16} />
-          </button>
-          <button
-            className={`${styles.viewBtn} ${view === 'card' ? styles.viewBtnActive : ''}`}
+            className={`${styles.viewToggleBtn} ${view === 'card' ? styles.viewToggleBtnActive : ''}`}
             onClick={() => setView('card')}
             type="button"
             title="Card view"
           >
             <LayoutGrid size={16} />
+          </button>
+          <button
+            className={`${styles.viewToggleBtn} ${view === 'table' ? styles.viewToggleBtnActive : ''}`}
+            onClick={() => setView('table')}
+            type="button"
+            title="Table view"
+          >
+            <List size={16} />
           </button>
         </div>
       </div>
@@ -919,12 +1033,12 @@ const JobSeekersPage = () => {
                       </div>
                     </td>
                     <td data-label="EMAIL" className={styles.cellMuted}>
-                      {member.email || '—'}
+                      {extractCleanEmail(member.email)}
                     </td>
                     <td data-label="MOBILE">
                       <div className={styles.inlineIconText}>
                         <Phone size={13} />
-                        <span>{member.mobileNumber || '—'}</span>
+                        <span>{extractCleanPhone(member.mobileNumber, member.email)}</span>
                       </div>
                     </td>
                     <td data-label="Experience">
@@ -1009,104 +1123,133 @@ const JobSeekersPage = () => {
               const fresherStatus = isFresher(member);
               const branchText = member.branch || member.highestEducationSpecialization || "";
               const passedOutText = member.passOutYear || member.highestEducationPassedOutYear || "";
+              const educationDisplay = `${member.highest_education || "N/A"}${branchText ? ` (${branchText})` : ""}${passedOutText ? ` - ${passedOutText}` : ""}`;
+              const cleanEmailVal = extractCleanEmail(member.email);
+              const cleanPhoneVal = extractCleanPhone(member.mobileNumber, member.email);
 
               return (
                 <div
                   key={member._id}
                   className={styles.seekerCard}
                   onClick={() => navigate(`/member/${member._id}`)}
-                  style={{ animationDelay: `${index * 0.03}s` }}
                 >
-                  <div className={styles.avatarWrapper}>
+                  {/* Row 1: avatar (48px circle) left, name + status badge + Ref badge stacked to the right */}
+                  <div className={styles.cardHeaderRow}>
                     <img
                       src={member.photoUrl ? getDirectImageUrl(member.photoUrl) : "/members/AnonymousImage.jpg"}
-                      alt=""
+                      alt={member.name || "Seeker"}
+                      className={styles.avatarImg}
                       onError={(e) => { e.target.src = "/members/AnonymousImage.jpg"; }}
                     />
+                    <div className={styles.headerInfoStack}>
+                      <h3 className={styles.seekerName} title={member.name || "Unnamed Member"}>
+                        {member.name || "Unnamed Member"}
+                      </h3>
+                      <div className={styles.badgeRow}>
+                        <span className={`${styles.statusBadge} ${fresherStatus ? styles.statusFresher : styles.statusExperienced}`}>
+                          {fresherStatus ? "Fresher" : `${member.workExp || "Experienced"}`}
+                        </span>
+                        {member.memberReferenceNumber && (
+                          <span className={styles.refBadge}>
+                            Ref: {member.memberReferenceNumber}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className={styles.content}>
-                    <div className={styles.badgeRow}>
-                      <div className={styles.statusBadge}>
-                        {fresherStatus ? "Fresher" : `${member.workExp || "Experienced"}`}
-                      </div>
-                      {member.memberReferenceNumber && (
-                        <div className={styles.refBadge}>
-                          Ref: {member.memberReferenceNumber}
-                        </div>
-                      )}
-                    </div>
+                  {/* Row 2: Education — icon + label + value, single line, ellipsis-truncate if too long */}
+                  <div className={styles.cardRow}>
+                    <GraduationCap size={15} className={styles.rowIcon} />
+                    <span className={styles.rowLabel}>Education:</span>
+                    <span className={styles.rowValueTruncate} title={educationDisplay}>
+                      {educationDisplay}
+                    </span>
+                  </div>
 
-                    <h3>{member.name}</h3>
+                  {/* Row 3: Preferred Role — icon + label, wrapped pill/chip tags (max 3 visible + +N more chip) */}
+                  <div className={styles.cardRowRoles}>
+                    <Briefcase size={15} className={styles.rowIconRoles} />
+                    <span className={styles.rowLabel}>Preferred Role:</span>
+                    <RoleTags roles={member.preferredJobRole_Sector || member.careerProfile?.role} />
+                  </div>
 
-                    <div className={styles.infoList}>
-                      <div className={styles.infoItem}>
-                        <GraduationCap size={14} />
-                        <strong>Education:</strong> {member.highest_education || "N/A"}
-                        {branchText ? ` (${branchText})` : ""}
-                        {passedOutText ? ` - ${passedOutText}` : ""}
-                      </div>
+                  {/* Row 4: Email — icon + value, truncate with ellipsis, own line, never concatenated with phone */}
+                  <div className={styles.cardRow}>
+                    <Mail size={15} className={styles.rowIcon} />
+                    <span className={styles.rowValueTruncate} title={cleanEmailVal}>
+                      {cleanEmailVal}
+                    </span>
+                  </div>
 
-                      <div className={styles.infoItem}>
-                        <Briefcase size={14} />
-                        <strong>Preferred Role:</strong> {Array.isArray(member.preferredJobRole_Sector) ? member.preferredJobRole_Sector.join(", ") : (member.preferredJobRole_Sector || "Not Specified")}
-                      </div>
+                  {/* Row 5: Phone — separate row, icon + value */}
+                  <div className={styles.cardRow}>
+                    <Phone size={15} className={styles.rowIcon} />
+                    <span className={styles.rowValue}>
+                      {cleanPhoneVal}
+                    </span>
+                  </div>
 
-                      {member.preferredJobLocation && (
-                        <div className={styles.infoItem}>
-                          <MapPin size={14} />
-                          <strong>Preferred Location:</strong> {member.preferredJobLocation}
-                          {member.relocationStatus ? ` (${member.relocationStatus})` : ""}
-                        </div>
-                      )}
+                  {/* Row 6: Current District — icon + label + value */}
+                  <div className={styles.cardRow}>
+                    <MapPin size={15} className={styles.rowIcon} />
+                    <span className={styles.rowLabel}>Current District:</span>
+                    <span className={styles.rowValue}>
+                      {member.district || "—"}
+                    </span>
+                  </div>
 
-                      <div className={styles.infoItem}>
-                        <Mail size={14} /> {member.email || "No Email"}
-                      </div>
+                  {/* Divider */}
+                  <div className={styles.cardDivider} />
 
-                      <div className={styles.infoItem}>
-                        <Phone size={14} /> {member.mobileNumber || "No Phone"}
-                      </div>
+                  {/* Footer Row: Resume link button (left) + Edit/Delete icon buttons (right), all 36px height */}
+                  <div className={styles.cardFooterRow}>
+                    {member.resumeLink ? (
+                      <a
+                        href={member.resumeLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.resumeBtn}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FileText size={14} />
+                        <span>Resume</span>
+                        <ExternalLink size={11} />
+                      </a>
+                    ) : (
+                      <span className={styles.noResumeBadge}>
+                        No Resume
+                      </span>
+                    )}
 
-                      <div className={styles.infoItem}>
-                        <MapPin size={14} /> <strong>Current District:</strong> {member.district || "N/A"}
-                      </div>
-                    </div>
-
-                    <div className={styles.cardActions}>
-                      {member.resumeLink ? (
-                        <a
-                          href={member.resumeLink}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={styles.resumeLink}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FileText size={14} /> Resume <ExternalLink size={10} />
-                        </a>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--l-muted)', fontWeight: 500, fontStyle: 'italic' }}>
-                          No Resume Uploaded
-                        </span>
-                      )}
-
+                    <div className={styles.cardActionButtons} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className={styles.actionBtnIcon}
+                        title="View Profile"
+                        onClick={() => navigate(`/member/${member._id}`)}
+                        type="button"
+                      >
+                        <Eye size={15} />
+                      </button>
                       {isAdmin && (
-                        <div className={styles.adminTools}>
+                        <>
                           <button
-                            className={`${styles.actionBtn} ${styles.edit}`}
+                            className={styles.actionBtnIcon}
+                            title="Edit Seeker"
                             onClick={(e) => handleEdit(e, member)}
-                            title="Edit Profile"
+                            type="button"
                           >
-                            <Edit size={16} />
+                            <Edit size={15} />
                           </button>
                           <button
-                            className={`${styles.actionBtn} ${styles.delete}`}
+                            className={`${styles.actionBtnIcon} ${styles.actionBtnDelete}`}
+                            title="Delete Seeker"
                             onClick={(e) => handleDelete(e, member._id)}
-                            title="Delete Profile"
+                            type="button"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={15} />
                           </button>
-                        </div>
+                        </>
                       )}
                     </div>
                   </div>

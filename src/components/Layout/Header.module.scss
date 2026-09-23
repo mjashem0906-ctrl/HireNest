@@ -1,186 +1,37 @@
-
-// .header {
-//   display: flex;
-//   align-items: center;
-//   justify-content: space-between;
-//   padding: 0 var(--spacing-lg);
-//   height: 64px;
-//   background-color: #333 ;
-//   border-bottom: 1px solid var(--border-light);
-//   box-shadow: 0 1px 3px var(--shadow-medium);
-//   position: sticky;
-//   top: 0;
-//   z-index: 40;
-// }
-
-// .left {
-//   display: flex;
-//   align-items: center;
-//   gap: var(--spacing-md);
-// }
-
-// .menuButton {
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   width: 40px;
-//   height: 40px;
-//   border-radius: var(--radius-lg);
-//   color: var(--text-secondary);
-//   transition: var(--transition-fast);
-  
-//   &:hover {
-//     background-color: var(--bg-tertiary);
-//   }
-  
-//   @media (min-width: 769px) {
-//     display: none;
-//   }
-// }
-
-// .title {
-//   font-size: 1.375rem;
-//   font-weight: 500;
-//   color: white;
-// }
-
-// .center {
-//   flex: 1;
-//   max-width: 600px;
-//   margin: 0 var(--spacing-lg);
-  
-//   @media (max-width: 768px) {
-//     display: none;
-//   }
-// }
-
-// .searchBox {
-//   position: relative;
-//   display: flex;
-//   align-items: center;
-//   background-color: var(--bg-tertiary);
-//   border-radius: var(--radius-xl);
-//   padding: 0 var(--spacing-md);
-//   height: 40px;
-  
-//   svg {
-//     color: var(--text-muted);
-//     margin-right: var(--spacing-sm);
-//   }
-  
-//   input {
-//     flex: 1;
-//     background: none;
-//     border: none;
-//     outline: none;
-//     color: var(--text-primary);
-//     font-size: 0.875rem;
-    
-//     &::placeholder {
-//       color: var(--text-muted);
-//     }
-//   }
-// }
-
-// .right {
-//   display: flex;
-//   align-items: center;
-//   gap: var(--spacing-sm);
-// }
-
-// .iconButton {
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   width: 40px;
-//   height: 40px;
-//   border-radius: var(--radius-lg);
-//   color: var(--text-secondary);
-//   transition: var(--transition-fast);
-//   margin-right: 5px;
-  
-//   &:hover {
-//     background-color: var(--bg-tertiary);
-//   }
-// }
-
-// .avatar {
-//   width: 32px;
-//   height: 32px;
-//   border-radius: 50%;
-//   overflow: hidden;
-  
-//   img {
-//     width: 100%;
-//     height: 100%;
-//     object-fit: cover;
-//   }
-// }
-
-// .notificationWrapper {
-//   position: relative;
-// }
-
-// .notificationBadge {
-//   position: absolute;
-//   top: -6px;
-//   right: -6px;
-//   background-color: red;
-//   color: white;
-//   font-size: 10px;
-//   padding: 2px 6px;
-//   border-radius: 50%;
-//   margin-right: 10px;
-//   margin-top: 3px;
-// }
-// .notificationDropdown {
-//   position: absolute;
-//   top: 40px;
-//   right: 10px;
-//   background: white;
-//   border: 1px solid #ccc;
-//   border-radius: 0.5rem;
-//   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-//   width: 250px;
-//   z-index: 100;
-//   overflow: hidden;
-// }
-
-// .notificationItem {
-//   padding: 10px 12px;
-//   font-size: 0.9rem;
-//   border-bottom: 1px solid #f0f0f0;
-//   cursor: pointer;
-//   transition: background 0.2s;
-// }
-
-// .notificationItem:hover {
-//   background-color: #f9f9f9;
-// }
-
-// .viewAll {
-//   padding: 10px 12px;
-//   font-weight: 500;
-//   text-align: center;
-//   cursor: pointer;
-//   background-color: #f5f5f5;
-// }
+/* ════════════════════════════════════════════════════════════════
+   Header.module.scss — Clean Modern SaaS Header
+   Brand: #215E61 | Accent: #FF8735 | Surfaces: var(--bg-secondary)
+   ════════════════════════════════════════════════════════════════ */
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-lg);
-  height: 64px;
-
-  /* ✅ Theme-based header background */
+  padding: 24px 24px;
+  min-height: 88px;
+  height: auto;
+  box-sizing: border-box;
   background-color: var(--bg-secondary);
-
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  outline: none !important;
+  margin-top: 0 !important;
   border-bottom: 1px solid var(--border-light);
-  box-shadow: 0 1px 3px var(--shadow-medium);
+  box-shadow: 0 1px 3px var(--shadow-xs);
   position: sticky;
   top: 0;
   z-index: 40;
+
+  @media (max-width: 1024px) {
+    padding: 20px 24px;
+    min-height: 80px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 16px;
+    min-height: 72px;
+  }
 }
 
 .left {
@@ -193,14 +44,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   transition: var(--transition-fast);
 
   &:hover {
     background-color: var(--bg-tertiary);
+    color: var(--text-primary);
   }
 
   @media (min-width: 769px) {
@@ -209,16 +61,17 @@
 }
 
 .title {
-  font-size: 1.375rem;
-  font-weight: 500;
-
-  /* ✅ Theme-based title color */
+  font-size: 1.25rem;
+  font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: -0.01em;
+  font-family: 'Poppins', sans-serif;
+  text-align: left;
 }
 
 .center {
   flex: 1;
-  max-width: 600px;
+  max-width: 540px;
   margin: 0 var(--spacing-lg);
 
   @media (max-width: 768px) {
@@ -231,9 +84,15 @@
   display: flex;
   align-items: center;
   background-color: var(--bg-tertiary);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
   padding: 0 var(--spacing-md);
-  height: 40px;
+  height: 38px;
+  transition: border-color var(--transition-fast);
+
+  &:focus-within {
+    border-color: var(--brand-primary);
+  }
 
   svg {
     color: var(--text-muted);
@@ -257,24 +116,34 @@
 .right {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 12px;
 }
 
-/* ✅ Theme Toggle Button (same size as icon buttons) */
+/* Theme Toggle Button */
 .themeToggle {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 40px;
   height: 40px;
-
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
   color: var(--text-secondary);
-  transition: var(--transition-fast);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  /* Dark mode: ensure icon is clearly visible */
+  :global([data-theme="dark"]) & {
+    color: #CBD5D8;
+    background-color: #1E2B2E;
+    border-color: rgba(255, 255, 255, 0.10);
+  }
 
   &:hover {
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-primary);
+    color: var(--brand-primary);
+    border-color: var(--border-medium);
   }
 }
 
@@ -282,17 +151,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 40px;
   height: 40px;
-
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-light);
   color: var(--text-secondary);
-  transition: var(--transition-fast);
-  margin-right: 5px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  /* Dark mode: bell icon and other top-bar icons clearly visible */
+  :global([data-theme="dark"]) & {
+    color: #CBD5D8;
+    background-color: #1E2B2E;
+    border-color: rgba(255, 255, 255, 0.10);
+  }
 
   &:hover {
-    background-color: var(--bg-tertiary);
+    background-color: var(--bg-primary);
+    color: var(--brand-primary);
+    border-color: var(--border-medium);
   }
 }
 
@@ -317,19 +195,20 @@
 
 .notificationBadge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  background-color: var(--error, #e11d48);
-  color: white;
+  top: 2px;
+  right: 2px;
+  background-color: var(--accent-primary);
+  color: #ffffff;
   font-size: 9px;
   font-weight: 700;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1.5px solid var(--bg-secondary);
+  box-shadow: 0 1px 3px rgba(255, 135, 53, 0.4);
 }
 
 .notificationDropdown {
@@ -340,13 +219,12 @@
   max-height: 480px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-light);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   z-index: 1000;
-  backdrop-filter: blur(8px);
 
   @media (max-width: 480px) {
     position: fixed;
@@ -367,8 +245,8 @@
   background: var(--bg-tertiary);
 
   h3 {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     margin: 0;
     color: var(--text-primary);
   }
@@ -384,7 +262,7 @@
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--primary, #e11d48);
+  color: var(--brand-primary);
   cursor: pointer;
   padding: 0;
   font-weight: 600;
@@ -400,10 +278,10 @@
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--primary, #e11d48);
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
-  font-weight: 600;
+  font-weight: 500;
   transition: opacity 0.2s;
 
   &:hover {
@@ -420,16 +298,11 @@
   flex-direction: column;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
   &::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 3px;
+    background: var(--border-medium);
+    border-radius: 4px;
   }
 }
 
@@ -454,7 +327,7 @@
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-light);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s ease;
   position: relative;
   touch-action: pan-y;
 
@@ -463,7 +336,7 @@
   }
 
   &.unread {
-    background: var(--bg-tertiary);
+    background: var(--brand-light);
   }
 }
 
@@ -477,7 +350,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
   align-self: flex-start;
   margin-top: 2px;
   opacity: 0.6;
@@ -485,7 +358,7 @@
 
   &:hover {
     background: var(--bg-tertiary);
-    color: var(--primary, #e11d48);
+    color: var(--accent-primary);
     opacity: 1;
   }
 }
@@ -494,7 +367,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--primary, #e11d48);
+  background: var(--accent-primary);
   position: absolute;
   top: 18px;
   left: 6px;
@@ -503,14 +376,14 @@
 .notifContent {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   padding-left: 4px;
   width: 100%;
 }
 
 .notifTitle {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
   color: var(--text-primary);
   text-align: left;

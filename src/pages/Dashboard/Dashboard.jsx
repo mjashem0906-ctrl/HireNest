@@ -92,7 +92,7 @@ function getGrowthRate(list) {
   return rate.toFixed(0);
 }
 
-// ─── sparkline ────────────────────────────────────────────────────────────────
+// ─── sparkline & chart math helpers ──────────────────────────────────────────
 const SP = {
   red: [30, 35, 28, 40, 38, 45, 42, 50, 48, 55],
   blue: [20, 25, 22, 28, 30, 27, 35, 32, 38, 40],
@@ -103,51 +103,247 @@ const SP = {
   green: [12, 15, 13, 18, 16, 20, 18, 22, 21, 25],
 };
 
-function Sparkline({ points, color }) {
-  const W = 100,
-    H = 28;
-  const min = Math.min(...points),
-    max = Math.max(...points),
-    range = max - min || 1;
-  const xs = points.map((_, i) => (i / (points.length - 1)) * W);
-  const ys = points.map((v) => H - ((v - min) / range) * H);
-  const line = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x},${ys[i]}`).join(" ");
-  const fill = line + ` L${W},${H} L0,${H} Z`;
-  const id = `sg${color.replace("#", "")}`;
+// ─── Pure rendering fluid wave & Cardinal Spline engine ───────────────────────
+// Uses a direct Cardinal Spline (Catmull-Rom) through the original data points
+// to produce a clean, kink-free line without artificial wiggles.
+function buildFluidWave({
+  values,
+  W = 110,
+  H = 28,
+  pad = { t: 3, b: 3, l: 2, r: 5 },
+  ampRatio = 0.7,
+  tension = 0.4,
+}) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return {
+      linePath: "",
+      areaPath: "",
+      firstPt: { x: pad.l, y: H / 2 },
+      lastPt: { x: W - pad.r, y: H / 2 },
+      originalCoords: [],
+    };
+  }
+
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  if (values.length === 1) {
+    const y = pad.t + ch / 2;
+    const firstPt = { x: pad.l, y };
+    const lastPt = { x: W - pad.r, y };
+    return {
+      linePath: `M ${firstPt.x.toFixed(2)} ${firstPt.y.toFixed(2)} L ${lastPt.x.toFixed(2)} ${lastPt.y.toFixed(2)}`,
+      areaPath: `M ${firstPt.x.toFixed(2)} ${firstPt.y.toFixed(2)} L ${lastPt.x.toFixed(2)} ${lastPt.y.toFixed(2)} L ${lastPt.x.toFixed(2)} ${H} L ${firstPt.x.toFixed(2)} ${H} Z`,
+      firstPt,
+      lastPt,
+      originalCoords: [{ x: (firstPt.x + lastPt.x) / 2, y, value: values[0], index: 0 }],
+    };
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const amplitude = ch * ampRatio;
+
+  // Generate coordinates directly from the original values
+  const pts = values.map((v, i) => {
+    const x = pad.l + (i / (values.length - 1)) * cw;
+    const normalized = (v - min) / range;
+    const y = pad.t + ch - 2 - normalized * amplitude;
+    return { x, y, value: v, index: i };
+  });
+
+  const originalCoords = pts;
+
+  // Cardinal spline with gentle tension -> C1 continuous Bezier path
+  let linePath = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i === 0 ? 0 : i - 1];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2 >= pts.length ? pts.length - 1 : i + 2];
+
+    const cp1x = p1.x + ((p2.x - p0.x) * tension) / 3;
+    const cp1y = p1.y + ((p2.y - p0.y) * tension) / 3;
+    const cp2x = p2.x - ((p3.x - p1.x) * tension) / 3;
+    const cp2y = p2.y - ((p3.y - p1.y) * tension) / 3;
+
+    linePath += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+
+  const firstPt = pts[0];
+  const lastPt = pts[pts.length - 1];
+  const areaPath = `${linePath} L ${lastPt.x.toFixed(2)} ${H} L ${firstPt.x.toFixed(2)} ${H} Z`;
+
+  return { linePath, areaPath, firstPt, lastPt, originalCoords };
+}
+
+// ─── Refined Metric Card Sparkline (Apple Health / Linear gentle style) ───────
+function Sparkline({ points, color, id, height = 28 }) {
+  const [hoverIdx, setHoverIdx] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
+  if (!Array.isArray(points) || points.length === 0) return null;
+
+  const W = 110;
+  const H = height;
+
+  const { linePath, areaPath, lastPt, originalCoords } = useMemo(
+    () =>
+      buildFluidWave({
+        values: points,
+        W,
+        H,
+        pad: { t: 3, b: 3, l: 2, r: 5 },
+        ampRatio: 0.45,
+        tension: 0.35,
+        steps: 4,
+      }),
+    [points, W, H]
+  );
+
+  const isDark = typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark";
+
+  const effectiveColor = isDark
+    ? (color === "#10b981" || color === "#22c55e" ? "#4ade80" : color === "#ef4444" ? "#f87171" : color === "#FF8735" ? "#FF9A52" : "#3D8B8F")
+    : (color === "#10b981" || color === "#22c55e" ? "#16a34a" : color === "#ef4444" ? "#dc2626" : color === "#FF8735" ? "#e88035" : "#215E61");
+
+  const softColor = effectiveColor;
+  const strokeW = isDark ? 2.0 : 1.8;
+
+  const gradId =
+    id ||
+    `spark_grad_${color.replace(/[^a-zA-Z0-9]/g, "")}_${points[0]}_${points[points.length - 1]}`;
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const pctX = Math.max(0, Math.min(1, relX / rect.width));
+    const targetIdx = Math.round(pctX * (points.length - 1));
+    setHoverIdx(targetIdx);
+    setMousePos({ x: relX, y: e.clientY - rect.top });
+  };
+
+  const handleMouseLeave = () => {
+    setHoverIdx(null);
+  };
+
+  const activeCoord = hoverIdx !== null ? originalCoords[hoverIdx] : null;
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "28px" }}>
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={fill} fill={`url(#${id})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div
+      ref={containerRef}
+      className={styles.sparklineContainer}
+      style={{ position: "relative", width: "100%", height: `${H}px` }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: `${H}px`, display: "block", overflow: "visible" }}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            {/* Dramatic lightening: ~8-12% opacity fading to fully transparent */}
+            <stop offset="0%" stopColor={softColor} stopOpacity="0.10" />
+            <stop offset="100%" stopColor={softColor} stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+
+        {/* Faint tint area fill */}
+        <path d={areaPath} fill={`url(#${gradId})`} />
+
+        {/* Thinner stroke (~1.5px light, 2px dark) with appropriately colored line */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke={softColor}
+          strokeWidth={strokeW}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={isDark ? { filter: `drop-shadow(0 1px 4px ${softColor}60)` } : undefined}
+        />
+
+        {/* Smaller, softer endpoint dot (~3.5px diameter) with subtle glow */}
+        <circle
+          cx={lastPt.x}
+          cy={lastPt.y}
+          r="1.8"
+          fill={softColor}
+          style={{ filter: `drop-shadow(0 1px 2px ${softColor}40)` }}
+        />
+
+        {/* Subtle hover micro-interaction */}
+        {activeCoord && (
+          <g>
+            <line
+              x1={activeCoord.x}
+              y1={3}
+              x2={activeCoord.x}
+              y2={H}
+              stroke={softColor}
+              strokeWidth="1"
+              strokeDasharray="2 2"
+              opacity="0.5"
+            />
+            <circle
+              cx={activeCoord.x}
+              cy={activeCoord.y}
+              r="2.5"
+              fill="#ffffff"
+              stroke={softColor}
+              strokeWidth="1.5"
+              style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.15))" }}
+            />
+          </g>
+        )}
+      </svg>
+
+      {/* Compact polished tooltip on hover */}
+      {activeCoord && (
+        <div
+          className={styles.sparkTooltip}
+          style={{
+            position: "absolute",
+            left: `${Math.max(14, Math.min(mousePos.x, (containerRef.current?.clientWidth || 100) - 14))}px`,
+            top: "-22px",
+            transform: "translateX(-50%)",
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          {activeCoord.value}
+        </div>
+      )}
+    </div>
   );
 }
 
 // ─── interactive donut with cursor-following tooltip ─────────────────────────
-function DonutChart({ data, size = 120, thickness = 22, onSliceClick, onSliceHover, showTooltip = false }) {
+function DonutChart({ data, size = 125, thickness = 16, activeIndex = null, onSliceClick, onSliceHover, showTooltip = false }) {
   const [hovered, setHovered] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const wrapRef = useRef(null);
 
+  const activeIdx = activeIndex !== null ? activeIndex : hovered;
+
   const r = (size - thickness) / 2;
   const circ = 2 * Math.PI * r;
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  const gap = 2;
 
   const segments = [];
   let offset = 0;
   data.forEach((seg, i) => {
-    const pct = (seg.value / total) * (circ - data.length * gap);
+    const pct = (seg.value / total) * circ;
     segments.push({ ...seg, pct, offset, index: i });
-    offset += pct + gap;
+    offset += pct;
   });
 
-  const hovSeg = hovered !== null ? segments[hovered] : null;
+  const hovSeg = activeIdx !== null ? segments[activeIdx] : null;
 
   const handleMouseMove = (e) => {
     if (!wrapRef.current) return;
@@ -167,28 +363,34 @@ function DonutChart({ data, size = 120, thickness = 22, onSliceClick, onSliceHov
         viewBox={`0 0 ${size} ${size}`}
         style={{ display: "block", overflow: "visible", cursor: "pointer" }}
       >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="rgba(148, 163, 184, 0.15)"
+          strokeWidth={thickness}
+        />
         {segments.map((seg) => {
-          const isHov = hovered === seg.index;
-          const rHov = isHov ? r + 3 : r;
-          const circHov = 2 * Math.PI * rHov;
-          const pctHov = (seg.value / total) * (circHov - data.length * gap);
+          const isHov = activeIdx === seg.index;
+          const strokeW = isHov ? thickness + 2 : thickness;
           return (
             <circle
               key={seg.index}
               cx={size / 2}
               cy={size / 2}
-              r={rHov}
+              r={r}
               fill="none"
               stroke={seg.color}
-              strokeWidth={isHov ? thickness + 3 : thickness}
-              strokeDasharray={`${Math.max(pctHov, 0)} ${circHov}`}
-              strokeDashoffset={-seg.offset * (circHov / circ)}
-              strokeLinecap="round"
+              strokeWidth={strokeW}
+              strokeDasharray={`${Math.max(seg.pct, 0)} ${circ - Math.max(seg.pct, 0)}`}
+              strokeDashoffset={-seg.offset}
+              strokeLinecap="butt"
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
               style={{
-                transition: "r 0.18s ease, stroke-width 0.18s ease",
+                transition: "stroke-width 200ms ease, opacity 200ms ease",
                 cursor: "pointer",
-                filter: isHov ? `drop-shadow(0 0 6px ${seg.color}99)` : "none",
+                opacity: activeIdx !== null && !isHov ? 0.65 : 1,
               }}
               onMouseEnter={() => {
                 setHovered(seg.index);
@@ -233,100 +435,195 @@ function DonutChart({ data, size = 120, thickness = 22, onSliceClick, onSliceHov
   );
 }
 
-// ─── growth chart with hover tooltip ─────────────────────────────────────────
+// ─── Refined Member Growth Chart (Smooth curve, gradient fill, endpoint dot + badge) ────────
 function GrowthChart({ data }) {
-  const [tooltip, setTooltip] = useState(null);
-  const W = 400,
-    H = 130;
-  const pad = { t: 8, r: 8, b: 22, l: 28 };
-  const iw = W - pad.l - pad.r,
-    ih = H - pad.t - pad.b;
-  const max = Math.max(...data.map((d) => d.value)) || 1;
-  const xs = data.map((_, i) => pad.l + (i / (data.length - 1)) * iw);
-  const ys = data.map((d) => pad.t + ih - (d.value / max) * ih);
-  const line = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x},${ys[i]}`).join(" ");
-  const area = line + ` L${xs[xs.length - 1]},${pad.t + ih} L${xs[0]},${pad.t + ih} Z`;
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const containerRef = useRef(null);
+
+  if (!Array.isArray(data) || data.length === 0) return null;
+
+  const W = 440;
+  const H = 145;
+  const pad = { t: 26, r: 24, b: 24, l: 20 };
+  const iw = W - pad.l - pad.r;
+
+  const values = useMemo(() => data.map((d) => d.value), [data]);
+
+  const { linePath, areaPath, lastPt, originalCoords } = useMemo(
+    () =>
+      buildFluidWave({
+        values,
+        W,
+        H,
+        pad,
+        ampRatio: 0.9,
+        tension: 0.35,
+        steps: 4,
+      }),
+    [values, W, H]
+  );
+
+  const coords = useMemo(
+    () =>
+      originalCoords.map((pt, i) => ({
+        ...pt,
+        label: data[i]?.label,
+      })),
+    [originalCoords, data]
+  );
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const pctX = Math.max(0, Math.min(1, (relX - (pad.l / W) * rect.width) / ((iw / W) * rect.width)));
+    const targetIdx = Math.round(pctX * (data.length - 1));
+    const clampedIdx = Math.max(0, Math.min(data.length - 1, targetIdx));
+    setHoveredIndex(clampedIdx);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+  };
+
+  const activeCoord = hoveredIndex !== null ? coords[hoveredIndex] : null;
+
+  // Read dark mode from DOM — use brightened teal (#3D8B8F) vs. dark teal (#215E61)
+  // so the Member Growth line is clearly visible against the dark card background
+  const isDark = typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark";
+  const chartTeal = isDark ? "#3D8B8F" : "#215E61";
+  const chartStrokeW = isDark ? 2.5 : 2.2;
+  // X-axis label colors
+  const labelBaseColor = isDark ? "#A8B2B6" : "#9ca3af";
+  const labelActiveColor = isDark ? "#F5F5F5" : "#222222";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "130px", overflow: "visible" }}>
-      <defs>
-        <linearGradient id="gg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#c0392b" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#c0392b" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0, 0.25, 0.5, 0.75, 1].map((t, i) => (
-        <line
-          key={i}
-          x1={pad.l}
-          y1={pad.t + ih * t}
-          x2={pad.l + iw}
-          y2={pad.t + ih * t}
-          stroke="#e5e7eb"
-          strokeWidth="1"
-          strokeDasharray={i === 0 ? "none" : "3 3"}
+    <div
+      ref={containerRef}
+      className={styles.growthChartWrap}
+      style={{ position: "relative", width: "100%" }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        style={{ width: "100%", height: "145px", display: "block", overflow: "visible" }}
+      >
+        <defs>
+          <linearGradient id="growth_teal_grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={chartTeal} stopOpacity={isDark ? 0.30 : 0.18} />
+            <stop offset="100%" stopColor={chartTeal} stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+
+        {/* Soft area fill beneath the curve (~18% opacity fading to transparent) */}
+        <path d={areaPath} fill="url(#growth_teal_grad)" />
+
+        {/* Clean, smooth line stroke (2.2px light / 2.5px dark, rounded caps & joins) */}
+        <path
+          d={linePath}
+          fill="none"
+          stroke={chartTeal}
+          strokeWidth={chartStrokeW}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={isDark ? { filter: `drop-shadow(0 2px 6px ${chartTeal}80)` } : undefined}
         />
-      ))}
-      {[0, 0.5, 1].map((t, i) => (
-        <text key={i} x={pad.l - 4} y={pad.t + ih * (1 - t) + 3} fontSize="8" textAnchor="end" fill="#9ca3af">
-          {Math.round(max * t)}
-        </text>
-      ))}
-      <path d={area} fill="url(#gg)" />
-      <path d={line} fill="none" stroke="#c0392b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      {data.map((d, i) => {
-        const isLast = i === data.length - 1;
-        const isHov = tooltip?.i === i;
-        return (
-          <g key={i}>
-            <rect
-              x={xs[i] - 12}
-              y={pad.t}
-              width={24}
-              height={ih}
-              fill="transparent"
-              style={{ cursor: "pointer" }}
-              onMouseEnter={() => setTooltip({ i, x: xs[i], y: ys[i], ...d })}
-              onMouseLeave={() => setTooltip(null)}
+
+        {/* Endpoint emphasis: filled circle with soft glow */}
+        <circle
+          cx={lastPt.x}
+          cy={lastPt.y}
+          r="3"
+          fill={chartTeal}
+          style={{ filter: `drop-shadow(0 1px 4px ${chartTeal}73)` }}
+        />
+
+        {/* Existing value marker / badge (e.g. "425") at final endpoint */}
+        <g style={{ pointerEvents: "none" }}>
+          <rect
+            x={lastPt.x - 15}
+            y={lastPt.y - 18}
+            width="30"
+            height="14"
+            rx="4"
+            fill="#FF8735"
+            style={{ filter: "drop-shadow(0 2px 4px rgba(255, 135, 53, 0.35))" }}
+          />
+          <text
+            x={lastPt.x}
+            y={lastPt.y - 8}
+            textAnchor="middle"
+            fontSize="8.5"
+            fill="#ffffff"
+            fontWeight="700"
+          >
+            {lastPt.value}
+          </text>
+        </g>
+
+        {/* Interactive hover tracking */}
+        {activeCoord && activeCoord.index !== coords.length - 1 && (
+          <g>
+            <line
+              x1={activeCoord.x}
+              y1={pad.t}
+              x2={activeCoord.x}
+              y2={pad.t + ih}
+              stroke={chartTeal}
+              strokeWidth="1"
+              strokeDasharray="3 2"
+              opacity="0.35"
             />
             <circle
-              cx={xs[i]}
-              cy={ys[i]}
-              r={isHov ? 5 : isLast ? 4 : 2.5}
-              fill={isHov || isLast ? "#c0392b" : "#fff"}
-              stroke="#c0392b"
-              strokeWidth="1.5"
-              style={{ transition: "r 0.15s", pointerEvents: "none" }}
+              cx={activeCoord.x}
+              cy={activeCoord.y}
+              r="4"
+              fill={isDark ? "#1A2628" : "#ffffff"}
+              stroke={chartTeal}
+              strokeWidth="2"
+              style={{ filter: `drop-shadow(0 2px 4px ${chartTeal}40)` }}
             />
-            {isLast && !isHov && (
-              <>
-                <rect x={xs[i] - 14} y={ys[i] - 17} width="28" height="13" rx="4" fill="#c0392b" />
-                <text x={xs[i]} y={ys[i] - 7} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="700">
-                  {d.value}
-                </text>
-              </>
-            )}
-            {isHov && (
-              <>
-                <line x1={xs[i]} y1={pad.t} x2={xs[i]} y2={pad.t + ih} stroke="#c0392b" strokeWidth="1" strokeDasharray="3 2" />
-                <rect x={xs[i] - 18} y={ys[i] - 22} width="36" height="17" rx="4" fill="#1e293b" />
-                <text x={xs[i]} y={ys[i] - 11} textAnchor="middle" fontSize="9" fill="#fff" fontWeight="700">
-                  {d.value}
-                </text>
-                <text x={xs[i]} y={ys[i] - 3} textAnchor="middle" fontSize="7" fill="#94a3b8">
-                  {d.label}
-                </text>
-              </>
-            )}
           </g>
-        );
-      })}
-      {data.map((d, i) => (
-        <text key={i} x={xs[i]} y={H - 5} textAnchor="middle" fontSize="8" fill="#9ca3af">
-          {d.label}
-        </text>
-      ))}
-    </svg>
+        )}
+
+        {/* Clean X-axis period labels */}
+        {coords.map((c, i) => (
+          <text
+            key={i}
+            x={c.x}
+            y={H - 5}
+            textAnchor="middle"
+            fontSize="9"
+            fontWeight={hoveredIndex === i ? "600" : "500"}
+            fill={hoveredIndex === i ? labelActiveColor : labelBaseColor}
+            style={{ transition: "fill 0.15s, font-weight 0.15s" }}
+          >
+            {c.label}
+          </text>
+        ))}
+      </svg>
+
+      {/* Floating tooltip on hover when hovering non-endpoint */}
+      {activeCoord && activeCoord.index !== coords.length - 1 && (
+        <div
+          className={styles.growthTooltip}
+          style={{
+            position: "absolute",
+            left: `${(activeCoord.x / W) * 100}%`,
+            top: `${(activeCoord.y / H) * 100}%`,
+            transform: "translate(-50%, -120%)",
+            pointerEvents: "none",
+            zIndex: 10,
+          }}
+        >
+          <span className={styles.growthTooltipValue}>{activeCoord.value.toLocaleString()}</span>
+          <span className={styles.growthTooltipLabel}>{activeCoord.label}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -828,23 +1125,25 @@ function MemberDashboard() {
     { title: "Upskillers", count: upskillers, icon: BookOpen, color: "#16a34a", path: "/members", state: { exactMemberType: "In need of Upskilling" } },
   ];
 
-  // Member type data for donut (preserved)
+  // Read dark mode — use brightened donut segment colors for visibility on dark card bgs
+  const isDarkMode = typeof document !== "undefined" &&
+    document.documentElement.getAttribute("data-theme") === "dark";
+
+  // Member type data for donut (preserved structure, dark-mode color variants applied)
   const memberTypeData = [
-    { name: "Seeker", value: seekers, color: "#10b981", path: "/job-seekers" },
-    { name: "Recruiter", value: recruiters, color: "#8b5cf6", path: "/recruiters" },
-    { name: "Referee", value: referees, color: "#ec4899", path: "/referees" },
-    { name: "Mentor", value: mentors, color: "#6366f1", path: "/mentors" },
+    { name: "Seeker",    value: seekers,    color: isDarkMode ? "#3D8B8F" : "#215E61", path: "/job-seekers" },
+    { name: "Recruiter", value: recruiters, color: isDarkMode ? "#FF9A52" : "#FF8735", path: "/recruiters" },
+    { name: "Referee",   value: referees,   color: isDarkMode ? "#4AACB0" : "#2e7a7e", path: "/referees" },
+    { name: "Mentor",    value: mentors,    color: isDarkMode ? "#FFB380" : "#ffa366", path: "/mentors" },
   ];
 
   const donutData = [
-    { name: "Job Seekers", value: seekers, color: "#c0392b", nav: () => navigate("/job-seekers") },
-    { name: "Recruiters", value: recruiters, color: "#7c3aed", nav: () => navigate("/recruiters") },
-    { name: "Referees", value: referees, color: "#d97706", nav: () => navigate("/referees") },
-    { name: "Mentors", value: mentors, color: "#0891b2", nav: () => navigate("/mentors") },
-    { name: "Upskillers", value: upskillers, color: "#16a34a", nav: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }) },
+    { name: "Job Seekers", value: seekers,    color: isDarkMode ? "#3D8B8F" : "#215E61", nav: () => navigate("/job-seekers") },
+    { name: "Recruiters",  value: recruiters, color: isDarkMode ? "#FF9A52" : "#FF8735", nav: () => navigate("/recruiters") },
+    { name: "Referees",    value: referees,   color: isDarkMode ? "#4AACB0" : "#2e7a7e", nav: () => navigate("/referees") },
+    { name: "Mentors",     value: mentors,    color: isDarkMode ? "#FFB380" : "#ffa366", nav: () => navigate("/mentors") },
+    { name: "Upskillers",  value: upskillers, color: isDarkMode ? "#7A8F94" : "#9ca3af", nav: () => navigate("/members", { state: { exactMemberType: "In need of Upskilling" } }) },
   ];
-
-
 
   const totalJobsCount = jobs.length;
   const activeJobsCount = jobs.filter(j => j.isActive !== false).length;
@@ -929,11 +1228,11 @@ function MemberDashboard() {
     const otherPct = ((otherCount / total) * 100).toFixed(1) + "%";
 
     return [
-      { name: "IT & Software", value: itCount, pct: itPct, color: "#c0392b" },
-      { name: "Marketing", value: marketingCount, pct: marketingPct, color: "#2563eb" },
-      { name: "Education", value: educationCount, pct: educationPct, color: "#7c3aed" },
-      { name: "Design", value: designCount, pct: designPct, color: "#d97706" },
-      { name: "Other", value: otherCount, pct: otherPct, color: "#9ca3af" },
+      { name: "IT & Software", value: itCount, pct: itPct, color: isDarkMode ? "#3D8B8F" : "#215E61" },
+      { name: "Marketing", value: marketingCount, pct: marketingPct, color: isDarkMode ? "#FF9A52" : "#FF8735" },
+      { name: "Education", value: educationCount, pct: educationPct, color: isDarkMode ? "#4AACB0" : "#2e7a7e" },
+      { name: "Design", value: designCount, pct: designPct, color: isDarkMode ? "#FFB380" : "#ffa366" },
+      { name: "Other", value: otherCount, pct: otherPct, color: isDarkMode ? "#7A8F94" : "#9ca3af" },
     ];
   };
 
@@ -944,7 +1243,7 @@ function MemberDashboard() {
       label: "Total Members",
       value: totalMembers,
       icon: Users,
-      color: "#2563eb",
+      color: isDarkMode ? "#3D8B8F" : "#215E61",
       spark: totalMembersTrend,
       growth: totalMembersGrowth,
       onClick: () => navigate("/members"),
@@ -953,34 +1252,34 @@ function MemberDashboard() {
       label: "Active Members",
       value: activeMembers,
       icon: Briefcase,
-      color: "#16a34a",
+      color: isDarkMode ? "#3D8B8F" : "#215E61",
       spark: SP.green,
       growth: activeGrowthDash,
       onClick: () => navigate("/members", { state: { statusTabsView: true, initialTab: "Active" } }),
     },
     {
-      label: "New This Month",
-      value: newThisMonth,
-      icon: User,
-      color: "#7c3aed",
-      spark: SP.purple,
-      growth: newGrowthDash,
-      onClick: () => navigate("/members", { state: { newThisMonth: true } }),
-    },
-    {
       label: "Active Job Openings",
       value: activeJobsCount || totalJobsCount,
       icon: BriefcaseIcon,
-      color: "#d97706",
-      spark: SP.yellow,
+      color: isDarkMode ? "#3D8B8F" : "#215E61",
+      spark: SP.blue,
       growth: jobsGrowthDash,
       onClick: () => navigate("/jobs"),
+    },
+    {
+      label: "New This Month",
+      value: newThisMonth,
+      icon: User,
+      color: isDarkMode ? "#FF9A52" : "#FF8735",
+      spark: SP.yellow,
+      growth: newGrowthDash,
+      onClick: () => navigate("/members", { state: { newThisMonth: true } }),
     },
     {
       label: "Total View Counts",
       value: viewStats.totalViews,
       icon: Eye,
-      color: "#06b6d4",
+      color: isDarkMode ? "#3D8B8F" : "#215E61",
       spark: viewStats.totalSpark,
       growth: viewStats.totalGrowth,
       trendLabel: "from last month",
@@ -989,7 +1288,7 @@ function MemberDashboard() {
       label: "View Count Per Day",
       value: viewStats.todayViews,
       icon: TrendingUp,
-      color: "#ec4899",
+      color: isDarkMode ? "#FF9A52" : "#FF8735",
       spark: viewStats.dailySpark,
       growth: viewStats.dailyGrowth,
       trendLabel: "from yesterday",
@@ -999,13 +1298,13 @@ function MemberDashboard() {
 
 
   const quickActions = [
-    { icon: UserPlus, label: "Add Member", color: "#c0392b", bg: "#fef2f2", onClick: () => navigate("/job-seekers", { state: { openAddModal: true } }) },
-    { icon: Briefcase, label: "Post Job", color: "#2563eb", bg: "#eff6ff", onClick: () => navigate("/jobs", { state: { openAddModal: true } }) },
-    { icon: Shield, label: "Create Referee", color: "#16a34a", bg: "#f0fdf4", onClick: () => navigate("/referees", { state: { openAddModal: true } }) },
-    { icon: Star, label: "Add Mentor", color: "#d97706", bg: "#fffbeb", onClick: () => navigate("/mentors", { state: { openAddModal: true } }) },
-    { icon: BriefcaseIcon, label: "View Jobs", color: "#d97706", bg: "#fffbeb", onClick: () => navigate("/jobs") },
-    { icon: UserPlus, label: "Add Recruiter", color: "#8b5cf6", bg: "#f5f3ff", onClick: () => navigate("/recruiters", { state: { openAddModal: true } }) },
-    { icon: Settings, label: "Settings", color: "#e11d48", bg: "rgba(225, 29, 72, 0.08)", onClick: () => navigate("/settings") },
+    { icon: UserPlus,      label: "Add Member",     color: isDarkMode ? "#FF9A52" : "#FF8735", bg: isDarkMode ? "rgba(255,154,82,0.18)" : "rgba(255,135,53,0.12)", onClick: () => navigate("/job-seekers", { state: { openAddModal: true } }) },
+    { icon: Briefcase,     label: "Post Job",       color: isDarkMode ? "#FF9A52" : "#FF8735", bg: isDarkMode ? "rgba(255,154,82,0.18)" : "rgba(255,135,53,0.12)", onClick: () => navigate("/jobs", { state: { openAddModal: true } }) },
+    { icon: Shield,        label: "Create Referee", color: isDarkMode ? "#3D8B8F" : "#215E61", bg: isDarkMode ? "rgba(61,139,143,0.18)"  : "rgba(33,94,97,0.08)",   onClick: () => navigate("/referees", { state: { openAddModal: true } }) },
+    { icon: Star,          label: "Add Mentor",     color: isDarkMode ? "#3D8B8F" : "#215E61", bg: isDarkMode ? "rgba(61,139,143,0.18)"  : "rgba(33,94,97,0.08)",   onClick: () => navigate("/mentors", { state: { openAddModal: true } }) },
+    { icon: BriefcaseIcon, label: "View Jobs",      color: isDarkMode ? "#3D8B8F" : "#215E61", bg: isDarkMode ? "rgba(61,139,143,0.18)"  : "rgba(33,94,97,0.08)",   onClick: () => navigate("/jobs") },
+    { icon: UserPlus,      label: "Add Recruiter",  color: isDarkMode ? "#3D8B8F" : "#215E61", bg: isDarkMode ? "rgba(61,139,143,0.18)"  : "rgba(33,94,97,0.08)",   onClick: () => navigate("/recruiters", { state: { openAddModal: true } }) },
+    { icon: Settings,      label: "Settings",       color: isDarkMode ? "#3D8B8F" : "#215E61", bg: isDarkMode ? "rgba(61,139,143,0.18)"  : "rgba(33,94,97,0.08)",   onClick: () => navigate("/settings") },
   ];
 
   const donutCenter = hoveredSlice
@@ -1020,52 +1319,150 @@ function MemberDashboard() {
           <p className={styles.welcomeText}>
             Welcome back, <span className={styles.welcomeAccent}>Admin</span> 👋
           </p>
-          <p className={styles.welcomeSub}>Here's what's happening with Job Bridge today.</p>
+          <p className={styles.welcomeSub}>Here's what's happening with Hirenest today.</p>
         </div>
 
       </header>
 
       {/* CONTENT */}
       <div className={styles.content}>
-        {/* ── STAT CARDS ── */}
-        <div className={styles.statRow}>
-          {statCards.map((s, i) => (
-            <div
-              key={i}
-              className={styles.statCard}
-              onClick={s.onClick}
-              title={`View ${s.label}`}
-              style={{
-                "--theme-color": s.color,
-                "--glow-color": `${s.color}26`,
-              }}
-            >
-              <div className={styles.statCardTop}>
-                <div className={styles.statNumbers}>
+        {/* ── KPI BENTO GRID ── */}
+        <div className={styles.kpiBentoGrid}>
+          {statCards.map((s, i) => {
+            const numG = Number(s.growth);
+            const isPos = numG > 0;
+            const isNeg = numG < 0;
+            const trendClass = isPos ? styles.positiveTrend : isNeg ? styles.negativeTrend : styles.neutralTrend;
+            const sparkColor = isPos ? "#10b981" : isNeg ? "#ef4444" : s.color;
+            
+            const areaClasses = [
+              styles.cardHero,
+              styles.cardActive,
+              styles.cardJobOpen,
+              styles.cardNewMonth,
+              styles.cardTotalViews,
+              styles.cardViewDay,
+            ];
+            const areaClass = areaClasses[i] || "";
+
+            return (
+              <div
+                key={i}
+                className={`${styles.statCard} ${areaClass} ${trendClass} ${i === 0 ? styles.heroKpi : ''}`}
+                onClick={s.onClick}
+                title={`View ${s.label}`}
+                style={{
+                  "--theme-color": s.color,
+                  "--glow-color": `${s.color}26`,
+                }}
+              >
+                <div className={styles.cardBgGlow} />
+
+                <div className={styles.statCardTop}>
                   <div className={styles.statLabel}>{s.label}</div>
-                  <div className={styles.statValue}>{s.value.toLocaleString()}</div>
+                  <div className={styles.statTopRight}>
+                    <span
+                      className={`${styles.trendPill} ${
+                        isPos
+                          ? styles.trendUp
+                          : isNeg
+                          ? styles.trendDown
+                          : styles.trendNeutral
+                      }`}
+                    >
+                      {isPos ? "↑ " : isNeg ? "↓ " : ""}{Math.abs(numG)}%
+                    </span>
+                    <div className={styles.statIconWrap} style={{ background: `${s.color}14`, color: s.color }}>
+                      <s.icon size={15} strokeWidth={2} />
+                    </div>
+                  </div>
                 </div>
-                <div className={styles.statIconWrap} style={{ background: `${s.color}18`, color: s.color }}>
-                  <s.icon size={17} />
+
+                <div className={styles.statCardMain}>
+                  <div className={styles.statLeftCol}>
+                    <div className={styles.statValue}>{s.value.toLocaleString()}</div>
+                    <div className={styles.statSubText}>
+                      <span className={isPos ? styles.subTrendUp : isNeg ? styles.subTrendDown : styles.subTrendNeutral}>
+                        {isPos ? `+${s.growth}` : s.growth}
+                      </span>
+                      <span className={styles.subTextLabel}>{s.trendLabel || "from last month"}</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.statRightCol}>
+                    <div className={styles.sparklineWrap}>
+                      <Sparkline
+                        points={s.spark}
+                        color={sparkColor}
+                        height={i === 0 ? 70 : 32}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className={styles.statTrend} style={{ color: Number(s.growth) > 0 ? "#16a34a" : "var(--text-muted, #64748b)" }}>
-                {Number(s.growth) > 0 ? (
-                  <ArrowUpRight size={11} style={{ display: "inline", marginRight: 2 }} />
-                ) : null}
-                {s.growth}% {s.trendLabel || "from last month"}
-              </div>
-              <div className={styles.sparklineWrap}>
-                <Sparkline points={s.spark} color={s.color} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* ── MID ROW ── */}
-        <div className={styles.midRow}>
-          {/* Members Overview donut */}
-          <div className={styles.card}>
+        {/* ── ANALYTICS BENTO GRID ── */}
+        <div className={styles.analyticsBentoGrid}>
+          {/* 1. Member Growth (Hero Span 2) */}
+          <div className={`${styles.card} ${styles.span2}`}>
+            <div className={styles.cardHead}>
+              <span className={styles.cardTitle}>Member Growth</span>
+              {/* Period picker dropdown */}
+              <div ref={growthDropdownRef} style={{ position: "relative" }}>
+                <button
+                  onClick={() => setShowGrowthDropdown(p => !p)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 4,
+                    background: "var(--soft-bg)", border: "1px solid var(--border)",
+                    borderRadius: 8, cursor: "pointer", padding: "4px 10px",
+                    color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 700,
+                    transition: "border-color 0.15s",
+                  }}
+                >
+                  {selectedGrowthLabel} <ChevronDown size={12} />
+                </button>
+                {showGrowthDropdown && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 6px)", right: 0,
+                    background: "var(--card-bg)", border: "1px solid var(--border)",
+                    borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                    zIndex: 100, overflow: "hidden", minWidth: 130,
+                  }}>
+                    {GROWTH_OPTIONS.map(opt => (
+                      <button
+                        key={opt.key}
+                        onClick={() => { setGrowthPeriod(opt.key); setShowGrowthDropdown(false); }}
+                        style={{
+                          display: "block", width: "100%", textAlign: "left",
+                          padding: "9px 14px", border: "none", background: growthPeriod === opt.key ? "var(--primary)" : "transparent",
+                          color: growthPeriod === opt.key ? "#fff" : "var(--text-main)",
+                          fontWeight: 700, fontSize: "0.78rem", cursor: "pointer",
+                          transition: "background 0.12s",
+                          fontFamily: "inherit",
+                        }}
+                        onMouseEnter={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "var(--soft-bg)"; }}
+                        onMouseLeave={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "transparent"; }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <GrowthChart data={growthData} />
+            <div className={styles.growthFooter}>
+              <span className={styles.growthBadge}>
+                <TrendingUp size={13} /> {dynamicGrowthPct}% growth this period
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Members Overview (Span 1) */}
+          <div className={`${styles.card} ${styles.span1}`}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Members Overview</span>
               <button className={styles.menuIconBtn}>
@@ -1148,8 +1545,102 @@ function MemberDashboard() {
             </button>
           </div>
 
-          {/* Top Districts */}
-          <div className={styles.card}>
+          {/* 3. Quick Actions (Span 1) */}
+          <div className={`${styles.card} ${styles.span1}`}>
+            <div className={styles.cardHead}>
+              <span className={styles.cardTitle}>Quick Actions</span>
+            </div>
+            <div className={styles.quickGrid}>
+              {quickActions.map((qa, i) => (
+                <button key={i} className={styles.quickItem} onClick={qa.onClick} title={qa.label}>
+                  <div className={styles.quickIcon} style={{ background: qa.bg, color: qa.color }}>
+                    <qa.icon size={17} />
+                  </div>
+                  <span className={styles.quickLabel}>{qa.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. Jobs Overview (Command Span 2) */}
+          <div className={`${styles.card} ${styles.span2}`}>
+            <div className={styles.cardHead}>
+              <span className={styles.cardTitle}>Jobs Overview</span>
+              <button className={styles.viewAllLink} onClick={() => navigate("/jobs")}>
+                View All
+              </button>
+            </div>
+            <div className={styles.jobsBentoBody}>
+              <div className={styles.jobsStatsCol}>
+                {[
+                  { label: "Total Jobs", val: totalJobsCount, icon: BriefcaseIcon, color: "#215E61", bg: "rgba(33, 94, 97, 0.08)", onClick: () => navigate("/jobs") },
+                  { label: "Active Jobs", val: activeJobsCount, icon: TrendingUp, color: "#FF8735", bg: "rgba(255, 135, 53, 0.10)", onClick: () => navigate("/jobs", { state: { status: "active" } }) },
+                ].map((j, i) => (
+                  <div
+                    key={i}
+                    className={styles.jobStatBox}
+                    style={{
+                      background: j.bg,
+                      borderColor: "transparent",
+                      cursor: "pointer",
+                      transition: "transform 0.15s, box-shadow 0.15s",
+                    }}
+                    onClick={j.onClick}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "";
+                      e.currentTarget.style.boxShadow = "";
+                    }}
+                  >
+                    <div className={styles.jobStatLabel}>{j.label}</div>
+                    <div className={styles.jobStatVal} style={{ color: j.color, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                      {j.val} <j.icon size={13} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.jobsCategoryCol}>
+                <div className={styles.jobCategoryWrap}>
+                  <div className={styles.jobCategoryLabel}>Jobs by Category</div>
+                  <div className={styles.jobCategoryRow}>
+                    <div style={{ position: "relative", flexShrink: 0, width: 75, height: 75 }}>
+                      <DonutChart
+                        data={jobCats}
+                        size={75}
+                        thickness={17}
+                        showTooltip={true}
+                        onSliceClick={(seg) => navigate("/jobs", { state: { category: seg.name } })}
+                      />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {jobCats.map((c, i) => (
+                        <div
+                          key={i}
+                          className={styles.catRow}
+                          style={{ cursor: "pointer", borderRadius: 4, padding: "1px 3px", transition: "background 0.15s" }}
+                          onClick={() => navigate("/jobs", { state: { category: c.name } })}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = `${c.color}14`)}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <span className={styles.catDot} style={{ background: c.color }} />
+                          <span className={styles.catName}>{c.name}</span>
+                          <span className={styles.catPct}>
+                            {c.value} ({c.pct})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Top Districts (Span 1) */}
+          <div className={`${styles.card} ${styles.span1}`}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Top Districts</span>
               <button className={styles.viewAllLink} onClick={() => navigate("/members")}>
@@ -1175,15 +1666,14 @@ function MemberDashboard() {
             </div>
             <button
               className={styles.viewAllBtn}
-              style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
               onClick={() => navigate("/members")}
             >
               View All Districts <ChevronRight size={13} />
             </button>
           </div>
 
-          {/* Top Skills */}
-          <div className={styles.card}>
+          {/* 6. Top Skills (Span 1) */}
+          <div className={`${styles.card} ${styles.span1}`}>
             <div className={styles.cardHead}>
               <span className={styles.cardTitle}>Top Skills</span>
               <button className={styles.viewAllLink} onClick={() => navigate("/members")}>
@@ -1209,162 +1699,10 @@ function MemberDashboard() {
             </div>
             <button
               className={styles.viewAllBtn}
-              style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
               onClick={() => navigate("/members")}
             >
               View All Skills <ChevronRight size={13} />
             </button>
-          </div>
-
-        </div>
-
-        {/* ── BOTTOM ROW ── */}
-        <div className={styles.bottomRow}>
-          {/* Jobs Overview */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Jobs Overview</span>
-              <button className={styles.viewAllLink} onClick={() => navigate("/jobs")}>
-                View All
-              </button>
-            </div>
-            <div className={styles.jobStatsRow}>
-              {[
-                { label: "Total Jobs", val: totalJobsCount, icon: BriefcaseIcon, color: "#6b7280", bg: "#f3f4f6", onClick: () => navigate("/jobs") },
-                { label: "Active Jobs", val: activeJobsCount, icon: TrendingUp, color: "#16a34a", bg: "#f0fdf4", onClick: () => navigate("/jobs", { state: { status: "active" } }) },
-              ].map((j, i) => (
-                <div
-                  key={i}
-                  className={styles.jobStatBox}
-                  style={{
-                    background: j.bg,
-                    borderColor: "transparent",
-                    cursor: "pointer",
-                    transition: "transform 0.15s, box-shadow 0.15s",
-                  }}
-                  onClick={j.onClick}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "";
-                    e.currentTarget.style.boxShadow = "";
-                  }}
-                >
-                  <div className={styles.jobStatLabel}>{j.label}</div>
-                  <div className={styles.jobStatVal} style={{ color: j.color, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                    {j.val} <j.icon size={13} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className={styles.jobCategoryWrap}>
-              <div className={styles.jobCategoryLabel}>Jobs by Category</div>
-              <div className={styles.jobCategoryRow}>
-                <div style={{ position: "relative", flexShrink: 0, width: 75, height: 75 }}>
-                  <DonutChart
-                    data={jobCats}
-                    size={75}
-                    thickness={17}
-                    showTooltip={true}
-                    onSliceClick={(seg) => navigate("/jobs", { state: { category: seg.name } })}
-                  />
-                </div>
-                <div>
-                  {jobCats.map((c, i) => (
-                    <div
-                      key={i}
-                      className={styles.catRow}
-                      style={{ cursor: "pointer", borderRadius: 4, padding: "1px 3px", transition: "background 0.15s" }}
-                      onClick={() => navigate("/jobs", { state: { category: c.name } })}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = `${c.color}14`)}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    >
-                      <span className={styles.catDot} style={{ background: c.color }} />
-                      <span className={styles.catName}>{c.name}</span>
-                      <span className={styles.catPct}>
-                        {c.value} ({c.pct})
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Member Growth */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <span className={styles.cardTitle}>Member Growth</span>
-              {/* Period picker dropdown */}
-              <div ref={growthDropdownRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setShowGrowthDropdown(p => !p)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 4,
-                    background: "var(--soft-bg)", border: "1px solid var(--border)",
-                    borderRadius: 8, cursor: "pointer", padding: "4px 10px",
-                    color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 700,
-                    transition: "border-color 0.15s",
-                  }}
-                >
-                  {selectedGrowthLabel} <ChevronDown size={12} />
-                </button>
-                {showGrowthDropdown && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 6px)", right: 0,
-                    background: "var(--card-bg)", border: "1px solid var(--border)",
-                    borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                    zIndex: 100, overflow: "hidden", minWidth: 130,
-                  }}>
-                    {GROWTH_OPTIONS.map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => { setGrowthPeriod(opt.key); setShowGrowthDropdown(false); }}
-                        style={{
-                          display: "block", width: "100%", textAlign: "left",
-                          padding: "9px 14px", border: "none", background: growthPeriod === opt.key ? "var(--primary)" : "transparent",
-                          color: growthPeriod === opt.key ? "#fff" : "var(--text-main)",
-                          fontWeight: 700, fontSize: "0.78rem", cursor: "pointer",
-                          transition: "background 0.12s",
-                          fontFamily: "inherit",
-                        }}
-                        onMouseEnter={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "var(--soft-bg)"; }}
-                        onMouseLeave={e => { if (growthPeriod !== opt.key) e.currentTarget.style.background = "transparent"; }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <GrowthChart data={growthData} />
-            <div className={styles.growthFooter}>
-              <span className={styles.growthBadge}>
-                <TrendingUp size={13} /> {dynamicGrowthPct}% growth this period
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-            <div className={styles.card}>
-              <div className={styles.cardHead}>
-                <span className={styles.cardTitle}>Quick Actions</span>
-              </div>
-              <div className={styles.quickGrid}>
-                {quickActions.map((qa, i) => (
-                  <button key={i} className={styles.quickItem} onClick={qa.onClick} title={qa.label}>
-                    <div className={styles.quickIcon} style={{ background: qa.bg, color: qa.color }}>
-                      <qa.icon size={17} />
-                    </div>
-                    <span className={styles.quickLabel}>{qa.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
