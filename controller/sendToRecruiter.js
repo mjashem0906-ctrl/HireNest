@@ -133,7 +133,7 @@ const sendCandidateToRecruiter = async (req, res) => {
 <body>
   <div class="wrapper">
     <div class="header">
-      <h1>Job Bridge Node — Candidate Profile</h1>
+      <h1>JobBridge — Candidate Profile</h1>
       <p>Connecting Talent with Opportunities</p>
     </div>
     <div class="body">${safeText}${resumeHtml}</div>
@@ -161,13 +161,13 @@ const sendCandidateToRecruiter = async (req, res) => {
 <body>
   <div class="wrapper">
     <div class="header">
-      <h1>Job Bridge Node — Candidate Profile</h1>
+      <h1>JobBridge — Candidate Profile</h1>
       <p>Connecting Talent with Opportunities</p>
     </div>
     <div class="body">
       <p>Dear Recruiter,</p>
-      <p>Greetings from <em>Job Bridge Node</em>.</p>
-      <p>We are pleased to share the profile of a candidate who has applied for the position of <strong>${jobTitle}</strong> at your organization through our Job Bridge Node platform.</p>
+      <p>Greetings from <em>JobBridge</em>.</p>
+      <p>We are pleased to share the profile of a candidate who has applied for the position of <strong>${jobTitle}</strong> at your organization through our JobBridge platform.</p>
       <p>Please find the candidate's resume attached for your review.</p>
       
       ${resumeHtml}
@@ -186,11 +186,11 @@ const sendCandidateToRecruiter = async (req, res) => {
       <p>Best Regards,</p>
     </div>
     <div class="footer">
-      <strong>Job Bridge Node Team</strong>
+      <strong>JobBridge Team</strong>
       <p>Connecting Talent with Opportunities</p>
-      <p>📧 info.jobbridge@solidaritykarnataka.org</p>
+      <p>📧 info@jobbridge.com</p>
       <p>📞 6366234200</p>
-      <p>🌐 Job Bridge Node</p>
+      <p>🌐 JobBridge</p>
     </div>
   </div>
 </body>

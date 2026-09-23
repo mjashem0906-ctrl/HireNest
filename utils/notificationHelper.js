@@ -70,9 +70,9 @@ const triggerNotification = async ({
             <h2 style="color: #4f46e5; margin-bottom: 20px;">Application Confirmed</h2>
             <p>Dear ${recipientName},</p>
             <p>Thank you for applying. We have successfully received your application for <strong>${data.jobTitle || "the position"}</strong>.</p>
-            <p>You can visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to track the status of your application directly from your dashboard.</p>
+            <p>You can visit <a href="https://jobbridge.com" style="color: #4f46e5; text-decoration: underline;">jobbridge.com</a> to track the status of your application directly from your dashboard.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
+            <p style="font-size: 12px; color: #64748b;">Best regards,<br />JobBridge Team</p>
           </div>
         `;
         await sendEmail(recipientEmail, subject, html);
@@ -85,10 +85,10 @@ const triggerNotification = async ({
             <p>Dear ${recipientName},</p>
             <p>We are pleased to inform you that mentor <strong>${data.mentorName || "Your Mentor"}</strong> has accepted your connection request.</p>
             <p style="margin-top: 10px;">You can now reach out to them at <strong>${data.mentorEmail || ""}</strong> ${data.mentorPhone ? `or call them at <strong>${data.mentorPhone}</strong>` : ''}.</p>
-            <p>Please visit <a href="https://jobbridgenode.com" style="color: #10b981; text-decoration: underline;">jobbridgenode.com</a> to view details.</p>
+            <p>Please visit <a href="https://jobbridge.com" style="color: #10b981; text-decoration: underline;">jobbridge.com</a> to view details.</p>
             <p>We wish you a productive mentoring relationship!</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
+            <p style="font-size: 12px; color: #64748b;">Best regards,<br />JobBridge Team</p>
           </div>
         `;
         await sendEmail(recipientEmail, subject, html);
@@ -108,9 +108,9 @@ const triggerNotification = async ({
               <p style="margin: 5px 0;"><strong>Message:</strong> ${data.meetingMessage}</p>
               <p style="margin: 5px 0;"><strong>Meeting Link:</strong> <a href="${data.meetingLink}" style="color: #4f46e5; text-decoration: underline;">${data.meetingLink}</a></p>
             </div>
-            <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to view details.</p>
+            <p>Please visit <a href="https://jobbridge.com" style="color: #4f46e5; text-decoration: underline;">jobbridge.com</a> to view details.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
+            <p style="font-size: 12px; color: #64748b;">Best regards,<br />JobBridge Team</p>
           </div>
         `;
         await sendEmail(recipientEmail, subject, html);
@@ -131,15 +131,15 @@ const triggerNotification = async ({
             <p>Dear ${recipientName},</p>
             <p>Great news! You have been scheduled for an interview for the <strong>${data.jobTitle || "Job Position"}</strong> role.</p>
             ${data.interviewDetails ? `<p><strong>Details:</strong> ${data.interviewDetails}</p>` : ''}
-            <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to check your dashboard and review further instructions.</p>
+            <p>Please visit <a href="https://jobbridge.com" style="color: #4f46e5; text-decoration: underline;">jobbridge.com</a> to check your dashboard and review further instructions.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Best regards,<br />Job Bridge Karnataka Team</p>
+            <p style="font-size: 12px; color: #64748b;">Best regards,<br />JobBridge Team</p>
           </div>
         `;
         await sendEmail(recipientEmail, subject, html);
       } 
       else if (type === "new_application") {
-        const adminEmail = process.env.ADMIN_EMAIL || "jobbridgekarnataka@gmail.com";
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@jobbridge.com";
         await sendAdminApplicationNotification(
           adminEmail,
           {
@@ -151,7 +151,7 @@ const triggerNotification = async ({
       }
 
       else if (type === "pending_action" || type === "system_notification") {
-        const adminEmail = process.env.ADMIN_EMAIL || "jobbridgekarnataka@gmail.com";
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@jobbridge.com";
         const subject = `Admin Alert: ${title}`;
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -161,9 +161,9 @@ const triggerNotification = async ({
               <p style="margin: 0; font-weight: bold;">${title}</p>
               <p style="margin: 10px 0 0 0; color: #475569;">${message}</p>
             </div>
-            <p>Please visit <a href="https://jobbridgenode.com" style="color: #e11d48; text-decoration: underline;">jobbridgenode.com</a> and log in to your Admin Dashboard to complete the action.</p>
+            <p>Please visit <a href="https://jobbridge.com" style="color: #e11d48; text-decoration: underline;">jobbridge.com</a> and log in to your Admin Dashboard to complete the action.</p>
             <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Job Bridge Karnataka System</p>
+            <p style="font-size: 12px; color: #64748b;">JobBridge System</p>
           </div>
         `;
         await sendEmail(adminEmail, subject, html);

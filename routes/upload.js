@@ -64,7 +64,7 @@ router.post("/", upload.single("file"), (req, res) => {
 
   // Auto-detect base URL from the incoming request — no env var needed.
   //   Local:      http://localhost:5000
-  //   Production: https://jobbridgenode.com
+  //   Production: https://jobbridge.com
   const protocol = req.headers["x-forwarded-proto"] || req.protocol;
   const host     = req.headers["x-forwarded-host"]  || req.get("host");
   const baseUrl  = `${protocol}://${host}`;

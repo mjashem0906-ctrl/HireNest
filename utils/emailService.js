@@ -71,7 +71,7 @@ const sendBulkEmail = async (toEmails, subject, htmlContent) => {
 //       <li><strong>Salary:</strong> ${jobDetails.salary}</li>
 //     </ul>
 //     <p>Login to your dashboard to apply!</p>
-//     <p>Best regards,<br>Job Bridge Karnataka Team</p>
+//     <p>Best regards,<br>JobBridge Team</p>
 //   `;
 
 //   // Filter members with valid emails
@@ -98,8 +98,8 @@ const sendStatusUpdateNotification = async (memberEmail, memberName, jobTitle, n
     <h1>Application Status Update</h1>
     <p>Dear ${memberName},</p>
     <p>The status of your application for <strong>${jobTitle}</strong> has been updated to: <strong>${newStatus}</strong>.</p>
-    <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> to check your dashboard for more details.</p>
-    <p>Best regards,<br>Job Bridge Node Karnataka Team</p>
+    <p>Please visit <a href="https://jobbridge.com" style="color: #4f46e5; text-decoration: underline;">jobbridge.com</a> to check your dashboard for more details.</p>
+    <p>Best regards,<br>JobBridge Team</p>
   `;
 
   await sendEmail(memberEmail, subject, htmlContent);
@@ -121,7 +121,7 @@ const sendAdminApplicationNotification = async (adminEmail, candidateInfo, jobTi
       <li><strong>Job Title:</strong> ${jobTitle}</li>
       <li><strong>Applied On:</strong> ${new Date().toLocaleDateString('en-GB')}</li>
     </ul>
-    <p>Please visit <a href="https://jobbridgenode.com" style="color: #4f46e5; text-decoration: underline;">jobbridgenode.com</a> and log in to the admin panel to review the application.</p>
+    <p>Please visit <a href="https://jobbridge.com" style="color: #4f46e5; text-decoration: underline;">jobbridge.com</a> and log in to the admin panel to review the application.</p>
   `;
 
   await sendEmail(adminEmail, subject, htmlContent);
@@ -138,7 +138,7 @@ const sendAdminPasswordChangedNotification = async (adminEmail, adminName) => {
     <p>Dear ${adminName},</p>
     <p>This is to confirm that the password for your admin account has been successfully updated.</p>
     <p>If you did not make this change, please contact support immediately.</p>
-    <p>Best regards,<br>Job Bridge Karnataka Team</p>
+    <p>Best regards,<br>JobBridge Team</p>
   `;
 
   await sendEmail(adminEmail, subject, htmlContent);
@@ -148,7 +148,7 @@ const sendAdminPasswordChangedNotification = async (adminEmail, adminName) => {
  * Send OTP for Admin Password Reset
  */
 const sendAdminOtpEmail = async (adminEmail, otp) => {
-  const subject = `Your Admin Password Reset OTP - Job Bridge`;
+  const subject = `Your Admin Password Reset OTP - JobBridge`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
       <h2 style="color: #e11d48; margin-top: 0;">Admin Password Reset</h2>
@@ -160,7 +160,7 @@ const sendAdminOtpEmail = async (adminEmail, otp) => {
       <p>This OTP is valid for <strong>10 minutes</strong>. Do not share this code with anyone.</p>
       <p style="color: #6b7280; font-size: 0.85rem; margin-top: 24px;">If you did not request a password change, please ignore this email.</p>
       <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-      <p style="color: #9ca3af; font-size: 0.8rem;">Job Bridge Karnataka Team</p>
+      <p style="color: #9ca3af; font-size: 0.8rem;">JobBridge Team</p>
     </div>
   `;
 

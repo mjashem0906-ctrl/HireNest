@@ -535,7 +535,7 @@ const verifyAdminEmail = async (req, res) => {
       }
     }
 
-    if (!isValidAdminEmail && normalizedEmail === "info.jobbridge@solidaritykarnataka.org") {
+    if (!isValidAdminEmail && normalizedEmail === "info@jobbridge.com") {
       isValidAdminEmail = true;
     }
 

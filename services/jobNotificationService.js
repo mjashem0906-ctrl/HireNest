@@ -356,7 +356,7 @@ const generateJobNotificationEmailHtml = ({
   matchedSkills,
   portalUrl,
 }) => {
-  const clientUrl = portalUrl || process.env.CLIENT_URL || "https://jobbridgenode.com";
+  const clientUrl = portalUrl || process.env.CLIENT_URL || "https://jobbridge.com";
   const jobLink = `${clientUrl.replace(/\/+$/, "")}/jobs`;
 
   const companyName = job.companyName || "Verified Employer";
@@ -411,7 +411,7 @@ const generateJobNotificationEmailHtml = ({
               <!-- Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); padding: 28px 32px; text-align: left;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">Job Bridge Karnataka</h1>
+                  <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.5px;">JobBridge</h1>
                   <p style="color: #ffe4e6; margin: 6px 0 0 0; font-size: 14px;">Personalized Job Match Alert</p>
                 </td>
               </tr>
@@ -421,7 +421,7 @@ const generateJobNotificationEmailHtml = ({
                 <td style="padding: 28px 32px 16px 32px;">
                   <p style="font-size: 16px; margin: 0 0 12px 0;">Dear <strong>${candidateName || "Job Seeker"}</strong>,</p>
                   <p style="font-size: 14px; color: #475569; margin: 0 0 20px 0;">
-                    A new job opportunity matching your preferred role <strong>"${matchedRole || role}"</strong> and key skills has just been posted on Job Bridge Portal!
+                    A new job opportunity matching your preferred role <strong>"${matchedRole || role}"</strong> and key skills has just been posted on JobBridge Portal!
                   </p>
                 </td>
               </tr>
@@ -480,7 +480,7 @@ const generateJobNotificationEmailHtml = ({
               <tr>
                 <td style="padding: 0 32px 32px 32px; text-align: center;">
                   <a href="${jobLink}" target="_blank" style="display: inline-block; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3); letter-spacing: 0.3px;">
-                    Apply Now on Job Bridge
+                    Apply Now on JobBridge
                   </a>
                   <p style="font-size: 12px; color: #94a3b8; margin: 12px 0 0 0;">
                     Or log in directly at <a href="${clientUrl}" style="color: #e11d48; text-decoration: underline;">${clientUrl}</a> to review this position.
@@ -492,10 +492,10 @@ const generateJobNotificationEmailHtml = ({
               <tr>
                 <td style="background-color: #f1f5f9; padding: 20px 32px; text-align: center; border-top: 1px solid #e2e8f0;">
                   <p style="font-size: 12px; color: #64748b; margin: 0 0 4px 0;">
-                    You are receiving this automated email because your profile matches this job opening on Job Bridge Portal.
+                    You are receiving this automated email because your profile matches this job opening on JobBridge Portal.
                   </p>
                   <p style="font-size: 12px; color: #94a3b8; margin: 0;">
-                    © ${new Date().getFullYear()} Job Bridge Karnataka. All rights reserved.
+                    © ${new Date().getFullYear()} JobBridge. All rights reserved.
                   </p>
                 </td>
               </tr>
