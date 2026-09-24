@@ -256,7 +256,7 @@ const LoginForm = () => {
                     type="text"
                     className="auth-input"
                     placeholder={
-                      roleType === "Recruiter" ? "Enter your email" : "admin"
+                      roleType === "Recruiter" ? "Enter your email" : "Enter your username"
                     }
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
