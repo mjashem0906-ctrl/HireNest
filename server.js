@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Initialize Passport config
-require('./config/googleAuth'); 
+require('./config/googleAuth');
 
 app.use(express.json());
 app.use(cookieParser());
@@ -37,7 +37,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- ROUTES ---
 // Added the Google Auth Route to fix "Cannot GET /api/auth/google"
-app.use("/api/auth", require("./routes/authRoutes")); 
+app.use("/api/auth", require("./routes/authRoutes"));
 
 app.use("/auth", require("./routes/login"));
 app.use("/api/candidate", require("./routes/candidate"));
@@ -65,9 +65,9 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: Date.now() });
 });
 
-app.listen(PORT, async() => {
+app.listen(PORT, async () => {
   console.log(`✅ Server running on port ${PORT}`);
-  
+
   // Sync dropdowns with existing member data on startup
   try {
     const syncDropdowns = require("./utils/syncDropdowns");
