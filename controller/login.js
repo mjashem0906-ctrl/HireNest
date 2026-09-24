@@ -1,6 +1,7 @@
 const User = require("../models/login");
 const GoogleUser = require("../models/googleUser");
 const Recruiter = require("../models/Recruiter");
+const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Activity = require("../models/activity");
@@ -150,11 +151,79 @@ const login = async (req, res) => {
         });
     }
 
-    // ── ADMIN & OTHER USERS LOGIN ──
-    const user = await User.findOne({ username: rawUsername });
+    // ── ADMIN LOGIN ──
+    if (role === "Admin") {
+      let admin = await Admin.findOne({
+        $or: [
+          { username: rawUsername },
+          { username: { $regex: new RegExp(`^${rawUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+        ]
+      });
+
+      if (!admin) {
+        // Fallback: check User collection if legacy Admin was in User model
+        admin = await User.findOne({ username: rawUsername, role: "Admin" }) ||
+                await User.findOne({ username: normalizedUsername, role: "Admin" });
+      }
+
+      if (!admin) {
+        return res.status(404).json({
+          success: false,
+          message: "Admin account not found. Please check your credentials.",
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
+
+      // GENERATE JWT TOKEN
+      const token = jwt.sign(
+        {
+          userId: admin._id,
+          role: "Admin",
+          memberId: admin.memberId || admin._id,
+        },
+        process.env.SECRET_KEY,
+        {
+          expiresIn: "24h",
+        }
+      );
+
+      // SET COOKIE + RETURN TOKEN
+      return res
+        .cookie("token", token, {
+          httpOnly: true,
+          sameSite: "None",
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        })
+        .json({
+          message: "Login successful",
+          success: true,
+          token,
+          user: {
+            role: "Admin",
+            username: admin.username,
+            memberId: admin.memberId || admin._id,
+            profileCompleted: 1,
+          },
+        });
+    }
+
+    // ── OTHER USERS LOGIN ──
+    let user = await User.findOne({ username: rawUsername });
+    if (!user) {
+      user = await Admin.findOne({ username: rawUsername });
+    }
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
@@ -163,6 +232,7 @@ const login = async (req, res) => {
 
     if (!isMatch) {
       return res.status(400).json({
+        success: false,
         message: "Invalid credentials or role",
       });
     }
@@ -172,33 +242,31 @@ const login = async (req, res) => {
       {
         userId: user._id,
         role: user.role,
-        memberId: user.memberId,
+        memberId: user.memberId || user._id,
       },
       process.env.SECRET_KEY,
       {
-        expiresIn: "2h",
+        expiresIn: "24h",
       }
     );
 
     // SET COOKIE + RETURN TOKEN
-    res
+    return res
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "None",
         secure: true,
-        maxAge: 2 * 60 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000,
       })
       .json({
         message: "Login successful",
         success: true,
-
-        // IMPORTANT
         token,
-
         user: {
           role: user.role,
           username: user.username,
-          memberId: user.memberId,
+          memberId: user.memberId || user._id,
+          profileCompleted: user.profileCompleted || 1,
         },
       });
 
@@ -206,12 +274,14 @@ const login = async (req, res) => {
     console.error("Login Error:", err);
 
     res.status(500).json({
+      success: false,
       message: err.message,
     });
   }
 };
 
 const getAllUser = async (req, res) => {
+  const admins = await Admin.find().select("-password");
   const users = await User.find().populate(
     "memberId",
     "name photoUrl"
@@ -221,7 +291,7 @@ const getAllUser = async (req, res) => {
     "name photoUrl"
   );
 
-  const combined = [...users, ...googleUsers].sort(
+  const combined = [...admins, ...users, ...googleUsers].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
@@ -260,6 +330,23 @@ const check = async (req, res) => {
           companyName: recruiter.currentInstitutionOrCompany || "",
           profileCompleted: 1,
           isGoogleUser: false,
+        });
+      }
+    }
+
+    if (req.user?.role === "Admin") {
+      let admin = await Admin.findById(req.user.userId);
+      if (!admin) {
+        admin = await User.findById(req.user.userId);
+      }
+      if (admin) {
+        return res.json({
+          userId: admin._id,
+          role: "Admin",
+          memberId: admin.memberId || admin._id,
+          profileCompleted: 1,
+          isGoogleUser: false,
+          username: admin.username,
         });
       }
     }
@@ -468,7 +555,10 @@ const changePassword = async (req, res) => {
   const userId = req.user.userId;
 
   try {
-    let user = await User.findById(userId);
+    let user = await Admin.findById(userId);
+    if (!user) {
+      user = await User.findById(userId);
+    }
     if (!user) {
       user = await GoogleUser.findById(userId);
     }
@@ -507,6 +597,15 @@ const verifyAdminEmail = async (req, res) => {
     let isValidAdminEmail = false;
 
     if (req.user?.userId) {
+      const loggedAdmin = await Admin.findById(req.user.userId);
+      if (loggedAdmin) {
+        if (
+          (loggedAdmin.email && loggedAdmin.email.trim().toLowerCase() === normalizedEmail) ||
+          (loggedAdmin.username && loggedAdmin.username.trim().toLowerCase() === normalizedEmail)
+        ) {
+          isValidAdminEmail = true;
+        }
+      }
       const loggedUser = await User.findById(req.user.userId);
       if (loggedUser && loggedUser.role === "Admin") {
         if (loggedUser.memberId) {
@@ -515,6 +614,18 @@ const verifyAdminEmail = async (req, res) => {
             isValidAdminEmail = true;
           }
         }
+      }
+    }
+
+    if (!isValidAdminEmail) {
+      const adminDoc = await Admin.findOne({
+        $or: [
+          { email: normalizedEmail },
+          { username: normalizedEmail }
+        ]
+      });
+      if (adminDoc) {
+        isValidAdminEmail = true;
       }
     }
 
@@ -631,6 +742,19 @@ const changePasswordByEmail = async (req, res) => {
     const hashPwd = await bcrypt.hash(newPassword, 10);
     let updated = false;
 
+    // Check Admin model
+    const admin = await Admin.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { username: normalizedEmail }
+      ]
+    });
+    if (admin) {
+      admin.password = hashPwd;
+      await admin.save();
+      updated = true;
+    }
+
     // Check Recruiter
     const recruiter = await Recruiter.findOne({
       $or: [
@@ -673,7 +797,7 @@ const changePasswordByEmail = async (req, res) => {
     await AdminOtp.deleteMany({ email: normalizedEmail });
 
     try {
-      await sendAdminPasswordChangedNotification(normalizedEmail, recruiter?.name || user?.username || 'User');
+      await sendAdminPasswordChangedNotification(normalizedEmail, recruiter?.name || admin?.username || user?.username || 'User');
     } catch (emailErr) {
       console.error("Failed to send password change notification:", emailErr);
     }

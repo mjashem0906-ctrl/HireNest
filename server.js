@@ -92,6 +92,14 @@ app.listen(PORT, async() => {
     console.error("Failed to run seedNotificationWorkflows on startup:", err);
   }
 
+  // Seed default Admin credentials in Admin collection
+  try {
+    const seedAdmin = require("./utils/seedAdmin");
+    await seedAdmin();
+  } catch (err) {
+    console.error("Failed to run seedAdmin on startup:", err);
+  }
+
   // Migrate Google Users to googleusers collection
   try {
     const migrateGoogleUsers = require("./utils/migrateGoogleUsers");
